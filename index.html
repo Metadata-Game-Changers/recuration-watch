@@ -406,32 +406,26 @@
       color: #991b1b;
       padding: 0.1rem 0.35rem;
       text-decoration: line-through;
-      max-width: 280px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      display: inline-block;
+      word-break: break-word;
+      white-space: normal;
+      display: inline;
     }
     .diff-arrow { color: var(--rule-dk); font-size: 0.6rem; }
     .diff-after {
       background: var(--green-bg);
       color: #166534;
       padding: 0.1rem 0.35rem;
-      max-width: 280px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      display: inline-block;
+      word-break: break-word;
+      white-space: normal;
+      display: inline;
     }
     .diff-new {
       background: var(--blue-bg);
       color: #1e40af;
       padding: 0.1rem 0.35rem;
-      max-width: 360px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      display: inline-block;
+      word-break: break-word;
+      white-space: normal;
+      display: inline;
     }
     .tl-version { display: inline; }
 
@@ -589,7 +583,7 @@
 
       /* ── Activity diff ── */
       .diff-row { grid-template-columns: 80px 1fr; }
-      .diff-before, .diff-after, .diff-new { max-width: 180px; }
+
       .tl-table { display: block; overflow-x: auto; }
 
       /* ── Pagination ── */
@@ -673,7 +667,7 @@ let loading     = false;
 async function fetchAllDOIs() {
   let results = [], cursor = 1, total = null;
   while (true) {
-    const url = `${API_BASE}/dois?client-id=${encodeURIComponent(CLIENT_ID)}&page[size]=1000&page[number]=${cursor}&sort=-updated`;
+    const url = `${API_BASE}/dois?client-id=${encodeURIComponent(CLIENT_ID)}&page[size]=100&page[number]=${cursor}&sort=-updated`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`API error ${res.status}`);
     const json = await res.json();
@@ -681,7 +675,7 @@ async function fetchAllDOIs() {
     results = results.concat(json.data ?? []);
     if (results.length >= total || !(json.data?.length)) break;
     cursor++;
-    if (cursor > 2) break;
+    if (cursor > 20) break;
   }
   return results;
 }
@@ -899,16 +893,10 @@ function fieldLabel(k) { return FIELD_LABELS[k]??k.replace(/_/g,' ').replace(/\b
 
 function summariseValue(val) {
   if (val===null||val===undefined) return '—';
-  if (typeof val==='string') return val.length>120?val.slice(0,120)+'…':val;
+  if (typeof val==='string') return val;
   if (typeof val==='number'||typeof val==='boolean') return String(val);
-  if (Array.isArray(val)) { if(!val.length) return '(empty)'; return val.map(summariseValue).join(', ').slice(0,200); }
-  if (typeof val==='object') {
-    const pick = val.title??val.name??val.rights??val.relatedIdentifier
-               ??val.dateType??val.resourceTypeGeneral??val.resourceType
-               ??val.rightsIdentifier??val.relationType??null;
-    if (pick) return summariseValue(pick);
-    return JSON.stringify(val).slice(0,120);
-  }
+  if (Array.isArray(val)) { if(!val.length) return '(empty)'; return val.map(summariseValue).join(', '); }
+  if (typeof val==='object') return JSON.stringify(val, null, 0);
   return String(val);
 }
 
@@ -923,15 +911,15 @@ function renderChangesDiff(changes, action) {
     if (isCreate) {
       const s = summariseValue(val);
       if (!s||s==='—'||s==='(empty)') continue;
-      rows.push(`<div class="diff-row"><span class="diff-field">${label}</span><div class="diff-values"><span class="diff-new" title="${escAttr(s)}">${escHtml(s)}</span></div></div>`);
+      rows.push(`<div class="diff-row"><span class="diff-field">${label}</span><div class="diff-values"><span class="diff-new">${escHtml(s)}</span></div></div>`);
     } else if (Array.isArray(val)&&val.length===2) {
       const b = summariseValue(val[0]), a2 = summariseValue(val[1]);
       if (b===a2) continue;
-      rows.push(`<div class="diff-row"><span class="diff-field">${label}</span><div class="diff-values"><span class="diff-before" title="${escAttr(b)}">${escHtml(b)}</span><span class="diff-arrow">→</span><span class="diff-after" title="${escAttr(a2)}">${escHtml(a2)}</span></div></div>`);
+      rows.push(`<div class="diff-row"><span class="diff-field">${label}</span><div class="diff-values"><span class="diff-before">${escHtml(b)}</span><span class="diff-arrow">→</span><span class="diff-after">${escHtml(a2)}</span></div></div>`);
     } else {
       const s = summariseValue(val);
       if (!s||s==='—') continue;
-      rows.push(`<div class="diff-row"><span class="diff-field">${label}</span><div class="diff-values"><span class="diff-new" title="${escAttr(s)}">${escHtml(s)}</span></div></div>`);
+      rows.push(`<div class="diff-row"><span class="diff-field">${label}</span><div class="diff-values"><span class="diff-new">${escHtml(s)}</span></div></div>`);
     }
   }
   if (!rows.length) return '';
