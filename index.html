@@ -3,1121 +3,803 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Metadata Game Changers · DataCite Repository</title>
+  <title>MGC DataCite Repository</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-    /* ─── Token system ─────────────────────────────── */
     :root {
-      --navy:   #0D1B2A;
-      --slate:  #1E3A5F;
-      --blue:   #4A6FA5;
-      --gold:   #C9A84C;
-      --gold-lt:#E8C96A;
-      --cream:  #F8F5EE;
-      --mid:    #D4CFCA;
-      --ink:    #1A1814;
-      --muted:  #6B6560;
-      --green:  #3A7D5E;
-      --red:    #B05040;
-      --radius: 4px;
-      --mono:   'DM Mono', monospace;
-      --serif:  'Lora', serif;
+      --white:   #ffffff;
+      --off:     #f5f5f4;
+      --rule:    #d6d3d1;
+      --rule-dk: #a8a29e;
+      --ink:     #1c1917;
+      --sub:     #57534e;
+      --faint:   #78716c;
+      --red:     #c0392b;
+      --red-bg:  #fef2f2;
+      --green:   #16653a;
+      --green-bg:#f0fdf4;
+      --blue:    #1d4ed8;
+      --blue-bg: #eff6ff;
+      --amber:   #92400e;
+      --amber-bg:#fffbeb;
+      --sans:    'Inter', system-ui, sans-serif;
+      --mono:    'IBM Plex Mono', monospace;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      background: var(--cream);
+      background: var(--white);
       color: var(--ink);
-      font-family: var(--serif);
-      font-size: 16px;
-      line-height: 1.6;
-      min-height: 100vh;
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.5;
     }
 
-    /* ─── Header ───────────────────────────────────── */
-    header {
-      background: var(--navy);
-      color: var(--cream);
-      padding: 2.5rem 2rem 2rem;
-      position: relative;
-      overflow: hidden;
+    /* ── Top bar ─────────────────────────────────── */
+    .topbar {
+      border-bottom: 2px solid var(--ink);
+      padding: 0 2rem;
     }
-    header::after {
-      content: '';
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, var(--gold) 0%, var(--blue) 60%, transparent 100%);
-    }
-    .header-inner {
-      max-width: 960px;
-      margin: 0 auto;
-    }
-    .header-eyebrow {
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      letter-spacing: 0.18em;
-      color: var(--gold);
-      text-transform: uppercase;
-      margin-bottom: 0.5rem;
-    }
-    header h1 {
-      font-family: var(--serif);
-      font-size: 1.85rem;
-      font-weight: 600;
-      line-height: 1.2;
-      margin-bottom: 0.4rem;
-    }
-    .header-sub {
-      font-family: var(--mono);
-      font-size: 0.78rem;
-      color: var(--mid);
-      display: flex;
-      align-items: center;
-      gap: 1.2rem;
-      flex-wrap: wrap;
-      margin-top: 0.8rem;
-    }
-    .header-sub a {
-      color: var(--gold-lt);
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      transition: border-color 0.2s;
-    }
-    .header-sub a:hover { border-color: var(--gold-lt); }
-    .header-pill {
-      background: rgba(201,168,76,0.18);
-      border: 1px solid rgba(201,168,76,0.4);
-      border-radius: 12px;
-      padding: 0.15rem 0.7rem;
-      font-size: 0.72rem;
-      color: var(--gold-lt);
-    }
-
-    /* ─── Stats bar ────────────────────────────────── */
-    .stats-bar {
-      background: var(--slate);
-      padding: 0.85rem 2rem;
-    }
-    .stats-inner {
-      max-width: 960px;
+    .topbar-inner {
+      max-width: 1040px;
       margin: 0 auto;
       display: flex;
-      gap: 2.5rem;
-      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 0;
     }
-    .stat {
+    .topbar-brand {
+      padding: 1rem 2rem 1rem 0;
+      border-right: 1px solid var(--rule);
       display: flex;
       flex-direction: column;
+      gap: 0.1rem;
     }
-    .stat-value {
+    .brand-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+    }
+    .brand-sub {
       font-family: var(--mono);
-      font-size: 1.3rem;
-      font-weight: 500;
-      color: var(--gold);
-      line-height: 1;
+      font-size: 0.68rem;
+      color: var(--faint);
     }
-    .stat-label {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
-      color: var(--mid);
-      text-transform: uppercase;
-      margin-top: 0.2rem;
-    }
-
-    /* ─── Controls ─────────────────────────────────── */
-    .controls {
-      max-width: 960px;
-      margin: 1.8rem auto 0;
-      padding: 0 2rem;
+    .topbar-stats {
       display: flex;
-      gap: 0.8rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .search-wrap {
-      position: relative;
+      align-items: stretch;
       flex: 1;
-      min-width: 200px;
     }
-    .search-icon {
-      position: absolute;
-      left: 0.75rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--muted);
-      font-size: 0.85rem;
-      pointer-events: none;
+    .tstat {
+      padding: 0.9rem 1.8rem;
+      border-right: 1px solid var(--rule);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.05rem;
     }
-    .search-input {
-      width: 100%;
-      background: white;
-      border: 1.5px solid var(--mid);
-      border-radius: var(--radius);
-      padding: 0.55rem 0.75rem 0.55rem 2.2rem;
-      font-family: var(--mono);
-      font-size: 0.82rem;
+    .tstat:last-child { border-right: none; }
+    .tstat-n {
+      font-size: 1.25rem;
+      font-weight: 600;
       color: var(--ink);
-      outline: none;
-      transition: border-color 0.2s;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
     }
-    .search-input:focus { border-color: var(--blue); }
-    .filter-select {
-      background: white;
-      border: 1.5px solid var(--mid);
-      border-radius: var(--radius);
-      padding: 0.55rem 0.75rem;
-      font-family: var(--mono);
-      font-size: 0.82rem;
-      color: var(--ink);
-      outline: none;
-      cursor: pointer;
+    .tstat-l {
+      font-size: 0.67rem;
+      color: var(--faint);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
     }
-    .filter-select:focus { border-color: var(--blue); }
-    .sort-btn {
-      background: white;
-      border: 1.5px solid var(--mid);
-      border-radius: var(--radius);
-      padding: 0.55rem 0.85rem;
-      font-family: var(--mono);
-      font-size: 0.78rem;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.15s;
+    .topbar-links {
+      padding: 0 0 0 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-left: auto;
     }
-    .sort-btn:hover, .sort-btn.active {
-      border-color: var(--blue);
-      color: var(--blue);
-      background: rgba(74,111,165,0.06);
+    .topbar-links a {
+      font-size: 0.75rem;
+      color: var(--sub);
+      text-decoration: none;
+      white-space: nowrap;
     }
+    .topbar-links a:hover { color: var(--red); }
 
-    /* ─── DOI list ─────────────────────────────────── */
-    .doi-list {
-      max-width: 960px;
-      margin: 1.2rem auto 0;
-      padding: 0 2rem 3rem;
+    /* ── Toolbar ─────────────────────────────────── */
+    .toolbar {
+      border-bottom: 1px solid var(--rule);
+      padding: 0 2rem;
+      background: var(--off);
+    }
+    .toolbar-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0;
+      flex-wrap: wrap;
+    }
+    .tb-label {
+      font-size: 0.7rem;
+      color: var(--faint);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+    .tb-input {
+      border: 1px solid var(--rule);
+      background: var(--white);
+      padding: 0.38rem 0.65rem;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--ink);
+      outline: none;
+      min-width: 220px;
+    }
+    .tb-input:focus { border-color: var(--ink); }
+    .tb-select {
+      border: 1px solid var(--rule);
+      background: var(--white);
+      padding: 0.38rem 0.65rem;
+      font-family: var(--sans);
+      font-size: 0.75rem;
+      color: var(--ink);
+      outline: none;
+      cursor: pointer;
+    }
+    .tb-select:focus { border-color: var(--ink); }
+    .tb-sep { width: 1px; height: 1.4rem; background: var(--rule); }
+    .tb-sort-label {
+      font-size: 0.7rem;
+      color: var(--faint);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .sort-group { display: flex; gap: 0; }
+    .sort-opt {
+      border: 1px solid var(--rule);
+      background: var(--white);
+      padding: 0.38rem 0.7rem;
+      font-size: 0.72rem;
+      color: var(--sub);
+      cursor: pointer;
+      margin-left: -1px;
+    }
+    .sort-opt:first-child { margin-left: 0; }
+    .sort-opt.active {
+      background: var(--ink);
+      color: var(--white);
+      border-color: var(--ink);
+      z-index: 1;
+    }
+    .sort-opt:hover:not(.active) { background: var(--off); }
+
+    /* ── Main ────────────────────────────────────── */
+    .main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 2rem 4rem;
     }
     .list-meta {
-      font-family: var(--mono);
       font-size: 0.72rem;
-      color: var(--muted);
-      margin-bottom: 1rem;
-      letter-spacing: 0.05em;
+      color: var(--faint);
+      padding: 0.75rem 0 0.5rem;
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 0;
+      font-variant-numeric: tabular-nums;
     }
 
-    .doi-card {
-      background: white;
-      border: 1.5px solid var(--mid);
-      border-radius: var(--radius);
-      margin-bottom: 0.9rem;
-      transition: border-color 0.15s, box-shadow 0.15s;
-      overflow: hidden;
+    /* ── DOI rows ────────────────────────────────── */
+    .doi-row {
+      border-bottom: 1px solid var(--rule);
     }
-    .doi-card:hover {
-      border-color: var(--blue);
-      box-shadow: 0 2px 12px rgba(13,27,42,0.07);
-    }
-    .doi-card-header {
-      padding: 1rem 1.2rem 0.8rem;
-      cursor: pointer;
+    .doi-row-main {
       display: grid;
       grid-template-columns: 1fr auto;
+      gap: 1rem;
+      padding: 0.9rem 0;
+      cursor: pointer;
+      align-items: start;
+    }
+    .doi-row-main:hover .doi-title { color: var(--red); }
+
+    .doi-title {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.35;
+      transition: color 0.12s;
+      margin-bottom: 0.2rem;
+    }
+    .doi-creators {
+      font-size: 0.75rem;
+      color: var(--sub);
+      margin-bottom: 0.3rem;
+    }
+    .doi-meta-line {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .doi-badge {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      padding: 0.08rem 0.4rem;
+      border: 1px solid var(--rule);
+      color: var(--sub);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .badge-type  { border-color: #c7d2fe; color: var(--blue); background: #f0f4ff; }
+    .badge-year  { border-color: var(--rule-dk); color: var(--sub); }
+    .badge-schema { border-color: #bbf7d0; color: var(--green); background: var(--green-bg); }
+
+    .doi-identifier {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--faint);
+      margin-top: 0.3rem;
+    }
+    .doi-identifier a { color: var(--blue); text-decoration: none; }
+    .doi-identifier a:hover { text-decoration: underline; }
+    .doi-counts {
+      font-size: 0.65rem;
+      color: var(--faint);
+      margin-top: 0.25rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .doi-counts span { margin-right: 0.9rem; }
+
+    .toggle-btn {
+      font-size: 0.7rem;
+      font-family: var(--mono);
+      color: var(--faint);
+      background: none;
+      border: 1px solid var(--rule);
+      padding: 0.3rem 0.6rem;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      align-self: start;
+      margin-top: 0.15rem;
+    }
+    .toggle-btn:hover { border-color: var(--red); color: var(--red); }
+    .toggle-btn.open  { border-color: var(--ink); color: var(--ink); background: var(--ink); color: var(--white); }
+
+    /* ── Activity panel ──────────────────────────── */
+    .act-panel {
+      display: none;
+      background: var(--off);
+      border-top: 1px solid var(--rule);
+      padding: 1rem 0 1.25rem;
+    }
+    .act-panel.open { display: block; }
+
+    .act-header {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--faint);
+      margin-bottom: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .act-header a {
+      font-family: var(--mono);
+      color: var(--blue);
+      text-decoration: none;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.65rem;
+    }
+    .act-header a:hover { text-decoration: underline; }
+
+    /* Pulse bar */
+    .pulse-bar {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 32px;
+      margin-bottom: 1.1rem;
+    }
+    .pulse-seg {
+      flex: 1;
+      min-width: 4px;
+      opacity: 0.85;
+    }
+
+    /* Timeline table layout */
+    .tl-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .tl-table td {
+      padding: 0.45rem 0.75rem 0.45rem 0;
+      vertical-align: top;
+      border-top: 1px solid var(--rule);
+      font-size: 0.75rem;
+    }
+    .tl-table tr:first-child td { border-top: none; }
+    .tl-col-date {
+      width: 110px;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--faint);
+      white-space: nowrap;
+    }
+    .tl-col-dot { width: 20px; }
+    .tl-dot-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 0.3rem;
+    }
+    .tl-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .tl-col-action { width: 80px; }
+    .act-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+    .act-v {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--faint);
+    }
+    .tl-col-changes { }
+
+    /* Before/after diff */
+    .diff-block { display: flex; flex-direction: column; gap: 0.3rem; }
+    .diff-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
       gap: 0.5rem;
       align-items: start;
     }
-    .doi-title {
-      font-family: var(--serif);
-      font-size: 0.98rem;
-      font-weight: 600;
-      line-height: 1.35;
-      color: var(--ink);
-      margin-bottom: 0.3rem;
-    }
-    .doi-creators {
-      font-size: 0.82rem;
-      color: var(--muted);
-      font-style: italic;
-      margin-bottom: 0.4rem;
-    }
-    .doi-meta-row {
-      display: flex;
-      gap: 0.6rem;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .doi-tag {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      letter-spacing: 0.06em;
-      padding: 0.15rem 0.55rem;
-      border-radius: 3px;
-      text-transform: uppercase;
-    }
-    .tag-type    { background: rgba(74,111,165,0.1); color: var(--blue); }
-    .tag-year    { background: rgba(201,168,76,0.12); color: #8B6E20; }
-    .tag-schema  { background: rgba(58,125,94,0.1); color: var(--green); }
-    .doi-id {
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      color: var(--muted);
-      margin-top: 0.4rem;
-    }
-    .doi-id a {
-      color: var(--blue);
-      text-decoration: none;
-    }
-    .doi-id a:hover { text-decoration: underline; }
-
-    .expand-btn {
-      background: none;
-      border: 1.5px solid var(--mid);
-      border-radius: var(--radius);
-      padding: 0.35rem 0.6rem;
-      cursor: pointer;
-      font-family: var(--mono);
-      font-size: 0.7rem;
-      color: var(--muted);
-      white-space: nowrap;
-      transition: all 0.15s;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      flex-shrink: 0;
-    }
-    .expand-btn:hover, .expand-btn.open {
-      border-color: var(--gold);
-      color: var(--gold);
-      background: rgba(201,168,76,0.06);
-    }
-    .expand-arrow { display: inline-block; transition: transform 0.2s; }
-    .expand-btn.open .expand-arrow { transform: rotate(180deg); }
-
-    /* ─── Activity panel ───────────────────────────── */
-    .activity-panel {
-      display: none;
-      border-top: 1.5px solid var(--mid);
-      background: #FAFAF7;
-      padding: 1.2rem 1.2rem 1rem;
-    }
-    .activity-panel.open { display: block; }
-
-    .activity-panel h4 {
-      font-family: var(--mono);
-      font-size: 0.68rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 0.9rem;
-    }
-
-    /* Timeline */
-    .timeline {
-      position: relative;
-    }
-    .timeline-item {
-      display: grid;
-      grid-template-columns: 120px 16px 1fr;
-      gap: 0 0.8rem;
-      margin-bottom: 0.7rem;
-      align-items: start;
-    }
-    .tl-date {
-      font-family: var(--mono);
-      font-size: 0.68rem;
-      color: var(--muted);
-      text-align: right;
-      padding-top: 0.1rem;
-    }
-    .tl-dot-col {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .tl-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-      margin-top: 0.2rem;
-    }
-    .tl-line {
-      width: 1.5px;
-      flex: 1;
-      background: var(--mid);
-      min-height: 20px;
-    }
-    .tl-content {
-      padding-bottom: 0.4rem;
-    }
-    .tl-action {
-      font-family: var(--mono);
-      font-size: 0.73rem;
-      font-weight: 500;
-      line-height: 1.3;
-    }
-    .tl-version {
-      font-family: var(--mono);
-      font-size: 0.65rem;
-      color: var(--muted);
-      margin-top: 0.1rem;
-    }
-    .tl-changes {
-      margin-top: 0.35rem;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.3rem;
-    }
-    .change-chip {
-      font-family: var(--mono);
-      font-size: 0.6rem;
-      padding: 0.1rem 0.4rem;
-      border-radius: 2px;
-      background: rgba(74,111,165,0.1);
-      color: var(--blue);
-    }
-
-    /* Activity type colors */
-    .act-create  { background: var(--green); }
-    .act-update  { background: var(--blue); }
-    .act-publish { background: var(--gold); }
-    .act-hide    { background: var(--muted); }
-    .act-other   { background: var(--mid); }
-
-    /* Counts in header */
-    .doi-counts {
-      font-family: var(--mono);
-      font-size: 0.67rem;
-      color: var(--muted);
-      margin-top: 0.3rem;
-      display: flex;
-      gap: 1rem;
-    }
-    .count-item { display: flex; align-items: center; gap: 0.25rem; }
-    .count-dot { width: 6px; height: 6px; border-radius: 50%; }
-
-    /* Skeleton / loading */
-    .skeleton {
-      background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.4s infinite;
-      border-radius: 3px;
-      height: 12px;
-    }
-    @keyframes shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    .loading-state, .error-state, .empty-state {
-      text-align: center;
-      padding: 3rem 2rem;
-      font-family: var(--mono);
-      font-size: 0.82rem;
-      color: var(--muted);
-    }
-    .error-state { color: var(--red); }
-
-
-    /* ─── Before/After diff ────────────────────────────── */
-    .diff-block {
-      margin-top: 0.55rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-    }
-    .diff-row {
-      display: grid;
-      grid-template-columns: 130px 1fr;
-      gap: 0.4rem;
-      align-items: start;
-      font-family: var(--mono);
-      font-size: 0.67rem;
-      line-height: 1.4;
-    }
     .diff-field {
-      color: var(--muted);
-      font-size: 0.63rem;
-      letter-spacing: 0.04em;
+      font-size: 0.62rem;
       text-transform: uppercase;
-      padding-top: 0.1rem;
+      letter-spacing: 0.06em;
+      color: var(--faint);
+      padding-top: 0.15rem;
+      line-height: 1.3;
     }
     .diff-values {
       display: flex;
       align-items: baseline;
       flex-wrap: wrap;
       gap: 0.3rem;
+      font-family: var(--mono);
+      font-size: 0.67rem;
     }
     .diff-before {
-      background: rgba(176,80,64,0.1);
-      color: #8B3020;
-      border-radius: 2px;
-      padding: 0.1rem 0.4rem;
+      background: var(--red-bg);
+      color: #991b1b;
+      padding: 0.1rem 0.35rem;
       text-decoration: line-through;
-      max-width: 260px;
+      max-width: 280px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       display: inline-block;
     }
-    .diff-arrow {
-      color: var(--muted);
-      font-size: 0.6rem;
-      flex-shrink: 0;
-    }
+    .diff-arrow { color: var(--rule-dk); font-size: 0.6rem; }
     .diff-after {
-      background: rgba(58,125,94,0.1);
-      color: #1F5E3A;
-      border-radius: 2px;
-      padding: 0.1rem 0.4rem;
-      max-width: 260px;
+      background: var(--green-bg);
+      color: #166534;
+      padding: 0.1rem 0.35rem;
+      max-width: 280px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
       display: inline-block;
     }
-
-    /* ─── Pulse summary bar (signature element) ─── */
-    .pulse-bar {
-      display: flex;
-      align-items: flex-end;
-      gap: 2px;
-      height: 28px;
-      margin-bottom: 0.7rem;
+    .diff-new {
+      background: var(--blue-bg);
+      color: #1e40af;
+      padding: 0.1rem 0.35rem;
+      max-width: 360px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: inline-block;
     }
-    .pulse-seg {
-      flex: 1;
-      border-radius: 1px;
-      min-width: 3px;
-      transition: opacity 0.2s;
-    }
+    .tl-version { display: inline; }
 
-    /* ─── Footer ───────────────────────────────────── */
-    footer {
-      background: var(--navy);
-      color: var(--mid);
-      text-align: center;
-      padding: 1.5rem 2rem;
-      font-family: var(--mono);
-      font-size: 0.68rem;
-      letter-spacing: 0.06em;
-    }
-    footer a { color: var(--gold-lt); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
-
-    /* ─── Pagination ───────────────────────────────── */
+    /* ── Pagination ──────────────────────────────── */
     .pagination {
       display: flex;
-      justify-content: center;
-      gap: 0.6rem;
+      align-items: center;
+      gap: 0;
       margin-top: 1.5rem;
     }
     .page-btn {
-      background: white;
-      border: 1.5px solid var(--mid);
-      border-radius: var(--radius);
-      padding: 0.45rem 0.9rem;
-      font-family: var(--mono);
-      font-size: 0.75rem;
-      color: var(--muted);
+      border: 1px solid var(--rule);
+      background: var(--white);
+      padding: 0.4rem 0.75rem;
+      font-size: 0.72rem;
+      color: var(--sub);
       cursor: pointer;
-      transition: all 0.15s;
+      margin-left: -1px;
+      font-variant-numeric: tabular-nums;
     }
-    .page-btn:hover { border-color: var(--blue); color: var(--blue); }
-    .page-btn.active { border-color: var(--navy); background: var(--navy); color: var(--gold); }
-    .page-btn:disabled { opacity: 0.4; cursor: default; }
+    .page-btn:first-child { margin-left: 0; }
+    .page-btn.active { background: var(--ink); color: var(--white); border-color: var(--ink); z-index: 1; }
+    .page-btn:hover:not(.active):not(:disabled) { background: var(--off); }
+    .page-btn:disabled { opacity: 0.35; cursor: default; }
 
-    @media (max-width: 600px) {
-      .doi-card-header { grid-template-columns: 1fr; }
-      .timeline-item { grid-template-columns: 90px 14px 1fr; }
-      .stats-inner { gap: 1.5rem; }
+    .loading-state, .error-state, .empty-state {
+      padding: 2.5rem 0;
+      font-size: 0.8rem;
+      color: var(--faint);
+    }
+    .error-state { color: var(--red); }
+
+    @media (max-width: 640px) {
+      .topbar-stats { flex-wrap: wrap; }
+      .tstat { padding: 0.6rem 1rem; }
+      .diff-row { grid-template-columns: 90px 1fr; }
+      .tl-table { display: block; overflow-x: auto; }
     }
   </style>
 </head>
 <body>
 
-<!-- ═══ HEADER ═══════════════════════════════════════════════════════════════ -->
-<header>
-  <div class="header-inner">
-    <p class="header-eyebrow">DataCite Repository · sjyq.oozvia</p>
-    <h1>Metadata Game Changers</h1>
-    <div class="header-sub">
-      <a href="https://metadatagamechangers.com" target="_blank">metadatagamechangers.com</a>
-      <span>·</span>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <span class="brand-name">Metadata Game Changers</span>
+      <span class="brand-sub">sjyq.oozvia · prefix 10.60950</span>
+    </div>
+    <div class="topbar-stats">
+      <div class="tstat"><span class="tstat-n" id="stat-total">—</span><span class="tstat-l">Records</span></div>
+      <div class="tstat"><span class="tstat-n" id="stat-types">—</span><span class="tstat-l">Types</span></div>
+      <div class="tstat"><span class="tstat-n" id="stat-recent">—</span><span class="tstat-l">Latest year</span></div>
+      <div class="tstat"><span class="tstat-n" id="stat-schema">—</span><span class="tstat-l">Schema</span></div>
+    </div>
+    <div class="topbar-links">
       <a href="https://commons.datacite.org/repositories/sjyq.oozvia" target="_blank">DataCite Commons ↗</a>
-      <span class="header-pill">10.60950 prefix</span>
-    </div>
-  </div>
-</header>
-
-<!-- ═══ STATS BAR ════════════════════════════════════════════════════════════ -->
-<div class="stats-bar">
-  <div class="stats-inner">
-    <div class="stat">
-      <span class="stat-value" id="stat-total">—</span>
-      <span class="stat-label">Total DOIs</span>
-    </div>
-    <div class="stat">
-      <span class="stat-value" id="stat-types">—</span>
-      <span class="stat-label">Resource Types</span>
-    </div>
-    <div class="stat">
-      <span class="stat-value" id="stat-recent">—</span>
-      <span class="stat-label">Most Recent Year</span>
-    </div>
-    <div class="stat">
-      <span class="stat-value" id="stat-schema">—</span>
-      <span class="stat-label">Schema Version</span>
+      <a href="https://metadatagamechangers.com" target="_blank">MGC ↗</a>
     </div>
   </div>
 </div>
 
-<!-- ═══ CONTROLS ════════════════════════════════════════════════════════════ -->
-<div class="controls">
-  <div class="search-wrap">
-    <span class="search-icon">⌕</span>
-    <input class="search-input" id="search-input" type="text" placeholder="Search titles, creators, DOIs…" />
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <span class="tb-label">Filter</span>
+    <input class="tb-input" id="search-input" type="search" placeholder="title, creator, DOI…" />
+    <select class="tb-select" id="type-filter"><option value="">All types</option></select>
+    <select class="tb-select" id="year-filter"><option value="">All years</option></select>
+    <div class="tb-sep"></div>
+    <span class="tb-sort-label">Sort</span>
+    <div class="sort-group">
+      <button class="sort-opt active" id="sort-updated">Updated</button>
+      <button class="sort-opt" id="sort-year">Year</button>
+      <button class="sort-opt" id="sort-title">Title</button>
+    </div>
   </div>
-  <select class="filter-select" id="type-filter">
-    <option value="">All types</option>
-  </select>
-  <select class="filter-select" id="year-filter">
-    <option value="">All years</option>
-  </select>
-  <button class="sort-btn active" id="sort-updated">Updated ↓</button>
-  <button class="sort-btn" id="sort-year">Year</button>
-  <button class="sort-btn" id="sort-title">Title</button>
 </div>
 
-<!-- ═══ DOI LIST ═════════════════════════════════════════════════════════════ -->
-<div class="doi-list">
+<!-- RECORDS -->
+<div class="main">
   <div class="list-meta" id="list-meta">Loading…</div>
-  <div id="doi-container">
-    <div class="loading-state">Fetching MGC repository from DataCite API…</div>
-  </div>
+  <div id="doi-container"><div class="loading-state">Fetching records from DataCite…</div></div>
   <div class="pagination" id="pagination"></div>
 </div>
 
-<!-- ═══ FOOTER ══════════════════════════════════════════════════════════════ -->
-<footer>
-  Live data from <a href="https://api.datacite.org" target="_blank">api.datacite.org</a> · 
-  Repository <strong>sjyq.oozvia</strong> · 
-  <a href="https://commons.datacite.org/repositories/sjyq.oozvia" target="_blank">View on DataCite Commons</a>
-</footer>
-
 <script>
-// ═══════════════════════════════════════════════════════
-//  CONFIG
-// ═══════════════════════════════════════════════════════
 const CLIENT_ID = 'sjyq.oozvia';
 const API_BASE  = 'https://api.datacite.org';
 const PAGE_SIZE = 15;
 
-// ═══════════════════════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════════════════════
 let allDOIs     = [];
 let filtered    = [];
 let currentPage = 1;
 let sortKey     = 'updated';
 let expandedDOI = null;
 
-// ═══════════════════════════════════════════════════════
-//  FETCH ALL DOIs FOR CLIENT
-// ═══════════════════════════════════════════════════════
 async function fetchAllDOIs() {
-  let results = [];
-  let cursor  = 1;
-  let total   = null;
-
-  try {
-    while (true) {
-      const url = `${API_BASE}/dois?client-id=${CLIENT_ID}&page[size]=100&page[number]=${cursor}&sort=-updated`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`API error ${res.status}`);
-      const json = await res.json();
-
-      if (total === null) total = json.meta?.total ?? 0;
-      results = results.concat(json.data ?? []);
-
-      if (results.length >= total || !(json.data?.length)) break;
-      cursor++;
-      if (cursor > 20) break; // safety cap
-    }
-    return results;
-  } catch (e) {
-    throw e;
-  }
-}
-
-// ═══════════════════════════════════════════════════════
-//  FETCH ACTIVITIES FOR A SINGLE DOI
-// ═══════════════════════════════════════════════════════
-async function fetchActivities(doiId) {
-  const encoded = encodeURIComponent(doiId);
-  const url = `${API_BASE}/dois/${encoded}/activities`;
-  try {
+  let results = [], cursor = 1, total = null;
+  while (true) {
+    const url = `${API_BASE}/dois?client-id=${CLIENT_ID}&page[size]=100&page[number]=${cursor}&sort=-updated`;
     const res = await fetch(url);
-    if (!res.ok) throw new Error(`${res.status}`);
+    if (!res.ok) throw new Error(`API error ${res.status}`);
     const json = await res.json();
-    return json.data ?? [];
-  } catch (e) {
-    return null; // null = error
+    if (total === null) total = json.meta?.total ?? 0;
+    results = results.concat(json.data ?? []);
+    if (results.length >= total || !(json.data?.length)) break;
+    cursor++;
+    if (cursor > 20) break;
   }
+  return results;
 }
 
-// ═══════════════════════════════════════════════════════
-//  POPULATE FILTERS
-// ═══════════════════════════════════════════════════════
+async function fetchActivities(doiId) {
+  try {
+    const res = await fetch(`${API_BASE}/dois/${encodeURIComponent(doiId)}/activities`);
+    if (!res.ok) throw new Error(`${res.status}`);
+    return (await res.json()).data ?? [];
+  } catch { return null; }
+}
+
 function populateFilters(dois) {
-  const types = [...new Set(
-    dois.map(d => d.attributes?.types?.resourceTypeGeneral).filter(Boolean)
-  )].sort();
-  const years = [...new Set(
-    dois.map(d => d.attributes?.publicationYear).filter(Boolean)
-  )].sort((a,b) => b - a);
-
-  const typeSelect = document.getElementById('type-filter');
-  types.forEach(t => {
-    const opt = document.createElement('option');
-    opt.value = t; opt.textContent = t;
-    typeSelect.appendChild(opt);
-  });
-
-  const yearSelect = document.getElementById('year-filter');
-  years.forEach(y => {
-    const opt = document.createElement('option');
-    opt.value = y; opt.textContent = y;
-    yearSelect.appendChild(opt);
-  });
+  const types = [...new Set(dois.map(d => d.attributes?.types?.resourceTypeGeneral).filter(Boolean))].sort();
+  const years = [...new Set(dois.map(d => d.attributes?.publicationYear).filter(Boolean))].sort((a,b)=>b-a);
+  const ts = document.getElementById('type-filter');
+  types.forEach(t => { const o=document.createElement('option'); o.value=o.textContent=t; ts.appendChild(o); });
+  const ys = document.getElementById('year-filter');
+  years.forEach(y => { const o=document.createElement('option'); o.value=o.textContent=y; ys.appendChild(o); });
 }
 
-// ═══════════════════════════════════════════════════════
-//  STATS BAR
-// ═══════════════════════════════════════════════════════
 function updateStats(dois) {
   document.getElementById('stat-total').textContent = dois.length;
-
-  const types = new Set(
-    dois.map(d => d.attributes?.types?.resourceTypeGeneral).filter(Boolean)
-  );
-  document.getElementById('stat-types').textContent = types.size;
-
-  const years = dois.map(d => d.attributes?.publicationYear).filter(Boolean);
-  document.getElementById('stat-recent').textContent =
-    years.length ? Math.max(...years) : '—';
-
-  const schemas = [...new Set(
-    dois.map(d => d.attributes?.schemaVersion?.replace('http://datacite.org/schema/kernel-','v') ?? '').filter(Boolean)
-  )];
-  document.getElementById('stat-schema').textContent =
-    schemas.length === 1 ? schemas[0] : (schemas.length ? schemas.join(', ') : '—');
+  document.getElementById('stat-types').textContent = new Set(dois.map(d=>d.attributes?.types?.resourceTypeGeneral).filter(Boolean)).size;
+  const years = dois.map(d=>d.attributes?.publicationYear).filter(Boolean);
+  document.getElementById('stat-recent').textContent = years.length ? Math.max(...years) : '—';
+  const schemas = [...new Set(dois.map(d=>d.attributes?.schemaVersion?.replace('http://datacite.org/schema/kernel-','v')??'').filter(Boolean))];
+  document.getElementById('stat-schema').textContent = schemas.length===1?schemas[0]:(schemas.length?schemas.join(', '):'—');
 }
 
-// ═══════════════════════════════════════════════════════
-//  FILTER + SORT + RENDER
-// ═══════════════════════════════════════════════════════
 function applyFiltersAndRender() {
   const q    = document.getElementById('search-input').value.toLowerCase();
   const type = document.getElementById('type-filter').value;
   const year = document.getElementById('year-filter').value;
-
   filtered = allDOIs.filter(d => {
-    const attrs = d.attributes ?? {};
-    const title = attrs.titles?.[0]?.title ?? '';
-    const creators = (attrs.creators ?? []).map(c => c.name).join(' ');
+    const a = d.attributes ?? {};
+    const title = a.titles?.[0]?.title ?? '';
+    const creators = (a.creators??[]).map(c=>c.name).join(' ');
     const doi = d.id ?? '';
-    const matchQ = !q || [title, creators, doi].join(' ').toLowerCase().includes(q);
-    const matchType = !type || attrs.types?.resourceTypeGeneral === type;
-    const matchYear = !year || String(attrs.publicationYear) === year;
-    return matchQ && matchType && matchYear;
+    return (!q||[title,creators,doi].join(' ').toLowerCase().includes(q))
+        && (!type||a.types?.resourceTypeGeneral===type)
+        && (!year||String(a.publicationYear)===year);
   });
-
-  // sort
-  filtered.sort((a, b) => {
-    if (sortKey === 'updated') {
-      return new Date(b.attributes?.updated ?? 0) - new Date(a.attributes?.updated ?? 0);
-    }
-    if (sortKey === 'year') {
-      return (b.attributes?.publicationYear ?? 0) - (a.attributes?.publicationYear ?? 0);
-    }
-    if (sortKey === 'title') {
-      return (a.attributes?.titles?.[0]?.title ?? '').localeCompare(
-              b.attributes?.titles?.[0]?.title ?? '');
-    }
+  filtered.sort((a,b)=>{
+    if (sortKey==='updated') return new Date(b.attributes?.updated??0)-new Date(a.attributes?.updated??0);
+    if (sortKey==='year')    return (b.attributes?.publicationYear??0)-(a.attributes?.publicationYear??0);
+    if (sortKey==='title')   return (a.attributes?.titles?.[0]?.title??'').localeCompare(b.attributes?.titles?.[0]?.title??'');
     return 0;
   });
-
   currentPage = 1;
   renderPage();
 }
 
-// ═══════════════════════════════════════════════════════
-//  RENDER PAGE
-// ═══════════════════════════════════════════════════════
 function renderPage() {
-  const total   = filtered.length;
-  const pages   = Math.ceil(total / PAGE_SIZE);
-  const start   = (currentPage - 1) * PAGE_SIZE;
-  const slice   = filtered.slice(start, start + PAGE_SIZE);
-
+  const total = filtered.length;
+  const pages = Math.ceil(total/PAGE_SIZE);
+  const start = (currentPage-1)*PAGE_SIZE;
+  const slice = filtered.slice(start, start+PAGE_SIZE);
   document.getElementById('list-meta').textContent =
-    `Showing ${start + 1}–${Math.min(start + PAGE_SIZE, total)} of ${total} records`;
-
+    total ? `${start+1}–${Math.min(start+PAGE_SIZE,total)} of ${total} records` : '0 records';
   const container = document.getElementById('doi-container');
-  if (!total) {
-    container.innerHTML = '<div class="empty-state">No records match your filters.</div>';
-    document.getElementById('pagination').innerHTML = '';
-    return;
-  }
-
-  container.innerHTML = slice.map(d => renderCard(d)).join('');
-
-  // Re-attach expand listeners
-  container.querySelectorAll('.expand-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const doiId = btn.dataset.doi;
-      toggleActivity(doiId);
-    });
+  if (!total) { container.innerHTML='<div class="empty-state">No records match.</div>'; document.getElementById('pagination').innerHTML=''; return; }
+  container.innerHTML = slice.map(renderRow).join('');
+  container.querySelectorAll('.toggle-btn').forEach(btn=>{
+    btn.addEventListener('click', e=>{ e.stopPropagation(); toggleActivity(btn.dataset.doi); });
   });
-
   renderPagination(pages);
 }
 
-// ═══════════════════════════════════════════════════════
-//  RENDER SINGLE CARD
-// ═══════════════════════════════════════════════════════
-function renderCard(d) {
-  const attrs     = d.attributes ?? {};
-  const doi       = d.id ?? '';
-  const title     = attrs.titles?.[0]?.title ?? '(Untitled)';
-  const creators  = (attrs.creators ?? []).map(c => c.name).join(', ') || '—';
-  const year      = attrs.publicationYear ?? '';
-  const typeG     = attrs.types?.resourceTypeGeneral ?? '';
-  const typeS     = attrs.types?.resourceType ?? '';
-  const schema    = attrs.schemaVersion?.replace('http://datacite.org/schema/kernel-','v') ?? '';
-  const updated   = attrs.updated ? fmtDate(attrs.updated) : '';
-  const views     = attrs.viewCount ?? 0;
-  const citations = attrs.citationCount ?? 0;
-  const downloads = attrs.downloadCount ?? 0;
-
+function renderRow(d) {
+  const a  = d.attributes ?? {};
+  const doi = d.id ?? '';
+  const title    = a.titles?.[0]?.title ?? '(Untitled)';
+  const creators = (a.creators??[]).map(c=>c.name).join(', ') || '—';
+  const year   = a.publicationYear ?? '';
+  const typeG  = a.types?.resourceTypeGeneral ?? '';
+  const typeS  = a.types?.resourceType ?? '';
+  const schema = (a.schemaVersion??'').replace('http://datacite.org/schema/kernel-','v');
+  const updated = a.updated ? fmtDate(a.updated) : '';
+  const views = a.viewCount??0, cites = a.citationCount??0, dl = a.downloadCount??0;
   return `
-    <div class="doi-card" id="card-${sanitizeId(doi)}">
-      <div class="doi-card-header">
-        <div>
-          <div class="doi-title">${escHtml(title)}</div>
-          <div class="doi-creators">${escHtml(creators)}</div>
-          <div class="doi-meta-row">
-            ${typeG ? `<span class="doi-tag tag-type">${escHtml(typeG)}</span>` : ''}
-            ${typeS && typeS !== typeG ? `<span class="doi-tag tag-type" style="opacity:0.7">${escHtml(typeS)}</span>` : ''}
-            ${year  ? `<span class="doi-tag tag-year">${year}</span>` : ''}
-            ${schema ? `<span class="doi-tag tag-schema">${escHtml(schema)}</span>` : ''}
-          </div>
-          <div class="doi-id">
-            <a href="https://doi.org/${doi}" target="_blank">doi.org/${doi}</a>
-            ${updated ? `<span style="margin-left:0.8rem;color:var(--muted)">updated ${updated}</span>` : ''}
-          </div>
-          <div class="doi-counts">
-            <span class="count-item"><span class="count-dot" style="background:var(--blue)"></span> ${views} views</span>
-            <span class="count-item"><span class="count-dot" style="background:var(--gold)"></span> ${citations} citations</span>
-            <span class="count-item"><span class="count-dot" style="background:var(--green)"></span> ${downloads} downloads</span>
-          </div>
+  <div class="doi-row" id="card-${sanitizeId(doi)}">
+    <div class="doi-row-main">
+      <div>
+        <div class="doi-title">${escHtml(title)}</div>
+        <div class="doi-creators">${escHtml(creators)}</div>
+        <div class="doi-meta-line">
+          ${typeG?`<span class="doi-badge badge-type">${escHtml(typeG)}</span>`:''}
+          ${typeS&&typeS!==typeG?`<span class="doi-badge badge-type" style="opacity:.7">${escHtml(typeS)}</span>`:''}
+          ${year?`<span class="doi-badge badge-year">${year}</span>`:''}
+          ${schema?`<span class="doi-badge badge-schema">${escHtml(schema)}</span>`:''}
         </div>
-        <button class="expand-btn" data-doi="${escAttr(doi)}" aria-expanded="false">
-          Activity <span class="expand-arrow">▾</span>
-        </button>
+        <div class="doi-identifier">
+          <a href="https://doi.org/${doi}" target="_blank">${escHtml(doi)}</a>
+          ${updated?`<span style="margin-left:.8rem">updated ${updated}</span>`:''}
+        </div>
+        <div class="doi-counts">
+          <span>${views} views</span><span>${cites} citations</span><span>${dl} downloads</span>
+        </div>
       </div>
-      <div class="activity-panel" id="act-${sanitizeId(doi)}">
-        <div class="loading-state" style="padding:1rem">Loading activity…</div>
-      </div>
-    </div>`;
+      <button class="toggle-btn" data-doi="${escAttr(doi)}">history</button>
+    </div>
+    <div class="act-panel" id="act-${sanitizeId(doi)}">
+      <div style="padding:0.5rem 0">Loading…</div>
+    </div>
+  </div>`;
 }
 
-// ═══════════════════════════════════════════════════════
-//  TOGGLE ACTIVITY PANEL
-// ═══════════════════════════════════════════════════════
 async function toggleActivity(doiId) {
-  const safeId  = sanitizeId(doiId);
-  const panel   = document.getElementById(`act-${safeId}`);
-  const btn     = document.querySelector(`.expand-btn[data-doi="${escAttr(doiId)}"]`);
-  if (!panel || !btn) return;
-
+  const safeId = sanitizeId(doiId);
+  const panel  = document.getElementById(`act-${safeId}`);
+  const btn    = document.querySelector(`.toggle-btn[data-doi="${escAttr(doiId)}"]`);
+  if (!panel||!btn) return;
   const isOpen = panel.classList.contains('open');
-
-  if (isOpen) {
-    panel.classList.remove('open');
-    btn.classList.remove('open');
-    btn.setAttribute('aria-expanded', 'false');
-    return;
-  }
-
-  panel.classList.add('open');
-  btn.classList.add('open');
-  btn.setAttribute('aria-expanded', 'true');
-
-  // Only fetch once
+  if (isOpen) { panel.classList.remove('open'); btn.classList.remove('open'); btn.textContent='history'; return; }
+  panel.classList.add('open'); btn.classList.add('open'); btn.textContent='close';
   if (panel.dataset.loaded) return;
-  panel.dataset.loaded = 'true';
-
+  panel.dataset.loaded='true';
   const activities = await fetchActivities(doiId);
   renderActivities(panel, doiId, activities);
 }
 
-// ═══════════════════════════════════════════════════════
-//  RENDER ACTIVITIES
-// ═══════════════════════════════════════════════════════
 function renderActivities(panel, doiId, activities) {
-  if (activities === null) {
-    panel.innerHTML = `<div class="error-state">Could not load activities for ${doiId}</div>`;
-    return;
-  }
-  if (!activities.length) {
-    panel.innerHTML = `<h4>Activity Log</h4><div class="empty-state" style="padding:0.5rem 0">No activity records found.</div>`;
-    return;
-  }
+  if (activities===null) { panel.innerHTML=`<div class="error-state">Could not load activities.</div>`; return; }
+  if (!activities.length) { panel.innerHTML=`<div class="empty-state">No activity records.</div>`; return; }
 
-  // Build pulse bar — chronological left-to-right (oldest/create on left, newest on right)
-  // DataCite returns newest-first, so reverse for the bar
-  const n          = activities.length;
-  const chronoActs = [...activities].reverse();
-  const pulse = chronoActs.map((a, i) => {
-    const action  = (a.attributes?.action ?? '').toLowerCase();
-    const color   = actionColor(action);
-    // Height grows left-to-right: tallest bar is the most recent (rightmost)
-    const height  = Math.max(8, Math.round(28 * (i + 1) / n));
-    const ts      = a.attributes?.createdAt ?? a.attributes?.updatedAt ?? '';
-    const label   = ts ? `${action} · ${fmtDate(ts)}` : action;
-    return `<div class="pulse-seg" style="height:${height}px;background:${color};opacity:0.8" title="${label}"></div>`;
+  const n = activities.length;
+  const chrono = [...activities].reverse();
+
+  const pulse = chrono.map((a,i)=>{
+    const action = (a.attributes?.action??'').toLowerCase();
+    const color  = actionColor(action);
+    const h = Math.max(6, Math.round(32*(i+1)/n));
+    const ts = a.attributes?.['prov:generatedAtTime'] ?? '';
+    return `<div class="pulse-seg" style="height:${h}px;background:${color}" title="${escAttr(action+(ts?' · '+fmtDate(ts):''))}"></div>`;
   }).join('');
 
-  const timelineItems = activities.map((a, i) => {
-    const attrs    = a.attributes ?? {};
-    const action   = attrs.action ?? 'update';
-    const ts       = attrs['prov:generatedAtTime'] ?? attrs.createdAt ?? attrs.updatedAt ?? '';
-    const version  = attrs.version ?? '';
+  const rows = activities.map((a,i)=>{
+    const attrs  = a.attributes ?? {};
+    const action = attrs.action ?? 'update';
+    const ts     = attrs['prov:generatedAtTime'] ?? attrs.createdAt ?? '';
+    const version = attrs.version ?? '';
+    const dotColor = actionColor(action);
     const changesHtml = renderChangesDiff(attrs.changes, action);
-    const dotClass = `act-${action.toLowerCase().replace(/[^a-z]/g,'') || 'other'}`;
-    const isLast   = i === activities.length - 1;
-
-    return `
-      <div class="timeline-item">
-        <div class="tl-date">${ts ? fmtDateLong(ts) : '—'}</div>
-        <div class="tl-dot-col">
-          <div class="tl-dot ${dotClass}"></div>
-          ${!isLast ? '<div class="tl-line"></div>' : ''}
-        </div>
-        <div class="tl-content">
-          <div class="tl-action" style="color:${actionColor(action)}">${capitalise(action)}${version ? ` <span class="tl-version">v${version}</span>` : ''}</div>
-          ${changesHtml}
-        </div>
-      </div>`;
+    return `<tr>
+      <td class="tl-col-date">${ts?fmtDate(ts):'—'}</td>
+      <td class="tl-col-dot"><div class="tl-dot-wrap"><div class="tl-dot" style="background:${dotColor}"></div></div></td>
+      <td class="tl-col-action">
+        <div class="act-label" style="color:${dotColor}">${escHtml(capitalise(action))}</div>
+        ${version?`<div class="act-v">v${version}</div>`:''}
+      </td>
+      <td class="tl-col-changes">${changesHtml}</td>
+    </tr>`;
   }).join('');
 
   panel.innerHTML = `
-    <h4>Activity Log · ${n} event${n !== 1 ? 's' : ''}</h4>
+    <div class="act-header">
+      Activity · ${n} event${n!==1?'s':''}
+      <a href="https://api.datacite.org/dois/${encodeURIComponent(doiId)}/activities" target="_blank">raw JSON ↗</a>
+    </div>
     <div class="pulse-bar">${pulse}</div>
-    <div class="timeline">${timelineItems}</div>
-    <div style="margin-top:0.8rem">
-      <a href="https://api.datacite.org/dois/${encodeURIComponent(doiId)}/activities"
-         target="_blank"
-         style="font-family:var(--mono);font-size:0.68rem;color:var(--blue);text-decoration:none">
-        View raw activity JSON ↗
-      </a>
-    </div>`;
+    <table class="tl-table"><tbody>${rows}</tbody></table>`;
 }
 
-// ═══════════════════════════════════════════════════════
-//  HELPERS
-// ═══════════════════════════════════════════════════════
+// ── Action color ─────────────────────────────────────
 function actionColor(action) {
-  const a = action.toLowerCase();
-  if (a.includes('create'))  return 'var(--green)';
-  if (a.includes('publish')) return 'var(--gold)';
-  if (a.includes('update'))  return 'var(--blue)';
-  if (a.includes('hide'))    return 'var(--muted)';
-  if (a.includes('register'))return '#7B5EA7';
-  return 'var(--muted)';
+  const a = (action??'').toLowerCase();
+  if (a.includes('create'))   return '#16a34a';
+  if (a.includes('publish'))  return '#d97706';
+  if (a.includes('update'))   return '#2563eb';
+  if (a.includes('hide'))     return '#6b7280';
+  if (a.includes('register')) return '#7c3aed';
+  return '#9ca3af';
 }
 
-// ─── Friendly field name map ─────────────────────────────
+// ── Field labels ─────────────────────────────────────
 const FIELD_LABELS = {
-  url: 'URL', doi: 'DOI', titles: 'Titles', creators: 'Creators',
-  contributors: 'Contributors', descriptions: 'Descriptions',
-  subjects: 'Subjects', dates: 'Dates', types: 'Types',
-  rights_list: 'Rights / Licenses', related_identifiers: 'Related Identifiers',
-  funding_references: 'Funding', geo_locations: 'Geo Locations',
-  publisher: 'Publisher', publication_year: 'Publication Year',
-  language: 'Language', schema_version: 'Schema Version',
-  sizes: 'Sizes', formats: 'Formats', version_info: 'Version',
-  identifiers: 'Identifiers', related_items: 'Related Items',
-  aasm_state: 'State', source: 'Source'
+  url:'URL', doi:'DOI', titles:'Titles', creators:'Creators',
+  contributors:'Contributors', descriptions:'Descriptions', subjects:'Subjects',
+  dates:'Dates', types:'Types', rights_list:'Rights / Licenses',
+  related_identifiers:'Related IDs', funding_references:'Funding',
+  geo_locations:'Geo Locations', publisher:'Publisher',
+  publication_year:'Pub. Year', language:'Language',
+  schema_version:'Schema', sizes:'Sizes', formats:'Formats',
+  version_info:'Version', identifiers:'Identifiers', related_items:'Related Items'
 };
+function fieldLabel(k) { return FIELD_LABELS[k]??k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
 
-function fieldLabel(key) {
-  return FIELD_LABELS[key] ?? key.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
-}
-
-// Summarise a value into a short readable string
 function summariseValue(val) {
-  if (val === null || val === undefined) return '—';
-  if (typeof val === 'string') return val.length > 120 ? val.slice(0, 120) + '…' : val;
-  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
-  if (Array.isArray(val)) {
-    if (!val.length) return '(empty)';
-    return val.map(v => summariseValue(v)).join(', ').slice(0, 200);
-  }
-  if (typeof val === 'object') {
-    // Pick the most meaningful key to surface
-    const pick = val.title ?? val.name ?? val.rights ?? val.relatedIdentifier
-               ?? val.dateType ?? val.resourceTypeGeneral ?? val.resourceType
-               ?? val.rightsIdentifier ?? val.relationType ?? null;
+  if (val===null||val===undefined) return '—';
+  if (typeof val==='string') return val.length>120?val.slice(0,120)+'…':val;
+  if (typeof val==='number'||typeof val==='boolean') return String(val);
+  if (Array.isArray(val)) { if(!val.length) return '(empty)'; return val.map(summariseValue).join(', ').slice(0,200); }
+  if (typeof val==='object') {
+    const pick = val.title??val.name??val.rights??val.relatedIdentifier
+               ??val.dateType??val.resourceTypeGeneral??val.resourceType
+               ??val.rightsIdentifier??val.relationType??null;
     if (pick) return summariseValue(pick);
-    return JSON.stringify(val).slice(0, 120);
+    return JSON.stringify(val).slice(0,120);
   }
   return String(val);
 }
 
-// Render a [before, after] pair for a field
-function renderDiffPair(field, before, after) {
-  const bStr = summariseValue(before);
-  const aStr = summariseValue(after);
-  if (bStr === aStr) return ''; // no visible change
-  return `
-    <div class="diff-row">
-      <span class="diff-field">${escHtml(fieldLabel(field))}</span>
-      <div class="diff-values">
-        <span class="diff-before" title="${escAttr(bStr)}">${escHtml(bStr)}</span>
-        <span class="diff-arrow">→</span>
-        <span class="diff-after" title="${escAttr(aStr)}">${escHtml(aStr)}</span>
-      </div>
-    </div>`;
-}
-
-// Render a field that was only set (create event — no before)
-function renderCreateField(field, val) {
-  const aStr = summariseValue(val);
-  if (!aStr || aStr === '—' || aStr === '(empty)') return '';
-  return `
-    <div class="diff-row">
-      <span class="diff-field">${escHtml(fieldLabel(field))}</span>
-      <div class="diff-values">
-        <span class="diff-after" title="${escAttr(aStr)}">${escHtml(aStr)}</span>
-      </div>
-    </div>`;
-}
-
-// Main entry: render the full changes block as before/after rows
 function renderChangesDiff(changes, action) {
-  if (!changes || typeof changes !== 'object') return '';
-
-  const isCreate = (action ?? '').toLowerCase().includes('create');
+  if (!changes||typeof changes!=='object') return '';
+  const isCreate = (action??'').toLowerCase().includes('create');
+  const SKIP = new Set(['regenerate','only_validate','should_validate','aasm_state','content_url','landing_page','container','reason','source']);
   const rows = [];
-
-  // Skip internal/noisy fields
-  const SKIP = new Set(['regenerate','only_validate','should_validate','aasm_state',
-                        'content_url','landing_page','container','reason','source']);
-
   for (const [field, val] of Object.entries(changes)) {
     if (SKIP.has(field)) continue;
-
+    const label = escHtml(fieldLabel(field));
     if (isCreate) {
-      // Create: val is the initial value, no before/after
-      rows.push(renderCreateField(field, val));
+      const s = summariseValue(val);
+      if (!s||s==='—'||s==='(empty)') continue;
+      rows.push(`<div class="diff-row"><span class="diff-field">${label}</span><div class="diff-values"><span class="diff-new" title="${escAttr(s)}">${escHtml(s)}</span></div></div>`);
+    } else if (Array.isArray(val)&&val.length===2) {
+      const b = summariseValue(val[0]), a2 = summariseValue(val[1]);
+      if (b===a2) continue;
+      rows.push(`<div class="diff-row"><span class="diff-field">${label}</span><div class="diff-values"><span class="diff-before" title="${escAttr(b)}">${escHtml(b)}</span><span class="diff-arrow">→</span><span class="diff-after" title="${escAttr(a2)}">${escHtml(a2)}</span></div></div>`);
     } else {
-      // Update: arrays of length 2 are [before, after]
-      // Some fields like dates/related_identifiers use [[...],[...]] (arrays of items before/after)
-      if (Array.isArray(val) && val.length === 2) {
-        rows.push(renderDiffPair(field, val[0], val[1]));
-      } else {
-        // Unexpected shape — just show current value
-        rows.push(renderCreateField(field, val));
-      }
+      const s = summariseValue(val);
+      if (!s||s==='—') continue;
+      rows.push(`<div class="diff-row"><span class="diff-field">${label}</span><div class="diff-values"><span class="diff-new" title="${escAttr(s)}">${escHtml(s)}</span></div></div>`);
     }
   }
-
-  const filtered = rows.filter(Boolean);
-  if (!filtered.length) return '';
-  return `<div class="diff-block">${filtered.join('')}</div>`;
+  if (!rows.length) return '';
+  return `<div class="diff-block">${rows.join('')}</div>`;
 }
 
+// ── Helpers ───────────────────────────────────────────
 function fmtDate(iso) {
-  try {
-    return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
-  } catch { return iso; }
+  try { return new Date(iso).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}); }
+  catch { return iso; }
 }
-function fmtDateLong(iso) {
-  try {
-    return new Date(iso).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
-  } catch { return iso; }
-}
-function capitalise(s) { return s ? s[0].toUpperCase() + s.slice(1) : s; }
-function sanitizeId(s) { return s.replace(/[^a-zA-Z0-9-_]/g, '-'); }
-function escHtml(s) {
-  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function capitalise(s) { return s?s[0].toUpperCase()+s.slice(1):s; }
+function sanitizeId(s) { return s.replace(/[^a-zA-Z0-9-_]/g,'-'); }
+function escHtml(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function escAttr(s) { return escHtml(s); }
 
-// ═══════════════════════════════════════════════════════
-//  PAGINATION
-// ═══════════════════════════════════════════════════════
+// ── Pagination ────────────────────────────────────────
 function renderPagination(pages) {
   const pag = document.getElementById('pagination');
-  if (pages <= 1) { pag.innerHTML = ''; return; }
-
-  let html = `<button class="page-btn" id="prev-btn" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>`;
-  for (let p = 1; p <= pages; p++) {
-    html += `<button class="page-btn ${p === currentPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
-  }
-  html += `<button class="page-btn" id="next-btn" ${currentPage === pages ? 'disabled' : ''}>Next →</button>`;
+  if (pages<=1) { pag.innerHTML=''; return; }
+  let html = `<button class="page-btn" id="prev-btn"${currentPage===1?' disabled':''}>← prev</button>`;
+  for (let p=1;p<=pages;p++) html+=`<button class="page-btn${p===currentPage?' active':''}" data-page="${p}">${p}</button>`;
+  html += `<button class="page-btn" id="next-btn"${currentPage===pages?' disabled':''}>next →</button>`;
   pag.innerHTML = html;
-
-  pag.querySelector('#prev-btn')?.addEventListener('click', () => { currentPage--; renderPage(); window.scrollTo(0,0); });
-  pag.querySelector('#next-btn')?.addEventListener('click', () => { currentPage++; renderPage(); window.scrollTo(0,0); });
-  pag.querySelectorAll('[data-page]').forEach(btn => {
-    btn.addEventListener('click', () => { currentPage = Number(btn.dataset.page); renderPage(); window.scrollTo(0,0); });
-  });
+  pag.querySelector('#prev-btn')?.addEventListener('click',()=>{currentPage--;renderPage();window.scrollTo(0,0);});
+  pag.querySelector('#next-btn')?.addEventListener('click',()=>{currentPage++;renderPage();window.scrollTo(0,0);});
+  pag.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>{currentPage=Number(b.dataset.page);renderPage();window.scrollTo(0,0);}));
 }
 
-// ═══════════════════════════════════════════════════════
-//  SORT BUTTONS
-// ═══════════════════════════════════════════════════════
-['sort-updated','sort-year','sort-title'].forEach(id => {
-  document.getElementById(id).addEventListener('click', () => {
-    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+// ── Sort buttons ──────────────────────────────────────
+['sort-updated','sort-year','sort-title'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',()=>{
+    document.querySelectorAll('.sort-opt').forEach(b=>b.classList.remove('active'));
     document.getElementById(id).classList.add('active');
-    sortKey = id.replace('sort-','');
+    sortKey=id.replace('sort-','');
     applyFiltersAndRender();
   });
 });
 
-// ═══════════════════════════════════════════════════════
-//  SEARCH + FILTERS
-// ═══════════════════════════════════════════════════════
 let searchTimer;
-document.getElementById('search-input').addEventListener('input', () => {
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(applyFiltersAndRender, 280);
-});
-document.getElementById('type-filter').addEventListener('change', applyFiltersAndRender);
-document.getElementById('year-filter').addEventListener('change', applyFiltersAndRender);
+document.getElementById('search-input').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(applyFiltersAndRender,280);});
+document.getElementById('type-filter').addEventListener('change',applyFiltersAndRender);
+document.getElementById('year-filter').addEventListener('change',applyFiltersAndRender);
 
-// ═══════════════════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════════════════
-(async () => {
+(async()=>{
   try {
     allDOIs = await fetchAllDOIs();
     populateFilters(allDOIs);
     updateStats(allDOIs);
     applyFiltersAndRender();
-  } catch (err) {
-    document.getElementById('doi-container').innerHTML =
-      `<div class="error-state">Failed to load DOIs from DataCite API.<br><small>${escHtml(err.message)}</small></div>`;
-    document.getElementById('list-meta').textContent = 'Error';
+  } catch(err) {
+    document.getElementById('doi-container').innerHTML=`<div class="error-state">Failed to load: ${escHtml(err.message)}</div>`;
+    document.getElementById('list-meta').textContent='Error';
   }
 })();
 </script>
