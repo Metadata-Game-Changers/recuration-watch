@@ -421,6 +421,65 @@
     }
     .error-state { color: var(--red); }
 
+
+    /* ─── Before/After diff ────────────────────────────── */
+    .diff-block {
+      margin-top: 0.55rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+    .diff-row {
+      display: grid;
+      grid-template-columns: 130px 1fr;
+      gap: 0.4rem;
+      align-items: start;
+      font-family: var(--mono);
+      font-size: 0.67rem;
+      line-height: 1.4;
+    }
+    .diff-field {
+      color: var(--muted);
+      font-size: 0.63rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding-top: 0.1rem;
+    }
+    .diff-values {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+    .diff-before {
+      background: rgba(176,80,64,0.1);
+      color: #8B3020;
+      border-radius: 2px;
+      padding: 0.1rem 0.4rem;
+      text-decoration: line-through;
+      max-width: 260px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: inline-block;
+    }
+    .diff-arrow {
+      color: var(--muted);
+      font-size: 0.6rem;
+      flex-shrink: 0;
+    }
+    .diff-after {
+      background: rgba(58,125,94,0.1);
+      color: #1F5E3A;
+      border-radius: 2px;
+      padding: 0.1rem 0.4rem;
+      max-width: 260px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: inline-block;
+    }
+
     /* ─── Pulse summary bar (signature element) ─── */
     .pulse-bar {
       display: flex;
@@ -821,21 +880,26 @@ function renderActivities(panel, doiId, activities) {
     return;
   }
 
-  // Build pulse bar — one segment per activity, height ∝ recency
-  const n     = activities.length;
-  const pulse = activities.map((a, i) => {
+  // Build pulse bar — chronological left-to-right (oldest/create on left, newest on right)
+  // DataCite returns newest-first, so reverse for the bar
+  const n          = activities.length;
+  const chronoActs = [...activities].reverse();
+  const pulse = chronoActs.map((a, i) => {
     const action  = (a.attributes?.action ?? '').toLowerCase();
     const color   = actionColor(action);
-    const height  = Math.max(20, Math.round(28 * (i + 1) / n));
-    return `<div class="pulse-seg" style="height:${height}px;background:${color};opacity:0.75" title="${action}"></div>`;
+    // Height grows left-to-right: tallest bar is the most recent (rightmost)
+    const height  = Math.max(8, Math.round(28 * (i + 1) / n));
+    const ts      = a.attributes?.createdAt ?? a.attributes?.updatedAt ?? '';
+    const label   = ts ? `${action} · ${fmtDate(ts)}` : action;
+    return `<div class="pulse-seg" style="height:${height}px;background:${color};opacity:0.8" title="${label}"></div>`;
   }).join('');
 
   const timelineItems = activities.map((a, i) => {
     const attrs    = a.attributes ?? {};
     const action   = attrs.action ?? 'update';
-    const ts       = attrs.createdAt ?? attrs.updatedAt ?? '';
+    const ts       = attrs['prov:generatedAtTime'] ?? attrs.createdAt ?? attrs.updatedAt ?? '';
     const version  = attrs.version ?? '';
-    const changes  = collectChanges(attrs);
+    const changesHtml = renderChangesDiff(attrs.changes, action);
     const dotClass = `act-${action.toLowerCase().replace(/[^a-z]/g,'') || 'other'}`;
     const isLast   = i === activities.length - 1;
 
@@ -847,12 +911,8 @@ function renderActivities(panel, doiId, activities) {
           ${!isLast ? '<div class="tl-line"></div>' : ''}
         </div>
         <div class="tl-content">
-          <div class="tl-action" style="color:${actionColor(action)}">${capitalise(action)}</div>
-          ${version ? `<div class="tl-version">schema v${version}</div>` : ''}
-          ${changes.length ? `
-            <div class="tl-changes">
-              ${changes.map(c => `<span class="change-chip">${escHtml(c)}</span>`).join('')}
-            </div>` : ''}
+          <div class="tl-action" style="color:${actionColor(action)}">${capitalise(action)}${version ? ` <span class="tl-version">v${version}</span>` : ''}</div>
+          ${changesHtml}
         </div>
       </div>`;
   }).join('');
@@ -883,13 +943,105 @@ function actionColor(action) {
   return 'var(--muted)';
 }
 
-function collectChanges(attrs) {
-  // DataCite activities may include a "changes" or diff field
-  const raw = attrs.changes ?? attrs.patchJson ?? null;
-  if (!raw) return [];
-  if (Array.isArray(raw)) return raw.slice(0, 8).map(c => String(c));
-  if (typeof raw === 'object') return Object.keys(raw).slice(0, 8);
-  return [];
+// ─── Friendly field name map ─────────────────────────────
+const FIELD_LABELS = {
+  url: 'URL', doi: 'DOI', titles: 'Titles', creators: 'Creators',
+  contributors: 'Contributors', descriptions: 'Descriptions',
+  subjects: 'Subjects', dates: 'Dates', types: 'Types',
+  rights_list: 'Rights / Licenses', related_identifiers: 'Related Identifiers',
+  funding_references: 'Funding', geo_locations: 'Geo Locations',
+  publisher: 'Publisher', publication_year: 'Publication Year',
+  language: 'Language', schema_version: 'Schema Version',
+  sizes: 'Sizes', formats: 'Formats', version_info: 'Version',
+  identifiers: 'Identifiers', related_items: 'Related Items',
+  aasm_state: 'State', source: 'Source'
+};
+
+function fieldLabel(key) {
+  return FIELD_LABELS[key] ?? key.replace(/_/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+}
+
+// Summarise a value into a short readable string
+function summariseValue(val) {
+  if (val === null || val === undefined) return '—';
+  if (typeof val === 'string') return val.length > 120 ? val.slice(0, 120) + '…' : val;
+  if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+  if (Array.isArray(val)) {
+    if (!val.length) return '(empty)';
+    return val.map(v => summariseValue(v)).join(', ').slice(0, 200);
+  }
+  if (typeof val === 'object') {
+    // Pick the most meaningful key to surface
+    const pick = val.title ?? val.name ?? val.rights ?? val.relatedIdentifier
+               ?? val.dateType ?? val.resourceTypeGeneral ?? val.resourceType
+               ?? val.rightsIdentifier ?? val.relationType ?? null;
+    if (pick) return summariseValue(pick);
+    return JSON.stringify(val).slice(0, 120);
+  }
+  return String(val);
+}
+
+// Render a [before, after] pair for a field
+function renderDiffPair(field, before, after) {
+  const bStr = summariseValue(before);
+  const aStr = summariseValue(after);
+  if (bStr === aStr) return ''; // no visible change
+  return `
+    <div class="diff-row">
+      <span class="diff-field">${escHtml(fieldLabel(field))}</span>
+      <div class="diff-values">
+        <span class="diff-before" title="${escAttr(bStr)}">${escHtml(bStr)}</span>
+        <span class="diff-arrow">→</span>
+        <span class="diff-after" title="${escAttr(aStr)}">${escHtml(aStr)}</span>
+      </div>
+    </div>`;
+}
+
+// Render a field that was only set (create event — no before)
+function renderCreateField(field, val) {
+  const aStr = summariseValue(val);
+  if (!aStr || aStr === '—' || aStr === '(empty)') return '';
+  return `
+    <div class="diff-row">
+      <span class="diff-field">${escHtml(fieldLabel(field))}</span>
+      <div class="diff-values">
+        <span class="diff-after" title="${escAttr(aStr)}">${escHtml(aStr)}</span>
+      </div>
+    </div>`;
+}
+
+// Main entry: render the full changes block as before/after rows
+function renderChangesDiff(changes, action) {
+  if (!changes || typeof changes !== 'object') return '';
+
+  const isCreate = (action ?? '').toLowerCase().includes('create');
+  const rows = [];
+
+  // Skip internal/noisy fields
+  const SKIP = new Set(['regenerate','only_validate','should_validate','aasm_state',
+                        'content_url','landing_page','container','reason','source']);
+
+  for (const [field, val] of Object.entries(changes)) {
+    if (SKIP.has(field)) continue;
+
+    if (isCreate) {
+      // Create: val is the initial value, no before/after
+      rows.push(renderCreateField(field, val));
+    } else {
+      // Update: arrays of length 2 are [before, after]
+      // Some fields like dates/related_identifiers use [[...],[...]] (arrays of items before/after)
+      if (Array.isArray(val) && val.length === 2) {
+        rows.push(renderDiffPair(field, val[0], val[1]));
+      } else {
+        // Unexpected shape — just show current value
+        rows.push(renderCreateField(field, val));
+      }
+    }
+  }
+
+  const filtered = rows.filter(Boolean);
+  if (!filtered.length) return '';
+  return `<div class="diff-block">${filtered.join('')}</div>`;
 }
 
 function fmtDate(iso) {
