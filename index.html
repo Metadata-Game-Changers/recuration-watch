@@ -474,6 +474,23 @@
       justify-content: center;
       gap: 0.2rem;
     }
+    .repo-label {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--faint);
+    }
+    .repo-below {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .repo-below a {
+      font-size: 0.65rem;
+      color: var(--blue);
+      text-decoration: none;
+    }
+    .repo-below a:hover { text-decoration: underline; }
 
     /* ── Repo switcher ───────────────────────────── */
     .repo-form {
@@ -593,11 +610,15 @@
       <span class="brand-sub" id="brand-sub" style="display:none">—</span>
     </div>
     <div class="topbar-repo">
+      <span class="repo-label">Repository ID</span>
       <div class="repo-form">
-        <input class="repo-input" id="repo-input" type="text" placeholder="client id, e.g. cern.zenodo" spellcheck="false" autocomplete="off" />
+        <input class="repo-input" id="repo-input" type="text" placeholder="e.g. cern.zenodo" spellcheck="false" autocomplete="off" />
         <button class="repo-go" id="repo-go">load →</button>
       </div>
-      <span class="repo-error" id="repo-error">not found</span>
+      <div class="repo-below">
+        <a id="commons-link-repo" href="https://commons.datacite.org/repositories/sjyq.oozvia" target="_blank">DataCite Commons ↗</a>
+        <span class="repo-error" id="repo-error">not found</span>
+      </div>
     </div>
     <div class="topbar-stats">
       <div class="tstat"><span class="tstat-n" id="stat-total">—</span><span class="tstat-l">Records</span></div>
@@ -605,9 +626,8 @@
       <div class="tstat"><span class="tstat-n" id="stat-recent">—</span><span class="tstat-l">Latest year</span></div>
     </div>
     <div class="topbar-links">
-      <a href="https://github.com/Metadata-Game-Changers/recuration-watch" target="_blank">GitHub ↗</a>
-      <a href="https://metadatagamechangers.com" target="_blank">MGC ↗</a>
-      <a id="commons-link" href="https://commons.datacite.org/repositories/sjyq.oozvia" target="_blank">DataCite ↗</a>
+      <a href="https://github.com/Metadata-Game-Changers/recuration-watch/blob/main/README.md" target="_blank">ReadMe ↗</a>
+      <a id="commons-link" href="https://commons.datacite.org/repositories/sjyq.oozvia" target="_blank" style="display:none"></a>
     </div>
   </div>
 </div>
@@ -964,6 +984,7 @@ function updateBranding(clientId, meta) {
   document.getElementById('brand-sub').textContent = `${clientId} · prefix ${prefix}`;
   document.title = `Re-Curation Watch · ${name}`;
   const cl = document.getElementById('commons-link');
+  const cl2 = document.getElementById('commons-link-repo'); if (cl2) cl2.href = `https://commons.datacite.org/repositories/${clientId}`;
   cl.href = `https://commons.datacite.org/repositories/${clientId}`;
   // update URL bar without reload
   const url = new URL(window.location.href);
@@ -1050,7 +1071,7 @@ document.getElementById('repo-input').addEventListener('keydown', e => {
       <a href="https://metadatagamechangers.com" target="_blank">
         <img src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" style="height:22px;width:auto;display:block;" />
       </a>
-      <span style="font-size:0.72rem;color:var(--faint);">Re-Curation Watch · Created by <a href="https://metadatagamechangers.com" target="_blank" style="color:var(--sub);text-decoration:none;font-weight:500;">Metadata Game Changers</a> · Better Documentation | Better Data | Better Science</span>
+      <span style="font-size:0.72rem;color:var(--faint);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch" target="_blank" style="color:var(--sub);text-decoration:none;font-weight:500;">Re-Curation Watch</a> · Created by <a href="https://metadatagamechangers.com" target="_blank" style="color:var(--sub);text-decoration:none;font-weight:500;">Metadata Game Changers</a> · Better Documentation | Better Data | Better Science</span>
     </div>
     <span style="font-family:var(--mono);font-size:0.65rem;color:var(--faint);">Live data from <a href="https://api.datacite.org" target="_blank" style="color:var(--blue);text-decoration:none;">api.datacite.org</a></span>
   </div>
