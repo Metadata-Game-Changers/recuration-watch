@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Metadata Game Changers
+    url: https://metadatagamechangers.com
+    about: Learn more about MGC's work on metadata quality and re-curation
+  - name: DataCite API documentation
+    url: https://support.datacite.org/docs/api
+    about: Documentation for the DataCite REST API that powers this tool
