@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Re-Curation Watch</title>
+  <link rel="icon" type="image/png" href="favicon_MGC.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -63,11 +64,7 @@
       display: block;
       flex-shrink: 0;
     }
-    .brand-title-wrap {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
+    .brand-title-wrap { display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 0.1rem; }
     .brand-tool-name {
       font-size: 1.25rem;
       font-weight: 600;
@@ -574,53 +571,6 @@
     .page-btn:disabled { opacity: 0.35; cursor: default; }
     .page-ellipsis { border-color: transparent; background: none; opacity: 0.5; padding: 0.4rem 0.4rem; }
 
-
-    /* ── Inline loading tips ─────────────────────── */
-    .load-spinner {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      border: 1.5px solid var(--blue);
-      border-top-color: transparent;
-      animation: spin 0.8s linear infinite;
-      display: inline-block;
-      vertical-align: middle;
-      margin-right: 0.35rem;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .inline-tip { padding: 2rem 0 1rem; }
-    .inline-tip-fetching {
-      font-family: var(--mono);
-      font-size: 0.68rem;
-      color: var(--faint);
-      display: flex;
-      align-items: center;
-      margin-bottom: 1.25rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-    }
-    .inline-tip-card {
-      border-left: 2px solid var(--ink);
-      padding: 0.4rem 0 0.4rem 1rem;
-      max-width: 480px;
-    }
-    .inline-tip-label {
-      font-size: 0.6rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--blue);
-      margin-bottom: 0.2rem;
-    }
-    .inline-tip-text { font-size: 0.8rem; color: var(--sub); line-height: 1.5; }
-    .inline-tip-text strong { color: var(--ink); }
-    .inline-tip-link {
-      font-family: var(--mono);
-      font-size: 0.63rem;
-      color: var(--blue);
-      text-decoration: none;
-      display: inline-block;
-      margin-top: 0.35rem;
-    }
-    .inline-tip-link:hover { text-decoration: underline; }
     .loading-state, .error-state, .empty-state {
       padding: 2.5rem 0;
       font-size: 0.8rem;
@@ -803,8 +753,8 @@
         border-right: none;
         border-bottom: 1px solid var(--rule);
       }
-      .brand-logo { height: 40px; }
-      .brand-tool-name { font-size: 0.95rem; }
+      .brand-logo { height: 32px; }
+      .brand-tool-name { font-size: 1rem; }
       .topbar-repo {
         padding: 0.6rem 0;
         border-right: none;
@@ -851,6 +801,47 @@
       /* ── Pagination ── */
       .pagination { flex-wrap: wrap; }
     }
+
+    /* ── Inline loading tips ─────────────────────── */
+    .load-spinner {
+      width: 8px; height: 8px; border-radius: 50%;
+      border: 1.5px solid var(--blue); border-top-color: transparent;
+      animation: spin 0.8s linear infinite;
+      display: inline-block; vertical-align: middle; margin-right: 0.35rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .inline-tip { padding: 2rem 0 1rem; }
+    .inline-tip-fetching {
+      font-family: var(--mono); font-size: 0.68rem; color: var(--faint);
+      display: flex; align-items: center; margin-bottom: 1.25rem;
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .inline-tip-card { border-left: 2px solid var(--ink); padding: 0.4rem 0 0.4rem 1rem; max-width: 480px; }
+    .inline-tip-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--blue); margin-bottom: 0.2rem; }
+    .inline-tip-text { font-size: 0.8rem; color: var(--sub); line-height: 1.5; }
+    .inline-tip-text strong { color: var(--ink); }
+    .inline-tip-link { font-family: var(--mono); font-size: 0.63rem; color: var(--blue); text-decoration: none; display: inline-block; margin-top: 0.35rem; }
+    .inline-tip-link:hover { text-decoration: underline; }
+
+    /* ── Hero purple ──────────────────────────────── */
+    /* (hero CSS already present — just override bg/border/button) */
+
+    /* ── Toolbar two-row ─────────────────────────── */
+    .toolbar-row {
+      max-width: 1040px; margin: 0 auto;
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.5rem 0; flex-wrap: wrap;
+    }
+    .toolbar-filters { border-bottom: 1px solid var(--rule); }
+    .toolbar-sort-row {}
+    .tb-spacer { flex: 1; }
+    .tb-reset { font-size:0.7rem; font-family:var(--sans); background:none; border:1px solid var(--rule); color:var(--faint); padding:0.28rem 0.6rem; cursor:pointer; white-space:nowrap; }
+    .tb-reset:hover { border-color:var(--red); color:var(--red); }
+    .list-meta-inline { font-size: 0.72rem; color: var(--faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .tb-check-wrap { display: flex; align-items: center; gap: 0.35rem; cursor: pointer; white-space: nowrap; }
+    .tb-check { cursor: pointer; accent-color: var(--ink); flex-shrink: 0; }
+    .tb-check-label { font-size: 0.72rem; color: var(--sub); user-select: none; }
+    .tb-check-wrap:hover .tb-check-label { color: var(--ink); }
   </style>
 </head>
 <body>
@@ -862,9 +853,7 @@
       <a href="https://metadatagamechangers.com" target="_blank">
         <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" />
       </a>
-      <div class="brand-title-wrap">
-        <div class="brand-tool-name">Re-Curation Watch</div>
-      </div>
+      <div class="brand-title-wrap"><div class="brand-tool-name">Re-Curation Watch</div></div>
       <span class="brand-name" id="brand-name" style="display:none">—</span>
       <span class="brand-sub" id="brand-sub" style="display:none">—</span>
     </div>
@@ -910,24 +899,34 @@
 
 <!-- TOOLBAR -->
 <div class="toolbar">
-  <div class="toolbar-inner">
+  <div class="toolbar-row toolbar-filters">
     <span class="tb-label">Filter</span>
     <input class="tb-input" id="search-input" type="search" placeholder="title, creator, DOI…" />
     <select class="tb-select" id="type-filter"><option value="">All types</option></select>
-    <span class="tb-label">Updated</span><select class="tb-select" id="year-filter"><option value="">All years</option></select>
-    <div class="tb-sep"></div>
+    <span class="tb-label">Updated</span>
+    <select class="tb-select" id="year-filter"><option value="">All years</option></select>
+    <span class="tb-label">Min. updates</span>
+    <select class="tb-select" id="version-filter"><option value="0">Any</option></select>
+  </div>
+  <div class="toolbar-row toolbar-sort-row">
     <span class="tb-sort-label">Sort</span>
     <div class="sort-group">
       <button class="sort-opt active" id="sort-updated">Updated</button>
       <button class="sort-opt" id="sort-year">Published</button>
       <button class="sort-opt" id="sort-title">Title</button>
     </div>
+    <label class="tb-check-wrap" style="margin-left:0.5rem;">
+      <input type="checkbox" id="recurated-only" class="tb-check" />
+      <span class="tb-check-label">Re-curated only</span>
+    </label>
+    <button class="tb-reset" id="reset-filters" title="Reset all filters">✕ Reset</button>
+    <div class="tb-spacer"></div>
+    <span class="list-meta-inline" id="list-meta">Loading…</span>
   </div>
 </div>
 
 <!-- RECORDS -->
 <div class="main">
-  <div class="list-meta" id="list-meta">Loading…</div>
   <div id="doi-container"><div class="loading-state" id="loading-tip-container"></div></div>
   <div class="pagination" id="pagination"></div>
 </div>
@@ -944,6 +943,8 @@ let currentPage = 1;
 let sortKey     = 'updated';
 let expandedDOI = null;
 let loading     = false;
+let versionMin  = 0;
+let recuratedOnly = false;
 
 async function fetchAllDOIs() {
   let results = [], cursor = 1, total = null;
@@ -978,6 +979,28 @@ function populateFilters(dois) {
   years.forEach(y => { const o=document.createElement('option'); o.value=o.textContent=y; ys.appendChild(o); });
 }
 
+function populateVersionDropdown(baseDois) {
+  const sel = document.getElementById('version-filter');
+  if (!sel) return;
+  const prev = sel.value;
+  // Build sorted unique versions in this set
+  const vCounts = {};
+  baseDois.forEach(d => {
+    const v = d.attributes?.metadataVersion ?? 1;
+    for (let i = 1; i <= v; i++) vCounts[i] = (vCounts[i]||0) + 1;
+  });
+  const versions = Object.keys(vCounts).map(Number).sort((a,b)=>a-b).filter(v=>v>1);
+  sel.innerHTML = '<option value="0">Any</option>';
+  versions.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v + '+ (' + (vCounts[v]||0) + ')';
+    sel.appendChild(opt);
+  });
+  if (prev && sel.querySelector('option[value="'+prev+'"]')) sel.value = prev;
+  else sel.value = '0';
+}
+
 function updateStats(dois) {
   document.getElementById('stat-total').textContent = dois.length;
   document.getElementById('stat-types').textContent = new Set(dois.map(d=>d.attributes?.types?.resourceTypeGeneral).filter(Boolean)).size;
@@ -988,25 +1011,43 @@ function updateStats(dois) {
 
 function syncFiltersToURL() {
   const url = new URL(window.location.href);
-  const q    = document.getElementById('search-input').value.trim();
-  const type = document.getElementById('type-filter').value;
-  const year = document.getElementById('year-filter').value;
-  if (q)    url.searchParams.set('q', q);    else url.searchParams.delete('q');
-  if (type) url.searchParams.set('type', type); else url.searchParams.delete('type');
-  if (year) url.searchParams.set('year', year); else url.searchParams.delete('year');
+  const q       = document.getElementById('search-input').value.trim();
+  const type    = document.getElementById('type-filter').value;
+  const year    = document.getElementById('year-filter').value;
+  const version = document.getElementById('version-filter')?.value || '0';
+  const recur   = document.getElementById('recurated-only')?.checked ? '1' : '';
+  const sort    = sortKey;
+  if (q)           url.searchParams.set('q', q);           else url.searchParams.delete('q');
+  if (type)        url.searchParams.set('type', type);     else url.searchParams.delete('type');
+  if (year)        url.searchParams.set('year', year);     else url.searchParams.delete('year');
+  if (version!=='0') url.searchParams.set('version', version); else url.searchParams.delete('version');
+  if (recur)       url.searchParams.set('recur', '1');     else url.searchParams.delete('recur');
+  if (sort && sort!=='updated') url.searchParams.set('sort', sort); else url.searchParams.delete('sort');
   if (currentPage > 1) url.searchParams.set('page', currentPage); else url.searchParams.delete('page');
   window.history.replaceState({}, '', url);
 }
 
 function applyFiltersFromURL() {
   const params = new URLSearchParams(window.location.search);
-  const q    = params.get('q') || '';
-  const type = params.get('type') || '';
-  const year = params.get('year') || '';
-  const page = parseInt(params.get('page') || '1', 10);
+  const q       = params.get('q') || '';
+  const type    = params.get('type') || '';
+  const year    = params.get('year') || '';
+  const version = params.get('version') || '0';
+  const recur   = params.get('recur') === '1';
+  const sort    = params.get('sort') || 'updated';
+  const page    = parseInt(params.get('page') || '1', 10);
   if (q)    document.getElementById('search-input').value = q;
   if (type) document.getElementById('type-filter').value  = type;
   if (year) document.getElementById('year-filter').value  = year;
+  // version-filter options built after data loads — store for later
+  window._urlVersion = version;
+  const ro = document.getElementById('recurated-only'); if (ro) ro.checked = recur;
+  // restore sort
+  if (sort !== 'updated') {
+    sortKey = sort;
+    document.querySelectorAll('.sort-opt').forEach(b => b.classList.remove('active'));
+    const sb = document.getElementById('sort-' + sort); if (sb) sb.classList.add('active');
+  }
   if (page > 1) currentPage = page;
 }
 
@@ -1014,14 +1055,44 @@ function applyFiltersAndRender() {
   const q    = document.getElementById('search-input').value.toLowerCase();
   const type = document.getElementById('type-filter').value;
   const year = document.getElementById('year-filter').value;
+  versionMin    = parseInt(document.getElementById('version-filter')?.value||'0',10)||0;
+  recuratedOnly = document.getElementById('recurated-only')?.checked||false;
+
+  // Base set (no version filter) for facet-aware dropdown
+  const baseDois = allDOIs.filter(d => {
+    const a = d.attributes ?? {};
+    const title = a.titles?.[0]?.title ?? '';
+    const creators = (a.creators??[]).map(cr=>cr.name).join(' ');
+    const doi = d.id ?? '';
+    const recur = a.created && a.updated && (new Date(a.updated)-new Date(a.created))>86400000;
+    return (!q||[title,creators,doi].join(' ').toLowerCase().includes(q))
+        && (!type||a.types?.resourceTypeGeneral===type)
+        && (!year||(a.updated?String(new Date(a.updated).getFullYear())===year:false))
+        && (!recuratedOnly||recur);
+  });
+  populateVersionDropdown(baseDois);
+  // Restore version from URL on first load
+  if (window._urlVersion && window._urlVersion !== '0') {
+    const vf = document.getElementById('version-filter');
+    if (vf && vf.querySelector('option[value="'+window._urlVersion+'"]')) {
+      vf.value = window._urlVersion;
+      versionMin = parseInt(window._urlVersion, 10) || 0;
+    }
+    window._urlVersion = null;
+  }
+
   filtered = allDOIs.filter(d => {
     const a = d.attributes ?? {};
     const title = a.titles?.[0]?.title ?? '';
-    const creators = (a.creators??[]).map(c=>c.name).join(' ');
+    const creators = (a.creators??[]).map(cr=>cr.name).join(' ');
     const doi = d.id ?? '';
+    const ver = a.metadataVersion ?? 1;
+    const recur = a.created && a.updated && (new Date(a.updated)-new Date(a.created))>86400000;
     return (!q||[title,creators,doi].join(' ').toLowerCase().includes(q))
         && (!type||a.types?.resourceTypeGeneral===type)
-        && (!year||(a.updated ? String(new Date(a.updated).getFullYear())===year : false));
+        && (!year||(a.updated?String(new Date(a.updated).getFullYear())===year:false))
+        && (!recuratedOnly||recur)
+        && (versionMin===0||ver>=versionMin);
   });
   filtered.sort((a,b)=>{
     if (sortKey==='updated') return new Date(b.attributes?.updated??0)-new Date(a.attributes?.updated??0);
@@ -1271,6 +1342,21 @@ function renderPagination(pages) {
 }
 
 // ── Sort buttons ──────────────────────────────────────
+document.getElementById('reset-filters').addEventListener('click', () => {
+  if (loading) return;
+  document.getElementById('search-input').value = '';
+  document.getElementById('type-filter').value  = '';
+  document.getElementById('year-filter').value  = '';
+  const vf = document.getElementById('version-filter'); if(vf){vf.value='0';}
+  const ro = document.getElementById('recurated-only'); if(ro) ro.checked=false;
+  // reset sort to updated
+  sortKey = 'updated';
+  document.querySelectorAll('.sort-opt').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sort-updated').classList.add('active');
+  versionMin=0; recuratedOnly=false; currentPage=1;
+  applyFiltersAndRender();
+});
+
 ['sort-updated','sort-year','sort-title'].forEach(id=>{
   document.getElementById(id).addEventListener('click',()=>{
     document.querySelectorAll('.sort-opt').forEach(b=>b.classList.remove('active'));
@@ -1285,6 +1371,8 @@ let searchTimer;
 document.getElementById('search-input').addEventListener('input',()=>{if(loading)return;clearTimeout(searchTimer);searchTimer=setTimeout(()=>{currentPage=1;applyFiltersAndRender();},280);});
 document.getElementById('type-filter').addEventListener('change',()=>{if(loading)return;currentPage=1;applyFiltersAndRender();});
 document.getElementById('year-filter').addEventListener('change',()=>{if(loading)return;currentPage=1;applyFiltersAndRender();});
+document.getElementById('version-filter').addEventListener('change',()=>{if(loading)return;currentPage=1;applyFiltersAndRender();});
+document.getElementById('recurated-only').addEventListener('change',()=>{if(loading)return;currentPage=1;applyFiltersAndRender();});
 
 // ── Repo metadata lookup ─────────────────────────────
 async function fetchClientMeta(clientId) {
@@ -1325,6 +1413,9 @@ function resetFilters() {
   const yf = document.getElementById('year-filter');
   tf.innerHTML = '<option value="">All types</option>';
   yf.innerHTML = '<option value="">All years</option>';
+  const vf2 = document.getElementById('version-filter'); if(vf2){vf2.innerHTML='<option value="0">Any</option>';vf2.value='0';}
+  const ro = document.getElementById('recurated-only'); if(ro) ro.checked=false;
+  versionMin=0; recuratedOnly=false;
   const url = new URL(window.location.href);
   url.searchParams.delete('q');
   url.searchParams.delete('type');
@@ -1346,7 +1437,7 @@ async function loadRepository(clientId) {
   setTimeout(startLoadingTips, 2000);
   const strip = document.getElementById('repo-stats-strip');
   if (strip) strip.style.display = 'none';
-  document.getElementById('list-meta').textContent = 'Loading…';
+  const lml=document.getElementById('list-meta'); if(lml) lml.textContent='Loading…';
   document.getElementById('stat-total').textContent = '—';
   document.getElementById('stat-types').textContent = '—';
   document.getElementById('stat-recent').textContent = '—';
@@ -1361,7 +1452,7 @@ async function loadRepository(clientId) {
       document.getElementById('repo-error').textContent = 'client not found';
       document.getElementById('repo-error').classList.add('show');
       document.getElementById('doi-container').innerHTML = '<div class="empty-state">No records found for that client ID.</div>';
-      document.getElementById('list-meta').textContent = '0 records';
+      const lmz=document.getElementById('list-meta'); if(lmz) lmz.textContent='0 records';
       return;
     }
     allDOIs = dois;
@@ -1379,7 +1470,7 @@ async function loadRepository(clientId) {
     document.getElementById('doi-container').innerHTML = `<div class="error-state">Failed to load: ${escHtml(err.message)}</div>`;
     stopLoadingTips();
     loading = false;
-    document.getElementById('list-meta').textContent = 'Error';
+    const lme=document.getElementById('list-meta'); if(lme) lme.textContent='Error';
   }
 }
 
@@ -1493,24 +1584,14 @@ const RCW_TIPS = [
   { label: 'MGC Mission', text: '<strong>Better documentation</strong> leads to better data discovery, reuse, and research integrity.', link: 'https://metadatagamechangers.com' },
   { label: 'Connectivity', text: '<strong>Identifiers connect research.</strong> ORCIDs for people, RORs for organizations, DOIs for outputs — together they make the global research graph possible.', link: 'https://metadatagamechangers.com/blog' },
 ];
-
 let tipIndex = 0, tipRotateTimer = null;
-
 function startLoadingTips() {
   clearInterval(tipRotateTimer);
   tipIndex = Math.floor(Math.random() * RCW_TIPS.length);
   renderInlineTip();
-  tipRotateTimer = setInterval(() => {
-    tipIndex = (tipIndex + 1) % RCW_TIPS.length;
-    renderInlineTip();
-  }, 4000);
+  tipRotateTimer = setInterval(() => { tipIndex=(tipIndex+1)%RCW_TIPS.length; renderInlineTip(); }, 4000);
 }
-
-function stopLoadingTips() {
-  clearInterval(tipRotateTimer);
-  tipRotateTimer = null;
-}
-
+function stopLoadingTips() { clearInterval(tipRotateTimer); tipRotateTimer=null; }
 function renderInlineTip() {
   const container = document.getElementById('loading-tip-container');
   if (!container) return;
@@ -1519,9 +1600,9 @@ function renderInlineTip() {
     '<div class="inline-tip">' +
     '<div class="inline-tip-fetching"><span class="load-spinner"></span>Re-Curation tips while you wait…</div>' +
     '<div class="inline-tip-card">' +
-    '<div class="inline-tip-label">' + tip.label + '</div>' +
-    '<div class="inline-tip-text">' + tip.text + '</div>' +
-    '<a class="inline-tip-link" href="' + tip.link + '" target="_blank">Learn more at Metadata Game Changers ↗</a>' +
+    '<div class="inline-tip-label">'+tip.label+'</div>' +
+    '<div class="inline-tip-text">'+tip.text+'</div>' +
+    '<a class="inline-tip-link" href="'+tip.link+'" target="_blank">Learn more at Metadata Game Changers ↗</a>' +
     '</div></div>';
 }
 
@@ -1568,6 +1649,41 @@ function renderInlineTip() {
   });
   document.getElementById('cookie-decline').addEventListener('click', function() {
     localStorage.setItem('rcw-analytics', 'declined');
+    window['ga-disable-G-9JQRWY72HW'] = true;
+    document.getElementById('cookie-banner').classList.add('hidden');
+  });
+})();
+</script>
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9JQRWY72HW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9JQRWY72HW');
+</script>
+
+<!-- COOKIE BANNER -->
+<div class="cookie-banner" id="cookie-banner">
+  <span>This site uses Google Analytics to understand how Re-Curation Watch is used. No personal data is collected beyond standard anonymized usage statistics. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy ↗</a></span>
+  <div class="cookie-banner-btns">
+    <button class="cookie-btn cookie-btn-accept" id="cookie-accept">OK</button>
+    <button class="cookie-btn cookie-btn-decline" id="cookie-decline">Decline</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  var consent = localStorage.getItem('rcw-analytics');
+  if (consent === 'accepted' || consent === 'declined') document.getElementById('cookie-banner').classList.add('hidden');
+  if (consent === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  document.getElementById('cookie-accept').addEventListener('click', function() {
+    localStorage.setItem('rcw-analytics','accepted');
+    document.getElementById('cookie-banner').classList.add('hidden');
+  });
+  document.getElementById('cookie-decline').addEventListener('click', function() {
+    localStorage.setItem('rcw-analytics','declined');
     window['ga-disable-G-9JQRWY72HW'] = true;
     document.getElementById('cookie-banner').classList.add('hidden');
   });
