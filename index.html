@@ -581,48 +581,6 @@
     }
     .error-state { color: var(--red); }
 
-    /* ── Cookie banner ───────────────────────────── */
-    .cookie-banner {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: var(--ink);
-      color: var(--off);
-      padding: 0.75rem 2rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
-      z-index: 400;
-      font-size: 0.75rem;
-      border-top: 2px solid var(--rule-dk);
-    }
-    .cookie-banner.hidden { display: none; }
-    .cookie-banner a { color: #93c5fd; text-decoration: none; }
-    .cookie-banner a:hover { text-decoration: underline; }
-    .cookie-banner-btns { display: flex; gap: 0.5rem; flex-shrink: 0; }
-    .cookie-btn {
-      padding: 0.35rem 0.85rem;
-      font-size: 0.72rem;
-      cursor: pointer;
-      border: 1px solid var(--rule-dk);
-      font-family: var(--sans);
-    }
-    .cookie-btn-accept {
-      background: var(--white);
-      color: var(--ink);
-      border-color: var(--white);
-    }
-    .cookie-btn-accept:hover { background: var(--off); }
-    .cookie-btn-decline {
-      background: transparent;
-      color: var(--off);
-    }
-    .cookie-btn-decline:hover { background: rgba(255,255,255,0.1); }
-
-
     /* ── Topbar repo section ─────────────────────── */
     .topbar-repo {
       padding: 0 1.5rem;
@@ -847,6 +805,37 @@
     .tb-check-wrap:hover .tb-check-label { color: var(--ink); }
     .tb-check:disabled + .tb-check-label { color: var(--rule-dk); cursor: default; }
     .tb-check-wrap:has(:disabled) { cursor: default; }
+
+    /* ── Analytics banner ──────────────────────── */
+    #analytics-banner {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--ink);
+      color: var(--off);
+      padding: 0.75rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      z-index: 500;
+      font-size: 0.75rem;
+      border-top: 2px solid #444;
+    }
+    #analytics-banner a { color: #93c5fd; }
+    #analytics-banner-btns { display: flex; gap: 0.5rem; }
+    .ab-btn {
+      padding: 0.35rem 0.85rem;
+      font-size: 0.72rem;
+      cursor: pointer;
+      border: 1px solid #666;
+      font-family: var(--sans);
+      background: none;
+      color: var(--off);
+    }
+    .ab-btn-ok { background: var(--white); color: var(--ink); border-color: var(--white); }
+    .ab-btn-ok:hover { background: var(--off); }
+    .ab-btn-no:hover { background: rgba(255,255,255,0.1); }
   </style>
 </head>
 <body>
@@ -921,6 +910,7 @@
       <button class="sort-opt active" id="sort-updated">Updated</button>
       <button class="sort-opt" id="sort-year">Published</button>
       <button class="sort-opt" id="sort-title">Title</button>
+      <button class="sort-opt" id="sort-version">Versions</button>
     </div>
     <input type="checkbox" id="recurated-only" style="display:none" />
     <input type="checkbox" id="created-only" style="display:none" />
@@ -1035,9 +1025,9 @@ function syncFiltersToURL() {
   if (version!=='0') url.searchParams.set('version', version); else url.searchParams.delete('version');
   if (recur)       url.searchParams.set('recur', '1');     else url.searchParams.delete('recur');
   if (created)     url.searchParams.set('created', '1'); else url.searchParams.delete('created');
-  if (sort && sort!=='updated') url.searchParams.set('sort', sort); else url.searchParams.delete('sort'); // activities sort preserved
+  if (sort && sort!=='updated') url.searchParams.set('sort', sort); else url.searchParams.delete('sort'); // version sort preserved // activities sort preserved
   if (currentPage > 1) url.searchParams.set('page', currentPage); else url.searchParams.delete('page');
-  window.history.replaceState({}, '', url);
+  try { window.history.replaceState({}, '', url); } catch(e) {}
 }
 
 function applyFiltersFromURL() {
@@ -1117,6 +1107,7 @@ function applyFiltersAndRender() {
     if (sortKey==='updated') return new Date(b.attributes?.updated??0)-new Date(a.attributes?.updated??0);
     if (sortKey==='year')    return (b.attributes?.publicationYear??0)-(a.attributes?.publicationYear??0);
     if (sortKey==='title')   return (a.attributes?.titles?.[0]?.title??'').localeCompare(b.attributes?.titles?.[0]?.title??'');
+    if (sortKey==='version')  return (b.attributes?.metadataVersion??0)-(a.attributes?.metadataVersion??0);
     return 0;
   });
   renderPage();
@@ -1377,7 +1368,7 @@ document.getElementById('reset-filters').addEventListener('click', () => {
   applyFiltersAndRender();
 });
 
-['sort-updated','sort-year','sort-title'].forEach(id=>{
+['sort-updated','sort-year','sort-title','sort-version'].forEach(id=>{
   document.getElementById(id).addEventListener('click',()=>{
     document.querySelectorAll('.sort-opt').forEach(b=>b.classList.remove('active'));
     document.getElementById(id).classList.add('active');
@@ -1425,7 +1416,7 @@ function updateBranding(clientId, meta) {
   // update URL bar without reload
   const url = new URL(window.location.href);
   url.searchParams.set('client', clientId);
-  window.history.replaceState({}, '', url);
+  try { window.history.replaceState({}, '', url); } catch(e) {}
 }
 
 function resetFilters() {
@@ -1443,7 +1434,7 @@ function resetFilters() {
   url.searchParams.delete('type');
   url.searchParams.delete('year');
   url.searchParams.delete('page');
-  window.history.replaceState({}, '', url);
+  try { window.history.replaceState({}, '', url); } catch(e) {}
 }
 
 async function loadRepository(clientId) {
@@ -1650,33 +1641,9 @@ function renderInlineTip() {
     </div>
   </div>
 </div>
-
-<!-- COOKIE BANNER -->
-<div class="cookie-banner" id="cookie-banner">
-  <span>This site uses Google Analytics to understand how Re-Curation Watch is used. No personal data is collected beyond standard anonymized usage statistics. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy ↗</a></span>
-  <div class="cookie-banner-btns">
-    <button class="cookie-btn cookie-btn-accept" id="cookie-accept" onclick="document.getElementById('cookie-banner').classList.add('hidden');localStorage.setItem('rcw-analytics','accepted')">OK</button>
-    <button class="cookie-btn cookie-btn-decline" id="cookie-decline" onclick="document.getElementById('cookie-banner').classList.add('hidden');localStorage.setItem('rcw-analytics','declined')">Decline</button>
-  </div>
 </div>
 
-<script>
-(function() {
-  var banner = document.getElementById('cookie-banner');
-  var consent = localStorage.getItem('rcw-analytics');
-  if (consent === 'accepted' || consent === 'declined') banner.classList.add('hidden');
-  if (consent === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
-  document.getElementById('cookie-accept').onclick = function() {
-    localStorage.setItem('rcw-analytics', 'accepted');
-    banner.classList.add('hidden');
-  };
-  document.getElementById('cookie-decline').onclick = function() {
-    localStorage.setItem('rcw-analytics', 'declined');
-    window['ga-disable-G-9JQRWY72HW'] = true;
-    banner.classList.add('hidden');
-  };
-})();
-</script>
+
 
 <!-- FOOTER -->
 <footer style="border-top:1px solid var(--rule);background:var(--off);padding:1rem 2rem;margin-top:2rem;">
@@ -1741,20 +1708,31 @@ document.getElementById('cite-copy').addEventListener('click', () => {
   gtag('js', new Date());
   gtag('config', 'G-9JQRWY72HW');
 </script>
-
-
-
-<!-- COOKIE BANNER -->
-<div class="cookie-banner" id="cookie-banner">
-  <span>This site uses Google Analytics to understand how Re-Curation Watch is used. No personal data is collected beyond standard anonymized usage statistics. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy ↗</a></span>
-  <div class="cookie-banner-btns">
-    <button class="cookie-btn cookie-btn-accept" id="cookie-accept" onclick="document.getElementById('cookie-banner').classList.add('hidden');localStorage.setItem('rcw-analytics','accepted')">OK</button>
-    <button class="cookie-btn cookie-btn-decline" id="cookie-decline" onclick="document.getElementById('cookie-banner').classList.add('hidden');localStorage.setItem('rcw-analytics','declined')">Decline</button>
-  </div>
 </div>
 
 
 
 
+
+<!-- ANALYTICS BANNER -->
+<div id="analytics-banner">
+  <span>This site uses Google Analytics for anonymous usage statistics. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy ↗</a></span>
+  <div id="analytics-banner-btns">
+    <button class="ab-btn ab-btn-ok" onclick="hideBanner('accepted')">OK</button>
+    <button class="ab-btn ab-btn-no" onclick="hideBanner('declined')">Decline</button>
+  </div>
+</div>
+<script>
+  function hideBanner(choice) {
+    localStorage.setItem('rcw-ga', choice);
+    document.getElementById('analytics-banner').style.display = 'none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  }
+  (function() {
+    var choice = localStorage.getItem('rcw-ga');
+    if (choice) document.getElementById('analytics-banner').style.display = 'none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  })();
+</script>
 </body>
 </html>
