@@ -8,6 +8,8 @@ Live data is fetched directly from the [DataCite REST API](https://api.datacite.
 
 Re-Curation Watch surfaces the metadata provenance that DataCite records for every DOI since March 2019. For each update event you can see exactly which fields changed, with before and after values shown side by side. This makes it possible to assess the curation quality of any DataCite repository — not just what the metadata says now, but how it got there.
 
+Note: Re-Curation Watch queries the DataCite Public REST API, which is freely accessible without authentication. DOI metadata displayed is provided by DataCite member repositories and carries the licenses assigned by those repositories. DataCite's own documentation is licensed CC-BY 4.0.
+
 ## Finding a repository
 
 Type a repository name (e.g. "Zenodo", "Dryad", "Gump Station") or a DataCite client ID (e.g. `cern.zenodo`, `sjyq.oozvia`) into the search box in the purple hero bar. An autocomplete dropdown shows matching repositories with their DOI counts. Press Enter or click **Explore →** to load.
