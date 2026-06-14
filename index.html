@@ -51,25 +51,30 @@
       gap: 0;
     }
     .topbar-brand {
-      padding: 0.6rem 2rem 0.6rem 0;
-      border-right: 1px solid var(--rule);
+      padding: 0.5rem 2rem 0.5rem 0;
       display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-      justify-content: center;
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
     }
     .brand-logo {
-      height: 48px;
+      height: 64px;
       width: auto;
       display: block;
+      flex-shrink: 0;
+    }
+    .brand-title-wrap {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
     .brand-tool-name {
       font-size: 1.25rem;
       font-weight: 600;
       letter-spacing: -0.01em;
       color: var(--ink);
-      margin-top: 0.1rem;
-      line-height: 1;
+      line-height: 1.2;
+      white-space: nowrap;
     }
     .brand-name {
       font-size: 0.95rem;
@@ -83,33 +88,7 @@
       font-size: 0.68rem;
       color: var(--faint);
     }
-    .topbar-stats {
-      display: flex;
-      align-items: stretch;
-      flex: 1;
-    }
-    .tstat {
-      padding: 0.9rem 1.8rem;
-      border-right: 1px solid var(--rule);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 0.05rem;
-    }
-    .tstat:last-child { border-right: none; }
-    .tstat-n {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--ink);
-      line-height: 1;
-      font-variant-numeric: tabular-nums;
-    }
-    .tstat-l {
-      font-size: 0.67rem;
-      color: var(--faint);
-      text-transform: uppercase;
-      letter-spacing: 0.07em;
-    }
+
     .topbar-links {
       padding: 0 0 0 1.5rem;
       display: flex;
@@ -126,6 +105,129 @@
       line-height: 1;
     }
     .topbar-links a:hover { color: var(--red); }
+
+    /* ── Hero ───────────────────────────────────── */
+    .hero {
+      background: #f0eaf5;
+      border-bottom: 2px solid #9167b0;
+      padding: 1.75rem 2rem;
+    }
+    .hero-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 2.5rem;
+      flex-wrap: wrap;
+    }
+    .hero-text { flex: 1; min-width: 200px; }
+    .hero-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #5b3d7a;
+      line-height: 1.2;
+      margin-bottom: 0.3rem;
+      letter-spacing: -0.01em;
+    }
+    .hero-sub {
+      font-size: 0.78rem;
+      color: var(--sub);
+      line-height: 1.5;
+      max-width: 340px;
+    }
+    .hero-search {
+      flex: 1;
+      min-width: 280px;
+      position: relative;
+    }
+    .hero-form {
+      display: flex;
+      border: 2px solid #9167b0;
+      background: var(--white);
+    }
+    .hero-input {
+      flex: 1;
+      border: none !important;
+      padding: 0.6rem 0.85rem !important;
+      font-size: 0.85rem !important;
+      width: auto !important;
+      outline: none;
+      font-family: var(--sans) !important;
+      color: var(--ink);
+      background: transparent;
+    }
+    .hero-input::placeholder { color: var(--rule-dk); }
+    .hero-go {
+      border: none !important;
+      border-left: 2px solid #9167b0 !important;
+      background: #9167b0 !important;
+      color: var(--white) !important;
+      padding: 0.6rem 1.1rem !important;
+      font-size: 0.82rem !important;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: var(--sans);
+    }
+    .hero-go:hover { background: #7a52a0 !important; }
+    .hero-hints {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.45rem;
+      font-size: 0.7rem;
+      color: var(--faint);
+      flex-wrap: wrap;
+    }
+    .hero-hint { font-size: 0.7rem; color: var(--faint); }
+    .hero-hint a { color: var(--blue); text-decoration: none; }
+    .hero-hint a:hover { text-decoration: underline; }
+
+    /* ── Repo stats strip ───────────────────────── */
+    .repo-stats-strip {
+      border-bottom: 1px solid var(--rule);
+      padding: 0 2rem;
+      background: var(--white);
+    }
+    .repo-stats-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 0.6rem 0;
+      flex-wrap: wrap;
+    }
+    .repo-stats-name {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--ink);
+      border-right: 1px solid var(--rule);
+      padding-right: 1.5rem;
+      white-space: nowrap;
+    }
+    .repo-stats-nums {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .rstat {
+      display: flex;
+      align-items: baseline;
+      gap: 0.35rem;
+    }
+    .rstat-n {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .rstat-l {
+      font-size: 0.65rem;
+      color: var(--faint);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
 
     /* ── Toolbar ─────────────────────────────────── */
     .toolbar {
@@ -472,6 +574,53 @@
     .page-btn:disabled { opacity: 0.35; cursor: default; }
     .page-ellipsis { border-color: transparent; background: none; opacity: 0.5; padding: 0.4rem 0.4rem; }
 
+
+    /* ── Inline loading tips ─────────────────────── */
+    .load-spinner {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      border: 1.5px solid var(--blue);
+      border-top-color: transparent;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 0.35rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .inline-tip { padding: 2rem 0 1rem; }
+    .inline-tip-fetching {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--faint);
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .inline-tip-card {
+      border-left: 2px solid var(--ink);
+      padding: 0.4rem 0 0.4rem 1rem;
+      max-width: 480px;
+    }
+    .inline-tip-label {
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--blue);
+      margin-bottom: 0.2rem;
+    }
+    .inline-tip-text { font-size: 0.8rem; color: var(--sub); line-height: 1.5; }
+    .inline-tip-text strong { color: var(--ink); }
+    .inline-tip-link {
+      font-family: var(--mono);
+      font-size: 0.63rem;
+      color: var(--blue);
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 0.35rem;
+    }
+    .inline-tip-link:hover { text-decoration: underline; }
     .loading-state, .error-state, .empty-state {
       padding: 2.5rem 0;
       font-size: 0.8rem;
@@ -555,7 +704,7 @@
     .repo-autocomplete {
       position: absolute;
       top: 100%;
-      left: 1.5rem;
+      left: 0;
       right: 0;
       background: var(--white);
       border: 1.5px solid var(--ink);
@@ -654,8 +803,8 @@
         border-right: none;
         border-bottom: 1px solid var(--rule);
       }
-      .brand-logo { height: 32px; }
-      .brand-tool-name { font-size: 1rem; }
+      .brand-logo { height: 40px; }
+      .brand-tool-name { font-size: 0.95rem; }
       .topbar-repo {
         padding: 0.6rem 0;
         border-right: none;
@@ -663,21 +812,23 @@
       }
       .repo-form { width: 100%; }
       .repo-input { width: 100%; min-width: 0; flex: 1; }
-      .topbar-stats {
-        flex-wrap: wrap;
-        border-bottom: 1px solid var(--rule);
-      }
-      .tstat {
-        padding: 0.5rem 1rem;
-        flex: 1;
-        min-width: 80px;
-      }
+
       .topbar-links {
         flex-direction: row;
         gap: 1rem;
         padding: 0.6rem 0;
         margin-left: 0;
       }
+
+      /* ── Repo stats strip ── */
+      .repo-stats-strip { padding: 0 1rem; }
+      .repo-stats-name { border-right: none; padding-right: 0; width: 100%; }
+
+      /* ── Hero: stack ── */
+      .hero { padding: 1.25rem 1rem; }
+      .hero-inner { flex-direction: column; gap: 1rem; }
+      .hero-text { min-width: 0; }
+      .hero-search { min-width: 0; width: 100%; }
 
       /* ── Toolbar: wrap ── */
       .toolbar { padding: 0 1rem; }
@@ -711,30 +862,48 @@
       <a href="https://metadatagamechangers.com" target="_blank">
         <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" />
       </a>
-      <div class="brand-tool-name">Re-Curation Watch</div>
+      <div class="brand-title-wrap">
+        <div class="brand-tool-name">Re-Curation Watch</div>
+      </div>
       <span class="brand-name" id="brand-name" style="display:none">—</span>
       <span class="brand-sub" id="brand-sub" style="display:none">—</span>
-    </div>
-    <div class="topbar-repo">
-      <span class="repo-label">Browse any DataCite repository</span>
-      <div class="repo-form">
-        <input class="repo-input" id="repo-input" type="text" placeholder="Search by name or enter client ID…" spellcheck="false" autocomplete="off" />
-        <button class="repo-go" id="repo-go">load →</button>
-      </div>
-      <div class="repo-below">
-        <a id="commons-link-repo" href="https://commons.datacite.org/repositories/sjyq.oozvia" target="_blank">DataCite Commons ↗</a>
-        <span class="repo-error" id="repo-error">not found</span>
-      </div>
-      <div class="repo-autocomplete" id="repo-autocomplete"></div>
-    </div>
-    <div class="topbar-stats">
-      <div class="tstat"><span class="tstat-n" id="stat-total">—</span><span class="tstat-l">Records</span></div>
-      <div class="tstat"><span class="tstat-n" id="stat-types">—</span><span class="tstat-l">Types</span></div>
-      <div class="tstat"><span class="tstat-n" id="stat-recent">—</span><span class="tstat-l">Latest updated</span></div>
     </div>
     <div class="topbar-links">
       <a href="https://github.com/Metadata-Game-Changers/recuration-watch/blob/main/README.md" target="_blank">ReadMe ↗</a>
       <a id="commons-link" href="https://commons.datacite.org/repositories/sjyq.oozvia" target="_blank" style="display:none"></a>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero" id="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h2 class="hero-title">Explore any DataCite repository</h2>
+      <p class="hero-sub">Search by repository name or enter a DataCite client ID to browse its DOIs and full curation history.</p>
+    </div>
+    <div class="hero-search">
+      <div class="hero-form">
+        <input class="repo-input hero-input" id="repo-input" type="text" placeholder="e.g. Zenodo, Dryad, or cern.zenodo…" spellcheck="false" autocomplete="off" />
+        <button class="repo-go hero-go" id="repo-go">Explore →</button>
+      </div>
+      <div class="repo-autocomplete" id="repo-autocomplete"></div>
+      <div class="hero-hints">
+        <span class="repo-error" id="repo-error">Repository not found</span>
+        <span class="hero-hint">Currently viewing: <a id="commons-link-repo" href="https://commons.datacite.org/repositories/sjyq.oozvia" target="_blank" id="current-repo-name">Metadata Game Changers</a></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REPO STATS STRIP -->
+<div class="repo-stats-strip" id="repo-stats-strip" style="display:none">
+  <div class="repo-stats-inner">
+    <span class="repo-stats-name" id="repo-stats-name">—</span>
+    <div class="repo-stats-nums">
+      <span class="rstat"><span class="rstat-n" id="stat-total">—</span><span class="rstat-l">Records</span></span>
+      <span class="rstat"><span class="rstat-n" id="stat-types">—</span><span class="rstat-l">Types</span></span>
+      <span class="rstat"><span class="rstat-n" id="stat-recent">—</span><span class="rstat-l">Latest updated</span></span>
     </div>
   </div>
 </div>
@@ -745,7 +914,7 @@
     <span class="tb-label">Filter</span>
     <input class="tb-input" id="search-input" type="search" placeholder="title, creator, DOI…" />
     <select class="tb-select" id="type-filter"><option value="">All types</option></select>
-    <select class="tb-select" id="year-filter"><option value="">All years</option></select>
+    <span class="tb-label">Updated</span><select class="tb-select" id="year-filter"><option value="">All years</option></select>
     <div class="tb-sep"></div>
     <span class="tb-sort-label">Sort</span>
     <div class="sort-group">
@@ -759,7 +928,7 @@
 <!-- RECORDS -->
 <div class="main">
   <div class="list-meta" id="list-meta">Loading…</div>
-  <div id="doi-container"><div class="loading-state">Fetching records from DataCite…</div></div>
+  <div id="doi-container"><div class="loading-state" id="loading-tip-container"></div></div>
   <div class="pagination" id="pagination"></div>
 </div>
 
@@ -1133,8 +1302,17 @@ function updateBranding(clientId, meta) {
   document.getElementById('brand-sub').textContent = `${clientId} · prefix ${prefix}`;
   document.title = `Re-Curation Watch · ${name}`;
   const cl = document.getElementById('commons-link');
-  const cl2 = document.getElementById('commons-link-repo'); if (cl2) cl2.href = `https://commons.datacite.org/repositories/${clientId}`;
-  cl.href = `https://commons.datacite.org/repositories/${clientId}`;
+  const cl2 = document.getElementById('commons-link-repo');
+  if (cl2) {
+    cl2.href = `https://commons.datacite.org/repositories/${clientId}`;
+    cl2.textContent = name;
+  }
+  if (cl) cl.href = `https://commons.datacite.org/repositories/${clientId}`;
+  // Show stats strip with repo name
+  const strip = document.getElementById('repo-stats-strip');
+  const stripName = document.getElementById('repo-stats-name');
+  if (strip) strip.style.display = '';
+  if (stripName) stripName.textContent = name;
   // update URL bar without reload
   const url = new URL(window.location.href);
   url.searchParams.set('client', clientId);
@@ -1164,7 +1342,10 @@ async function loadRepository(clientId) {
   // Update repo input to show what's loading
   document.getElementById('repo-input').value = clientId;
   document.getElementById('repo-error').classList.remove('show');
-  document.getElementById('doi-container').innerHTML = '<div class="loading-state">Fetching records…</div>';
+  document.getElementById('doi-container').innerHTML = '<div class="loading-state" id="loading-tip-container"><div class="inline-tip-fetching" style="padding:2rem 0 0"><span class="load-spinner"></span>Fetching records from DataCite…</div></div>';
+  setTimeout(startLoadingTips, 2000);
+  const strip = document.getElementById('repo-stats-strip');
+  if (strip) strip.style.display = 'none';
   document.getElementById('list-meta').textContent = 'Loading…';
   document.getElementById('stat-total').textContent = '—';
   document.getElementById('stat-types').textContent = '—';
@@ -1191,10 +1372,12 @@ async function loadRepository(clientId) {
     // Read page LAST, after all filter state is set, so nothing can stomp it
     const pageParam = parseInt(new URLSearchParams(window.location.search).get('page') || '1', 10);
     currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+    stopLoadingTips();
     loading = false;
     applyFiltersAndRender();
   } catch(err) {
     document.getElementById('doi-container').innerHTML = `<div class="error-state">Failed to load: ${escHtml(err.message)}</div>`;
+    stopLoadingTips();
     loading = false;
     document.getElementById('list-meta').textContent = 'Error';
   }
@@ -1299,6 +1482,48 @@ document.getElementById('repo-go').addEventListener('click', () => {
   closeAutocomplete();
   if (val) loadRepository(val);
 });
+
+
+// ── Re-Curation tips ─────────────────────────────────
+const RCW_TIPS = [
+  { label: 'Re-Curation', text: '<strong>Re-curation</strong> means going back to published records to improve connectivity — adding ORCIDs, RORs, and related identifiers.', link: 'https://metadatagamechangers.com/blog' },
+  { label: 'FAIR Principles', text: '<strong>FAIR metadata</strong> is a continuum, not a checklist. The activity history here shows how repositories move along it over time.', link: 'https://metadatagamechangers.com/blog' },
+  { label: 'Funder Metadata', text: '<strong>Funder acronyms are not enough.</strong> Persistent identifiers like ROR make it possible to trace research outputs back to the agencies that funded them.', link: 'https://metadatagamechangers.com/blog' },
+  { label: 'DataCite Provenance', text: '<strong>Every DOI update</strong> since March 2019 is recorded by DataCite as a provenance event — this is what Re-Curation Watch visualizes.', link: 'https://support.datacite.org/docs/tracking-provenance' },
+  { label: 'MGC Mission', text: '<strong>Better documentation</strong> leads to better data discovery, reuse, and research integrity.', link: 'https://metadatagamechangers.com' },
+  { label: 'Connectivity', text: '<strong>Identifiers connect research.</strong> ORCIDs for people, RORs for organizations, DOIs for outputs — together they make the global research graph possible.', link: 'https://metadatagamechangers.com/blog' },
+];
+
+let tipIndex = 0, tipRotateTimer = null;
+
+function startLoadingTips() {
+  clearInterval(tipRotateTimer);
+  tipIndex = Math.floor(Math.random() * RCW_TIPS.length);
+  renderInlineTip();
+  tipRotateTimer = setInterval(() => {
+    tipIndex = (tipIndex + 1) % RCW_TIPS.length;
+    renderInlineTip();
+  }, 4000);
+}
+
+function stopLoadingTips() {
+  clearInterval(tipRotateTimer);
+  tipRotateTimer = null;
+}
+
+function renderInlineTip() {
+  const container = document.getElementById('loading-tip-container');
+  if (!container) return;
+  const tip = RCW_TIPS[tipIndex];
+  container.innerHTML =
+    '<div class="inline-tip">' +
+    '<div class="inline-tip-fetching"><span class="load-spinner"></span>Re-Curation tips while you wait…</div>' +
+    '<div class="inline-tip-card">' +
+    '<div class="inline-tip-label">' + tip.label + '</div>' +
+    '<div class="inline-tip-text">' + tip.text + '</div>' +
+    '<a class="inline-tip-link" href="' + tip.link + '" target="_blank">Learn more at Metadata Game Changers ↗</a>' +
+    '</div></div>';
+}
 
 // ── Boot: check URL param, else load default ──────────
 (async () => {
