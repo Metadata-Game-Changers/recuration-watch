@@ -372,6 +372,29 @@
       font-variant-numeric: tabular-nums;
     }
     .doi-counts span { margin-right: 0.9rem; }
+    .doi-counts .tip {
+      position: relative;
+      cursor: help;
+      border-bottom: 1px dotted var(--rule-dk);
+    }
+    .doi-counts .tip::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: var(--white);
+      font-size: 0.65rem;
+      padding: 0.3rem 0.6rem;
+      white-space: nowrap;
+      border-radius: 2px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 10;
+    }
+    .doi-counts .tip:hover::after { opacity: 1; }
 
     .toggle-btn {
       font-size: 0.7rem;
@@ -1163,7 +1186,7 @@ function renderRow(d) {
           ${a.metadataVersion!=null?`<span style="margin-left:.8rem;font-family:var(--mono);color:var(--faint)">v${a.metadataVersion}</span>`:''}
         </div>
         <div class="doi-counts">
-          <span>${views} views</span><span>${cites} citations</span><span>${dl} downloads</span>
+          <span class="tip" data-tip="Views reported by repository to DataCite">${views} views</span><span class="tip" data-tip="Citations harvested from Crossref &amp; DataCite Event Data">${cites} citations</span><span class="tip" data-tip="Downloads reported by repository to DataCite">${dl} downloads</span>
         </div>
       </div>
       <button class="toggle-btn" data-doi="${escAttr(doi)}">history</button>
