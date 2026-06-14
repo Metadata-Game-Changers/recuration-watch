@@ -1,4 +1,6 @@
 # Re-Curation Watch
+[![DOI](https://img.shields.io/badge/DOI-10.60872%2FrecurationWatch-blue)](https://doi.org/10.60872/recurationWatch)
+[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 
 A tool by [Metadata Game Changers](https://metadatagamechangers.com) for browsing any DataCite repository and inspecting the full curation history of each DOI — who changed what, when, and how.
 
@@ -90,6 +92,12 @@ All endpoints are public and CORS-enabled. The DOI endpoint paginates at 100 per
 - **Default repository**: change `DEFAULT_CLIENT` in the `<script>` block
 - **Page size**: change `PAGE_SIZE` (default 50 records per page)
 - **Colors**: all CSS custom properties are in the `:root` block; the purple hero uses `#9167b0`
+
+## Citation
+
+If you use Re-Curation Watch in your work, please cite it as:
+
+Robinson, E. and Habermann, T. (2026). Re-Curation Watch (v1.0). Metadata Game Changers LLC. https://doi.org/10.60872/recurationWatch
 
 ## Links
 
