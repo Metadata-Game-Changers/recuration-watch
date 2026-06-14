@@ -864,12 +864,12 @@
 <div class="hero" id="hero">
   <div class="hero-inner">
     <div class="hero-text">
-      <h2 class="hero-title">Explore any DataCite repository</h2>
-      <p class="hero-sub">Search by repository name or enter a DataCite client ID to browse its DOIs and full curation history.</p>
+      <h2 class="hero-title">Explore any DataCite Repository or DOI</h2>
+      <p class="hero-sub">Search by repository name or enter a DataCite client ID to browse its most recently updated DOIs, or enter a specific DataCite DOI to show a single curation history.</p>
     </div>
     <div class="hero-search">
       <div class="hero-form">
-        <input class="repo-input hero-input" id="repo-input" type="text" placeholder="e.g. Zenodo, Dryad, or cern.zenodo…" spellcheck="false" autocomplete="off" />
+        <input class="repo-input hero-input" id="repo-input" type="text" placeholder="Repository name, client ID, or DOI…" spellcheck="false" autocomplete="off" />
         <button class="repo-go hero-go" id="repo-go">Explore →</button>
       </div>
       <div class="repo-autocomplete" id="repo-autocomplete"></div>
@@ -1160,6 +1160,7 @@ function renderRow(d) {
           <a href="https://doi.org/${doi}" target="_blank">${escHtml(doi)}</a>
           ${pubYear?`<span style="margin-left:.8rem">published ${pubYear}</span>`:''}
           ${updated?`<span style="margin-left:.8rem">updated ${updated}</span>`:''}
+          ${a.metadataVersion!=null?`<span style="margin-left:.8rem;font-family:var(--mono);color:var(--faint)">v${a.metadataVersion}</span>`:''}
         </div>
         <div class="doi-counts">
           <span>${views} views</span><span>${cites} citations</span><span>${dl} downloads</span>
@@ -1535,7 +1536,7 @@ function closeAutocomplete() {
 document.getElementById('repo-input').addEventListener('input', () => {
   const q = document.getElementById('repo-input').value.trim();
   clearTimeout(acTimer);
-  if (q.length < 2) { closeAutocomplete(); return; }
+  if (q.length < 2 || isDOI(q)) { closeAutocomplete(); return; }
   document.getElementById('repo-autocomplete').innerHTML = '<div class="repo-ac-loading">Searching…</div>';
   document.getElementById('repo-autocomplete').classList.add('open');
   acTimer = setTimeout(async () => {
@@ -1569,7 +1570,9 @@ document.getElementById('repo-input').addEventListener('keydown', e => {
     } else {
       const val = document.getElementById('repo-input').value.trim();
       closeAutocomplete();
-      if (val) loadRepository(val);
+      if (!val) return;
+      if (isDOI(val)) loadSingleDOI(val);
+      else loadRepository(val);
     }
   } else if (e.key === 'Escape') {
     closeAutocomplete();
@@ -1581,10 +1584,77 @@ document.addEventListener('click', e => {
 });
 
 // ── Repo switcher events ──────────────────────────────
+function isDOI(val) {
+  // Matches doi.org URLs or bare DOIs starting with 10.
+  return /^(https?:\/\/doi\.org\/)?10\.\d{4,}\/\S+$/i.test(val.trim());
+}
+
+function parseDOI(val) {
+  // Strip doi.org prefix if present
+  return val.trim().replace(/^https?:\/\/doi\.org\//i, '');
+}
+
+async function loadSingleDOI(doiId) {
+  doiId = parseDOI(doiId);
+  document.getElementById('repo-input').value = doiId;
+  document.getElementById('repo-error').classList.remove('show');
+  document.getElementById('doi-container').innerHTML = '<div class="loading-state" id="loading-tip-container"></div>';
+  setTimeout(startLoadingTips, 2000);
+  document.getElementById('list-meta').textContent = 'Loading…';
+
+  try {
+    const res = await fetch(`${API_BASE}/dois/${encodeURIComponent(doiId)}`);
+    if (!res.ok) throw new Error(`DOI not found (${res.status})`);
+    const json = await res.json();
+    const doi = json.data;
+    if (!doi) throw new Error('No data returned');
+
+    stopLoadingTips();
+    allDOIs = [doi];
+    filtered = [doi];
+
+    // Update branding to show DOI context
+    document.getElementById('brand-name').textContent = doiId;
+    document.getElementById('brand-sub').textContent = doiId;
+    document.title = `Re-Curation Watch · ${doiId}`;
+    const title = doi.attributes?.titles?.[0]?.title ?? doiId;
+    const strip = document.getElementById('repo-stats-strip');
+    const stripName = document.getElementById('repo-stats-name');
+    if (strip) strip.style.display = '';
+    if (stripName) stripName.textContent = title;
+    document.getElementById('stat-total').textContent = '1';
+    document.getElementById('stat-types').textContent = doi.attributes?.types?.resourceTypeGeneral ?? '—';
+    const yr = doi.attributes?.updated ? new Date(doi.attributes.updated).getFullYear() : '—';
+    document.getElementById('stat-recent').textContent = yr;
+    // Update "Currently viewing" link to show DOI title
+    const cl2 = document.getElementById('commons-link-repo');
+    if (cl2) { cl2.textContent = title; cl2.href = `https://doi.org/${doiId}`; }
+
+    // Update URL
+    const url = new URL(window.location.href);
+    url.searchParams.set('doi', doiId);
+    url.searchParams.delete('client');
+    try { window.history.replaceState({}, '', url); } catch(e) {}
+
+    currentPage = 1;
+    renderPage();
+
+    // Auto-open history panel
+    setTimeout(() => toggleActivity(doi.id), 300);
+
+  } catch(err) {
+    stopLoadingTips();
+    document.getElementById('doi-container').innerHTML = `<div class="error-state">Could not load DOI: ${escHtml(err.message)}</div>`;
+    document.getElementById('list-meta').textContent = 'Error';
+  }
+}
+
 document.getElementById('repo-go').addEventListener('click', () => {
   const val = document.getElementById('repo-input').value.trim();
   closeAutocomplete();
-  if (val) loadRepository(val);
+  if (!val) return;
+  if (isDOI(val)) loadSingleDOI(val);
+  else loadRepository(val);
 });
 
 
@@ -1624,8 +1694,13 @@ function renderInlineTip() {
 // ── Boot: check URL param, else load default ──────────
 (async () => {
   const params = new URLSearchParams(window.location.search);
+  const doiParam = params.get('doi');
   const clientFromUrl = params.get('client');
-  await loadRepository(clientFromUrl || DEFAULT_CLIENT);
+  if (doiParam) {
+    await loadSingleDOI(doiParam);
+  } else {
+    await loadRepository(clientFromUrl || DEFAULT_CLIENT);
+  }
 })();
 </script>
 
