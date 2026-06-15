@@ -477,6 +477,23 @@
       align-items: center;
       gap: 1rem;
     }
+    .act-filter-btns {
+      display: flex;
+      gap: 0;
+      margin-left: auto;
+    }
+    .act-filter-btn {
+      font-size: 0.65rem;
+      font-family: var(--mono);
+      background: none;
+      border: 1px solid var(--rule);
+      padding: 0.2rem 0.5rem;
+      cursor: pointer;
+      color: var(--faint);
+      margin-left: -1px;
+    }
+    .act-filter-btn:hover { border-color: var(--sub); color: var(--sub); }
+    .act-filter-btn.active { background: var(--ink); color: var(--white); border-color: var(--ink); z-index: 1; }
     .act-header a {
       font-family: var(--mono);
       color: var(--blue);
@@ -1341,7 +1358,7 @@ function renderActivities(panel, doiId, activities) {
     const summary  = changeSummary(attrs.changes, action);
     const detail   = renderChangesDiff(attrs.changes, action);
     const uid = `detail-${sanitizeId(doiId)}-${i}`;
-    return `<tr>
+    return `<tr data-action="${escAttr(action)}">
       <td class="tl-col-date">${ts?fmtDate(ts):'—'}</td>
       <td class="tl-col-dot"><div class="tl-dot-wrap"><div class="tl-dot" style="background:${dotColor}"></div></div></td>
       <td class="tl-col-action">
@@ -1355,21 +1372,48 @@ function renderActivities(panel, doiId, activities) {
     </tr>`;
   }).join('');
 
+  // Get distinct action types
+  const actionTypes = [...new Set(activities.map(a => a.attributes?.action ?? 'update'))].sort();
+
   panel.innerHTML = `
     <div class="act-header">
-      Activity · ${n} event${n!==1?'s':''}
+      <span>Activity · <span class="act-count-label">${n} event${n!==1?'s':''}</span></span>
+      <div class="act-filter-btns">
+        <button class="act-filter-btn active" data-action="all">All</button>
+        ${actionTypes.map(t => `<button class="act-filter-btn" data-action="${escAttr(t)}">${escHtml(capitalise(t))}</button>`).join('')}
+      </div>
       <a href="https://api.datacite.org/dois/${encodeURIComponent(doiId)}/activities" target="_blank">raw JSON ↗</a>
     </div>
     <div class="pulse-bar">${pulse}</div>
-    <table class="tl-table"><tbody>${rows}</tbody></table>`;
+    <div class="act-table-wrap"><table class="tl-table"><tbody>${rows}</tbody></table></div>`;
 
-  // Wire up toggle buttons
+  // Wire up detail toggles
   panel.querySelectorAll('.act-toggle').forEach(btn => {
     btn.addEventListener('click', () => {
       const detail = document.getElementById(btn.dataset.target);
       if (!detail) return;
       const open = detail.classList.toggle('open');
       btn.textContent = open ? 'Hide details ▾' : 'Show details ▸';
+    });
+  });
+
+  // Wire up action type filter buttons
+  panel.querySelectorAll('.act-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      panel.querySelectorAll('.act-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const action = btn.dataset.action;
+      const tableWrap = panel.querySelector('.act-table-wrap');
+      const allRows = tableWrap.querySelectorAll('tr');
+      let visible = 0;
+      allRows.forEach(row => {
+        const rowAction = row.dataset.action ?? 'update';
+        const show = action === 'all' || rowAction === action;
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      panel.querySelector('.act-count-label').textContent =
+        action === 'all' ? `${n} event${n!==1?'s':''}` : `${visible} ${action} event${visible!==1?'s':''}`;
     });
   });
 }
