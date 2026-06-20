@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Repository Activity — DataCite (prototype)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --accent:#9167b0; --accent-dk:#673289; --tint:#f0eaf5;
+    --ink:#1f2330; --muted:#6b7280; --line:#e6e3ec; --bg:#fbfafe;
+    --create:#3a9d6e; --update:#2f6fb0; --publish:#d4910b; --delete:#c0504d; --other:#9167b0;
+    /* tokens used by the ported RCW history panel */
+    --mono:'IBM Plex Mono',monospace; --sans:Inter,sans-serif;
+    --faint:#9aa0ab; --sub:#6b7280; --rule:#e6e3ec; --rule-dk:#cfcad8;
+    --blue:#2f6fb0; --white:#fff; --red-bg:#fdecec; --green-bg:#eaf6ee; --blue-bg:#eaf1f8;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:0}
+
+  /* ── Brand top bar ── */
+  .topbar{border-bottom:2px solid var(--ink);padding:0 2rem}
+  .topbar-inner{max-width:1040px;margin:0 auto;display:flex;align-items:stretch;gap:0}
+  .topbar-brand{padding:.5rem 2rem .3rem 0;display:flex;flex-direction:row;align-items:flex-end;gap:1rem}
+  .brand-logo{height:64px;width:auto;display:block;flex-shrink:0}
+  .brand-title-wrap{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:.15rem}
+  .brand-tool-name{font-family:'Montserrat',sans-serif;font-size:2rem;font-weight:400;letter-spacing:.02em;color:#673289;line-height:1;white-space:nowrap;text-transform:uppercase}
+  .topbar-links{padding:0 0 0 1.5rem;display:flex;flex-direction:column;justify-content:center;gap:.25rem;margin-left:auto}
+  .topbar-links a{font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4}
+  .topbar-links a:hover{color:var(--accent-dk)}
+
+  /* ── Hero bar ── */
+  .hero{background:#f0eaf5;border-bottom:2px solid #9167b0;padding:1.75rem 2rem}
+  .hero-inner{max-width:1040px;margin:0 auto;display:flex;align-items:center;gap:2.5rem;flex-wrap:wrap}
+  .hero-text{flex:1;min-width:200px}
+  .hero-title{font-size:1.15rem;font-weight:600;color:#5b3d7a;line-height:1.2;margin:0 0 .3rem;letter-spacing:-.01em}
+  .proto-flag{display:inline-block;background:#fff;color:var(--accent-dk);font-size:.62rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:.12rem .45rem;border-radius:4px;margin-left:.5rem;vertical-align:middle;border:1px solid var(--accent)}
+  .hero-sub{font-size:.78rem;color:var(--muted);line-height:1.5;max-width:360px;margin:0}
+  .hero-search{flex:1;min-width:280px;position:relative}
+  .hero-form{display:flex;border:2px solid #9167b0;background:#fff}
+  .hero-input{flex:1;border:none;padding:.6rem .85rem;font-size:.85rem;outline:none;font-family:Inter,sans-serif;color:var(--ink);background:transparent}
+  .hero-input::placeholder{color:#a99bbf}
+  .hero-go{border:none;border-left:2px solid #9167b0;background:#9167b0;color:#fff;padding:.6rem 1.1rem;font-size:.82rem;font-weight:500;cursor:pointer;white-space:nowrap;font-family:Inter,sans-serif}
+  .hero-go:hover{background:#7a52a0}
+  .hero-go:disabled{opacity:.5;cursor:default}
+  .hero-secondary{display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap;align-items:center}
+  .hero-secondary-label{font-size:.65rem;font-weight:600;color:#5b3d7a;text-transform:uppercase;letter-spacing:.03em}
+  .hero-select{border:1px solid rgba(145,103,176,.4);background:rgba(255,255,255,.85);padding:.32rem .6rem;font-family:Inter,sans-serif;font-size:.75rem;color:var(--ink);outline:none;cursor:pointer}
+  .hero-select:focus{border-color:#9167b0}
+  .hero-chk{display:flex;align-items:center;gap:.3rem;font-size:.7rem;color:#5b3d7a;cursor:pointer;user-select:none}
+  .hero-chk input{accent-color:#9167b0;cursor:pointer}
+  .repo-autocomplete{position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--ink);border-top:none;z-index:200;display:none;max-height:260px;overflow-y:auto}
+  .repo-autocomplete.open{display:block}
+  .repo-ac-item{padding:.55rem .75rem;cursor:pointer;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:.1rem}
+  .repo-ac-item:last-child{border-bottom:none}
+  .repo-ac-item:hover,.repo-ac-item.highlighted{background:var(--bg)}
+  .repo-ac-name{font-size:.78rem;font-weight:500;color:var(--ink)}
+  .repo-ac-id{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted)}
+  .repo-ac-count{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:#0070C0}
+  .repo-ac-loading{padding:.6rem .75rem;font-size:.75rem;color:var(--muted);font-style:italic}
+
+  /* ── Selection summary strip ── */
+  .sel-summary{background:#fff;border-bottom:1px solid var(--line)}
+  .sel-inner{max-width:1040px;margin:0 auto;padding:.7rem 2rem;display:flex;align-items:baseline;gap:1.5rem;flex-wrap:wrap}
+  .sel-repo{font-size:.95rem;font-weight:600;color:var(--accent-dk)}
+  .sel-repo .sel-id{font-family:'IBM Plex Mono',monospace;font-size:.7rem;font-weight:400;color:var(--muted);margin-left:.5rem}
+  .sel-stats{display:flex;gap:1.4rem;flex-wrap:wrap;margin-left:auto}
+  .sel-stat{font-size:.78rem;color:var(--muted)}
+  .sel-stat b{color:var(--ink);font-weight:600}
+  .sel-stat.partial b{color:#9a6b00}
+
+  .wrap{max-width:1040px;margin:0 auto;padding:1.5rem 2rem 4rem}
+  #status{font-size:.82rem;color:var(--muted);min-height:1.2em;margin:.2rem 0 .5rem}
+  #status.err{color:#b4322f}
+  #status.warn{color:#9a6b00}
+  #progress{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin:0 0 1rem;display:none}
+  #progress.on{display:block}
+  #progress>i{display:block;height:100%;width:0;background:var(--accent);border-radius:3px;transition:width .18s ease}
+  #progress.indet>i{width:40%;animation:indet 1.1s ease-in-out infinite}
+  @keyframes indet{0%{margin-left:-40%}100%{margin-left:100%}}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:1rem 1.1rem;margin-bottom:1rem}
+  .card h2{font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 .2rem}
+  .chart-cap{font-size:.72rem;color:var(--muted);margin:0 0 .7rem}
+  .legend{display:flex;gap:.5rem 1rem;flex-wrap:wrap;font-size:.74rem;color:var(--muted);margin-top:.6rem}
+  .legend span{white-space:nowrap}
+  .legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:.3rem;vertical-align:-1px}
+  .chart-host{width:100%;overflow-x:auto}
+  svg text{font-family:Inter,sans-serif}
+  #apiurl{font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--muted);background:#f3f1f8;border-radius:6px;padding:.45rem .6rem;margin:0 0 1rem;word-break:break-all;display:none}
+  #apiurl b{color:var(--ink);font-weight:600}
+  .note{font-size:.78rem;color:var(--muted);background:var(--tint);border-radius:8px;padding:.7rem .85rem;line-height:1.5}
+  .hint-click{font-size:.7rem;color:var(--accent-dk);margin-top:.5rem}
+  code{font-family:'IBM Plex Mono',monospace;font-size:.82em;background:#f3f1f8;padding:.05rem .3rem;border-radius:4px}
+
+  /* ── Drill-down: period detail (per-DOI horizontal histogram) ── */
+  .drill-head{display:flex;align-items:center;gap:.75rem;margin-bottom:.75rem;flex-wrap:wrap}
+  .drill-title{font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+  .drill-sub{font-size:.72rem;color:var(--muted)}
+  .drill-x{margin-left:auto;font-size:.7rem;color:var(--muted);background:none;border:1px solid var(--line);border-radius:6px;padding:.2rem .55rem;cursor:pointer;font-family:inherit}
+  .drill-x:hover{border-color:var(--accent);color:var(--accent-dk)}
+  .pd-list{display:flex;flex-direction:column;gap:.2rem;max-height:480px;overflow-y:auto}
+  .pd-row{display:flex;align-items:center;gap:.6rem;padding:.25rem .4rem;border-radius:6px;cursor:pointer}
+  .pd-row:hover{background:var(--bg)}
+  .pd-label{flex:0 0 240px;font-family:'IBM Plex Mono',monospace;font-size:.66rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pd-label:hover{color:var(--accent-dk);text-decoration:underline}
+  .pd-track{flex:1;display:flex;height:14px;background:#f3f1f8;border-radius:3px;overflow:hidden;min-width:60px}
+  .pd-seg{height:100%}
+  .pd-count{flex:0 0 auto;font-family:'IBM Plex Mono',monospace;font-size:.66rem;color:var(--muted);min-width:2.5rem;text-align:right}
+  .pd-hint{font-size:.7rem;color:var(--muted);font-style:italic;margin-top:.5rem}
+
+  /* ── Ported RCW history panel ── */
+  #history-panel{font-size:.8rem}
+  .act-header{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--faint);margin-bottom:.85rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+  .act-filter-btns{display:flex;gap:0;margin-left:auto}
+  .act-filter-btn{font-size:.65rem;font-family:var(--mono);background:none;border:1px solid var(--rule);padding:.2rem .5rem;cursor:pointer;color:var(--faint);margin-left:-1px}
+  .act-filter-btn:hover{border-color:var(--sub);color:var(--sub)}
+  .act-filter-btn.active{background:var(--ink);color:var(--white);border-color:var(--ink);z-index:1}
+  .act-header a{font-family:var(--mono);color:var(--blue);text-decoration:none;text-transform:none;letter-spacing:0;font-size:.65rem}
+  .act-header a:hover{text-decoration:underline}
+  .pulse-bar{display:flex;align-items:flex-end;gap:1px;height:32px;margin-bottom:1.1rem;width:100%;overflow:hidden}
+  .pulse-seg{flex:1;min-width:0;max-width:10px;opacity:.85}
+  .tl-table{width:100%;border-collapse:collapse}
+  .tl-table td{padding:.45rem .75rem .45rem 0;vertical-align:top;border-top:1px solid var(--rule);font-size:.75rem}
+  .tl-table tr:first-child td{border-top:none}
+  .tl-col-date{width:110px;font-family:var(--mono);font-size:.65rem;color:var(--faint);white-space:nowrap}
+  .tl-col-dot{width:20px}
+  .tl-dot-wrap{display:flex;flex-direction:column;align-items:center;padding-top:.3rem}
+  .tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .tl-col-action{width:80px}
+  .act-label{font-family:var(--mono);font-size:.7rem;font-weight:500}
+  .act-summary{font-size:.78rem;color:var(--sub);line-height:1.4}
+  .act-summary strong{color:var(--ink);font-weight:600}
+  .act-toggle{font-size:.7rem;color:var(--blue);background:none;border:none;padding:0;cursor:pointer;margin-top:.3rem;display:block;font-family:var(--sans)}
+  .act-toggle:hover{text-decoration:underline}
+  .act-detail{display:none;margin-top:.5rem}
+  .act-detail.open{display:block}
+  .act-v{font-family:var(--mono);font-size:.6rem;color:var(--faint)}
+  .diff-block{display:flex;flex-direction:column;gap:.3rem}
+  .diff-row{display:grid;grid-template-columns:120px 1fr;gap:.5rem;align-items:start}
+  .diff-field{font-size:.62rem;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);padding-top:.15rem;line-height:1.3}
+  .diff-values{display:block;font-family:var(--mono);font-size:.67rem}
+  .diff-before{background:var(--red-bg);color:#991b1b;padding:.3rem .5rem;text-decoration:line-through;word-break:break-word;white-space:pre-wrap;display:block;font-family:var(--mono);font-size:.67rem;margin-bottom:.25rem}
+  .diff-arrow{color:var(--rule-dk);font-size:.7rem;display:block;margin:.1rem 0}
+  .diff-after{background:var(--green-bg);color:#166534;padding:.3rem .5rem;word-break:break-word;white-space:pre-wrap;display:block;font-family:var(--mono);font-size:.67rem}
+  .diff-new{background:var(--blue-bg);color:#1e40af;padding:.3rem .5rem;word-break:break-word;white-space:pre-wrap;display:block;font-family:var(--mono);font-size:.67rem}
+
+  @media(max-width:820px){
+    .topbar{padding:0 1rem}.topbar-inner{flex-direction:column}.topbar-brand{padding-right:0}.brand-tool-name{font-size:1.5rem}
+    .topbar-links{flex-direction:row;flex-wrap:wrap;gap:.75rem;padding:.25rem 0 .5rem}
+    .hero{padding:1.25rem 1rem}.hero-inner{flex-direction:column;gap:1rem;align-items:stretch}.hero-text{min-width:0}.hero-search{min-width:0;width:100%}
+    .sel-inner{padding:.7rem 1rem}.sel-stats{margin-left:0}.wrap{padding:1.25rem 1rem 4rem}
+    .pd-label{flex-basis:130px}.diff-row{grid-template-columns:80px 1fr}
+  }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" onerror="this.style.display='none'" />
+      </a>
+      <div class="brand-title-wrap"><div class="brand-tool-name">Repository Activity</div></div>
+    </div>
+    <div class="topbar-links">
+      <a href="https://metadata-game-changers.github.io/recuration-watch/" target="_blank" rel="noopener">Re-Curation Watch ↗</a>
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers ↗</a>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h2 class="hero-title">Explore any DataCite Repository<span class="proto-flag">prototype</span></h2>
+      <p class="hero-sub">Search by repository name or enter a DataCite client ID to see its full curation activity plotted over time.</p>
+    </div>
+    <div class="hero-search">
+      <div class="hero-form">
+        <input class="hero-input" id="repo-input" type="text" placeholder="Repository name or client ID…" spellcheck="false" autocomplete="off" value="sjyq.oozvia" />
+        <button class="hero-go" id="repo-go">Explore →</button>
+      </div>
+      <div class="repo-autocomplete" id="repo-autocomplete"></div>
+      <div class="hero-secondary">
+        <span class="hero-secondary-label">Bin by</span>
+        <select class="hero-select" id="bin">
+          <option value="auto" selected>Auto</option>
+          <option value="year">Year</option>
+          <option value="quarter">Quarter</option>
+          <option value="month">Month</option>
+        </select>
+        <span class="hero-secondary-label">Stack by</span>
+        <select class="hero-select" id="stackby">
+          <option value="property" selected>Changed property</option>
+          <option value="action">Action</option>
+        </select>
+        <label class="hero-chk"><input type="checkbox" id="excl" /> Exclude registrations</label>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sel-summary" id="sel-summary" style="display:none">
+  <div class="sel-inner">
+    <span class="sel-repo" id="sel-repo">—</span>
+    <div class="sel-stats">
+      <span class="sel-stat"><b id="sel-events">—</b> <span id="sel-events-label">events</span></span>
+      <span class="sel-stat"><b id="sel-dois">—</b> DOIs touched</span>
+      <span class="sel-stat"><b id="sel-range">—</b></span>
+      <span class="sel-stat partial" id="sel-partial"></span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="status">Search for a repository (or enter a client ID) and click Explore.</div>
+  <div id="progress"><i></i></div>
+  <div id="apiurl"></div>
+
+  <div class="card" id="result" style="display:none">
+    <h2>Activity over time</h2>
+    <div class="chart-cap" id="chart-cap"></div>
+    <div class="chart-host"><svg id="chart" viewBox="0 0 940 380" width="940" height="380" role="img"></svg></div>
+    <div class="legend" id="legend"></div>
+    <div class="hint-click">Tip: click a bar to see which DOIs changed in that period.</div>
+  </div>
+
+  <div class="card" id="period-card" style="display:none">
+    <div class="drill-head">
+      <span class="drill-title">DOIs changed</span>
+      <span class="drill-sub" id="period-sub">—</span>
+      <button class="drill-x" id="period-close">✕ close</button>
+    </div>
+    <div class="pd-list" id="pd-list"></div>
+    <div class="pd-hint" id="pd-hint"></div>
+  </div>
+
+  <div class="card" id="history-card" style="display:none">
+    <div class="drill-head">
+      <span class="drill-title">DOI history</span>
+      <span class="drill-sub" id="history-doi">—</span>
+      <button class="drill-x" id="history-close">✕ close</button>
+    </div>
+    <div id="history-panel"></div>
+  </div>
+
+  <div class="note">
+    <b>Large-repository guard:</b> the count is read first; if it exceeds <span id="cap-label">10,000</span> events the tool loads only the most recent capped set and labels the result <em>partial</em> — it never pulls all activities for a giant repository (DataCite page-number pagination tops out at 10,000; beyond that needs cursor pagination, left out of this prototype). The drill-down reuses the activities already loaded; opening a DOI's full history makes one extra call to that DOI's <code>/activities</code> feed — the same path Re-Curation Watch uses.
+  </div>
+</div>
+
+<script>
+const API_BASE = 'https://api.datacite.org';
+const PAGE = 1000;          // DataCite max page[size]
+const MAX_PAGES = 10;       // page[number] caps at 10 → 10,000-event guard
+const CAP = PAGE * MAX_PAGES;
+const PD_LIMIT = 40;        // max DOI rows shown in a period
+
+/* action colours for the time chart (create/update/publish/delete) */
+const ACTION_COLORS = { create:'var(--create)', update:'var(--update)', publish:'var(--publish)', delete:'var(--delete)' };
+const ACTION_ORDER = ['create','update','publish','delete'];
+
+/* High-level change-property labels — mirrors Re-Curation Watch's FIELD_LABELS */
+const FIELD_LABELS = {
+  url:'URL', doi:'DOI', titles:'Titles', creators:'Creators',
+  contributors:'Contributors', descriptions:'Descriptions', subjects:'Subjects',
+  dates:'Dates', types:'Types', rights_list:'Rights / Licenses',
+  related_identifiers:'Related IDs', funding_references:'Funding',
+  geo_locations:'Geo Locations', publisher:'Publisher',
+  publication_year:'Pub. Year', language:'Language',
+  schema_version:'Schema', sizes:'Sizes', formats:'Formats',
+  version_info:'Version', identifiers:'Identifiers', related_items:'Related Items'
+};
+const fieldLabel = k => FIELD_LABELS[k] ?? k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+const CHANGE_SKIP = new Set(['doi','regenerate','only_validate','should_validate','aasm_state','content_url','landing_page','container','reason','source']);
+
+const PROP_PALETTE = ['#2f6fb0','#d4910b','#9167b0','#3a9d6e','#c0504d','#1f9e9e','#e0691a','#b0457f','#5a6b8c','#7d8b3a'];
+const REGISTERED_KEY = '__registered__', OTHER_KEY = '__other__';
+const REGISTERED_COLOR = '#6b7280', OTHER_COLOR = '#cfcad8';
+const TOP_N = 9;
+
+const $ = id => document.getElementById(id);
+const statusEl = $('status');
+function setStatus(msg, cls){ statusEl.textContent = msg; statusEl.className = cls || ''; }
+function setProgress(f){ const p=$('progress'); p.classList.add('on'); p.classList.remove('indet'); p.firstElementChild.style.width=Math.max(0,Math.min(1,f))*100+'%'; }
+function setIndet(){ const p=$('progress'); p.classList.add('on','indet'); p.firstElementChild.style.width=''; }
+function hideProgress(){ const p=$('progress'); p.classList.remove('on','indet'); p.firstElementChild.style.width='0'; }
+
+const normDoi = s => String(s||'').replace(/^https?:\/\/doi\.org\//i,'').toLowerCase();
+const escHtml = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const escAttr = escHtml;
+const capitalise = s => s ? s[0].toUpperCase()+s.slice(1) : s;
+const sanitizeId = s => String(s).replace(/[^a-zA-Z0-9-_]/g,'-');
+function fmtDate(iso){ try { return new Date(iso).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}); } catch { return iso; } }
+
+let lastRun = null;        // { events:[{t,action,doi,props[]}], total, partial, clientId, meta }
+let currentModel = null;   // model for the visible time chart
+let currentEvents = [];    // events feeding the visible chart (after exclude filter)
+let currentG = 'year';     // active granularity
+let selectedBinKey = null; // highlighted period
+
+/* ---------- fetch ---------- */
+async function safeFetch(url){
+  let res;
+  try { res = await fetch(url); }
+  catch {
+    const hint = location.protocol === 'file:'
+      ? 'Page opened as a local file (file://) — browsers block requests. Serve it over http: run "python3 -m http.server" then open via http://localhost:8000/repo-activity.html'
+      : 'Could not reach api.datacite.org — check your network.';
+    throw new Error('Failed to fetch. ' + hint);
+  }
+  if (!res.ok) throw new Error(`DataCite returned ${res.status}`);
+  return res;
+}
+async function fetchActivityTotal(clientId){
+  const res = await safeFetch(`${API_BASE}/activities?query=username:${encodeURIComponent(clientId)}&page[size]=1`);
+  const json = await res.json();
+  return json.meta && typeof json.meta.total === 'number' ? json.meta.total : null;
+}
+function changedProps(changes, action){
+  if ((action||'') === 'create') return [];
+  if (!changes || typeof changes !== 'object') return [];
+  return Object.keys(changes).filter(k => !CHANGE_SKIP.has(k));
+}
+async function fetchRepoActivities(clientId, onProgress){
+  const events = [];
+  let page = 1, total = null;
+  while (page <= MAX_PAGES){
+    const res = await safeFetch(`${API_BASE}/activities?query=username:${encodeURIComponent(clientId)}&page[size]=${PAGE}&page[number]=${page}`);
+    const json = await res.json();
+    if (total === null) total = json.meta?.total ?? 0;
+    const batch = json.data ?? [];
+    for (const a of batch){
+      const at = a.attributes || {};
+      const t = at['prov:generatedAtTime'];
+      if (!t) continue;
+      const action = (at.action || 'update').toLowerCase();
+      events.push({ t: new Date(t), action, doi: normDoi(at['prov:wasDerivedFrom']), props: changedProps(at.changes, action) });
+    }
+    onProgress?.(events.length, Math.min(total, CAP));
+    if (!batch.length || events.length >= total || events.length >= CAP) break;
+    page++;
+  }
+  return { events, total };
+}
+async function fetchClientMeta(clientId){
+  try {
+    const res = await fetch(`${API_BASE}/clients/${encodeURIComponent(clientId)}`);
+    if (!res.ok) return null;
+    const j = await res.json();
+    return { name: j.data?.attributes?.name ?? clientId };
+  } catch { return null; }
+}
+// per-DOI history feed — same path-based call Re-Curation Watch uses
+async function fetchDoiActivities(doiId){
+  try {
+    let results = [], total = null, page = 1;
+    while (true){
+      const res = await fetch(`${API_BASE}/dois/${encodeURIComponent(doiId)}/activities?page[size]=100&page[number]=${page}`);
+      if (!res.ok) throw new Error(`${res.status}`);
+      const json = await res.json();
+      if (total === null) total = json.meta?.total ?? 0;
+      const batch = json.data ?? [];
+      results = results.concat(batch);
+      if (!batch.length || results.length >= total) break;
+      page++; if (page > 50) break;
+    }
+    return results;
+  } catch { return null; }
+}
+
+/* ---------- autocomplete ---------- */
+let acTimer, acHighlight = -1, acItems = [];
+async function searchClients(q){
+  try {
+    const res = await fetch(`${API_BASE}/clients?query=${encodeURIComponent(q)}&page[size]=8`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return (json.data ?? []).map(d => ({ id: d.id, name: d.attributes?.name ?? d.id, count: d.attributes?.doiCount ?? null }));
+  } catch { return []; }
+}
+function showAutocomplete(items){
+  const box = $('repo-autocomplete');
+  acItems = items; acHighlight = -1;
+  if (!items.length){ box.classList.remove('open'); return; }
+  box.innerHTML = items.map((it,i) =>
+    `<div class="repo-ac-item" data-id="${escAttr(it.id)}" data-idx="${i}">
+      <span class="repo-ac-name">${escHtml(it.name)}</span>
+      <span class="repo-ac-id">${escHtml(it.id)}</span>
+      ${it.count != null ? `<span class="repo-ac-count">${it.count.toLocaleString()} DOIs</span>` : ''}
+    </div>`).join('');
+  box.classList.add('open');
+  box.querySelectorAll('.repo-ac-item').forEach(el => {
+    el.addEventListener('mousedown', e => { e.preventDefault(); $('repo-input').value = el.dataset.id; box.classList.remove('open'); run(); });
+  });
+}
+function closeAutocomplete(){ $('repo-autocomplete').classList.remove('open'); acHighlight = -1; }
+$('repo-input').addEventListener('input', () => {
+  const q = $('repo-input').value.trim();
+  clearTimeout(acTimer);
+  if (q.length < 2){ closeAutocomplete(); return; }
+  $('repo-autocomplete').innerHTML = '<div class="repo-ac-loading">Searching…</div>';
+  $('repo-autocomplete').classList.add('open');
+  acTimer = setTimeout(async () => showAutocomplete(await searchClients(q)), 300);
+});
+$('repo-input').addEventListener('keydown', e => {
+  const box = $('repo-autocomplete');
+  const open = box.classList.contains('open');
+  if (e.key === 'ArrowDown'){ e.preventDefault(); if (open && acHighlight < acItems.length-1){ acHighlight++; box.querySelectorAll('.repo-ac-item').forEach((el,i)=>el.classList.toggle('highlighted', i===acHighlight)); } }
+  else if (e.key === 'ArrowUp'){ e.preventDefault(); if (open && acHighlight > 0){ acHighlight--; box.querySelectorAll('.repo-ac-item').forEach((el,i)=>el.classList.toggle('highlighted', i===acHighlight)); } }
+  else if (e.key === 'Enter'){ e.preventDefault(); if (open && acHighlight>=0 && acItems[acHighlight]){ $('repo-input').value = acItems[acHighlight].id; closeAutocomplete(); run(); } else { closeAutocomplete(); run(); } }
+  else if (e.key === 'Escape'){ closeAutocomplete(); }
+});
+document.addEventListener('click', e => { if (!e.target.closest('.hero-search')) closeAutocomplete(); });
+
+/* ---------- time bins ---------- */
+function chooseGranularity(minD, maxD){
+  const months = (maxD.getFullYear()-minD.getFullYear())*12 + (maxD.getMonth()-minD.getMonth()) + 1;
+  if (months <= 24) return 'month';
+  if (months <= 96) return 'quarter';
+  return 'year';
+}
+function binKey(d, g){
+  const y = d.getFullYear(), m = d.getMonth();
+  if (g === 'year')    return { key:`${y}`, label:`${y}` };
+  if (g === 'quarter') return { key:`${y}-Q${Math.floor(m/3)+1}`, label:`${y} Q${Math.floor(m/3)+1}` };
+  return { key:`${y}-${String(m+1).padStart(2,'0')}`, label:`${y}-${String(m+1).padStart(2,'0')}` };
+}
+function* iterateBins(minD, maxD, g){
+  let y = minD.getFullYear(), m = minD.getMonth();
+  const ey = maxD.getFullYear(), em = maxD.getMonth();
+  if (g === 'year'){ for (let yy=y; yy<=ey; yy++) yield binKey(new Date(yy,0,1),'year'); return; }
+  if (g === 'quarter'){ let q=Math.floor(m/3); const eq=Math.floor(em/3); while (y<ey || (y===ey && q<=eq)){ yield binKey(new Date(y,q*3,1),'quarter'); q++; if(q>3){q=0;y++;} } return; }
+  while (y<ey || (y===ey && m<=em)){ yield binKey(new Date(y,m,1),'month'); m++; if(m>11){m=0;y++;} }
+}
+
+/* ---------- model ---------- */
+function buildModel(events, g, stackBy){
+  const valid = events.filter(e => e.t instanceof Date && !isNaN(e.t)).sort((a,b)=>a.t-b.t);
+  const empty = { bins:[], categories:[], stackBy, unit:(stackBy==='action'?'events':'changes'), classify:()=>[] };
+  if (!valid.length) return empty;
+  const minD = valid[0].t, maxD = valid[valid.length-1].t;
+
+  let categories, classify;
+  if (stackBy === 'action'){
+    const seen = new Set(valid.map(e=>e.action));
+    const ordered = [...ACTION_ORDER.filter(a=>seen.has(a)), ...[...seen].filter(a=>!ACTION_ORDER.includes(a)).sort()];
+    categories = ordered.map(a => ({ key:a, label:a, color: ACTION_COLORS[a] || 'var(--other)' }));
+    classify = e => [{ key:e.action, w:1 }];
+  } else {
+    const tally = new Map(); let hasRegistered = false;
+    for (const e of valid){
+      if (e.action === 'create'){ hasRegistered = true; continue; }
+      if (!e.props.length){ tally.set(OTHER_KEY,(tally.get(OTHER_KEY)||0)+1); continue; }
+      for (const k of e.props){ const lbl = fieldLabel(k); tally.set(lbl,(tally.get(lbl)||0)+1); }
+    }
+    const otherFloor = tally.get(OTHER_KEY) || 0; tally.delete(OTHER_KEY);
+    const ranked = [...tally.entries()].sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0]));
+    const top = ranked.slice(0, TOP_N).map(e=>e[0]);
+    const topSet = new Set(top);
+    const overflow = ranked.slice(TOP_N).reduce((s,e)=>s+e[1], 0);
+    categories = [];
+    if (hasRegistered) categories.push({ key:REGISTERED_KEY, label:'Registered', color:REGISTERED_COLOR });
+    top.forEach((lbl,i) => categories.push({ key:lbl, label:lbl, color:PROP_PALETTE[i % PROP_PALETTE.length] }));
+    if (overflow + otherFloor > 0) categories.push({ key:OTHER_KEY, label:'Other', color:OTHER_COLOR });
+    classify = e => {
+      if (e.action === 'create') return [{ key:REGISTERED_KEY, w:1 }];
+      if (!e.props.length) return [{ key:OTHER_KEY, w:1 }];
+      return e.props.map(k => { const lbl = fieldLabel(k); return { key: topSet.has(lbl) ? lbl : OTHER_KEY, w:1 }; });
+    };
+  }
+
+  const order = [], map = new Map();
+  for (const b of iterateBins(minD, maxD, g)){ map.set(b.key, { key:b.key, label:b.label, counts:{}, total:0 }); order.push(b.key); }
+  for (const e of valid){
+    const bin = map.get(binKey(e.t, g).key); if (!bin) continue;
+    for (const { key, w } of classify(e)){ bin.counts[key] = (bin.counts[key]||0)+w; bin.total += w; }
+  }
+  return { bins: order.map(k=>map.get(k)), categories, stackBy, unit:(stackBy==='action'?'events':'changes'), classify };
+}
+
+/* ---------- render: time chart ---------- */
+function renderChart(model){
+  const svg = $('chart');
+  const W = 940, H = 380, mL = 48, mR = 12, mT = 14, mB = 64;
+  const plotW = W-mL-mR, plotH = H-mT-mB;
+  const ns = 'http://www.w3.org/2000/svg';
+  svg.innerHTML = '';
+  const add = (tag, attrs, parent) => { const el=document.createElementNS(ns,tag); for(const k in attrs) el.setAttribute(k,attrs[k]); (parent||svg).appendChild(el); return el; };
+  const bins = model.bins;
+  if (!bins.length){ add('text',{x:W/2,y:H/2,'text-anchor':'middle',fill:'#6b7280','font-size':13}).textContent='No activity to plot.'; return; }
+  const labelByKey = Object.fromEntries(model.categories.map(c=>[c.key,c.label]));
+  const maxTotal = Math.max(1, ...bins.map(b=>b.total));
+  const ticks = 4;
+  for (let i=0;i<=ticks;i++){
+    const v = Math.round(maxTotal*i/ticks);
+    const y = mT + plotH - (v/maxTotal)*plotH;
+    add('line',{x1:mL,y1:y,x2:mL+plotW,y2:y,stroke:'#eee','stroke-width':1});
+    add('text',{x:mL-8,y:y+3,'text-anchor':'end','font-size':10,fill:'#9aa0ab'}).textContent=v;
+  }
+  add('line',{x1:mL,y1:mT,x2:mL,y2:mT+plotH,stroke:'#d8d4e0','stroke-width':1});
+  add('line',{x1:mL,y1:mT+plotH,x2:mL+plotW,y2:mT+plotH,stroke:'#d8d4e0','stroke-width':1});
+  const n = bins.length, slot = plotW/n, bw = Math.max(1, Math.min(slot*0.8, 46));
+  const labelEvery = Math.ceil(n/16);
+  bins.forEach((bin,i)=>{
+    const x = mL + i*slot + (slot-bw)/2;
+    if (bin.key === selectedBinKey){
+      add('rect',{x:(mL+i*slot+1).toFixed(1),y:mT,width:(slot-2).toFixed(1),height:plotH,fill:'rgba(145,103,176,.08)',stroke:'var(--accent)','stroke-width':1.4,'stroke-dasharray':'3 2',rx:2});
+    }
+    let yTop = mT + plotH;
+    for (const cat of model.categories){
+      const c = bin.counts[cat.key]||0; if (!c) continue;
+      const h = (c/maxTotal)*plotH; yTop -= h;
+      add('rect',{x:x.toFixed(1),y:yTop.toFixed(1),width:bw.toFixed(1),height:h.toFixed(1),fill:cat.color});
+    }
+    const parts = model.categories.filter(c=>bin.counts[c.key]).map(c=>`${labelByKey[c.key]}: ${bin.counts[c.key]}`);
+    const r = add('rect',{x:x.toFixed(1),y:mT,width:bw.toFixed(1),height:plotH,fill:'transparent'});
+    r.style.cursor = 'pointer';
+    add('title',{},r).textContent = `${bin.label} — ${bin.total} ${model.unit}${parts.length?` (${parts.join(', ')})`:''} · click to drill in`;
+    r.addEventListener('click', () => selectBin(bin.key, bin.label));
+    if (i % labelEvery === 0){
+      const cx = (x+bw/2).toFixed(1);
+      add('text',{x:cx,y:mT+plotH+14,'text-anchor':'end','font-size':9,fill:'#6b7280',transform:`rotate(-45 ${cx} ${mT+plotH+14})`}).textContent = bin.label;
+    }
+  });
+}
+function renderLegend(categories){ $('legend').innerHTML = categories.map(c => `<span><i style="background:${c.color}"></i>${escHtml(c.label)}</span>`).join(''); }
+
+function renderSelection(plotted, dois, model){
+  if (!lastRun) return;
+  $('sel-summary').style.display = '';
+  const name = (lastRun.meta && lastRun.meta.name) ? lastRun.meta.name : lastRun.clientId;
+  $('sel-repo').innerHTML = `${escHtml(name)}<span class="sel-id">${escHtml(lastRun.clientId)}</span>`;
+  $('sel-events').textContent = plotted.toLocaleString();
+  $('sel-dois').textContent = dois.toLocaleString();
+  $('sel-range').textContent = (model && model.bins.length) ? `${model.bins[0].label} – ${model.bins[model.bins.length-1].label}` : '—';
+  $('sel-partial').innerHTML = lastRun.partial ? `<b>partial</b> · recent ${CAP.toLocaleString()} of ${lastRun.total.toLocaleString()}` : '';
+}
+
+function render(){
+  if (!lastRun) return;
+  selectedBinKey = null;
+  $('period-card').style.display = 'none';
+  $('history-card').style.display = 'none';
+
+  const stackBy = $('stackby').value;
+  const exclude = $('excl').checked;
+  currentEvents = exclude ? lastRun.events.filter(e => e.action !== 'create') : lastRun.events;
+  currentG = $('bin').value === 'auto'
+    ? (currentEvents.length ? chooseGranularity(new Date(Math.min(...currentEvents.map(e=>+e.t))), new Date(Math.max(...currentEvents.map(e=>+e.t)))) : 'year')
+    : $('bin').value;
+
+  currentModel = buildModel(currentEvents, currentG, stackBy);
+  renderChart(currentModel);
+  renderLegend(currentModel.categories);
+  renderSelection(currentEvents.length, new Set(currentEvents.map(e=>e.doi)).size, currentModel);
+
+  $('chart-cap').textContent = stackBy === 'action'
+    ? 'Bars show activity events per period, stacked by action.'
+    : 'Bars show metadata property changes per period, stacked by the high-level property changed (an update touching several fields counts once per field; registrations counted once).';
+}
+
+/* ---------- drill-down: period detail ---------- */
+function selectBin(key, label){
+  selectedBinKey = key;
+  renderChart(currentModel);                       // redraw to show highlight
+  const evs = currentEvents.filter(e => binKey(e.t, currentG).key === key);
+  renderPeriodDetail(evs, label);
+  $('history-card').style.display = 'none';
+  $('period-card').style.display = '';
+  $('period-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+function renderPeriodDetail(events, label){
+  const byDoi = new Map();
+  for (const e of events){
+    let rec = byDoi.get(e.doi); if (!rec){ rec = { doi:e.doi, total:0, counts:{} }; byDoi.set(e.doi, rec); }
+    for (const { key, w } of currentModel.classify(e)){ rec.counts[key] = (rec.counts[key]||0)+w; rec.total += w; }
+  }
+  const rows = [...byDoi.values()].sort((a,b)=> b.total-a.total || a.doi.localeCompare(b.doi));
+  const maxTotal = Math.max(1, ...rows.map(r=>r.total));
+  const shown = rows.slice(0, PD_LIMIT);
+  const cats = currentModel.categories;
+
+  $('period-sub').textContent = `${label} · ${events.length.toLocaleString()} ${currentModel.unit} across ${rows.length.toLocaleString()} DOI${rows.length!==1?'s':''}`;
+  $('pd-list').innerHTML = shown.map(r => {
+    const segs = cats.filter(c=>r.counts[c.key]).map(c =>
+      `<div class="pd-seg" style="width:${(r.counts[c.key]/maxTotal*100).toFixed(2)}%;background:${c.color}" title="${escAttr(c.label)}: ${r.counts[c.key]}"></div>`).join('');
+    return `<div class="pd-row" data-doi="${escAttr(r.doi)}">
+      <span class="pd-label" title="${escAttr(r.doi)}">${escHtml(r.doi)}</span>
+      <div class="pd-track">${segs}</div>
+      <span class="pd-count">${r.total}</span>
+    </div>`;
+  }).join('');
+  $('pd-hint').textContent = rows.length > PD_LIMIT ? `Showing the ${PD_LIMIT} most active of ${rows.length.toLocaleString()} DOIs. Click any DOI for its full history.` : 'Click any DOI for its full history.';
+  $('pd-list').querySelectorAll('.pd-row').forEach(el => el.addEventListener('click', () => openDoiHistory(el.dataset.doi)));
+}
+$('period-close').addEventListener('click', () => { $('period-card').style.display='none'; $('history-card').style.display='none'; selectedBinKey=null; if (currentModel) renderChart(currentModel); });
+
+/* ---------- drill-down: RCW-style DOI history ---------- */
+function histActionColor(action){
+  const a = (action??'').toLowerCase();
+  if (a.includes('create'))   return '#16a34a';
+  if (a.includes('publish'))  return '#d97706';
+  if (a.includes('update'))   return '#2563eb';
+  if (a.includes('hide'))     return '#6b7280';
+  if (a.includes('register')) return '#7c3aed';
+  if (a.includes('delete'))   return '#dc2626';
+  return '#9ca3af';
+}
+function summariseValue(val){
+  if (val===null||val===undefined) return '—';
+  if (typeof val==='string') return val;
+  if (typeof val==='number'||typeof val==='boolean') return String(val);
+  if (Array.isArray(val)||typeof val==='object') return JSON.stringify(val, null, 2);
+  return String(val);
+}
+function changeSummary(changes, action){
+  if (!changes || typeof changes !== 'object') return '';
+  const SKIP = new Set(['doi','regenerate','only_validate','should_validate','aasm_state','content_url','landing_page','container','reason','source']);
+  if ((action||'').toLowerCase() === 'create'){
+    const title = changes.titles?.[0]?.title ?? '';
+    return 'DOI registered' + (title ? ': <strong>'+escHtml(title)+'</strong>' : '') + '.';
+  }
+  const keys = Object.keys(changes).filter(k => !SKIP.has(k));
+  if (!keys.length) return 'Metadata updated.';
+  return 'Updated ' + keys.map(k => '<strong>'+escHtml(fieldLabel(k))+'</strong>').join(', ') + '.';
+}
+function renderChangesDiff(changes, action){
+  if (!changes || typeof changes !== 'object') return '';
+  const isCreate = (action??'').toLowerCase().includes('create');
+  const SKIP = new Set(['regenerate','only_validate','should_validate','aasm_state','content_url','landing_page','container','reason','source']);
+  const rows = [];
+  for (const [field, val] of Object.entries(changes)){
+    if (SKIP.has(field)) continue;
+    const label = escHtml(fieldLabel(field));
+    if (isCreate){
+      const s = summariseValue(val);
+      if (!s||s==='—'||s==='(empty)') continue;
+      rows.push(`<div class="diff-row"><span class="diff-field">${label}</span><div class="diff-values"><span class="diff-new">${escHtml(s)}</span></div></div>`);
+    } else if (Array.isArray(val) && val.length===2){
+      const b = summariseValue(val[0]), a2 = summariseValue(val[1]);
+      if (b===a2) continue;
+      rows.push(`<div class="diff-row"><span class="diff-field">${label}</span><div class="diff-values"><span class="diff-before">${escHtml(b)}</span><span class="diff-arrow">→</span><span class="diff-after">${escHtml(a2)}</span></div></div>`);
+    } else {
+      const s = summariseValue(val);
+      if (!s||s==='—') continue;
+      rows.push(`<div class="diff-row"><span class="diff-field">${label}</span><div class="diff-values"><span class="diff-new">${escHtml(s)}</span></div></div>`);
+    }
+  }
+  if (!rows.length) return '';
+  return `<div class="diff-block">${rows.join('')}</div>`;
+}
+function renderHistory(panel, doiId, activities){
+  if (activities===null){ panel.innerHTML = `<div class="pd-hint">Could not load activities for this DOI.</div>`; return; }
+  if (!activities.length){ panel.innerHTML = `<div class="pd-hint">No activity records.</div>`; return; }
+  const n = activities.length;
+  const chrono = [...activities].reverse();
+  const pulse = chrono.map((a,i)=>{
+    const action = (a.attributes?.action??'').toLowerCase();
+    const color  = histActionColor(action);
+    const h = Math.max(6, Math.round(32*(i+1)/n));
+    const ts = a.attributes?.['prov:generatedAtTime'] ?? '';
+    return `<div class="pulse-seg" style="height:${h}px;background:${color}" title="${escAttr(action+(ts?' · '+fmtDate(ts):''))}"></div>`;
+  }).join('');
+  const rows = activities.map((a,i)=>{
+    const attrs = a.attributes ?? {};
+    const action = attrs.action ?? 'update';
+    const ts = attrs['prov:generatedAtTime'] ?? attrs.createdAt ?? '';
+    const version = attrs.version ?? '';
+    const dotColor = histActionColor(action);
+    const summary = changeSummary(attrs.changes, action);
+    const detail = renderChangesDiff(attrs.changes, action);
+    const uid = `detail-${sanitizeId(doiId)}-${i}`;
+    return `<tr data-action="${escAttr(action)}">
+      <td class="tl-col-date">${ts?fmtDate(ts):'—'}</td>
+      <td class="tl-col-dot"><div class="tl-dot-wrap"><div class="tl-dot" style="background:${dotColor}"></div></div></td>
+      <td class="tl-col-action"><div class="act-label" style="color:${dotColor}">${escHtml(capitalise(action))}</div>${version?`<div class="act-v">v${version}</div>`:''}</td>
+      <td class="tl-col-changes"><div class="act-summary">${summary}</div>${detail?`<button class="act-toggle" data-target="${uid}">Show details ▸</button><div class="act-detail" id="${uid}">${detail}</div>`:''}</td>
+    </tr>`;
+  }).join('');
+  const actionTypes = [...new Set(activities.map(a => a.attributes?.action ?? 'update'))].sort();
+  panel.innerHTML = `
+    <div class="act-header">
+      <span>Activity · <span class="act-count-label">${n} event${n!==1?'s':''}</span></span>
+      <div class="act-filter-btns">
+        <button class="act-filter-btn active" data-action="all">All</button>
+        ${actionTypes.map(t => `<button class="act-filter-btn" data-action="${escAttr(t)}">${escHtml(capitalise(t))}</button>`).join('')}
+      </div>
+      <a href="${API_BASE}/dois/${encodeURIComponent(doiId)}/activities" target="_blank" rel="noopener">raw JSON ↗</a>
+    </div>
+    <div class="pulse-bar">${pulse}</div>
+    <div class="act-table-wrap"><table class="tl-table"><tbody>${rows}</tbody></table></div>`;
+  panel.querySelectorAll('.act-toggle').forEach(btn => btn.addEventListener('click', () => {
+    const d = document.getElementById(btn.dataset.target); if (!d) return;
+    btn.textContent = d.classList.toggle('open') ? 'Hide details ▾' : 'Show details ▸';
+  }));
+  panel.querySelectorAll('.act-filter-btn').forEach(btn => btn.addEventListener('click', () => {
+    panel.querySelectorAll('.act-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const action = btn.dataset.action;
+    let visible = 0;
+    panel.querySelectorAll('.act-table-wrap tr').forEach(row => {
+      const show = action === 'all' || (row.dataset.action ?? 'update') === action;
+      row.style.display = show ? '' : 'none'; if (show) visible++;
+    });
+    panel.querySelector('.act-count-label').textContent = action === 'all' ? `${n} event${n!==1?'s':''}` : `${visible} ${action} event${visible!==1?'s':''}`;
+  }));
+}
+async function openDoiHistory(doiId){
+  $('history-card').style.display = '';
+  $('history-doi').innerHTML = `<a href="https://doi.org/${encodeURIComponent(doiId)}" target="_blank" rel="noopener" style="font-family:var(--mono);color:var(--blue);text-decoration:none">${escHtml(doiId)} ↗</a>`;
+  $('history-panel').innerHTML = `<div class="pd-hint">Loading activities…</div>`;
+  $('history-card').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  const activities = await fetchDoiActivities(doiId);
+  renderHistory($('history-panel'), doiId, activities);
+}
+$('history-close').addEventListener('click', () => { $('history-card').style.display='none'; });
+
+/* ---------- run ---------- */
+async function run(){
+  const clientId = $('repo-input').value.trim().toLowerCase();
+  if (!clientId) return;
+  closeAutocomplete();
+  $('repo-go').disabled = true;
+  $('period-card').style.display='none'; $('history-card').style.display='none';
+  setStatus('Checking activity count…'); setIndet();
+  try {
+    const repoTotal = await fetchActivityTotal(clientId);
+    if (repoTotal === 0){ hideProgress(); setStatus('No activity records for that client ID.', 'warn'); $('result').style.display='none'; $('sel-summary').style.display='none'; return; }
+    const partial = repoTotal != null && repoTotal > CAP;
+    setStatus(partial
+      ? `Large repository (${repoTotal.toLocaleString()} events) — loading the most recent ${CAP.toLocaleString()}…`
+      : `Loading ${repoTotal!=null?repoTotal.toLocaleString():''} activities…`, partial ? 'warn' : '');
+    setProgress(0);
+
+    const [{ events, total }, meta] = await Promise.all([
+      fetchRepoActivities(clientId, (got,tot)=> setProgress(tot? got/tot : 0)),
+      fetchClientMeta(clientId)
+    ]);
+
+    lastRun = { events, total, partial, clientId, meta };
+    render();
+    $('result').style.display = '';
+    $('apiurl').style.display = '';
+    $('apiurl').innerHTML = `<b>API call:</b> ${API_BASE}/activities?query=username:${encodeURIComponent(clientId)}&page[size]=${PAGE}&page[number]=1` + (events.length>PAGE ? ` · paged at ${PAGE}` : '');
+    hideProgress();
+    const doiCount = new Set(events.map(e=>e.doi)).size;
+    setStatus(`Done — ${events.length.toLocaleString()} event${events.length!==1?'s':''} across ${doiCount.toLocaleString()} DOIs${partial?' (partial)':''}.`, partial ? 'warn' : '');
+  } catch (e){
+    console.error(e); hideProgress(); setStatus(e.message || String(e), 'err');
+  } finally {
+    $('repo-go').disabled = false;
+  }
+}
+
+$('repo-go').addEventListener('click', run);
+['bin','stackby','excl'].forEach(id => $(id).addEventListener('change', () => { if (lastRun) render(); }));
+$('cap-label').textContent = CAP.toLocaleString();
+</script>
+</body>
+</html>
