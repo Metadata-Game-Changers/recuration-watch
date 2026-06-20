@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Re-Curation Watch — Completeness Spiral (prototype)</title>
+<style>
+  :root{
+    --accent:#9167b0; --accent-dk:#673289; --tint:#f0eaf5;
+    --ink:#1f2330; --muted:#6b7280; --line:#e6e3ec; --bg:#fbfafe;
+    --green:#3a9d6e; --amber:#d4910b;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:0}
+  .wrap{max-width:1080px;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+  h1{font-size:1.15rem;font-weight:600;margin:0 0 .15rem}
+  .sub{color:var(--muted);font-size:.85rem;margin:0 0 1.25rem}
+  .proto-flag{display:inline-block;background:var(--tint);color:var(--accent-dk);font-size:.7rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:.15rem .5rem;border-radius:4px;margin-left:.4rem;vertical-align:middle}
+  .controls{display:flex;flex-wrap:wrap;gap:.6rem;align-items:flex-end;background:#fff;border:1px solid var(--line);border-radius:10px;padding:.9rem 1rem;margin-bottom:1rem}
+  .field{display:flex;flex-direction:column;gap:.25rem}
+  .field label{font-size:.72rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}
+  .field input,.field select{font:inherit;font-size:.9rem;padding:.45rem .55rem;border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink)}
+  .field input{width:170px}
+  .field select{min-width:240px}
+  .field input.small{width:90px}
+  button.run{font:inherit;font-weight:600;font-size:.9rem;background:var(--accent);color:#fff;border:0;border-radius:7px;padding:.55rem 1.1rem;cursor:pointer}
+  button.run:disabled{opacity:.5;cursor:default}
+  label.chk{display:flex;align-items:center;gap:.35rem;font-size:.8rem;color:var(--muted);cursor:pointer}
+  #status{font-size:.82rem;color:var(--muted);min-height:1.2em;margin:.2rem 0 1rem}
+  #status.err{color:#b4322f}
+  .grid{display:grid;grid-template-columns:minmax(360px,1fr) 1fr;gap:1.5rem;align-items:start}
+  @media(max-width:820px){.grid{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:1rem}
+  .card h2{font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 .75rem}
+  .summary{display:flex;gap:1.4rem;margin:0 0 1rem;flex-wrap:wrap}
+  .summary .s{display:flex;flex-direction:column}
+  .summary .s b{font-size:1.4rem;font-weight:700;color:var(--accent-dk);line-height:1}
+  .summary .s span{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-top:.2rem}
+  table{width:100%;border-collapse:collapse;font-size:.83rem}
+  th,td{text-align:left;padding:.4rem .5rem;border-bottom:1px solid var(--line)}
+  th{font-size:.7rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:600}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .bar{position:relative;height:7px;border-radius:4px;background:var(--tint);overflow:hidden;min-width:60px}
+  .bar>i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:4px}
+  .spiral-host{display:flex;justify-content:center}
+  .legend{font-size:.72rem;color:var(--muted);text-align:center;margin-top:.4rem}
+  .note{font-size:.78rem;color:var(--muted);background:var(--tint);border-radius:8px;padding:.7rem .85rem;margin-top:1.25rem;line-height:1.5}
+  .total-card{margin-bottom:1rem}
+  .total-wrap{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+  .total-big{display:flex;flex-direction:column;align-items:center;padding-right:1.5rem;border-right:1px solid var(--line)}
+  .total-big b{font-size:2.4rem;font-weight:700;color:var(--accent-dk);line-height:1}
+  .total-big span{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:.3rem}
+  .total-breakdown{display:flex;gap:.6rem;flex-wrap:wrap;flex:1}
+  .sp-chip{display:flex;flex-direction:column;gap:.2rem;padding:.55rem .7rem;border:1px solid var(--line);border-left-width:4px;border-radius:8px;cursor:pointer;background:#fff;min-width:130px;transition:background .12s}
+  .sp-chip:hover{background:var(--bg)}
+  .sp-chip.active{background:var(--bg);box-shadow:0 0 0 1px var(--line)}
+  .sp-chip .pct{font-size:1.25rem;font-weight:700;line-height:1}
+  .sp-chip .nm{font-size:.72rem;color:var(--muted)}
+  .sp-chip .ct{font-size:.66rem;color:var(--muted)}
+  .total-note{font-size:.72rem;color:var(--muted);margin-top:.75rem}
+  code{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.82em;background:#f3f1f8;padding:.05rem .3rem;border-radius:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Completeness Spiral<span class="proto-flag">prototype</span></h1>
+  <p class="sub">Runs the MGC spiral methodology client-side: live DataCite fetch → original jq queries (via jq-web/WASM) → completeness = records-with-element ÷ total records → radial spiral. Mirrors <code>get_spiral_data()</code>.</p>
+
+  <div class="controls">
+    <div class="field">
+      <label for="client">DataCite client ID</label>
+      <input id="client" type="text" value="sjyq.oozvia" spellcheck="false" autocomplete="off" />
+    </div>
+    <div class="field">
+      <label for="spiral">Spiral</label>
+      <select id="spiral"></select>
+    </div>
+    <div class="field">
+      <label for="cap">Max records</label>
+      <input id="cap" class="small" type="number" value="200" min="1" max="2000" />
+    </div>
+    <button class="run" id="run" disabled>Run</button>
+  </div>
+
+  <div id="status">Loading jq engine…</div>
+
+  <div class="card total-card" id="total-card" style="display:none">
+    <h2>FAIR completeness — all four spirals</h2>
+    <div class="total-wrap">
+      <div class="total-big"><b id="total-pct">—</b><span>Total index</span></div>
+      <div class="total-breakdown" id="total-breakdown"></div>
+    </div>
+    <div class="total-note">Total index = Σ(spiral average × concept count) ÷ Σ(concept count), across all four spirals. Click a spiral to inspect it below.</div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Spiral</h2>
+      <div class="spiral-host" id="spiral-host"><svg id="radar" viewBox="0 0 460 460" width="460" height="460"></svg></div>
+      <div class="legend" id="legend"></div>
+    </div>
+    <div class="card">
+      <h2>Concept completeness</h2>
+      <div class="summary" id="summary"></div>
+      <table>
+        <thead><tr><th>Concept</th><th class="num">Record %</th><th>Completeness</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>About:</b> This tool measures DataCite metadata completeness for a repository using the Metadata Game Changers FAIR spirals — Text, Identifiers, Connections, and Contacts. Each concept's score is the share of records that contain it; the Total index is the concept-weighted average across all four spirals. All scoring runs in your browser against live DataCite data — nothing is uploaded or stored.<br>
+    <b>Troubleshooting:</b> if the scoring engine can't load from a CDN, download <code>jq.asm.bundle.js</code> from <code>https://unpkg.com/jq-web@0.5.1/jq.asm.bundle.js</code>, place it beside this file, and point the loader's first source at <code>./jq.asm.bundle.js</code>.
+  </div>
+</div>
+
+<!-- jq-web: jq compiled to run in the browser, the engine that runs your original jq queries unchanged.
+     We use the self-contained .asm.bundle build (memory embedded) so there is NO secondary .wasm/.mem
+     fetch to fail on a CDN, with a fallback source. -->
+<script>
+(function(){
+  var sources = [
+    'https://cdn.jsdelivr.net/npm/jq-web@0.5.1/jq.asm.bundle.js',
+    'https://unpkg.com/jq-web@0.5.1/jq.asm.bundle.js'
+  ];
+  var i = 0;
+  (function load(){
+    if (i >= sources.length){ window.__jqLoadFailed = true; return; }
+    var s = document.createElement('script');
+    s.src = sources[i++];
+    s.onerror = load;                 // CDN failed → try the next one
+    document.head.appendChild(s);
+  })();
+})();
+</script>
+
+<!-- Spiral catalog converted from spirals.py (concept + jq_query per item). -->
+<script id="spirals-data" type="application/json">[{"title":"FAIR Text","code":"FAIR_Text","dialect":"DataCite","description":"Documentation concepts used to support many types of data discovery using text searches, i.e. title, author, funder name, publisher, etc. This spiral includes six mandatory concepts that exist in all records so the minimum completeness for this spiral is 40%. The average for this spiral for 387 University reporitories during January 2024 is 51%.","items":[{"concept":"Abstract","jq_query":".data[] | select((.attributes.descriptions | type == \"array\") and (.attributes.descriptions | length > 0) and any((.attributes.descriptions // [])[]; type == \"object\" and .descriptionType == \"Abstract\" and has(\"description\") and .description != null)) | {id: .id, concept: \"Abstract\", count: (([(.attributes.descriptions // [])[] | select(type == \"object\" and .descriptionType == \"Abstract\" and has(\"description\") and .description != null)]) | length), values: (([(.attributes.descriptions // [])[] | select(type == \"object\" and .descriptionType == \"Abstract\" and has(\"description\") and .description != null) | .description]))}"},{"concept":"Date Created","jq_query":".data[] | select((.attributes.dates | type == \"array\") and (.attributes.dates | length > 0) and any((.attributes.dates // [])[]; type == \"object\" and .dateType == \"Created\" and has(\"date\") and .date != null)) | {id: .id, concept: \"Date Created\", count: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Created\" and has(\"date\") and .date != null)]) | length), values: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Created\" and has(\"date\") and .date != null) | .date]))}"},{"concept":"Keyword","jq_query":".data[] | select((.attributes.subjects | type == \"array\") and (.attributes.subjects | length > 0) and any((.attributes.subjects // [])[]; type == \"object\" and has(\"subject\") and .subject != null)) | {id: .id, concept: \"Keyword\", count: (([(.attributes.subjects // [])[] | select(type == \"object\" and has(\"subject\") and .subject != null)]) | length), values: (([(.attributes.subjects // [])[] | select(type == \"object\" and has(\"subject\") and .subject != null) | .subject]))}"},{"concept":"Keyword Vocabulary","jq_query":".data[] | select((.attributes.subjects | type == \"array\") and (.attributes.subjects | length > 0) and any((.attributes.subjects // [])[]; type == \"object\" and has(\"subjectScheme\") and .subjectScheme != null)) | {id: .id, concept: \"Keyword Vocabulary\", count: (([(.attributes.subjects // [])[] | select(type == \"object\" and has(\"subjectScheme\") and .subjectScheme != null)]) | length), values: (([(.attributes.subjects // [])[] | select(type == \"object\" and has(\"subjectScheme\") and .subjectScheme != null) | .subjectScheme]))}"},{"concept":"Resource Author Affiliation","jq_query":".data[] | select((.attributes.creators | type == \"array\") and (.attributes.creators | length > 0) and any((.attributes.creators // [])[]; type == \"object\" and has(\"affiliation\")) and any((.attributes.creators // [])[]; .affiliation | type == \"array\") and any((.attributes.creators // [])[] | (.affiliation // [])[]?; type == \"object\" and has(\"name\") and .name != null)) | {id: .id, concept: \"Resource Author Affiliation\", count: (([(.attributes.creators // [])[] | (.affiliation // [])[]? | select(type == \"object\" and has(\"name\") and .name != null)]) | length), values: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"affiliation\") and (.affiliation | type == \"array\")) | (.affiliation // [])[] | select(type == \"object\" and has(\"name\") and .name != null) | .name])}"},{"concept":"Resource Author","jq_query":".data[] | select((.attributes.creators | type == \"array\") and (.attributes.creators | length > 0) and any((.attributes.creators // [])[]; type == \"object\" and has(\"name\") and .name != null)) | {id: .id, concept: \"Resource Author\", count: (([(.attributes.creators // [])[] | select(type == \"object\" and has(\"name\") and .name != null)]) | length), values: (([(.attributes.creators // [])[] | select(type == \"object\" and has(\"name\") and .name != null) | .name]))}"},{"concept":"Resource Identifier","jq_query":".data[] | select((.attributes | type == \"object\") and (.attributes | has(\"doi\") and .doi != null) or (.attributes.identifiers | type == \"array\") and (.attributes.identifiers | length > 0) and any((.attributes.identifiers // [])[]; type == \"object\" and has(\"identifier\") and .identifier != null)) | {id: .id, concept: \"Resource Identifier\", count: ((.attributes.identifier // null) + ([(.attributes.identifiers // [])[] | select(type == \"object\" and has(\"identifier\") and .identifier != null)]) | length), values: ((.attributes.identifier // null) + ([(.attributes.identifiers // [])[] | select(type == \"object\" and has(\"identifier\") and .identifier != null) | .identifier]))}"},{"concept":"Resource Publication Date","jq_query":".data[] | select((.attributes | type == \"object\") and (.attributes | has(\"publicationYear\") and .publicationYear != null)) | {id: .id, concept: \"Resource Publication Date\", count: (if ((.attributes.publicationYear // null)) != null then 1 else 0 end), values: ((.attributes.publicationYear // null))}"},{"concept":"Resource Publisher","jq_query":".data[] | select((.attributes.publisher | type == \"object\") and (.attributes.publisher | has(\"name\") and .name != null)) | {id: .id, concept: \"Resource Publisher\", count: (if ((.attributes.publisher.name // null)) != null then 1 else 0 end), values: ((.attributes.publisher.name // null))}"},{"concept":"Resource Title","jq_query":".data[] | select((.attributes.titles | type == \"array\") and (.attributes.titles | length > 0) and any((.attributes.titles // [])[]; type == \"object\" and has(\"title\") and .title != null)) | {id: .id, concept: \"Resource Title\", count: (([(.attributes.titles // [])[] | select(type == \"object\" and has(\"title\") and .title != null)]) | length), values: (([(.attributes.titles // [])[] | select(type == \"object\" and has(\"title\") and .title != null) | .title]))}"},{"concept":"Resource Type General","jq_query":".data[] | select((.attributes.types | type == \"object\") and (.attributes.types | has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null)) | {id: .id, concept: \"Resource Type General\", count: (if ((.attributes.types.resourceTypeGeneral // null)) != null then 1 else 0 end), values: ((.attributes.types.resourceTypeGeneral // null))}"},{"concept":"Project Funder","jq_query":".data[] | select((.attributes.fundingReferences | type == \"array\") and (.attributes.fundingReferences | length > 0) and any((.attributes.fundingReferences // [])[]; type == \"object\" and has(\"funderName\") and .funderName != null)) | {id: .id, concept: \"Project Funder\", count: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"funderName\") and .funderName != null)]) | length), values: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"funderName\") and .funderName != null) | .funderName]))}"},{"concept":"Award Title","jq_query":".data[] | select((.attributes.fundingReferences | type == \"array\") and (.attributes.fundingReferences | length > 0) and any((.attributes.fundingReferences // [])[]; type == \"object\" and has(\"awardTitle\") and .awardTitle != null)) | {id: .id, concept: \"Award Title\", count: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"awardTitle\") and .awardTitle != null)]) | length), values: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"awardTitle\") and .awardTitle != null) | .awardTitle]))}"},{"concept":"Temporal Extent","jq_query":".data[] | select((.attributes.dates | type == \"array\") and (.attributes.dates | length > 0) and any((.attributes.dates // [])[]; type == \"object\" and .dateType == \"Collected\" and has(\"date\") and .date != null and .date != null) or (.attributes.dates | type == \"array\") and (.attributes.dates | length > 0) and any((.attributes.dates // [])[]; type == \"object\" and .dateType == \"Coverage\" and has(\"date\") and .date != null and .date != null)) | {id: .id, concept: \"Temporal Extent\", count: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Collected\" and has(\"date\") and .date != null and .date != null)]) + ([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Coverage\" and has(\"date\") and .date != null and .date != null)]) | length), values: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Collected\" and has(\"date\") and .date != null and .date != null) | .date]) + ([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Coverage\" and has(\"date\") and .date != null and .date != null) | .date]))}"},{"concept":"Spatial Extent","jq_query":".data[] | select((.attributes.geoLocations | type == \"array\") and (.attributes.geoLocations | length > 0) and any((.attributes.geoLocations // [])[]; type == \"object\" and has(\"geoLocationBox\") and .geoLocationBox != null) or (.attributes.geoLocations | type == \"array\") and (.attributes.geoLocations | length > 0) and any((.attributes.geoLocations // [])[]; type == \"object\" and has(\"geoLocationPoint\") and .geoLocationPoint != null) or (.attributes.geoLocations | type == \"array\") and (.attributes.geoLocations | length > 0) and any((.attributes.geoLocations // [])[]; type == \"object\" and has(\"geoLocationPolygon\") and .geoLocationPolygon != null) or (.attributes.geoLocations | type == \"array\") and (.attributes.geoLocations | length > 0) and any((.attributes.geoLocations // [])[]; type == \"object\" and has(\"geoLocationPlace\") and .geoLocationPlace != null)) | {id: .id, concept: \"Spatial Extent\", count: (([(.attributes.geoLocations // [])[] | select(type == \"object\" and has(\"geoLocationBox\") and .geoLocationBox != null)]) + ([(.attributes.geoLocations // [])[] | select(type == \"object\" and has(\"geoLocationPoint\") and .geoLocationPoint != null)]) + ([(.attributes.geoLocations // [])[] | select(type == \"object\" and has(\"geoLocationPolygon\") and .geoLocationPolygon != null)]) + ([(.attributes.geoLocations // [])[] | select(type == \"object\" and has(\"geoLocationPlace\") and .geoLocationPlace != null)]) | length), values: (([(.attributes.geoLocations // [])[] | select(type == \"object\" and has(\"geoLocationBox\") and .geoLocationBox != null) | .geoLocationBox]) + ([(.attributes.geoLocations // [])[] | select(type == \"object\" and has(\"geoLocationPoint\") and .geoLocationPoint != null) | .geoLocationPoint]) + ([(.attributes.geoLocations // [])[] | select(type == \"object\" and has(\"geoLocationPolygon\") and .geoLocationPolygon != null) | .geoLocationPolygon]) + ([(.attributes.geoLocations // [])[] | select(type == \"object\" and has(\"geoLocationPlace\") and .geoLocationPlace != null) | .geoLocationPlace]))}"}]},{"title":"FAIR Identifiers","code":"FAIR_Identifiers","dialect":"DataCite","description":"Documentation concepts that provide extra information, i.e. identifiers and references, about discovery concepts. The average for this spiral for 387 University reporitories during January 2024 is 19%.","items":[{"concept":"Date Submitted","jq_query":".data[] | select((.attributes.dates | type == \"array\") and (.attributes.dates | length > 0) and any((.attributes.dates // [])[]; type == \"object\" and .dateType == \"Submitted\" and has(\"date\") and .date != null)) | {id: .id, concept: \"Date Submitted\", count: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Submitted\" and has(\"date\") and .date != null)]) | length), values: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Submitted\" and has(\"date\") and .date != null) | .date]))}"},{"concept":"Keyword Value URI","jq_query":".data[] | select((.attributes.subjects | type == \"array\") and (.attributes.subjects | length > 0) and any((.attributes.subjects // [])[]; type == \"object\" and has(\"valueURI\") and .valueURI != null) or (.attributes.subjects | type == \"array\") and (.attributes.subjects | length > 0) and any((.attributes.subjects // [])[]; type == \"object\" and has(\"valueUri\") and .valueUri != null)) | {id: .id, concept: \"Keyword Value URI\", count: (([(.attributes.subjects // [])[] | select(type == \"object\" and has(\"valueURI\") and .valueURI != null)]) + ([(.attributes.subjects // [])[] | select(type == \"object\" and has(\"valueUri\") and .valueUri != null)]) | length), values: (([(.attributes.subjects // [])[] | select(type == \"object\" and has(\"valueURI\") and .valueURI != null) | .valueURI]) + ([(.attributes.subjects // [])[] | select(type == \"object\" and has(\"valueUri\") and .valueUri != null) | .valueUri]))}"},{"concept":"Keyword Vocabulary URI","jq_query":".data[] | select((.attributes.subjects | type == \"array\") and (.attributes.subjects | length > 0) and any((.attributes.subjects // [])[]; type == \"object\" and has(\"schemeURI\") and .schemeURI != null) or (.attributes.subjects | type == \"array\") and (.attributes.subjects | length > 0) and any((.attributes.subjects // [])[]; type == \"object\" and has(\"schemeUri\") and .schemeUri != null)) | {id: .id, concept: \"Keyword Vocabulary URI\", count: (([(.attributes.subjects // [])[] | select(type == \"object\" and has(\"schemeURI\") and .schemeURI != null)]) + ([(.attributes.subjects // [])[] | select(type == \"object\" and has(\"schemeUri\") and .schemeUri != null)]) | length), values: (([(.attributes.subjects // [])[] | select(type == \"object\" and has(\"schemeURI\") and .schemeURI != null) | .schemeURI]) + ([(.attributes.subjects // [])[] | select(type == \"object\" and has(\"schemeUri\") and .schemeUri != null) | .schemeUri]))}"},{"concept":"Resource Author Type","jq_query":".data[] | select((.attributes.creators | type == \"array\") and (.attributes.creators | length > 0) and any((.attributes.creators // [])[]; type == \"object\" and has(\"nameType\") and .nameType != null)) | {id: .id, concept: \"Resource Author Type\", count: (([(.attributes.creators // [])[] | select(type == \"object\" and has(\"nameType\") and .nameType != null)]) | length), values: (([(.attributes.creators // [])[] | select(type == \"object\" and has(\"nameType\") and .nameType != null) | .nameType]))}"},{"concept":"Resource Author Identifier","jq_query":".data[] | select(\n    (.attributes.creators | type == \"array\") and \n    (.attributes.creators | length > 0) and \n    any((.attributes.creators // [])[]; \n        type == \"object\" and has(\"nameIdentifiers\") and \n        (.nameIdentifiers | type == \"array\") and \n        (.nameIdentifiers | length > 0) and \n        any((.nameIdentifiers // [])[]; type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null)\n    )\n) | {\n    id: .id, \n    concept: \"Resource Author Identifier\", \n    count: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | \n             (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null)] | length),\n    values: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | \n              (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null) | .nameIdentifier])\n}"},{"concept":"Resource Author Identifier Type","jq_query":".data[] | select(\n    (.attributes.creators | type == \"array\") and \n    (.attributes.creators | length > 0) and \n    any((.attributes.creators // [])[]; \n        type == \"object\" and has(\"nameIdentifiers\") and \n        (.nameIdentifiers | type == \"array\") and \n        (.nameIdentifiers | length > 0) and \n        any((.nameIdentifiers // [])[]; type == \"object\" and has(\"nameIdentifierScheme\") and .nameIdentifierScheme != null)\n    )\n) | {\n    id: .id, \n    concept: \"Resource Author Identifier Type\", \n    count: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | \n             (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifierScheme\") and .nameIdentifierScheme != null)] | length),\n    values: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | \n              (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifierScheme\") and .nameIdentifierScheme != null) | .nameIdentifierScheme])\n}"},{"concept":"Publisher Identifier","jq_query":".data[] | select((.attributes.publisher | type == \"object\") and (.attributes.publisher | has(\"publisherIdentifier\") and .publisherIdentifier != null)) | {id: .id, concept: \"Publisher Identifier\", count: (if ((.attributes.publisher.publisherIdentifier // null)) != null then 1 else 0 end), values: ((.attributes.publisher.publisherIdentifier // null))}"},{"concept":"Publisher Identifier Type","jq_query":".data[] | select((.attributes.publisher | type == \"object\") and (.attributes.publisher | has(\"publisherIdentifierScheme\") and .publisherIdentifierScheme != null)) | {id: .id, concept: \"Publisher Identifier Type\", count: (if ((.attributes.publisher.publisherIdentifierScheme // null)) != null then 1 else 0 end), values: ((.attributes.publisher.publisherIdentifierScheme // null))}"},{"concept":"Publisher Identifier Scheme URI","jq_query":".data[] | select((.attributes.publisher | type == \"object\") and (.attributes.publisher | has(\"schemeUri\") and .schemeUri != null)) | {id: .id, concept: \"Publisher Identifier Scheme URI\", count: (if ((.attributes.publisher.schemeUri // null)) != null then 1 else 0 end), values: ((.attributes.publisher.schemeUri // null))}"},{"concept":"Resource Author Affiliation Identifier","jq_query":".data[] | select((.attributes.creators | type == \"array\") and (.attributes.creators | length > 0) and any((.attributes.creators // [])[]; type == \"object\" and has(\"affiliation\")) and any((.attributes.creators // [])[]; .affiliation | type == \"array\") and any((.attributes.creators // [])[] | (.affiliation // [])[]?; type == \"object\" and has(\"affiliationIdentifier\") and .affiliationIdentifier != null)) | {id: .id, concept: \"Resource Author Affiliation Identifier\", count: (([(.attributes.creators // [])[] | (.affiliation // [])[]? | select(type == \"object\" and has(\"affiliationIdentifier\") and .affiliationIdentifier != null)]) | length), values: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"affiliation\") and (.affiliation | type == \"array\")) | (.affiliation // [])[] | select(type == \"object\" and has(\"affiliationIdentifier\") and .affiliationIdentifier != null) | .affiliationIdentifier])}"},{"concept":"Resource Author Affiliation Identifier Type","jq_query":".data[] | select((.attributes.creators | type == \"array\") and (.attributes.creators | length > 0) and any((.attributes.creators // [])[]; type == \"object\" and has(\"affiliation\")) and any((.attributes.creators // [])[]; .affiliation | type == \"array\") and any((.attributes.creators // [])[] | (.affiliation // [])[]?; type == \"object\" and has(\"affiliationIdentifierScheme\") and .affiliationIdentifierScheme != null)) | {id: .id, concept: \"Resource Author Affiliation Identifier Type\", count: (([(.attributes.creators // [])[] | (.affiliation // [])[]? | select(type == \"object\" and has(\"affiliationIdentifierScheme\") and .affiliationIdentifierScheme != null)]) | length), values: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"affiliation\") and (.affiliation | type == \"array\")) | (.affiliation // [])[] | select(type == \"object\" and has(\"affiliationIdentifierScheme\") and .affiliationIdentifierScheme != null) | .affiliationIdentifierScheme])}"},{"concept":"Resource Author Affiliation Identifier Scheme URI","jq_query":".data[] | select((.attributes.creators | type == \"array\") and (.attributes.creators | length > 0) and any((.attributes.creators // [])[]; type == \"object\" and has(\"affiliation\")) and any((.attributes.creators // [])[]; .affiliation | type == \"array\") and any((.attributes.creators // [])[] | (.affiliation // [])[]?; type == \"object\" and has(\"schemeUri\") and .schemeUri != null)) | {id: .id, concept: \"Resource Author Affiliation Identifier Scheme URI\", count: (([(.attributes.creators // [])[] | (.affiliation // [])[]? | select(type == \"object\" and has(\"schemeUri\") and .schemeUri != null)]) | length), values: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"affiliation\") and (.affiliation | type == \"array\")) | (.affiliation // [])[] | select(type == \"object\" and has(\"schemeUri\") and .schemeUri != null) | .schemeUri])}"},{"concept":"Resource Identifier Type","jq_query":".data[] | select((.attributes.identifiers | type == \"array\") and (.attributes.identifiers | length > 0) and any((.attributes.identifiers // [])[]; type == \"object\" and has(\"identifierType\") and .identifierType != null)) | {id: .id, concept: \"Resource Identifier Type\", count: (([(.attributes.identifiers // [])[] | select(type == \"object\" and has(\"identifierType\") and .identifierType != null)]) | length), values: (([(.attributes.identifiers // [])[] | select(type == \"object\" and has(\"identifierType\") and .identifierType != null) | .identifierType]))}"},{"concept":"Resource Type","jq_query":".data[] | select((.attributes.types | type == \"object\") and (.attributes.types | has(\"resourceType\") and .resourceType != null)) | {id: .id, concept: \"Resource Type\", count: (if ((.attributes.types.resourceType // null)) != null then 1 else 0 end), values: ((.attributes.types.resourceType // null))}"},{"concept":"Funder Identifier","jq_query":".data[] | select((.attributes.fundingReferences | type == \"array\") and (.attributes.fundingReferences | length > 0) and any((.attributes.fundingReferences // [])[]; type == \"object\" and has(\"funderIdentifier\") and .funderIdentifier != null)) | {id: .id, concept: \"Funder Identifier\", count: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"funderIdentifier\") and .funderIdentifier != null)]) | length), values: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"funderIdentifier\") and .funderIdentifier != null) | .funderIdentifier]))}"},{"concept":"Funder Identifier Type","jq_query":".data[] | select((.attributes.fundingReferences | type == \"array\") and (.attributes.fundingReferences | length > 0) and any((.attributes.fundingReferences // [])[]; type == \"object\" and has(\"funderIdentifierType\") and .funderIdentifierType != null)) | {id: .id, concept: \"Funder Identifier Type\", count: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"funderIdentifierType\") and .funderIdentifierType != null)]) | length), values: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"funderIdentifierType\") and .funderIdentifierType != null) | .funderIdentifierType]))}"},{"concept":"Award URI","jq_query":".data[] | select((.attributes.fundingReferences | type == \"array\") and (.attributes.fundingReferences | length > 0) and any((.attributes.fundingReferences // [])[]; type == \"object\" and has(\"awardUri\") and .awardUri != null)) | {id: .id, concept: \"Award URI\", count: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"awardUri\") and .awardUri != null)]) | length), values: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"awardUri\") and .awardUri != null) | .awardUri]))}"},{"concept":"Award Number","jq_query":".data[] | select((.attributes.fundingReferences | type == \"array\") and (.attributes.fundingReferences | length > 0) and any((.attributes.fundingReferences // [])[]; type == \"object\" and has(\"awardNumber\") and .awardNumber != null)) | {id: .id, concept: \"Award Number\", count: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"awardNumber\") and .awardNumber != null)]) | length), values: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"awardNumber\") and .awardNumber != null) | .awardNumber]))}"}]},{"title":"FAIR Connections","code":"FAIR_Connections","dialect":"DataCite","description":"Documentation concepts for datasets interoperability and connections for resource documentation, understanding, and trust. This spiral includes one mandatory concept (Resource URL) so the minimum score is 6%. The average for this spiral for 387 University reporitories during January 2024 is 12%.","items":[{"concept":"CitedBy","jq_query":".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsCitedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)) | {id: .id, concept: \"CitedBy\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsCitedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsCitedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null) | .relatedIdentifier]))}"},{"concept":"Date Available","jq_query":".data[] | select((.attributes.dates | type == \"array\") and (.attributes.dates | length > 0) and any((.attributes.dates // [])[]; type == \"object\" and .dateType == \"Available\" and has(\"date\") and .date != null)) | {id: .id, concept: \"Date Available\", count: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Available\" and has(\"date\") and .date != null)]) | length), values: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Available\" and has(\"date\") and .date != null) | .date]))}"},{"concept":"DescribedBy","jq_query":".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsDescribedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)) | {id: .id, concept: \"DescribedBy\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsDescribedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsDescribedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null) | .relatedIdentifier]))}"},{"concept":"Distribution Contact","jq_query":".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and .contributorType == \"Distributor\" and has(\"name\") and .name != null)) | {id: .id, concept: \"Distribution Contact\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"Distributor\" and has(\"name\") and .name != null)]) | length), values: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"Distributor\" and has(\"name\") and .name != null) | .name]))}"},{"concept":"DocumentedBy","jq_query":".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsDocumentedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)) | {id: .id, concept: \"DocumentedBy\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsDocumentedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsDocumentedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null) | .relatedIdentifier]))}"},{"concept":"Resource Contact","jq_query":".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and .contributorType == \"ContactPerson\" and has(\"name\") and .name != null)) | {id: .id, concept: \"Resource Contact\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"ContactPerson\" and has(\"name\") and .name != null)]) | length), values: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"ContactPerson\" and has(\"name\") and .name != null) | .name]))}"},{"concept":"HasMetadata","jq_query":".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"HasMetadata\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)) | {id: .id, concept: \"HasMetadata\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"HasMetadata\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"HasMetadata\" and has(\"relatedIdentifier\") and .relatedIdentifier != null) | .relatedIdentifier]))}"},{"concept":"Resource Format","jq_query":".data[] | select((.attributes | type == \"object\") and (.attributes | has(\"formats\")) and (.attributes.formats | type == \"array\") and (.attributes.formats | length > 0)) | {id: .id, concept: \"Resource Format\", count: (if ((.attributes.formats // null)) != null then 1 else 0 end), values: ((.attributes.formats // null))}"},{"concept":"Resource Size","jq_query":".data[] | select((.attributes | type == \"object\") and (.attributes | has(\"sizes\")) and (.attributes.sizes | type == \"array\") and (.attributes.sizes | length > 0)) | {id: .id, concept: \"Resource Size\", count: (if ((.attributes.sizes // null)) != null then 1 else 0 end), values: ((.attributes.sizes // null))}"},{"concept":"Resource URL","jq_query":".data[] | select((.attributes | type == \"object\") and (.attributes | has(\"url\") and .url != null)) | {id: .id, concept: \"Resource URL\", count: (if ((.attributes.url // null)) != null then 1 else 0 end), values: ((.attributes.url // null))}"},{"concept":"Rights","jq_query":".data[] | select((.attributes.rightsList | type == \"array\") and (.attributes.rightsList | length > 0) and any((.attributes.rightsList // [])[]; type == \"object\" and has(\"rights\") and .rights != null)) | {id: .id, concept: \"Rights\", count: (([(.attributes.rightsList // [])[] | select(type == \"object\" and has(\"rights\") and .rights != null)]) | length), values: (([(.attributes.rightsList // [])[] | select(type == \"object\" and has(\"rights\") and .rights != null) | .rights]))}"},{"concept":"RightsHolder","jq_query":".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and .contributorType == \"RightsHolder\" and has(\"name\") and .name != null)) | {id: .id, concept: \"RightsHolder\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"RightsHolder\" and has(\"name\") and .name != null)]) | length), values: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"RightsHolder\" and has(\"name\") and .name != null) | .name]))}"},{"concept":"Methods","jq_query":".data[] | select((.attributes.descriptions | type == \"array\") and (.attributes.descriptions | length > 0) and any((.attributes.descriptions // [])[]; type == \"object\" and .descriptionType == \"Methods\" and has(\"description\") and .description != null)) | {id: .id, concept: \"Methods\", count: (([(.attributes.descriptions // [])[] | select(type == \"object\" and .descriptionType == \"Methods\" and has(\"description\") and .description != null)]) | length), values: (([(.attributes.descriptions // [])[] | select(type == \"object\" and .descriptionType == \"Methods\" and has(\"description\") and .description != null) | .description]))}"},{"concept":"Technical Information","jq_query":".data[] | select((.attributes.descriptions | type == \"array\") and (.attributes.descriptions | length > 0) and any((.attributes.descriptions // [])[]; type == \"object\" and .descriptionType == \"TechnicalInfo\" and has(\"description\") and .description != null)) | {id: .id, concept: \"Technical Information\", count: (([(.attributes.descriptions // [])[] | select(type == \"object\" and .descriptionType == \"TechnicalInfo\" and has(\"description\") and .description != null)]) | length), values: (([(.attributes.descriptions // [])[] | select(type == \"object\" and .descriptionType == \"TechnicalInfo\" and has(\"description\") and .description != null) | .description]))}"},{"concept":"ReferencedBy","jq_query":".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsReferencedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)) | {id: .id, concept: \"ReferencedBy\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsReferencedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsReferencedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null) | .relatedIdentifier]))}"},{"concept":"ReviewedBy","jq_query":".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsReviewedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)) | {id: .id, concept: \"ReviewedBy\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsReviewedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsReviewedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null) | .relatedIdentifier]))}"},{"concept":"SourceOf","jq_query":".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsSourceOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)) | {id: .id, concept: \"SourceOf\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSourceOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSourceOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null) | .relatedIdentifier]))}"},{"concept":"SupplementTo","jq_query":".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsSupplementTo\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)) | {id: .id, concept: \"SupplementTo\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSupplementTo\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSupplementTo\" and has(\"relatedIdentifier\") and .relatedIdentifier != null) | .relatedIdentifier]))}"}]},{"title":"FAIR Contacts","code":"FAIR_Contacts","dialect":"DataCite","description":"Documentation concepts for contacts that can answer questions not addressed in the metadata or other documentation. The average for this spiral for 387 University reporitories during January 2024 is 4%.","items":[{"concept":"Resource Contact Identifier","jq_query":".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and .contributorType == \"ContactPerson\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\") and (.nameIdentifiers | length > 0) and any((.nameIdentifiers // [])[]; type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null))) | {id: .id, concept: \"Resource Contact Identifier\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"ContactPerson\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null)]) | length), values: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"ContactPerson\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null) | .nameIdentifier]))}"},{"concept":"Resource Contact Identifier Scheme","jq_query":".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and .contributorType == \"ContactPerson\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\") and (.nameIdentifiers | length > 0) and any((.nameIdentifiers // [])[]; type == \"object\" and has(\"nameIdentifierScheme\") and .nameIdentifierScheme != null))) | {id: .id, concept: \"Resource Contact Identifier Scheme\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"ContactPerson\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifierScheme\") and .nameIdentifierScheme != null)]) | length), values: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"ContactPerson\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifierScheme\") and .nameIdentifierScheme != null) | .nameIdentifierScheme]))}"},{"concept":"Resource Contact Identifier Scheme URI","jq_query":".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and .contributorType == \"ContactPerson\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\") and (.nameIdentifiers | length > 0) and any((.nameIdentifiers // [])[]; type == \"object\" and ((has(\"schemeURI\") and .schemeURI != null) or (has(\"schemeUri\") and .schemeUri != null))))) | {id: .id, concept: \"Resource Contact Identifier Scheme URI\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"ContactPerson\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"schemeURI\") and .schemeURI != null)]) + ([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"ContactPerson\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"schemeUri\") and .schemeUri != null)]) | length), values: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"ContactPerson\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"schemeURI\") and .schemeURI != null) | .schemeURI]) + ([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"ContactPerson\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"schemeUri\") and .schemeUri != null) | .schemeUri]))}"},{"concept":"Distribution Contact Identifier","jq_query":".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and .contributorType == \"Distributor\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\") and (.nameIdentifiers | length > 0) and any((.nameIdentifiers // [])[]; type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null))) | {id: .id, concept: \"Distribution Contact Identifier\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"Distributor\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null)]) | length), values: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"Distributor\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null) | .nameIdentifier]))}"},{"concept":"Distribution Contact Identifier Scheme","jq_query":".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and .contributorType == \"Distributor\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\") and (.nameIdentifiers | length > 0) and any((.nameIdentifiers // [])[]; type == \"object\" and has(\"nameIdentifierScheme\") and .nameIdentifierScheme != null))) | {id: .id, concept: \"Distribution Contact Identifier Scheme\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"Distributor\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifierScheme\") and .nameIdentifierScheme != null)]) | length), values: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"Distributor\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifierScheme\") and .nameIdentifierScheme != null) | .nameIdentifierScheme]))}"},{"concept":"Distribution Contact Identifier Scheme URI","jq_query":".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and .contributorType == \"Distributor\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\") and (.nameIdentifiers | length > 0) and any((.nameIdentifiers // [])[]; type == \"object\" and ((has(\"schemeURI\") and .schemeURI != null) or (has(\"schemeUri\") and .schemeUri != null))))) | {id: .id, concept: \"Distribution Contact Identifier Scheme URI\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"Distributor\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"schemeURI\") and .schemeURI != null)]) + ([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"Distributor\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"schemeUri\") and .schemeUri != null)]) | length), values: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"Distributor\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"schemeURI\") and .schemeURI != null) | .schemeURI]) + ([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"Distributor\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"schemeUri\") and .schemeUri != null) | .schemeUri]))}"},{"concept":"Rights Holder Identifier","jq_query":".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and .contributorType == \"RightsHolder\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\") and (.nameIdentifiers | length > 0) and any((.nameIdentifiers // [])[]; type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null))) | {id: .id, concept: \"Rights Holder Identifier\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"RightsHolder\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null)]) | length), values: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"RightsHolder\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null) | .nameIdentifier]))}"},{"concept":"Rights Holder Identifier Scheme","jq_query":".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and .contributorType == \"RightsHolder\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\") and (.nameIdentifiers | length > 0) and any((.nameIdentifiers // [])[]; type == \"object\" and has(\"nameIdentifierScheme\") and .nameIdentifierScheme != null))) | {id: .id, concept: \"Rights Holder Identifier Scheme\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"RightsHolder\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifierScheme\") and .nameIdentifierScheme != null)]) | length), values: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"RightsHolder\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifierScheme\") and .nameIdentifierScheme != null) | .nameIdentifierScheme]))}"},{"concept":"Rights Holder Identifier Scheme URI","jq_query":".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and .contributorType == \"RightsHolder\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\") and (.nameIdentifiers | length > 0) and any((.nameIdentifiers // [])[]; type == \"object\" and ((has(\"schemeURI\") and .schemeURI != null) or (has(\"schemeUri\") and .schemeUri != null))))) | {id: .id, concept: \"Rights Holder Identifier Scheme URI\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"RightsHolder\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"schemeURI\") and .schemeURI != null)]) + ([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"RightsHolder\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"schemeUri\") and .schemeUri != null)]) | length), values: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"RightsHolder\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"schemeURI\") and .schemeURI != null) | .schemeURI]) + ([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"RightsHolder\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"schemeUri\") and .schemeUri != null) | .schemeUri]))}"},{"concept":"Rights URI","jq_query":".data[] | select((.attributes.rightsList | type == \"array\") and (.attributes.rightsList | length > 0) and any((.attributes.rightsList // [])[]; type == \"object\" and has(\"rightsUri\") and .rightsUri != null)) | {id: .id, concept: \"Rights URI\", count: (([(.attributes.rightsList // [])[] | select(type == \"object\" and has(\"rightsUri\") and .rightsUri != null)]) | length), values: (([(.attributes.rightsList // [])[] | select(type == \"object\" and has(\"rightsUri\") and .rightsUri != null) | .rightsUri]))}"}]}]</script>
+
+<script>
+const API_BASE = 'https://api.datacite.org';
+const SPIRALS = JSON.parse(document.getElementById('spirals-data').textContent);
+
+const $ = id => document.getElementById(id);
+const statusEl = $('status');
+function setStatus(msg, isErr){ statusEl.textContent = msg; statusEl.className = isErr ? 'err' : ''; }
+
+/* ---------- jq readiness ---------- */
+let jqReady = false;
+function whenJqReady(){
+  return new Promise((resolve, reject) => {
+    let tries = 0;
+    (function poll(){
+      if (window.__jqLoadFailed) return reject(new Error('Could not load the jq engine from any CDN — network/CDN appears blocked. See the note below to self-host.'));
+      // jq-web exposes jq.promised.* once the module wrapper has loaded.
+      if (typeof jq !== 'undefined' && jq && jq.promised && typeof jq.promised.raw === 'function') {
+        // confirm it actually computes, not just that the object exists
+        jq.promised.raw('{"a":1}', '.a', ['-c'])
+          .then(out => (out && out.trim() === '1') ? resolve() : reject(new Error('jq loaded but self-test failed (got "'+out+'").')))
+          .catch(err => reject(new Error('jq self-test threw: ' + (err && err.message || err))));
+        return;
+      }
+      if (++tries > 300) return reject(new Error('jq engine did not initialize within 30s.'));
+      setTimeout(poll, 100);
+    })();
+  });
+}
+
+/* run a jq filter over an input object, returning ALL outputs as parsed objects (≈ jq.all in python-jq) */
+async function jqAll(inputObj, filter){
+  const out = await jq.promised.raw(JSON.stringify(inputObj), filter, ['-c']);
+  if (!out) return [];
+  return out.split('\n').filter(l => l.trim().length).map(l => JSON.parse(l));
+}
+
+/* ---------- DataCite fetch (mirrors loadRepository) ---------- */
+async function fetchRepo(clientId, cap){
+  const records = [];
+  let page = 1;
+  const pageSize = Math.min(1000, cap);          // DataCite max page[size] is 1000; don't over-fetch a small cap
+  while (records.length < cap) {
+    const url = `${API_BASE}/dois?client-id=${encodeURIComponent(clientId)}&page[size]=${pageSize}&page[number]=${page}&sort=-updated&affiliation=true&publisher=true`;
+    setStatus(`Fetching records… (${records.length} so far)`);
+    let res;
+    try {
+      res = await fetch(url);
+    } catch (netErr) {
+      // TypeError: "Failed to fetch" — almost always file:// origin, no network, or a blocker.
+      const hint = location.protocol === 'file:'
+        ? 'The page is open as a local file (file://), and browsers block outbound requests from there. Serve it over http instead — e.g. run "python3 -m http.server" in this folder and open http://localhost:8000/completeness.html'
+        : 'Could not reach api.datacite.org — check your network connection, VPN, or any request-blocking extension.';
+      throw new Error('Failed to fetch records. ' + hint);
+    }
+    if (!res.ok) throw new Error(`DataCite returned ${res.status} for client "${clientId}"`);
+    const json = await res.json();
+    const batch = json.data || [];
+    records.push(...batch);
+    const totalPages = json.meta && json.meta.totalPages ? json.meta.totalPages : page;
+    if (batch.length === 0 || page >= totalPages || page >= 10) break;   // page[number] caps at 10 (×1000 = 10,000 records)
+    page++;
+  }
+  return records.slice(0, cap);
+}
+
+/* ---------- scoring (mirrors get_spiral_data lines 2455-2519) ---------- */
+async function runSpiral(spiral, records){
+  const input = { data: records };
+  const total = records.length;
+  const items = [];
+  for (const item of spiral.items){
+    if (!item.jq_query){ continue; }                 // skip query-less items (python would error/continue)
+    let matched = 0, errored = false;
+    try {
+      const results = await jqAll(input, item.jq_query);   // results = records the select admitted
+      matched = results.length;                            // len(results)
+    } catch (e){
+      console.warn('jq error for concept', item.concept, '→', (e && e.message) || e);
+      matched = 0; errored = true;                         // query threw (≈ python except: continue)
+    }
+    let comp = total > 0 ? matched / total : 0;            // line 2508: len(results)/total
+    if (comp > 1) comp = 1;                                // trimLargeCounts
+    items.push({ concept: item.concept, matched, comp, errored });
+  }
+  const n = items.length || 1;
+  items.sort((a,b) => a.concept.localeCompare(b.concept));   // alphabetical, matches get_spiral_data's sorted() columns
+  const average  = items.reduce((a,b)=>a + Math.min(b.comp,1), 0) / n;  // Average
+  const exist    = items.filter(i => i.comp > 0).length;                // conceptExists
+  const complete = items.filter(i => i.comp >= 1).length;               // conceptComplete
+  return { items, average, exist, complete, total };
+}
+
+/* ---------- rendering ---------- */
+function fmtPct(x){ return (x*100).toFixed(0) + '%'; }
+
+// per-spiral shading colors (from the Python config)
+const SPIRAL_COLORS = {
+  'FAIR_Text':        '#E97131',
+  'FAIR_Identifiers': '#0070C0',
+  'FAIR_Connections': '#A02C93',
+  'FAIR_Contacts':    '#4EA62E'
+};
+
+function renderResults(spiral, res){
+  const color = SPIRAL_COLORS[spiral.code] || '#9167b0';
+  // summary
+  $('summary').innerHTML = `
+    <div class="s"><b>${fmtPct(res.average)}</b><span>Average</span></div>
+    <div class="s"><b>${res.exist}/${res.items.length}</b><span>Exist</span></div>
+    <div class="s"><b>${res.complete}/${res.items.length}</b><span>Complete</span></div>
+    <div class="s"><b>${res.total}</b><span>Records</span></div>`;
+  // table — record % shown as text; raw counts live in the bar tooltip
+  $('rows').innerHTML = res.items.map(i => `
+    <tr>
+      <td>${i.concept}</td>
+      <td class="num">${i.errored ? '—' : fmtPct(i.comp)}</td>
+      <td>${i.errored
+        ? '<span style="color:#b4322f;font-size:.78rem">query error (see console)</span>'
+        : `<div class="bar" title="${i.matched} of ${res.total} records (${fmtPct(i.comp)})"><i style="width:${(i.comp*100).toFixed(1)}%;background:${color}"></i></div>`}</td>
+    </tr>`).join('');
+  renderRadar(res.items, color);
+  $('legend').textContent = `${spiral.title} — ${res.items.length} concepts`;
+}
+
+function renderRadar(items, color){
+  const svg = $('radar');
+  const W = 460, cx = W/2, cy = W/2, R = 165;
+  const N = items.length;
+  const ns = 'http://www.w3.org/2000/svg';
+  svg.innerHTML = '';
+  const add = (tag, attrs) => { const el = document.createElementNS(ns, tag); for (const k in attrs) el.setAttribute(k, attrs[k]); svg.appendChild(el); return el; };
+  const ang = i => (i / N) * 2 * Math.PI - Math.PI/2;   // start at top
+  const pt = (i, r) => [cx + Math.cos(ang(i))*R*r, cy + Math.sin(ang(i))*R*r];
+
+  // grid rings
+  [0.25,0.5,0.75,1].forEach(r => add('circle',{cx,cy,r:R*r,fill:'none',stroke:'#ece9f3','stroke-width':1}));
+  // spokes
+  for (let i=0;i<N;i++){ const [x,y]=pt(i,1); add('line',{x1:cx,y1:cy,x2:x,y2:y,stroke:'#ece9f3','stroke-width':1}); }
+  // data polygon (shaded in the spiral's color; no vertex markers)
+  const pts = items.map((it,i)=>pt(i, Math.min(it.comp,1)).join(',')).join(' ');
+  add('polygon',{points:pts,fill:color,'fill-opacity':0.28,stroke:color,'stroke-width':2,'stroke-linejoin':'round'});
+  // labels (only if not too crowded)
+  if (N <= 30){
+    items.forEach((it,i)=>{
+      const [x,y]=pt(i,1.12);
+      const a = ang(i);
+      const anchor = Math.abs(Math.cos(a))<0.3 ? 'middle' : (Math.cos(a)>0 ? 'start':'end');
+      const t = add('text',{x,y,'text-anchor':anchor,'dominant-baseline':'middle','font-size':9,fill:'#6b7280'});
+      const label = it.concept.length > 22 ? it.concept.slice(0,21)+'…' : it.concept;
+      t.textContent = label;
+    });
+  }
+}
+
+/* ---------- spiral dropdown ---------- */
+function populateSpirals(){
+  const sel = $('spiral');
+  sel.innerHTML = SPIRALS.map((s,idx) =>
+    `<option value="${idx}">${s.title} (${s.items.length})</option>`).join('');
+}
+
+/* ---------- total index (mirrors getDataFileTotal) ---------- */
+let lastRun = null;   // { byCode:{code:{spiral,res}}, total, records }
+
+function computeTotal(byCode){
+  let totalScore = 0, totalCount = 0;
+  for (const code in byCode){
+    const { spiral, res } = byCode[code];
+    const n = spiral.items.length;          // concept count = len(spiral['items'])
+    totalScore += res.average * n;          // spiralPercent * spiralConceptCount
+    totalCount += n;
+  }
+  return totalCount > 0 ? totalScore / totalCount : 0;
+}
+
+function renderTotal(){
+  if (!lastRun) return;
+  $('total-card').style.display = '';
+  $('total-pct').textContent = fmtPct(lastRun.total);
+  const selIdx = parseInt($('spiral').value, 10);
+  const selCode = SPIRALS[selIdx] && SPIRALS[selIdx].code;
+  $('total-breakdown').innerHTML = SPIRALS.map((s,idx) => {
+    const r = lastRun.byCode[s.code];
+    const color = SPIRAL_COLORS[s.code] || '#9167b0';
+    const active = s.code === selCode ? ' active' : '';
+    return `<div class="sp-chip${active}" data-idx="${idx}" style="border-left-color:${color}">
+      <span class="pct" style="color:${color}">${r ? fmtPct(r.res.average) : '—'}</span>
+      <span class="nm">${s.title.replace('FAIR ','')}</span>
+      <span class="ct">${s.items.length} concepts</span>
+    </div>`;
+  }).join('');
+  $('total-breakdown').querySelectorAll('.sp-chip').forEach(el => {
+    el.addEventListener('click', () => { $('spiral').value = el.dataset.idx; showDetail(); });
+  });
+}
+
+/* render the plot/table for the currently-selected spiral, from cache */
+function showDetail(){
+  if (!lastRun) return;
+  const spiral = SPIRALS[parseInt($('spiral').value,10)];
+  const cached = lastRun.byCode[spiral.code];
+  if (cached) renderResults(spiral, cached.res);
+  renderTotal();   // refresh active-chip highlight
+}
+
+/* ---------- run handler ---------- */
+async function run(){
+  const clientId = $('client').value.trim();
+  const cap = Math.max(1, Math.min(2000, parseInt($('cap').value,10) || 200));
+  if (!clientId) return;
+  $('run').disabled = true;
+  try {
+    const records = await fetchRepo(clientId, cap);
+    if (!records.length){ setStatus('No records returned for that client ID.', true); return; }
+    const byCode = {};
+    for (let i=0;i<SPIRALS.length;i++){
+      const spiral = SPIRALS[i];
+      setStatus(`Scoring ${spiral.title} (${i+1}/${SPIRALS.length}) over ${records.length} records…`);
+      const res = await runSpiral(spiral, records);
+      byCode[spiral.code] = { spiral, res };
+    }
+    const total = computeTotal(byCode);
+    lastRun = { byCode, total, records };
+    renderTotal();
+    showDetail();
+    setStatus(`Done — ${records.length} records, total FAIR index ${fmtPct(total)}.`);
+  } catch (e){
+    console.error(e);
+    setStatus(e.message || String(e), true);
+  } finally {
+    $('run').disabled = false;
+  }
+}
+
+/* ---------- boot ---------- */
+$('run').addEventListener('click', run);
+$('spiral').addEventListener('change', showDetail);
+populateSpirals();
+whenJqReady().then(()=>{
+  jqReady = true;
+  $('run').disabled = false;
+  if (location.protocol === 'file:') {
+    setStatus('jq engine ready — but this page is open as a local file (file://). DataCite requests will be blocked. Serve it over http (e.g. "python3 -m http.server" → http://localhost:8000/completeness.html).', true);
+  } else {
+    setStatus('jq engine ready. Pick a repository and spiral, then Run.');
+  }
+}).catch(e=>{
+  setStatus(e.message, true);
+});
+</script>
+</body>
+</html>
