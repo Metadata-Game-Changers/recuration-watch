@@ -84,6 +84,13 @@
   .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:1rem 1.1rem;margin-bottom:1rem}
   .card h2{font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:0 0 .2rem}
   .chart-cap{font-size:.72rem;color:var(--muted);margin:0 0 .7rem}
+  .actor-split{margin:0 0 .8rem}
+  .as-bar{display:flex;height:8px;border-radius:4px;overflow:hidden;background:#f3f1f8;margin-bottom:.35rem}
+  .as-seg{height:100%}
+  .as-legend{font-size:.72rem;color:var(--muted);display:flex;gap:.9rem;flex-wrap:wrap;align-items:center}
+  .as-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:.3rem;vertical-align:-1px}
+  .as-legend span{white-space:nowrap}
+  .act-actor{font-family:var(--mono);font-size:.58rem;margin-top:.15rem}
   .legend{display:flex;gap:.5rem 1rem;flex-wrap:wrap;font-size:.74rem;color:var(--muted);margin-top:.6rem}
   .legend span{white-space:nowrap}
   .legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:.3rem;vertical-align:-1px}
@@ -198,6 +205,8 @@
           <option value="action">Action</option>
         </select>
         <label class="hero-chk"><input type="checkbox" id="excl" /> Exclude registrations</label>
+        <span class="hero-secondary-label" id="actor-label">Attributed to</span>
+        <select class="hero-select" id="actor"><option value="all" selected>All actors</option></select>
       </div>
     </div>
   </div>
@@ -223,6 +232,7 @@
   <div class="card" id="result" style="display:none">
     <h2>Activity over time</h2>
     <div class="chart-cap" id="chart-cap"></div>
+    <div class="actor-split" id="actor-split"></div>
     <div class="chart-host"><svg id="chart" viewBox="0 0 940 380" width="940" height="380" role="img"></svg></div>
     <div class="legend" id="legend"></div>
     <div class="hint-click">Tip: click a bar to see which DOIs changed in that period.</div>
@@ -262,6 +272,11 @@ const PD_LIMIT = 40;        // max DOI rows shown in a period
 /* action colours for the time chart (create/update/publish/delete) */
 const ACTION_COLORS = { create:'var(--create)', update:'var(--update)', publish:'var(--publish)', delete:'var(--delete)' };
 const ACTION_ORDER = ['create','update','publish','delete'];
+
+/* actor attribution (prov:wasAttributedTo) — who made the change */
+const ACTOR_LABELS = { repo:'This repository', admin:'DataCite admin', other:'Other' };
+const ACTOR_ORDER  = ['repo','admin','other'];
+const ACTOR_COLORS = { repo:'#3a9d6e', admin:'#c0504d', other:'#9aa0ab' };
 
 /* High-level change-property labels — mirrors Re-Curation Watch's FIELD_LABELS */
 const FIELD_LABELS = {
@@ -325,6 +340,15 @@ function changedProps(changes, action){
   if (!changes || typeof changes !== 'object') return [];
   return Object.keys(changes).filter(k => !CHANGE_SKIP.has(k));
 }
+// prov:wasAttributedTo → 'repo' (this repository), 'admin' (DataCite system), or 'other' (member/parent/transferred)
+function classifyActor(attributedTo, clientId){
+  const s = String(attributedTo||'').toLowerCase();
+  const cid = String(clientId||'').toLowerCase();
+  if (s.includes('/providers/admin')) return 'admin';
+  const m = s.match(/\/repositories\/([^/?#]+)/);
+  if (m) return m[1] === cid ? 'repo' : 'other';
+  return 'other';
+}
 async function fetchRepoActivities(clientId, onProgress){
   const events = [];
   let page = 1, total = null;
@@ -338,7 +362,7 @@ async function fetchRepoActivities(clientId, onProgress){
       const t = at['prov:generatedAtTime'];
       if (!t) continue;
       const action = (at.action || 'update').toLowerCase();
-      events.push({ t: new Date(t), action, doi: normDoi(at['prov:wasDerivedFrom']), props: changedProps(at.changes, action) });
+      events.push({ t: new Date(t), action, doi: normDoi(at['prov:wasDerivedFrom']), actor: classifyActor(at['prov:wasAttributedTo'], clientId), props: changedProps(at.changes, action) });
     }
     onProgress?.(events.length, Math.min(total, CAP));
     if (!batch.length || events.length >= total || events.length >= CAP) break;
@@ -540,6 +564,33 @@ function renderSelection(plotted, dois, model){
   $('sel-partial').innerHTML = lastRun.partial ? `<b>partial</b> · recent ${CAP.toLocaleString()} of ${lastRun.total.toLocaleString()}` : '';
 }
 
+function actorCounts(){
+  const c = { repo:0, admin:0, other:0 };
+  for (const e of lastRun.events) c[e.actor] = (c[e.actor]||0)+1;
+  return c;
+}
+function populateActorSelect(){
+  const c = actorCounts(), total = lastRun.events.length, prev = $('actor').value;
+  const present = ACTOR_ORDER.filter(k => c[k]);
+  const multi = present.length > 1;
+  let opts = `<option value="all">All actors (${total.toLocaleString()})</option>`;
+  for (const k of ACTOR_ORDER){ if (c[k]) opts += `<option value="${k}">${ACTOR_LABELS[k]} (${c[k].toLocaleString()})</option>`; }
+  $('actor').innerHTML = opts;
+  $('actor').value = [...$('actor').options].some(o => o.value === prev) ? prev : 'all';
+  // only surface the actor controls when there's actually a split to explore
+  $('actor-label').style.display = multi ? '' : 'none';
+  $('actor').style.display = multi ? '' : 'none';
+  $('actor-split').style.display = multi ? '' : 'none';
+  if (!multi) $('actor').value = 'all';
+}
+function renderActorSplit(){
+  const c = actorCounts(), total = lastRun.events.length || 1;
+  const present = ACTOR_ORDER.filter(k => c[k]);
+  const segs = present.map(k => `<div class="as-seg" style="width:${(c[k]/total*100).toFixed(2)}%;background:${ACTOR_COLORS[k]}" title="${ACTOR_LABELS[k]}: ${c[k]}"></div>`).join('');
+  const labels = present.map(k => `<span><i style="background:${ACTOR_COLORS[k]}"></i>${ACTOR_LABELS[k]} ${Math.round(c[k]/total*100)}% (${c[k].toLocaleString()})</span>`).join('');
+  $('actor-split').innerHTML = `<div class="as-bar">${segs}</div><div class="as-legend">Attribution across all ${lastRun.events.length.toLocaleString()} events: ${labels}</div>`;
+}
+
 function render(){
   if (!lastRun) return;
   selectedBinKey = null;
@@ -548,7 +599,10 @@ function render(){
 
   const stackBy = $('stackby').value;
   const exclude = $('excl').checked;
-  currentEvents = exclude ? lastRun.events.filter(e => e.action !== 'create') : lastRun.events;
+  const actorSel = $('actor').value;
+  let evs = lastRun.events;
+  if (actorSel !== 'all') evs = evs.filter(e => e.actor === actorSel);
+  currentEvents = exclude ? evs.filter(e => e.action !== 'create') : evs;
   currentG = $('bin').value === 'auto'
     ? (currentEvents.length ? chooseGranularity(new Date(Math.min(...currentEvents.map(e=>+e.t))), new Date(Math.max(...currentEvents.map(e=>+e.t)))) : 'year')
     : $('bin').value;
@@ -558,9 +612,10 @@ function render(){
   renderLegend(currentModel.categories);
   renderSelection(currentEvents.length, new Set(currentEvents.map(e=>e.doi)).size, currentModel);
 
-  $('chart-cap').textContent = stackBy === 'action'
+  $('chart-cap').textContent = (stackBy === 'action'
     ? 'Bars show activity events per period, stacked by action.'
-    : 'Bars show metadata property changes per period, stacked by the high-level property changed (an update touching several fields counts once per field; registrations counted once).';
+    : 'Bars show metadata property changes per period, stacked by the high-level property changed (an update touching several fields counts once per field; registrations counted once).')
+    + (actorSel !== 'all' ? ` Showing only changes attributed to ${ACTOR_LABELS[actorSel]}.` : '');
 }
 
 /* ---------- drill-down: period detail ---------- */
@@ -671,13 +726,14 @@ function renderHistory(panel, doiId, activities){
     const ts = attrs['prov:generatedAtTime'] ?? attrs.createdAt ?? '';
     const version = attrs.version ?? '';
     const dotColor = histActionColor(action);
+    const actor = classifyActor(attrs['prov:wasAttributedTo'], lastRun?.clientId);
     const summary = changeSummary(attrs.changes, action);
     const detail = renderChangesDiff(attrs.changes, action);
     const uid = `detail-${sanitizeId(doiId)}-${i}`;
     return `<tr data-action="${escAttr(action)}">
       <td class="tl-col-date">${ts?fmtDate(ts):'—'}</td>
       <td class="tl-col-dot"><div class="tl-dot-wrap"><div class="tl-dot" style="background:${dotColor}"></div></div></td>
-      <td class="tl-col-action"><div class="act-label" style="color:${dotColor}">${escHtml(capitalise(action))}</div>${version?`<div class="act-v">v${version}</div>`:''}</td>
+      <td class="tl-col-action"><div class="act-label" style="color:${dotColor}">${escHtml(capitalise(action))}</div>${version?`<div class="act-v">v${version}</div>`:''}<div class="act-actor" style="color:${ACTOR_COLORS[actor]}">${escHtml(ACTOR_LABELS[actor])}</div></td>
       <td class="tl-col-changes"><div class="act-summary">${summary}</div>${detail?`<button class="act-toggle" data-target="${uid}">Show details ▸</button><div class="act-detail" id="${uid}">${detail}</div>`:''}</td>
     </tr>`;
   }).join('');
@@ -742,6 +798,8 @@ async function run(){
     ]);
 
     lastRun = { events, total, partial, clientId, meta };
+    populateActorSelect();
+    renderActorSplit();
     render();
     $('result').style.display = '';
     $('apiurl').style.display = '';
@@ -757,7 +815,7 @@ async function run(){
 }
 
 $('repo-go').addEventListener('click', run);
-['bin','stackby','excl'].forEach(id => $(id).addEventListener('change', () => { if (lastRun) render(); }));
+['bin','stackby','excl','actor'].forEach(id => $(id).addEventListener('change', () => { if (lastRun) render(); }));
 $('cap-label').textContent = CAP.toLocaleString();
 </script>
 </body>
