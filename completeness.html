@@ -107,6 +107,10 @@
   .legend{font-size:.72rem;color:var(--muted);text-align:center;margin-top:.4rem}
   .note{font-size:.78rem;color:var(--muted);background:var(--tint);border-radius:8px;padding:.7rem .85rem;margin-top:1.25rem;line-height:1.5}
   .total-card{margin-bottom:1rem}
+  .tabs{display:flex;gap:.25rem;margin:-.25rem 0 1rem;border-bottom:1px solid var(--line)}
+  .tab{appearance:none;border:none;background:none;font:inherit;font-size:.8rem;font-weight:600;color:var(--muted);padding:.5rem .9rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tab:hover{color:var(--accent-dk)}
+  .tab.active{color:var(--accent-dk);border-bottom-color:var(--accent)}
   .total-wrap{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
   .total-big{display:flex;flex-direction:column;align-items:center;padding-right:1.5rem;border-right:1px solid var(--line)}
   .total-big b{font-size:2.4rem;font-weight:700;color:var(--accent-dk);line-height:1}
@@ -115,9 +119,6 @@
   .sp-chip{display:flex;flex-direction:column;gap:.2rem;padding:.55rem .7rem;border:1px solid var(--line);border-left-width:4px;border-radius:8px;cursor:pointer;background:#fff;min-width:130px;transition:background .12s}
   .sp-chip:hover{background:var(--bg)}
   .sp-chip.active{background:var(--bg);box-shadow:0 0 0 1px var(--line)}
-  .chip-break{flex-basis:100%;height:0}
-  .sp-chip.extra{border-style:dashed;margin-left:.6rem}
-  .sp-chip.extra::before{content:"+";position:absolute;margin-left:-1.1rem;margin-top:.6rem;color:var(--muted);font-weight:700}
   .sp-chip .pct{font-size:1.25rem;font-weight:700;line-height:1}
   .sp-chip .nm{font-size:.72rem;color:var(--muted)}
   .sp-chip .ct{font-size:.66rem;color:var(--muted)}
@@ -181,12 +182,17 @@
   <div id="apiurl" style="display:none"></div>
 
   <div class="card total-card" id="total-card" style="display:none">
-    <h2>FAIR completeness — all four use cases</h2>
+    <div class="tabs" id="tabs">
+      <button class="tab" type="button" data-tab="FAIR">FAIR</button>
+      <button class="tab" type="button" data-tab="Projects">Projects</button>
+      <button class="tab" type="button" data-tab="Extras">Extras</button>
+    </div>
+    <h2 id="total-title">FAIR completeness — four use cases</h2>
     <div class="total-wrap">
-      <div class="total-big"><b id="total-pct">—</b><span>FAIR Total</span></div>
+      <div class="total-big" id="total-big"><b id="total-pct">—</b><span id="total-label">FAIR Total</span></div>
       <div class="total-breakdown" id="total-breakdown"></div>
     </div>
-    <div class="total-note">Total index = Σ(use case average × concept count) ÷ Σ(concept count), across the four FAIR use cases. The additional use cases (DataCite Relations &amp; Contributors and Project Team / Items / Relations) are scored and viewable but are <b>not</b> part of the Total index. Click a use case to inspect it below.</div>
+    <div class="total-note" id="total-note"></div>
   </div>
 
   <div class="grid">
@@ -433,48 +439,93 @@ function renderRadar(items, color){
   }
 }
 
-/* ---------- spiral dropdown ---------- */
+/* ---------- use-case tabs + dropdown ---------- */
+// Use cases are grouped into three tabs. FAIR feeds the Total index; Projects and Extras are scored but excluded.
+const GROUPS = {
+  FAIR:     ['FAIR_Text','FAIR_Identifiers','FAIR_Connections','FAIR_Contacts'],
+  Projects: ['Project_Team','Project_Items','Project_Relations'],
+  Extras:   ['DataCite_Relations','DataCite_ContributorTypes']
+};
+const TAB_TITLE = {
+  FAIR:     'FAIR completeness — four use cases',
+  Projects: 'Project use cases',
+  Extras:   'Additional DataCite use cases'
+};
+const CODE_INDEX = {};
+SPIRALS.forEach((s,i) => { CODE_INDEX[s.code] = i; });
+let activeTab = 'FAIR';
+
+// fill the Use-case dropdown with only the active tab's use cases (option value = global SPIRALS index)
 function populateSpirals(){
-  const sel = $('spiral');
-  sel.innerHTML = SPIRALS.map((s,idx) =>
-    `<option value="${idx}">${s.title} (${s.items.length})</option>`).join('');
+  $('spiral').innerHTML = GROUPS[activeTab].map(code => {
+    const i = CODE_INDEX[code];
+    return `<option value="${i}">${SPIRALS[i].title} (${SPIRALS[i].items.length})</option>`;
+  }).join('');
+}
+
+// switch tab: highlight it, repopulate the dropdown, select the group's first use case, re-render
+function selectTab(tab){
+  if (!GROUPS[tab]) return;
+  activeTab = tab;
+  document.querySelectorAll('#tabs .tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  populateSpirals();
+  $('spiral').selectedIndex = 0;
+  if (lastRun) showDetail();
 }
 
 /* ---------- total index (mirrors getDataFileTotal) ---------- */
 let lastRun = null;   // { byCode:{code:{spiral,res}}, total, records }
 
-function computeTotal(byCode){
+// concept-count-weighted average of a set of use-case codes (mirrors getDataFileTotal)
+function weightedTotal(byCode, codes){
   let totalScore = 0, totalCount = 0;
-  for (const code in byCode){
-    if (!TOTAL_CODES.has(code)) continue;   // only the four FAIR use cases feed the Total
-    const { spiral, res } = byCode[code];
-    const n = spiral.items.length;          // concept count = len(spiral['items'])
-    totalScore += res.average * n;          // spiralPercent * spiralConceptCount
+  for (const code of codes){
+    const e = byCode[code];
+    if (!e) continue;
+    const n = e.spiral.items.length;        // concept count = len(spiral['items'])
+    totalScore += e.res.average * n;        // spiralPercent * spiralConceptCount
     totalCount += n;
   }
   return totalCount > 0 ? totalScore / totalCount : 0;
 }
 
+// the repository headline Total still draws only from the four FAIR use cases
+function computeTotal(byCode){ return weightedTotal(byCode, [...TOTAL_CODES]); }
+
+// tabs that show a combined index (concept-weighted) above their chips
+const GROUP_TOTAL = {
+  FAIR:     { label: 'FAIR Total',     count: 'four FAIR' },
+  Projects: { label: 'Projects Total', count: 'three Project' }
+};
+
 function renderTotal(){
   if (!lastRun) return;
   $('total-card').style.display = '';
-  $('total-pct').textContent = fmtPct(lastRun.total);
+  $('total-title').textContent = TAB_TITLE[activeTab];
+
+  // each tab can show its own concept-weighted combined index (FAIR, Projects); others just list chips
+  const gt = GROUP_TOTAL[activeTab];
+  $('total-big').style.display = gt ? '' : 'none';
+  if (gt){
+    $('total-pct').textContent = fmtPct(weightedTotal(lastRun.byCode, GROUPS[activeTab]));
+    $('total-label').textContent = gt.label;
+    $('total-note').innerHTML = `${gt.label} = Σ(use case average × concept count) ÷ Σ(concept count), across the ${gt.count} use cases. Each tab's total is computed independently. Click a use case to inspect it below.`;
+  } else {
+    $('total-note').innerHTML = 'These use cases are scored and viewable but are <b>not</b> combined into a total. Click a use case to inspect it below.';
+  }
+
   const selIdx = parseInt($('spiral').value, 10);
   const selCode = SPIRALS[selIdx] && SPIRALS[selIdx].code;
-  let brokeRow = false;
-  $('total-breakdown').innerHTML = SPIRALS.map((s,idx) => {
+  $('total-breakdown').innerHTML = GROUPS[activeTab].map(code => {
+    const idx = CODE_INDEX[code];
+    const s = SPIRALS[idx];
     const r = lastRun.byCode[s.code];
     const color = SPIRAL_COLORS[s.code] || '#9167b0';
     const active = s.code === selCode ? ' active' : '';
-    const inTotal = TOTAL_CODES.has(s.code);
-    const extra = inTotal ? '' : ' extra';
-    const ct = inTotal ? `${s.items.length} concepts` : `${s.items.length} concepts · not in total`;
-    // force every non-Total (extra) use case onto its own row, below the FAIR chips
-    const brk = (!inTotal && !brokeRow) ? (brokeRow = true, '<div class="chip-break"></div>') : '';
-    return `${brk}<div class="sp-chip${extra}${active}" data-idx="${idx}" style="border-left-color:${color}">
+    return `<div class="sp-chip${active}" data-idx="${idx}" style="border-left-color:${color}">
       <span class="pct" style="color:${color}">${r ? fmtPct(r.res.average) : '—'}</span>
       <span class="nm">${s.title.replace('FAIR ','')}</span>
-      <span class="ct">${ct}</span>
+      <span class="ct">${s.items.length} concepts</span>
     </div>`;
   }).join('');
   $('total-breakdown').querySelectorAll('.sp-chip').forEach(el => {
@@ -614,7 +665,8 @@ document.addEventListener('click', e => { if (!e.target.closest('.hero-search'))
 /* ---------- boot ---------- */
 $('repo-go').addEventListener('click', run);
 $('spiral').addEventListener('change', showDetail);
-populateSpirals();
+document.querySelectorAll('#tabs .tab').forEach(b => b.addEventListener('click', () => selectTab(b.dataset.tab)));
+selectTab('FAIR');
 setStatus('Loading engine…');
 setProgressIndeterminate();
 whenJqReady().then(()=>{
