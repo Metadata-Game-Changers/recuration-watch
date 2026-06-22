@@ -236,7 +236,10 @@
       <div class="total-breakdown" id="total-breakdown"></div>
     </div>
     <div class="total-note" id="total-note"></div>
-    <div class="total-actions"><button class="dl-btn" id="download-report" type="button">⬇ Download report (JSON)</button></div>
+    <div class="total-actions">
+      <button class="dl-btn" id="download-report" type="button">⬇ Download report (JSON)</button>
+      <button class="dl-btn" id="download-html" type="button">⬇ Download report (HTML)</button>
+    </div>
   </div>
 
   <div class="grid">
@@ -647,6 +650,137 @@ function downloadReport(){
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+/* ---------- shareable HTML report (plots + tables) ---------- */
+// Standalone SVG radial plot as a string (mirrors renderRadar), so the report is fully self-contained.
+function radarSvgMarkup(items, color){
+  const W = 520, cx = W/2, cy = W/2, R = 185, N = items.length || 1;
+  const ang = i => (i/N) * 2 * Math.PI - Math.PI/2;
+  const pt  = (i,r) => [ +(cx + Math.cos(ang(i))*R*r).toFixed(1), +(cy + Math.sin(ang(i))*R*r).toFixed(1) ];
+  let g = '';
+  [0.25,0.5,0.75,1].forEach(r => { g += `<circle cx="${cx}" cy="${cy}" r="${(R*r).toFixed(1)}" fill="none" stroke="#ece9f3" stroke-width="1"/>`; });
+  for (let i=0;i<N;i++){ const [x,y]=pt(i,1); g += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#ece9f3" stroke-width="1"/>`; }
+  const pts = items.map((it,i) => pt(i, Math.min(it.comp,1)).join(',')).join(' ');
+  g += `<polygon points="${pts}" fill="${color}" fill-opacity="0.28" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`;
+  items.forEach((it,i) => {
+    const [x,y] = pt(i, 1.08); const a = ang(i);
+    const anchor = Math.abs(Math.cos(a)) < 0.3 ? 'middle' : (Math.cos(a) > 0 ? 'start' : 'end');
+    const label = it.concept.length > 26 ? it.concept.slice(0,25)+'…' : it.concept;
+    g += `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle" font-size="8" fill="#6b7280">${escHtml(label)}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${W}" width="${W}" height="${W}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
+}
+
+function reportTableMarkup(res, color){
+  const rows = res.items.map(i => `<tr>
+      <td>${escHtml(i.concept)}</td>
+      <td class="num">${i.errored ? '—' : fmtPct(i.comp)}</td>
+      <td><div class="bar"><i style="width:${(Math.min(i.comp,1)*100).toFixed(1)}%;background:${color}"></i></div></td>
+    </tr>`).join('');
+  return `<table><thead><tr><th>Concept</th><th class="num">Record %</th><th>Completeness</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function buildReportHtml(){
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const created = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}`;  // e.g. 2026-06-20T11
+  const useCaseSection = (code) => {
+    const e = lastRun.byCode[code]; if (!e) return '';
+    const { spiral, res } = e;
+    const color = SPIRAL_COLORS[code] || '#9167b0';
+    return `<section class="uc">
+      <h3 style="border-left-color:${color}">${escHtml(spiral.title)} <span class="uc-score">Average ${fmtPct(res.average)} · Exist ${res.exist}/${res.items.length} · Complete ${res.complete}/${res.items.length}</span></h3>
+      <p class="uc-desc">${escHtml(spiral.description || '')}</p>
+      <div class="uc-body">
+        <div class="uc-plot">${radarSvgMarkup(res.items, color)}<div class="uc-cap">${escHtml(spiral.title)} — ${res.items.length} concepts</div></div>
+        <div class="uc-table">${reportTableMarkup(res, color)}</div>
+      </div>
+    </section>`;
+  };
+  const groupBlock = (tab) => {
+    const gt = GROUP_TOTAL[tab];
+    const totalLine = gt ? `<p class="grp-total"><b>${gt.label}: ${fmtPct(weightedTotal(lastRun.byCode, GROUPS[tab]))}</b> <span>(concept-weighted average across the ${gt.count} use cases)</span></p>` : '';
+    return `<div class="grp">
+      <h2>${escHtml(tab === 'FAIR' ? 'FAIR use cases' : tab === 'Projects' ? 'Project use cases' : 'Additional DataCite use cases')}</h2>
+      ${totalLine}
+      ${GROUPS[tab].map(useCaseSection).join('')}
+    </div>`;
+  };
+  const filterParts = [];
+  if (lastRun.resourceTypeId) filterParts.push(`resource type: <b>${escHtml(lastRun.resourceTypeId)}</b>`);
+  if (lastRun.query) filterParts.push(`query: <b>${escHtml(lastRun.query)}</b>`);
+  const filterLine = filterParts.length ? `<div class="meta-row">Filter — ${filterParts.join(' · ')}</div>` : '';
+  const repoLine = lastRun.repoTotal != null
+    ? `${lastRun.repoTotal.toLocaleString()} ${filterParts.length ? 'matching' : 'in repository'} · ${lastRun.records.length.toLocaleString()} analyzed`
+    : `${lastRun.records.length.toLocaleString()} analyzed`;
+
+  const css = `
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#1f2330;margin:0;padding:2rem;max-width:1000px;margin:0 auto;line-height:1.5}
+    h1{font-size:1.5rem;color:#673289;margin:0 0 .25rem}
+    h2{font-size:1.05rem;color:#673289;border-bottom:1px solid #e6e3ec;padding-bottom:.3rem;margin:2rem 0 .75rem}
+    .report-head{border-bottom:2px solid #673289;padding-bottom:1rem;margin-bottom:1rem}
+    .meta-row{font-size:.82rem;color:#4b4f5e;margin-top:.2rem}
+    .meta-row .id{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:#6b7280}
+    .totals{display:flex;gap:2rem;flex-wrap:wrap;margin-top:.8rem}
+    .totals .t b{font-size:1.8rem;color:#673289;display:block;line-height:1}
+    .totals .t span{font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;color:#6b7280}
+    .grp-total{font-size:.85rem;margin:.2rem 0 1rem}
+    .grp-total span{color:#6b7280;font-weight:400;font-size:.78rem}
+    section.uc{page-break-inside:avoid;break-inside:avoid;border:1px solid #e6e3ec;border-radius:10px;padding:1rem 1.2rem;margin:1rem 0;background:#fff}
+    section.uc h3{font-size:1rem;margin:0 0 .15rem;padding-left:.6rem;border-left:4px solid #9167b0}
+    .uc-score{font-size:.72rem;font-weight:500;color:#6b7280}
+    .uc-desc{font-size:.78rem;color:#4b4f5e;margin:.2rem 0 .8rem}
+    .uc-body{display:flex;gap:1.2rem;flex-wrap:wrap;align-items:flex-start}
+    .uc-plot{flex:0 0 460px;max-width:100%;text-align:center}
+    .uc-plot svg{width:100%;height:auto;max-width:520px}
+    .uc-cap{font-size:.72rem;color:#6b7280;margin-top:.2rem}
+    .uc-table{flex:1;min-width:280px}
+    table{border-collapse:collapse;width:100%;font-size:.78rem}
+    th,td{text-align:left;padding:.28rem .4rem;border-bottom:1px solid #f0eef5}
+    th{color:#6b7280;font-weight:600;font-size:.68rem;text-transform:uppercase;letter-spacing:.03em}
+    td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .bar{background:#eef0f4;border-radius:4px;height:8px;overflow:hidden;min-width:80px}
+    .bar i{display:block;height:100%}
+    footer{margin-top:2rem;font-size:.72rem;color:#6b7280;border-top:1px solid #e6e3ec;padding-top:.8rem}
+    @media print{body{padding:0}section.uc{border-color:#ddd}}
+  `;
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<title>Completeness Report: ${escHtml(lastRun.repoName)} (${escHtml(lastRun.clientId)})</title>
+<style>${css}</style></head>
+<body>
+  <div class="report-head">
+    <h1>Repository Completeness Report</h1>
+    <div class="meta-row"><b>${escHtml(lastRun.repoName)}</b> <span class="id">${escHtml(lastRun.clientId)}</span></div>
+    <div class="meta-row">${repoLine} · ${lastRun.random ? 'random sample' : 'most-recently-updated'} · ${d.toISOString()}</div>
+    ${filterLine}
+    <div class="totals">
+      <div class="t"><b>${fmtPct(weightedTotal(lastRun.byCode, GROUPS.FAIR))}</b><span>FAIR Total</span></div>
+      <div class="t"><b>${fmtPct(weightedTotal(lastRun.byCode, GROUPS.Projects))}</b><span>Projects Total</span></div>
+    </div>
+  </div>
+  ${['FAIR','Projects','Extras'].map(groupBlock).join('')}
+  <footer>
+    <p>Generated by the Metadata Game Changers Completeness tool against live DataCite data (api.datacite.org). Completeness = share of analyzed records containing each concept. The FAIR Total is the concept-weighted average across the four FAIR use cases.</p>
+    <p>Repository FAIR Report created ${created} © by Metadata Game Changers is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a></p>
+  </footer>
+</body></html>`;
+}
+
+function downloadHtmlReport(){
+  if (!lastRun){ setStatus('Run an exploration first, then download the report.', true); return; }
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const stamp = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}`;
+  const safeId = (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_');
+  const blob = new Blob([buildReportHtml()], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${safeId}_useCaseReport__${stamp}.html`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 /* ---------- run handler ---------- */
 async function fetchClientMeta(clientId){
   try {
@@ -702,7 +836,8 @@ async function run(){
       byCode[spiral.code] = { spiral, res };
     }
     const total = computeTotal(byCode);
-    lastRun = { byCode, total, records, clientId, resourceTypeId, query, random: usedRandom };
+    lastRun = { byCode, total, records, clientId, resourceTypeId, query, random: usedRandom,
+                repoName: (meta && meta.name) ? meta.name : clientId, repoTotal };
     renderTotal();
     showDetail();
     hideProgress();
@@ -781,6 +916,7 @@ document.addEventListener('click', e => { if (!e.target.closest('.hero-search'))
 $('repo-go').addEventListener('click', run);
 $('spiral').addEventListener('change', showDetail);
 $('download-report').addEventListener('click', downloadReport);
+$('download-html').addEventListener('click', downloadHtmlReport);
 document.querySelectorAll('#tabs .tab').forEach(b => b.addEventListener('click', () => selectTab(b.dataset.tab)));
 selectTab('FAIR');
 setStatus('Loading engine…');
