@@ -58,7 +58,9 @@
   .hero-select,.hero-num{border:1px solid rgba(145,103,176,.4);background:rgba(255,255,255,.85);padding:.32rem .6rem;font-family:Inter,sans-serif;font-size:.75rem;color:var(--ink);outline:none}
   .hero-select{cursor:pointer;flex:1;min-width:150px}
   .hero-num{width:74px}
-  .hero-select:focus,.hero-num:focus{border-color:#9167b0}
+  .hero-query{border:1px solid rgba(145,103,176,.4);background:rgba(255,255,255,.85);padding:.32rem .6rem;font-family:Inter,sans-serif;font-size:.75rem;color:var(--ink);outline:none;flex:1;min-width:160px}
+  .hero-query::placeholder{color:#a99bbf}
+  .hero-select:focus,.hero-num:focus,.hero-query:focus{border-color:#9167b0}
   .hero-chk{display:flex;align-items:center;gap:.3rem;font-size:.72rem;color:#5b3d7a;cursor:pointer}
   .repo-autocomplete{position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--ink);border-top:none;z-index:200;display:none;max-height:260px;overflow-y:auto}
   .repo-autocomplete.open{display:block}
@@ -107,6 +109,10 @@
   .legend{font-size:.72rem;color:var(--muted);text-align:center;margin-top:.4rem}
   .note{font-size:.78rem;color:var(--muted);background:var(--tint);border-radius:8px;padding:.7rem .85rem;margin-top:1.25rem;line-height:1.5}
   .total-card{margin-bottom:1rem}
+  .tabs{display:flex;gap:.25rem;margin:-.25rem 0 1rem;border-bottom:1px solid var(--line)}
+  .tab{appearance:none;border:none;background:none;font:inherit;font-size:.8rem;font-weight:600;color:var(--muted);padding:.5rem .9rem;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tab:hover{color:var(--accent-dk)}
+  .tab.active{color:var(--accent-dk);border-bottom-color:var(--accent)}
   .total-wrap{display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
   .total-big{display:flex;flex-direction:column;align-items:center;padding-right:1.5rem;border-right:1px solid var(--line)}
   .total-big b{font-size:2.4rem;font-weight:700;color:var(--accent-dk);line-height:1}
@@ -115,9 +121,6 @@
   .sp-chip{display:flex;flex-direction:column;gap:.2rem;padding:.55rem .7rem;border:1px solid var(--line);border-left-width:4px;border-radius:8px;cursor:pointer;background:#fff;min-width:130px;transition:background .12s}
   .sp-chip:hover{background:var(--bg)}
   .sp-chip.active{background:var(--bg);box-shadow:0 0 0 1px var(--line)}
-  .chip-break{flex-basis:100%;height:0}
-  .sp-chip.extra{border-style:dashed;margin-left:.6rem}
-  .sp-chip.extra::before{content:"+";position:absolute;margin-left:-1.1rem;margin-top:.6rem;color:var(--muted);font-weight:700}
   .sp-chip .pct{font-size:1.25rem;font-weight:700;line-height:1}
   .sp-chip .nm{font-size:.72rem;color:var(--muted)}
   .sp-chip .ct{font-size:.66rem;color:var(--muted)}
@@ -156,6 +159,43 @@
       <div class="hero-secondary">
         <span class="hero-secondary-label">Use case</span>
         <select class="hero-select" id="spiral"></select>
+        <span class="hero-secondary-label">Type</span>
+        <select class="hero-select" id="resource-type">
+          <option value="">All resource types</option>
+          <option value="audiovisual">Audiovisual</option>
+          <option value="book">Book</option>
+          <option value="book-chapter">Book Chapter</option>
+          <option value="collection">Collection</option>
+          <option value="computational-notebook">Computational Notebook</option>
+          <option value="conference-paper">Conference Paper</option>
+          <option value="conference-proceeding">Conference Proceeding</option>
+          <option value="data-paper">Data Paper</option>
+          <option value="dataset">Dataset</option>
+          <option value="dissertation">Dissertation</option>
+          <option value="event">Event</option>
+          <option value="image">Image</option>
+          <option value="instrument">Instrument</option>
+          <option value="interactive-resource">Interactive Resource</option>
+          <option value="journal">Journal</option>
+          <option value="journal-article">Journal Article</option>
+          <option value="model">Model</option>
+          <option value="other">Other</option>
+          <option value="output-management-plan">Output Management Plan</option>
+          <option value="peer-review">Peer Review</option>
+          <option value="physical-object">Physical Object</option>
+          <option value="preprint">Preprint</option>
+          <option value="project">Project</option>
+          <option value="report">Report</option>
+          <option value="service">Service</option>
+          <option value="software">Software</option>
+          <option value="sound">Sound</option>
+          <option value="standard">Standard</option>
+          <option value="study-registration">Study Registration</option>
+          <option value="text">Text</option>
+          <option value="workflow">Workflow</option>
+        </select>
+        <span class="hero-secondary-label">Query</span>
+        <input class="hero-query" id="query-input" type="text" placeholder="e.g. publicationYear:2024" spellcheck="false" autocomplete="off" />
         <span class="hero-secondary-label">Max</span>
         <input class="hero-num" id="cap" type="number" value="200" min="1" max="10000" />
         <label class="hero-chk"><input type="checkbox" id="random" checked /> Random sample</label>
@@ -171,6 +211,7 @@
       <span class="sel-stat"><b id="sel-records">—</b> records analyzed</span>
       <span class="sel-stat" id="sel-mode">—</span>
       <span class="sel-stat" id="sel-total"></span>
+      <span class="sel-stat" id="sel-filter" style="display:none"></span>
     </div>
   </div>
 </div>
@@ -181,12 +222,17 @@
   <div id="apiurl" style="display:none"></div>
 
   <div class="card total-card" id="total-card" style="display:none">
-    <h2>FAIR completeness — all four use cases</h2>
+    <div class="tabs" id="tabs">
+      <button class="tab" type="button" data-tab="FAIR">FAIR</button>
+      <button class="tab" type="button" data-tab="Projects">Projects</button>
+      <button class="tab" type="button" data-tab="Extras">Extras</button>
+    </div>
+    <h2 id="total-title">FAIR completeness — four use cases</h2>
     <div class="total-wrap">
-      <div class="total-big"><b id="total-pct">—</b><span>FAIR Total</span></div>
+      <div class="total-big" id="total-big"><b id="total-pct">—</b><span id="total-label">FAIR Total</span></div>
       <div class="total-breakdown" id="total-breakdown"></div>
     </div>
-    <div class="total-note">Total index = Σ(use case average × concept count) ÷ Σ(concept count), across the four FAIR use cases. The additional use cases (DataCite Relations &amp; Contributors and Project Team / Items / Relations) are scored and viewable but are <b>not</b> part of the Total index. Click a use case to inspect it below.</div>
+    <div class="total-note" id="total-note"></div>
   </div>
 
   <div class="grid">
@@ -276,18 +322,36 @@ async function jqAll(inputObj, filter){
 }
 
 /* ---------- DataCite fetch (mirrors loadRepository) ---------- */
-async function fetchRepo(clientId, cap, random){
+async function fetchRepo(clientId, cap, random, resourceTypeId, query){
   const records = [];
   const seen = new Set();                         // dedup by DOI id across requests
   const pageSize = Math.min(1000, cap);           // DataCite max page[size] is 1000
   let page = 1, requests = 0, firstUrl = '', repoTotal = null;
   setStatus('Fetching records…');
-  if (random) setProgressIndeterminate(); else setProgress(0);
+  setProgressIndeterminate();
+  // optional data-selection filters (mirrors Re-Curation Watch): resource-type-id dropdown + free query string
+  const filter = (resourceTypeId ? `&resource-type-id=${encodeURIComponent(resourceTypeId)}` : '')
+               + (query ? `&query=${encodeURIComponent(query)}` : '');
+  // Random sampling only helps when the matching set is larger than the cap. If it fits within
+  // the cap we'd retrieve everything anyway, so peek at the matching total and fall back to a
+  // deterministic (most-recent) fetch — avoids a misleading "random sample" of the whole set.
+  let effectiveRandom = random;
+  if (random){
+    try {
+      const peek = await fetch(`${API_BASE}/dois?client-id=${encodeURIComponent(clientId)}&page[size]=1&disable-facets=true${filter}`);
+      if (peek.ok){
+        const pj = await peek.json();
+        const t = pj.meta && typeof pj.meta.total === 'number' ? pj.meta.total : null;
+        if (t != null){ repoTotal = t; if (t <= cap) effectiveRandom = false; }
+      }
+    } catch { /* peek is best-effort; fall back to the requested mode */ }
+  }
+  if (!effectiveRandom) setProgress(0);
   while (records.length < cap) {
     requests++;
-    const base = `${API_BASE}/dois?client-id=${encodeURIComponent(clientId)}&page[size]=${pageSize}&affiliation=true&publisher=true`;
+    const base = `${API_BASE}/dois?client-id=${encodeURIComponent(clientId)}&page[size]=${pageSize}&affiliation=true&publisher=true${filter}`;
     // random=true ignores page[number] & sort, so each request is an independent draw → dedup needed.
-    const url = random
+    const url = effectiveRandom
       ? `${base}&random=true&disable-facets=true`
       : `${base}&page[number]=${page}&sort=-updated`;
     if (!firstUrl) firstUrl = url;
@@ -305,11 +369,11 @@ async function fetchRepo(clientId, cap, random){
     const batch = json.data || [];
     let added = 0;
     for (const r of batch){ if (!seen.has(r.id)){ seen.add(r.id); records.push(r); added++; } }
-    if (!random) setProgress(Math.min(records.length / cap, 1));
+    if (!effectiveRandom) setProgress(Math.min(records.length / cap, 1));
     const total = json.meta && typeof json.meta.total === 'number' ? json.meta.total : null;
     if (total != null) repoTotal = total;
 
-    if (random){
+    if (effectiveRandom){
       // stop when: target reached · whole repo collected · a draw added nothing new · hard request guard
       if (records.length >= cap) break;
       if (total != null && records.length >= total) break;
@@ -321,8 +385,8 @@ async function fetchRepo(clientId, cap, random){
       page++;
     }
   }
-  showApiUrl(firstUrl, requests, random);
-  return { records: records.slice(0, cap), repoTotal };
+  showApiUrl(firstUrl, requests, effectiveRandom);
+  return { records: records.slice(0, cap), repoTotal, random: effectiveRandom };
 }
 
 function showApiUrl(url, requests, random){
@@ -433,48 +497,93 @@ function renderRadar(items, color){
   }
 }
 
-/* ---------- spiral dropdown ---------- */
+/* ---------- use-case tabs + dropdown ---------- */
+// Use cases are grouped into three tabs. FAIR feeds the Total index; Projects and Extras are scored but excluded.
+const GROUPS = {
+  FAIR:     ['FAIR_Text','FAIR_Identifiers','FAIR_Connections','FAIR_Contacts'],
+  Projects: ['Project_Team','Project_Items','Project_Relations'],
+  Extras:   ['DataCite_Relations','DataCite_ContributorTypes']
+};
+const TAB_TITLE = {
+  FAIR:     'FAIR completeness — four use cases',
+  Projects: 'Project use cases',
+  Extras:   'Additional DataCite use cases'
+};
+const CODE_INDEX = {};
+SPIRALS.forEach((s,i) => { CODE_INDEX[s.code] = i; });
+let activeTab = 'FAIR';
+
+// fill the Use-case dropdown with only the active tab's use cases (option value = global SPIRALS index)
 function populateSpirals(){
-  const sel = $('spiral');
-  sel.innerHTML = SPIRALS.map((s,idx) =>
-    `<option value="${idx}">${s.title} (${s.items.length})</option>`).join('');
+  $('spiral').innerHTML = GROUPS[activeTab].map(code => {
+    const i = CODE_INDEX[code];
+    return `<option value="${i}">${SPIRALS[i].title} (${SPIRALS[i].items.length})</option>`;
+  }).join('');
+}
+
+// switch tab: highlight it, repopulate the dropdown, select the group's first use case, re-render
+function selectTab(tab){
+  if (!GROUPS[tab]) return;
+  activeTab = tab;
+  document.querySelectorAll('#tabs .tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  populateSpirals();
+  $('spiral').selectedIndex = 0;
+  if (lastRun) showDetail();
 }
 
 /* ---------- total index (mirrors getDataFileTotal) ---------- */
 let lastRun = null;   // { byCode:{code:{spiral,res}}, total, records }
 
-function computeTotal(byCode){
+// concept-count-weighted average of a set of use-case codes (mirrors getDataFileTotal)
+function weightedTotal(byCode, codes){
   let totalScore = 0, totalCount = 0;
-  for (const code in byCode){
-    if (!TOTAL_CODES.has(code)) continue;   // only the four FAIR use cases feed the Total
-    const { spiral, res } = byCode[code];
-    const n = spiral.items.length;          // concept count = len(spiral['items'])
-    totalScore += res.average * n;          // spiralPercent * spiralConceptCount
+  for (const code of codes){
+    const e = byCode[code];
+    if (!e) continue;
+    const n = e.spiral.items.length;        // concept count = len(spiral['items'])
+    totalScore += e.res.average * n;        // spiralPercent * spiralConceptCount
     totalCount += n;
   }
   return totalCount > 0 ? totalScore / totalCount : 0;
 }
 
+// the repository headline Total still draws only from the four FAIR use cases
+function computeTotal(byCode){ return weightedTotal(byCode, [...TOTAL_CODES]); }
+
+// tabs that show a combined index (concept-weighted) above their chips
+const GROUP_TOTAL = {
+  FAIR:     { label: 'FAIR Total',     count: 'four FAIR' },
+  Projects: { label: 'Projects Total', count: 'three Project' }
+};
+
 function renderTotal(){
   if (!lastRun) return;
   $('total-card').style.display = '';
-  $('total-pct').textContent = fmtPct(lastRun.total);
+  $('total-title').textContent = TAB_TITLE[activeTab];
+
+  // each tab can show its own concept-weighted combined index (FAIR, Projects); others just list chips
+  const gt = GROUP_TOTAL[activeTab];
+  $('total-big').style.display = gt ? '' : 'none';
+  if (gt){
+    $('total-pct').textContent = fmtPct(weightedTotal(lastRun.byCode, GROUPS[activeTab]));
+    $('total-label').textContent = gt.label;
+    $('total-note').innerHTML = `${gt.label} = Σ(use case average × concept count) ÷ Σ(concept count), across the ${gt.count} use cases. Each tab's total is computed independently. Click a use case to inspect it below.`;
+  } else {
+    $('total-note').innerHTML = 'These use cases are scored and viewable but are <b>not</b> combined into a total. Click a use case to inspect it below.';
+  }
+
   const selIdx = parseInt($('spiral').value, 10);
   const selCode = SPIRALS[selIdx] && SPIRALS[selIdx].code;
-  let brokeRow = false;
-  $('total-breakdown').innerHTML = SPIRALS.map((s,idx) => {
+  $('total-breakdown').innerHTML = GROUPS[activeTab].map(code => {
+    const idx = CODE_INDEX[code];
+    const s = SPIRALS[idx];
     const r = lastRun.byCode[s.code];
     const color = SPIRAL_COLORS[s.code] || '#9167b0';
     const active = s.code === selCode ? ' active' : '';
-    const inTotal = TOTAL_CODES.has(s.code);
-    const extra = inTotal ? '' : ' extra';
-    const ct = inTotal ? `${s.items.length} concepts` : `${s.items.length} concepts · not in total`;
-    // force every non-Total (extra) use case onto its own row, below the FAIR chips
-    const brk = (!inTotal && !brokeRow) ? (brokeRow = true, '<div class="chip-break"></div>') : '';
-    return `${brk}<div class="sp-chip${extra}${active}" data-idx="${idx}" style="border-left-color:${color}">
+    return `<div class="sp-chip${active}" data-idx="${idx}" style="border-left-color:${color}">
       <span class="pct" style="color:${color}">${r ? fmtPct(r.res.average) : '—'}</span>
       <span class="nm">${s.title.replace('FAIR ','')}</span>
-      <span class="ct">${ct}</span>
+      <span class="ct">${s.items.length} concepts</span>
     </div>`;
   }).join('');
   $('total-breakdown').querySelectorAll('.sp-chip').forEach(el => {
@@ -501,29 +610,39 @@ async function fetchClientMeta(clientId){
   } catch { return null; }
 }
 
-function renderSelection(clientId, meta, recordCount, random, repoTotal){
+function renderSelection(clientId, meta, recordCount, random, repoTotal, resourceTypeId, query){
   $('sel-summary').style.display = '';
   const name = (meta && meta.name) ? meta.name : clientId;
   $('sel-repo').innerHTML = `${escHtml(name)}<span class="sel-id">${escHtml(clientId)}</span>`;
   $('sel-records').textContent = recordCount.toLocaleString();
   $('sel-mode').textContent = random ? 'random sample' : 'most-recently-updated';
-  const repo = (repoTotal != null) ? repoTotal : (meta && meta.doiCount != null ? meta.doiCount : null);
-  $('sel-total').textContent = repo != null ? `of ${repo.toLocaleString()} in repository` : '';
+  const filtered = !!(resourceTypeId || query);
+  // with a type/query filter, meta.total is the count of matching DOIs, not the whole repo
+  const repo = (repoTotal != null) ? repoTotal : (filtered ? null : (meta && meta.doiCount != null ? meta.doiCount : null));
+  $('sel-total').textContent = repo != null ? `of ${repo.toLocaleString()} ${filtered ? 'matching' : 'in repository'}` : '';
+  // show the active data-selection filter, if any
+  const parts = [];
+  if (resourceTypeId) parts.push(`type: ${resourceTypeId}`);
+  if (query) parts.push(`query: ${query}`);
+  $('sel-filter').textContent = parts.length ? `filter — ${parts.join(' · ')}` : '';
+  $('sel-filter').style.display = parts.length ? '' : 'none';
 }
 
 async function run(){
   const clientId = $('repo-input').value.trim();
   const cap = Math.max(1, Math.min(10000, parseInt($('cap').value,10) || 200));
   const random = $('random').checked;
+  const resourceTypeId = $('resource-type').value;
+  const query = $('query-input').value.trim();
   if (!clientId) return;
   closeAutocomplete();
   $('repo-go').disabled = true;
   try {
-    const { records, repoTotal } = await fetchRepo(clientId, cap, random);
-    if (!records.length){ hideProgress(); setStatus('No records returned for that client ID.', true); return; }
+    const { records, repoTotal, random: usedRandom } = await fetchRepo(clientId, cap, random, resourceTypeId, query);
+    if (!records.length){ hideProgress(); setStatus('No records returned for that selection.', true); return; }
     const meta = await fetchClientMeta(clientId);
-    renderSelection(clientId, meta, records.length, random, repoTotal);
-    const sampleNote = random ? `random sample of ${records.length}` : `${records.length} most-recent`;
+    renderSelection(clientId, meta, records.length, usedRandom, repoTotal, resourceTypeId, query);
+    const sampleNote = usedRandom ? `random sample of ${records.length}` : `${records.length} most-recent`;
 
     const totalQueries = SPIRALS.reduce((a,s)=>a + s.items.filter(i=>i.jq_query).length, 0);
     let done = 0;
@@ -614,7 +733,8 @@ document.addEventListener('click', e => { if (!e.target.closest('.hero-search'))
 /* ---------- boot ---------- */
 $('repo-go').addEventListener('click', run);
 $('spiral').addEventListener('change', showDetail);
-populateSpirals();
+document.querySelectorAll('#tabs .tab').forEach(b => b.addEventListener('click', () => selectTab(b.dataset.tab)));
+selectTab('FAIR');
 setStatus('Loading engine…');
 setProgressIndeterminate();
 whenJqReady().then(()=>{
