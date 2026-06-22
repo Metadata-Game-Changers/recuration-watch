@@ -321,11 +321,18 @@ function whenJqReady(){
   });
 }
 
-/* run a jq filter over an input object, returning ALL outputs as parsed objects (≈ jq.all in python-jq) */
-async function jqAll(inputObj, filter){
-  const out = await jq.promised.raw(JSON.stringify(inputObj), filter, ['-c']);
-  if (!out) return [];
-  return out.split('\n').filter(l => l.trim().length).map(l => JSON.parse(l));
+// The verbatim queries are `.data[] | select(<EXPR>) | { …projection… }`. For scoring we only
+// need how many records the select admits, so drop the projection (everything from the first
+// `{`) and count the selected records directly. This avoids building the per-record "values"
+// arrays — the dominant cost on large samples — while staying identical to len(results).
+// Falls back to the whole query if no projection brace is found.
+// NOTE: the dropped projection is `{id, concept, count, values}` per matching record. To recover
+// those values in future (e.g. a value-level analysis tool), run the FULL jq_query instead of
+// countExpr() over {data: records}. See VALUES_ARRAY.md for the data shape and a recipe.
+function countExpr(query){
+  const i = query.indexOf('{');
+  if (i < 0) return query;
+  return query.slice(0, i).replace(/\|\s*$/, '').trim();
 }
 
 /* ---------- DataCite fetch (mirrors loadRepository) ---------- */
@@ -357,10 +364,11 @@ async function fetchRepo(clientId, cap, random, resourceTypeId, query){
   while (records.length < cap) {
     requests++;
     const base = `${API_BASE}/dois?client-id=${encodeURIComponent(clientId)}&page[size]=${pageSize}&affiliation=true&publisher=true${filter}`;
-    // random=true ignores page[number] & sort, so each request is an independent draw → dedup needed.
+    // random=true ignores page[number], so each request is an independent draw → dedup needed.
+    // No sort: completeness scores a sample regardless of order, so we skip the server-side sort.
     const url = effectiveRandom
       ? `${base}&random=true&disable-facets=true`
-      : `${base}&page[number]=${page}&sort=-updated`;
+      : `${base}&page[number]=${page}`;
     if (!firstUrl) firstUrl = url;
     let res;
     try {
@@ -406,31 +414,87 @@ function showApiUrl(url, requests, random){
 }
 
 /* ---------- scoring (mirrors get_spiral_data lines 2455-2519) ---------- */
-async function runSpiral(spiral, records, onProgress){
-  const input = { data: records };
+// Score every use case over the records. The sample is processed in batches so each jq call
+// works on a bounded slice and the whole sample is serialized once *per batch* (not once per
+// query — there are ~200 queries), and we yield to the event loop between batches so the UI
+// keeps painting and the browser doesn't kill a long synchronous pass. Total parse work is the
+// same as before; peak memory and main-thread blocking are bounded. Per-concept matches sum
+// across batches (each record is admitted independently, so disjoint-batch counts add up).
+async function scoreAllSpirals(records, onProgress){
   const total = records.length;
-  const items = [];
-  for (const item of spiral.items){
-    if (!item.jq_query){ continue; }                 // skip query-less items (python would error/continue)
-    let matched = 0, errored = false;
+  // Larger batches = fewer compiles of the (large) combined program, which dominates cost.
+  // Counting is memory-light (no projections built), so big batches are safe.
+  const BATCH = 500;
+  const batches = [];
+  for (let i = 0; i < records.length; i += BATCH) batches.push(records.slice(i, i + BATCH));
+  if (!batches.length) batches.push([]);
+
+  // Flat list of every scorable concept, in a stable order.
+  const flat = [];
+  SPIRALS.forEach(s => s.items.forEach(it => { if (it.jq_query) flat.push({ code: s.code, concept: it.concept, jq: it.jq_query }); }));
+
+  // Dedup by count expression: the same select backs several concepts across use cases
+  // (e.g. "CitedBy"/"IsCitedBy", relation/Project overlaps), so compute each distinct count
+  // once and fan it back out. Fewer clauses also shrink the combined program → faster compile.
+  const exprList = [];
+  const exprIndex = new Map();
+  const flatExpr = flat.map(it => {
+    const e = countExpr(it.jq);
+    if (!exprIndex.has(e)){ exprIndex.set(e, exprList.length); exprList.push(e); }
+    return exprIndex.get(e);
+  });
+  const matched = exprList.map(() => 0);
+  const errored = exprList.map(() => false);
+
+  // One combined jq program counts every DISTINCT select in a single pass over the batch:
+  //   { "c0": ([ <expr0> ] | length), "c1": ([ <expr1> ] | length), … }
+  // So each batch is parsed ONCE (not once per query — the big win on large samples); all
+  // selects iterate the already-parsed .data[] in memory.
+  const program = '{' + exprList.map((e, i) => `"c${i}":([ ${e} ]|length)`).join(',') + '}';
+
+  for (let b = 0; b < batches.length; b++){
+    const inputStr = JSON.stringify({ data: batches[b] });
+    let obj = null;
     try {
-      const results = await jqAll(input, item.jq_query);   // results = records the select admitted
-      matched = results.length;                            // len(results)
+      const out = await jq.promised.raw(inputStr, program, ['-c']);
+      obj = JSON.parse(out);
     } catch (e){
-      console.warn('jq error for concept', item.concept, '→', (e && e.message) || e);
-      matched = 0; errored = true;                         // query threw (≈ python except: continue)
+      // A runtime error in any one expression aborts the combined program; fall back to
+      // per-expression so a single bad query doesn't lose the whole batch.
+      console.warn('combined scoring failed for a batch, falling back to per-query:', (e && e.message) || e);
     }
-    let comp = total > 0 ? matched / total : 0;            // line 2508: len(results)/total
-    if (comp > 1) comp = 1;                                // trimLargeCounts
-    items.push({ concept: item.concept, matched, comp, errored });
-    if (onProgress) onProgress();
+    if (obj){
+      exprList.forEach((e, i) => { const v = obj['c' + i]; if (typeof v === 'number') matched[i] += v; else errored[i] = true; });
+    } else {
+      for (let i = 0; i < exprList.length; i++){
+        try { const o = await jq.promised.raw(inputStr, `[ ${exprList[i]} ] | length`, ['-c']); const n = parseInt((o||'').trim(),10); matched[i] += Number.isNaN(n)?0:n; }
+        catch (e){ errored[i] = true; }
+      }
+    }
+    if (onProgress) onProgress((b + 1) / batches.length);
+    await new Promise(r => setTimeout(r));   // yield so the UI paints and progress advances between batches
   }
-  const n = items.length || 1;
-  items.sort((a,b) => a.concept.localeCompare(b.concept));   // alphabetical, matches get_spiral_data's sorted() columns
-  const average  = items.reduce((a,b)=>a + Math.min(b.comp,1), 0) / n;  // Average
-  const exist    = items.filter(i => i.comp > 0).length;                // conceptExists
-  const complete = items.filter(i => i.comp >= 1).length;               // conceptComplete
-  return { items, average, exist, complete, total };
+
+  // Assemble per-use-case results (same shape/sorting as before), reading each concept's
+  // count from its (deduped) expression slot.
+  const byCode = {};
+  SPIRALS.forEach(s => {
+    const items = flat
+      .map((it, i) => ({ it, u: flatExpr[i] }))
+      .filter(x => x.it.code === s.code)
+      .map(({ it, u }) => {
+        let comp = errored[u] ? 0 : (total > 0 ? matched[u] / total : 0);   // line 2508: len(results)/total
+        if (comp > 1) comp = 1;                                             // trimLargeCounts
+        return { concept: it.concept, matched: matched[u], comp, errored: errored[u] };
+      })
+      .sort((a, b) => a.concept.localeCompare(b.concept));   // alphabetical, matches get_spiral_data's sorted() columns
+    const n = items.length || 1;
+    const average  = items.reduce((a, b) => a + Math.min(b.comp, 1), 0) / n;  // Average
+    const exist    = items.filter(i => i.comp > 0).length;                    // conceptExists
+    const complete = items.filter(i => i.comp >= 1).length;                   // conceptComplete
+    byCode[s.code] = { spiral: s, res: { items, average, exist, complete, total } };
+  });
+  return byCode;
 }
 
 /* ---------- rendering ---------- */
@@ -796,7 +860,7 @@ function renderSelection(clientId, meta, recordCount, random, repoTotal, resourc
   const name = (meta && meta.name) ? meta.name : clientId;
   $('sel-repo').innerHTML = `${escHtml(name)}<span class="sel-id">${escHtml(clientId)}</span>`;
   $('sel-records').textContent = recordCount.toLocaleString();
-  $('sel-mode').textContent = random ? 'random sample' : 'most-recently-updated';
+  $('sel-mode').textContent = random ? 'random sample' : 'sequential sample';
   const filtered = !!(resourceTypeId || query);
   // with a type/query filter, meta.total is the count of matching DOIs, not the whole repo
   const repo = (repoTotal != null) ? repoTotal : (filtered ? null : (meta && meta.doiCount != null ? meta.doiCount : null));
@@ -823,18 +887,11 @@ async function run(){
     if (!records.length){ hideProgress(); setStatus('No records returned for that selection.', true); return; }
     const meta = await fetchClientMeta(clientId);
     renderSelection(clientId, meta, records.length, usedRandom, repoTotal, resourceTypeId, query);
-    const sampleNote = usedRandom ? `random sample of ${records.length}` : `${records.length} most-recent`;
+    const sampleNote = usedRandom ? `random sample of ${records.length}` : `${records.length} sequential`;
 
-    const totalQueries = SPIRALS.reduce((a,s)=>a + s.items.filter(i=>i.jq_query).length, 0);
-    let done = 0;
     setStatus(`Scoring ${SPIRALS.length} use cases over ${records.length} records…`);
     setProgress(0);
-    const byCode = {};
-    for (let i=0;i<SPIRALS.length;i++){
-      const spiral = SPIRALS[i];
-      const res = await runSpiral(spiral, records, () => { done++; setProgress(done/totalQueries); });
-      byCode[spiral.code] = { spiral, res };
-    }
+    const byCode = await scoreAllSpirals(records, frac => setProgress(frac));
     const total = computeTotal(byCode);
     lastRun = { byCode, total, records, clientId, resourceTypeId, query, random: usedRandom,
                 repoName: (meta && meta.name) ? meta.name : clientId, repoTotal };
