@@ -125,6 +125,9 @@
   .sp-chip .nm{font-size:.72rem;color:var(--muted)}
   .sp-chip .ct{font-size:.66rem;color:var(--muted)}
   .total-note{font-size:.72rem;color:var(--muted);margin-top:.75rem}
+  .total-actions{margin-top:.85rem}
+  .dl-btn{appearance:none;border:1px solid var(--accent);background:#fff;color:var(--accent-dk);font:inherit;font-size:.75rem;font-weight:600;padding:.42rem .85rem;border-radius:6px;cursor:pointer}
+  .dl-btn:hover{background:var(--tint)}
   code{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.82em;background:#f3f1f8;padding:.05rem .3rem;border-radius:4px}
 </style>
 </head>
@@ -233,6 +236,7 @@
       <div class="total-breakdown" id="total-breakdown"></div>
     </div>
     <div class="total-note" id="total-note"></div>
+    <div class="total-actions"><button class="dl-btn" id="download-report" type="button">⬇ Download report (JSON)</button></div>
   </div>
 
   <div class="grid">
@@ -600,6 +604,49 @@ function showDetail(){
   renderTotal();   // refresh active-chip highlight
 }
 
+/* ---------- brief JSON report ---------- */
+// Same array structure as FAIR_spirals.json: per use case, keep its core properties and add the
+// run context (repository, filters, datetime) + computed stats, then items with completeness values.
+function buildReport(){
+  const d = new Date();
+  const round = x => Math.round(x * 10000) / 10000;   // completeness as a 0–1 fraction
+  return SPIRALS.map(s => {
+    const e = lastRun.byCode[s.code];
+    if (!e) return null;
+    const res = e.res;
+    return {
+      title: s.title,
+      code: s.code,
+      dialect: s.dialect,
+      description: s.description,
+      Repository_ID: lastRun.clientId,
+      'resource-type': lastRun.resourceTypeId || '',
+      query: lastRun.query || '',
+      'Current DateTime': d.toISOString(),
+      'Number of Records': res.total,
+      Exist: res.exist,
+      Complete: res.complete,
+      Average: round(res.average),
+      items: res.items.map(i => ({ concept: i.concept, completeness: i.errored ? null : round(i.comp) }))
+    };
+  }).filter(Boolean);
+}
+
+function downloadReport(){
+  if (!lastRun){ setStatus('Run an exploration first, then download the report.', true); return; }
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const stamp = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}`;  // to the hour
+  const safeId = (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_');
+  const blob = new Blob([JSON.stringify(buildReport(), null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${safeId}_useCaseReport__${stamp}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 /* ---------- run handler ---------- */
 async function fetchClientMeta(clientId){
   try {
@@ -655,7 +702,7 @@ async function run(){
       byCode[spiral.code] = { spiral, res };
     }
     const total = computeTotal(byCode);
-    lastRun = { byCode, total, records };
+    lastRun = { byCode, total, records, clientId, resourceTypeId, query, random: usedRandom };
     renderTotal();
     showDetail();
     hideProgress();
@@ -733,6 +780,7 @@ document.addEventListener('click', e => { if (!e.target.closest('.hero-search'))
 /* ---------- boot ---------- */
 $('repo-go').addEventListener('click', run);
 $('spiral').addEventListener('change', showDetail);
+$('download-report').addEventListener('click', downloadReport);
 document.querySelectorAll('#tabs .tab').forEach(b => b.addEventListener('click', () => selectTab(b.dataset.tab)));
 selectTab('FAIR');
 setStatus('Loading engine…');
