@@ -89,6 +89,13 @@
   #progress.indet>i{width:40%;animation:indet 1.1s ease-in-out infinite}
   @keyframes indet{0%{margin-left:-40%}100%{margin-left:100%}}
   #apiurl{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;color:var(--muted);background:#f3f1f8;border-radius:6px;padding:.45rem .6rem;margin:0 0 1rem;word-break:break-all;line-height:1.5}
+  .tips{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;background:#fff;padding:.7rem .9rem;margin:0 0 1rem;max-width:560px}
+  .tips .tips-head{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.35rem}
+  .tips .tips-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-dk);font-weight:600;margin-bottom:.2rem}
+  .tips .tips-text{font-size:.82rem;color:var(--ink);line-height:1.5}
+  .tips .tips-text strong{color:var(--accent-dk)}
+  .tips .tips-link{display:inline-block;margin-top:.4rem;font-size:.68rem;color:var(--accent);text-decoration:none}
+  .tips .tips-link:hover{text-decoration:underline}
   #apiurl b{color:var(--ink);font-weight:600}
   #status.err{color:#b4322f}
   .grid{display:grid;grid-template-columns:minmax(360px,1fr) 1fr;gap:1.5rem;align-items:start}
@@ -223,6 +230,7 @@
   <div id="status">Loading jq engine…</div>
   <div id="progress"><i></i></div>
   <div id="apiurl" style="display:none"></div>
+  <div id="tips" class="tips" style="display:none"></div>
 
   <div class="card total-card" id="total-card" style="display:none">
     <div class="tabs" id="tabs">
@@ -815,7 +823,7 @@ function buildReportHtml(){
   <div class="report-head">
     <h1>Repository Completeness Report</h1>
     <div class="meta-row"><b>${escHtml(lastRun.repoName)}</b> <span class="id">${escHtml(lastRun.clientId)}</span></div>
-    <div class="meta-row">${repoLine} · ${lastRun.random ? 'random sample' : 'most-recently-updated'} · ${d.toISOString()}</div>
+    <div class="meta-row">${repoLine} · ${lastRun.random ? 'random sample' : 'sequential sample'} · ${d.toISOString()}</div>
     ${filterLine}
     <div class="totals">
       <div class="t"><b>${fmtPct(weightedTotal(lastRun.byCode, GROUPS.FAIR))}</b><span>FAIR Total</span></div>
@@ -882,6 +890,7 @@ async function run(){
   if (!clientId) return;
   closeAutocomplete();
   $('repo-go').disabled = true;
+  startTips();
   try {
     const { records, repoTotal, random: usedRandom } = await fetchRepo(clientId, cap, random, resourceTypeId, query);
     if (!records.length){ hideProgress(); setStatus('No records returned for that selection.', true); return; }
@@ -904,6 +913,7 @@ async function run(){
     hideProgress();
     setStatus(e.message || String(e), true);
   } finally {
+    stopTips();
     $('repo-go').disabled = false;
   }
 }
@@ -972,15 +982,49 @@ document.addEventListener('click', e => { if (!e.target.closest('.hero-search'))
 /* ---------- boot ---------- */
 $('repo-go').addEventListener('click', run);
 $('spiral').addEventListener('change', showDetail);
+/* ---------- loading tips (shown while the engine loads / records fetch / scoring runs) ---------- */
+const COMPLETENESS_TIPS = [
+  { label: 'Completeness', text: '<strong>Completeness</strong> here measures <em>presence</em> — the share of records that contain each concept — not whether the value is correct or rich.', link: 'https://metadatagamechangers.com' },
+  { label: 'FAIR use cases', text: 'The four <strong>FAIR use cases</strong> group concepts by purpose: <strong>Text</strong> for discovery, <strong>Identifiers</strong>, <strong>Connections</strong>, and <strong>Contacts</strong>.', link: 'https://metadatagamechangers.com/blog' },
+  { label: 'Mandatory fields', text: 'DataCite requires a handful of fields (title, creator, publisher, type, year), so a few concepts sit near <strong>100% by design</strong> — the interesting signal is everything else.', link: 'https://support.datacite.org/docs/datacite-metadata-schema-v44-mandatory-properties' },
+  { label: 'Total index', text: 'The <strong>FAIR Total</strong> is a concept-weighted average across the four FAIR use cases. Projects and Extras are scored separately and don’t affect it.', link: 'https://metadatagamechangers.com/blog' },
+  { label: 'Sampling', text: 'For large repositories, a <strong>random sample</strong> of a few hundred records gives a representative completeness score in seconds.', link: 'https://metadatagamechangers.com/blog' },
+  { label: 'Connectivity', text: 'Structured <strong>affiliations (ROR)</strong> and <strong>identifiers (ORCID, DOI)</strong> connect the research graph far better than plain names and titles.', link: 'https://metadatagamechangers.com/blog' },
+  { label: 'Relations', text: '<strong>relatedIdentifiers</strong> — Cites, IsPartOf, IsSupplementTo … — turn isolated records into a connected network. See the DataCite Relations use case.', link: 'https://support.datacite.org/docs/connecting-to-works' },
+  { label: 'In your browser', text: 'Every score is computed <strong>in your browser</strong> with the same jq queries Metadata Game Changers uses — nothing is uploaded or stored.', link: 'https://metadatagamechangers.com' },
+];
+let tipTimer = null, tipDelay = null, tipIndex = 0;
+function renderTip(){
+  const t = COMPLETENESS_TIPS[tipIndex];
+  $('tips').innerHTML =
+    '<div class="tips-head">While you wait…</div>' +
+    '<div class="tips-label">' + t.label + '</div>' +
+    '<div class="tips-text">' + t.text + '</div>' +
+    (t.link ? '<a class="tips-link" href="' + t.link + '" target="_blank" rel="noopener">Learn more at Metadata Game Changers ↗</a>' : '');
+}
+function startTips(){
+  stopTips();
+  // small delay so quick runs don't flash a tip
+  tipDelay = setTimeout(() => {
+    tipIndex = Math.floor(Math.random() * COMPLETENESS_TIPS.length);
+    renderTip();
+    $('tips').style.display = '';
+    tipTimer = setInterval(() => { tipIndex = (tipIndex + 1) % COMPLETENESS_TIPS.length; renderTip(); }, 4500);
+  }, 1200);
+}
+function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay = tipTimer = null; $('tips').style.display = 'none'; }
+
 $('download-report').addEventListener('click', downloadReport);
 $('download-html').addEventListener('click', downloadHtmlReport);
 document.querySelectorAll('#tabs .tab').forEach(b => b.addEventListener('click', () => selectTab(b.dataset.tab)));
 selectTab('FAIR');
 setStatus('Loading engine…');
 setProgressIndeterminate();
+startTips();
 whenJqReady().then(()=>{
   jqReady = true;
   $('repo-go').disabled = false;
+  stopTips();
   hideProgress();
   if (location.protocol === 'file:') {
     setStatus('Engine ready — but this page is open as a local file (file://). DataCite requests will be blocked. Serve it over http (e.g. "python3 -m http.server" → http://localhost:8000/completeness.html).', true);
@@ -988,6 +1032,7 @@ whenJqReady().then(()=>{
     setStatus('Engine ready. Search for a repository (or enter a client ID) and click Explore.');
   }
 }).catch(e=>{
+  stopTips();
   hideProgress();
   setStatus(e.message, true);
 });
