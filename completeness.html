@@ -247,6 +247,7 @@
     <div class="total-actions">
       <button class="dl-btn" id="download-report" type="button">⬇ Download report (JSON)</button>
       <button class="dl-btn" id="download-html" type="button">⬇ Download report (HTML)</button>
+      <button class="dl-btn" id="download-metadata" type="button">⬇ Download metadata (JSON)</button>
     </div>
   </div>
 
@@ -853,6 +854,24 @@ function downloadHtmlReport(){
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+/* ---------- raw metadata download ---------- */
+// Saves the fetched DataCite records as { data: [...] } — the same shape the scorer uses and that
+// DataCite returns, so it's directly re-usable (e.g. the value-recovery recipes in VALUES_ARRAY.md).
+function downloadMetadata(){
+  if (!lastRun){ setStatus('Run an exploration first, then download the metadata.', true); return; }
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  const stamp = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}`;  // YYYYMMDD_TT
+  const safeId = (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_');
+  const blob = new Blob([JSON.stringify({ data: lastRun.records }, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${safeId}__${stamp}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 /* ---------- run handler ---------- */
 async function fetchClientMeta(clientId){
   try {
@@ -1016,6 +1035,7 @@ function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay =
 
 $('download-report').addEventListener('click', downloadReport);
 $('download-html').addEventListener('click', downloadHtmlReport);
+$('download-metadata').addEventListener('click', downloadMetadata);
 document.querySelectorAll('#tabs .tab').forEach(b => b.addEventListener('click', () => selectTab(b.dataset.tab)));
 selectTab('FAIR');
 setStatus('Loading engine…');
