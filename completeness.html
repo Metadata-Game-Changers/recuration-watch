@@ -742,12 +742,15 @@ function buildSummaryCsv(){
   const dt = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}`;
   const round = x => Math.round(x * 10000) / 10000;
   const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
-  const headers = ['Repository_ID', 'DateTime', 'Records', 'FAIR_Total', 'Projects_Total', ...SPIRALS.map(s => s.title)];
+  // use-case columns follow the tab order: FAIR, then Projects, then Extras
+  const orderedCodes = [...GROUPS.FAIR, ...GROUPS.Projects, ...GROUPS.Extras];
+  const ordered = orderedCodes.map(code => SPIRALS[CODE_INDEX[code]]);
+  const headers = ['Repository_ID', 'DateTime', 'Records', 'FAIR_Total', 'Projects_Total', ...ordered.map(s => s.title)];
   const row = [
     lastRun.clientId, dt, lastRun.records.length,
     round(weightedTotal(lastRun.byCode, GROUPS.FAIR)),
     round(weightedTotal(lastRun.byCode, GROUPS.Projects)),
-    ...SPIRALS.map(s => { const e = lastRun.byCode[s.code]; return e ? round(e.res.average) : ''; })
+    ...ordered.map(s => { const e = lastRun.byCode[s.code]; return e ? round(e.res.average) : ''; })
   ];
   return headers.map(csv).join(',') + '\r\n' + row.map(csv).join(',') + '\r\n';
 }
