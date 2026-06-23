@@ -882,27 +882,39 @@ function downloadMetadata(){
 }
 
 /* ---------- copy the radial plot as a PNG image ---------- */
-// Rasterize the inline radar SVG to PNG: clone it, add a white background, the use-case title as
-// a caption, and an explicit font; resolve any var(--accent); draw to a 2x canvas; write to the
-// clipboard. Falls back to a PNG download if clipboard images are blocked.
+// Compose a self-contained PNG: the repository name as a heading with a context subtitle (client
+// id · records · sampling mode · any filter), the radial plot beneath it (already carrying the
+// use-case title), and a stats line below (Average · Exist · Complete · records). Built as a fresh
+// SVG — white background, explicit font, the radar's nodes shifted under the heading, var(--accent)
+// resolved — then drawn to a 2x canvas. Falls back to a PNG download if clipboard images are blocked.
 function radarToPngBlob(scale){
   scale = scale || 2;
   return new Promise((resolve, reject) => {
-    const svg = $('radar'), W = 460, capH = 36, H = 460 + capH, ns = 'http://www.w3.org/2000/svg';
-    const clone = svg.cloneNode(true);
-    clone.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    clone.setAttribute('width', W); clone.setAttribute('height', H);
-    clone.setAttribute('font-family', 'Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif');
-    const bg = document.createElementNS(ns, 'rect');
-    bg.setAttribute('x', 0); bg.setAttribute('y', 0); bg.setAttribute('width', W); bg.setAttribute('height', H); bg.setAttribute('fill', '#ffffff');
-    clone.insertBefore(bg, clone.firstChild);
-    const cap = document.createElementNS(ns, 'text');
-    cap.setAttribute('x', W / 2); cap.setAttribute('y', 460 + 23); cap.setAttribute('text-anchor', 'middle');
-    cap.setAttribute('font-size', 13); cap.setAttribute('font-weight', '600'); cap.setAttribute('fill', '#1f2330');
-    cap.textContent = $('legend').textContent || '';
-    clone.appendChild(cap);
+    const W = 460, radarH = 460, headerH = 46;
+    const idx = parseInt($('spiral').value, 10);
+    const sp = SPIRALS[idx];
+    const res = (sp && lastRun.byCode[sp.code]) ? lastRun.byCode[sp.code].res : null;
+    const name = (lastRun && lastRun.repoName) ? lastRun.repoName : (lastRun ? lastRun.clientId : '');
+    const subParts = [ lastRun.clientId, `${lastRun.records.length} records`, lastRun.random ? 'random sample' : 'sequential sample' ];
+    if (lastRun.resourceTypeId) subParts.push(`type: ${lastRun.resourceTypeId}`);
+    if (lastRun.query) subParts.push(`query: ${lastRun.query}`);
+    const sub = subParts.filter(Boolean).join('   ·   ');
+    const stats = res ? `Average ${fmtPct(res.average)}  ·  Exist ${res.exist}/${res.items.length}  ·  Complete ${res.complete}/${res.items.length}  ·  ${res.total} records` : '';
+    const H = headerH + radarH + 34;
+
     const accent = (getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#9167b0').trim();
-    const str = new XMLSerializer().serializeToString(clone).replace(/var\(--accent\)/g, accent);
+    const radarInner = Array.from($('radar').cloneNode(true).childNodes)
+      .map(n => new XMLSerializer().serializeToString(n)).join('').replace(/var\(--accent\)/g, accent);
+
+    const str =
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">` +
+      `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>` +
+      `<text x="${W/2}" y="20" text-anchor="middle" font-size="15" font-weight="700" fill="#673289">${escHtml(name)}</text>` +
+      (sub ? `<text x="${W/2}" y="37" text-anchor="middle" font-size="10" fill="#6b7280">${escHtml(sub)}</text>` : '') +
+      `<g transform="translate(0 ${headerH})">${radarInner}</g>` +
+      (stats ? `<text x="${W/2}" y="${headerH + radarH + 22}" text-anchor="middle" font-size="12" fill="#1f2330">${escHtml(stats)}</text>` : '') +
+      `</svg>`;
+
     const url = URL.createObjectURL(new Blob([str], { type: 'image/svg+xml;charset=utf-8' }));
     const img = new Image();
     img.onload = () => {
