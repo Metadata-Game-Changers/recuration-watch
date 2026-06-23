@@ -113,6 +113,9 @@
   .bar{position:relative;height:7px;border-radius:4px;background:var(--tint);overflow:hidden;min-width:60px}
   .bar>i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:4px}
   .spiral-host{display:flex;justify-content:center}
+  .card-head{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+  .copy-btn{font-size:.72rem;color:var(--accent-dk);background:#fff;border:1px solid var(--accent);border-radius:6px;padding:.3rem .7rem;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap}
+  .copy-btn:hover{background:var(--tint)}
   .legend{font-size:.72rem;color:var(--muted);text-align:center;margin-top:.4rem}
   .note{font-size:.78rem;color:var(--muted);background:var(--tint);border-radius:8px;padding:.7rem .85rem;margin-top:1.25rem;line-height:1.5}
   .total-card{margin-bottom:1rem}
@@ -253,7 +256,10 @@
 
   <div class="grid">
     <div class="card">
-      <h2>Use case</h2>
+      <div class="card-head">
+        <h2>Use case</h2>
+        <button class="copy-btn" id="copy-radar" type="button" title="Copy this plot as an image" style="display:none">⧉ Copy chart</button>
+      </div>
       <div class="spiral-host" id="spiral-host"><svg id="radar" viewBox="0 0 460 460" width="460" height="460"></svg></div>
       <div class="legend" id="legend"></div>
     </div>
@@ -545,6 +551,7 @@ function renderResults(spiral, res){
     </tr>`).join('');
   renderRadar(res.items, color);
   $('legend').textContent = `${spiral.title} — ${res.items.length} concepts`;
+  $('copy-radar').style.display = '';
 }
 
 function renderRadar(items, color){
@@ -872,6 +879,67 @@ function downloadMetadata(){
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+/* ---------- copy the radial plot as a PNG image ---------- */
+// Rasterize the inline radar SVG to PNG: clone it, add a white background, the use-case title as
+// a caption, and an explicit font; resolve any var(--accent); draw to a 2x canvas; write to the
+// clipboard. Falls back to a PNG download if clipboard images are blocked.
+function radarToPngBlob(scale){
+  scale = scale || 2;
+  return new Promise((resolve, reject) => {
+    const svg = $('radar'), W = 460, capH = 36, H = 460 + capH, ns = 'http://www.w3.org/2000/svg';
+    const clone = svg.cloneNode(true);
+    clone.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    clone.setAttribute('width', W); clone.setAttribute('height', H);
+    clone.setAttribute('font-family', 'Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif');
+    const bg = document.createElementNS(ns, 'rect');
+    bg.setAttribute('x', 0); bg.setAttribute('y', 0); bg.setAttribute('width', W); bg.setAttribute('height', H); bg.setAttribute('fill', '#ffffff');
+    clone.insertBefore(bg, clone.firstChild);
+    const cap = document.createElementNS(ns, 'text');
+    cap.setAttribute('x', W / 2); cap.setAttribute('y', 460 + 23); cap.setAttribute('text-anchor', 'middle');
+    cap.setAttribute('font-size', 13); cap.setAttribute('font-weight', '600'); cap.setAttribute('fill', '#1f2330');
+    cap.textContent = $('legend').textContent || '';
+    clone.appendChild(cap);
+    const accent = (getComputedStyle(document.documentElement).getPropertyValue('--accent') || '#9167b0').trim();
+    const str = new XMLSerializer().serializeToString(clone).replace(/var\(--accent\)/g, accent);
+    const url = URL.createObjectURL(new Blob([str], { type: 'image/svg+xml;charset=utf-8' }));
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = W * scale; canvas.height = H * scale;
+      canvas.getContext('2d').drawImage(img, 0, 0, W * scale, H * scale);
+      URL.revokeObjectURL(url);
+      canvas.toBlob(b => b ? resolve(b) : reject(new Error('toBlob failed')), 'image/png');
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('SVG render failed')); };
+    img.src = url;
+  });
+}
+function flashRadarBtn(text){
+  const btn = $('copy-radar');
+  btn.textContent = text;
+  setTimeout(() => { btn.textContent = '⧉ Copy chart'; }, 1800);
+}
+async function copyRadar(){
+  if (!lastRun){ flashRadarBtn('Run a search first'); return; }
+  let blob;
+  try { blob = await radarToPngBlob(2); }
+  catch (e){ flashRadarBtn('Could not render'); return; }
+  try {
+    if (!(navigator.clipboard && window.ClipboardItem)) throw new Error('clipboard images unsupported');
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    flashRadarBtn('✓ Copied');
+  } catch (e){
+    const url = URL.createObjectURL(blob);
+    const sel = SPIRALS[parseInt($('spiral').value, 10)];
+    const safeId = (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_');
+    const a = document.createElement('a');
+    a.href = url; a.download = `${safeId}_${sel ? sel.code : 'usecase'}.png`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    flashRadarBtn('↓ Downloaded PNG');
+  }
+}
+
 /* ---------- run handler ---------- */
 async function fetchClientMeta(clientId){
   try {
@@ -1036,6 +1104,7 @@ function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay =
 $('download-report').addEventListener('click', downloadReport);
 $('download-html').addEventListener('click', downloadHtmlReport);
 $('download-metadata').addEventListener('click', downloadMetadata);
+$('copy-radar').addEventListener('click', copyRadar);
 document.querySelectorAll('#tabs .tab').forEach(b => b.addEventListener('click', () => selectTab(b.dataset.tab)));
 selectTab('FAIR');
 setStatus('Loading engine…');
