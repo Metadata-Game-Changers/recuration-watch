@@ -721,7 +721,7 @@ function downloadReport(){
   if (!lastRun){ setStatus('Run an exploration first, then download the report.', true); return; }
   const d = new Date();
   const pad = n => String(n).padStart(2, '0');
-  const stamp = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}`;  // to the hour
+  const stamp = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}`;  // to the hour
   const safeId = (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_');
   const blob = new Blob([JSON.stringify(buildReport(), null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
@@ -852,7 +852,7 @@ function downloadHtmlReport(){
   if (!lastRun){ setStatus('Run an exploration first, then download the report.', true); return; }
   const d = new Date();
   const pad = n => String(n).padStart(2, '0');
-  const stamp = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}_${pad(d.getHours())}`;
+  const stamp = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}`;
   const safeId = (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_');
   const blob = new Blob([buildReportHtml()], { type: 'text/html' });
   const url = URL.createObjectURL(blob);
@@ -870,7 +870,7 @@ function downloadMetadata(){
   if (!lastRun){ setStatus('Run an exploration first, then download the metadata.', true); return; }
   const d = new Date();
   const pad = n => String(n).padStart(2, '0');
-  const stamp = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}`;  // YYYYMMDD_TT
+  const stamp = `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}T${pad(d.getHours())}`;  // YYYYMMDDThh
   const safeId = (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_');
   const blob = new Blob([JSON.stringify({ data: lastRun.records }, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);

@@ -58,7 +58,8 @@ Example repository to test with: client ID `sjyq.oozvia` (Metadata Game Changers
   most-recent fetch when the matching total ≤ Max.
 - Reports: JSON (mirrors `FAIR_spirals.json` structure + run stats) and self-contained HTML
   (plots + tables, `page-break-inside:avoid` for clean PDF printing). Filenames:
-  `{repository-id}_useCaseReport__{YYYY-MM-DD_HH}.{json|html}`.
+  `{repository-id}_useCaseReport__{YYYY-MM-DDThh}.{json|html}`. Raw metadata downloads as
+  `{repository-id}__{YYYYMMDDThh}.json`.
 
 ## Verifying changes
 
