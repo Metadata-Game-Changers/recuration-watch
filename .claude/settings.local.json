@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo \"=== search for DataCiteRepositories dir ===\"; find ~ -maxdepth 4 -type d -iname \"*datacite*\" -not -path \"*/.git/*\" 2>/dev/null | head *)",
+      "Bash(python3 -c \"import sys; sys.path.insert\\(0, '/Users/tedhabermann/Documents/MetadataGameChanger/Repositories/DataCiteRepositories/src'\\); import spirals; print\\(dir\\(spirals\\)\\)\")",
+      "Bash(pip show *)",
+      "Bash(python3 makeUseCaseReport.py -r sjyq.oozvia --max 50 --out /tmp/ucr)",
+      "Read(//private/tmp/ucr/**)",
+      "Bash(python3 -)",
+      "Bash(rm -f /tmp/ucr/*.json /tmp/ucr/*.csv)",
+      "Bash(python3 makeUseCaseReport.py -r sjyq.oozvia bl.imperial --max 100 --out /tmp/ucr)",
+      "Bash(python3 -c \"import os; print\\(os.environ.get\\('DATACITE_DATA'\\) or os.path.expanduser\\('~/Metadata/DataCite/metadata'\\)\\)\")",
+      "Bash(rm -rf /tmp/ucr2)",
+      "Bash(python3 makeUseCaseReport.py -r sjyq.oozvia bl.imperial --max 60 --out /tmp/ucr2)",
+      "Bash(zsh -ic 'echo DATACITE_DATA=$DATACITE_DATA')",
+      "Bash(zsh -lc 'echo DATACITE_DATA=$DATACITE_DATA')",
+      "Bash(python3 -c ' *)",
+      "Bash(export DATACITE_DATA=/Users/tedhabermann/Documents/Metadata/DataCite/metadata)",
+      "Bash(python3 repositoryUseCaseHistory.py -r agbv.tlxzcf -title \"agbv.tlxzcf Time History\" --outputDirectory /tmp/uchist_test --loglevel info)",
+      "Bash(python3 repositoryUseCaseHistory.py -r agbv.tlxzcf -title \"agbv.tlxzcf Time History\" --outputDirectory /tmp/uchist_test --loglevel warning)",
+      "Bash(python3 repositoryUseCaseHistory.py -r cide.azztrq cide.ooigyd -timestamps 2026-06-22T13 2026-06-22T14 -title \"CIDE repositories\" --outputDirectory /tmp/uchist_test --loglevel warning)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(python3 repositoryUseCaseHistory.py -r agbv.tlxzcf --outputDirectory /tmp/uchist_test --loglevel warning)",
+      "Bash(python3 repositoryUseCaseHistory.py -r cide.azztrq cide.ooigyd -timestamps 2026-06-22T13 2026-06-22T14 --outputDirectory /tmp/uchist_test --loglevel warning)"
+    ]
+  }
+}
