@@ -151,7 +151,7 @@
       <div class="brand-title-wrap"><div class="brand-tool-name">Metadata Completeness</div></div>
     </div>
     <div class="topbar-links">
-      <a href="https://metadata-game-changers.github.io/recuration-watch/repo-activity.html" target="_blank" rel="noopener">Repository Activity ↗</a>
+      <a id="activity-link" href="repo-activity.html" target="_blank" rel="noopener">Repository Activity ↗</a>
       <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers ↗</a>
     </div>
   </div>
@@ -1075,6 +1075,7 @@ async function run(){
   const resourceTypeId = $('resource-type').value;
   const query = $('query-input').value.trim();
   if (!clientId) return;
+  $('activity-link').href = 'repo-activity.html?client=' + encodeURIComponent(clientId);   // carry repo to the activity app
   closeAutocomplete();
   $('repo-go').disabled = true;
   startTips();
@@ -1220,6 +1221,16 @@ whenJqReady().then(()=>{
     setStatus('Engine ready — but this page is open as a local file (file://). DataCite requests will be blocked. Serve it over http (e.g. "python3 -m http.server" → http://localhost:8000/completeness.html).', true);
   } else {
     setStatus('Engine ready. Search for a repository (or enter a client ID) and click Explore.');
+    // optional URL parameters (lets other apps deep-link a repository): ?client=…&resource-type=…&query=…
+    const params = new URLSearchParams(location.search);
+    const clientFromUrl = params.get('client');
+    if (clientFromUrl){
+      $('repo-input').value = clientFromUrl;
+      const rt = params.get('resource-type') || params.get('resourceType');
+      if (rt && [...$('resource-type').options].some(o => o.value === rt)) $('resource-type').value = rt;
+      const q = params.get('query'); if (q) $('query-input').value = q;
+      run();
+    }
   }
 }).catch(e=>{
   stopTips();

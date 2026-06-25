@@ -177,6 +177,7 @@
     </div>
     <div class="topbar-links">
       <a href="https://metadata-game-changers.github.io/recuration-watch/" target="_blank" rel="noopener">Re-Curation Watch ↗</a>
+      <a id="completeness-link" href="completeness.html" target="_blank" rel="noopener">Metadata Completeness ↗</a>
       <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers ↗</a>
     </div>
   </div>
@@ -789,6 +790,7 @@ $('history-close').addEventListener('click', () => { $('history-card').style.dis
 async function run(){
   const clientId = $('repo-input').value.trim().toLowerCase();
   if (!clientId) return;
+  $('completeness-link').href = 'completeness.html?client=' + encodeURIComponent(clientId);   // carry repo to the completeness app
   closeAutocomplete();
   $('repo-go').disabled = true;
   $('period-card').style.display='none'; $('history-card').style.display='none';
@@ -827,6 +829,12 @@ async function run(){
 $('repo-go').addEventListener('click', run);
 ['bin','stackby','excl','actor'].forEach(id => $(id).addEventListener('change', () => { if (lastRun) render(); }));
 $('cap-label').textContent = CAP.toLocaleString();
+
+// optional URL parameter (lets other apps deep-link a repository): ?client=…
+(() => {
+  const clientFromUrl = new URLSearchParams(location.search).get('client');
+  if (clientFromUrl){ $('repo-input').value = clientFromUrl; run(); }
+})();
 
 /* ---------- copy the chart as a PNG image ---------- */
 // Compose a standalone PNG: the repository name (+ context) as a heading, the bar chart, and the
