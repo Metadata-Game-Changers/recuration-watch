@@ -516,6 +516,22 @@ async function scoreAllSpirals(records, onProgress){
 /* ---------- rendering ---------- */
 function fmtPct(x){ return (x*100).toFixed(0) + '%'; }
 
+// Display convention for concept labels (plots + tables): abbreviate "Identifier" → "ID".
+// Applies to displayed labels only — exported data (JSON/CSV) keeps the full concept names.
+const displayConcept = c => String(c).replace(/Identifier/g, 'ID');
+
+// Greedy word wrap to a max line width (chars), never breaking a word (textwrap break_long_words=False).
+function wrapLabel(text, width){
+  const lines = []; let line = '';
+  for (const w of String(text).split(/\s+/)){
+    if (!line) line = w;
+    else if ((line + ' ' + w).length <= width) line += ' ' + w;
+    else { lines.push(line); line = w; }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
 // per-spiral shading colors (from the Python config)
 const SPIRAL_COLORS = {
   'FAIR_Text':         '#E97131',
@@ -544,7 +560,7 @@ function renderResults(spiral, res){
   // table — record % shown as text; raw counts live in the bar tooltip
   $('rows').innerHTML = res.items.map(i => `
     <tr>
-      <td>${i.concept}</td>
+      <td>${displayConcept(i.concept)}</td>
       <td class="num">${i.errored ? '—' : fmtPct(i.comp)}</td>
       <td>${i.errored
         ? '<span style="color:#b4322f;font-size:.78rem">query error (see console)</span>'
@@ -574,15 +590,22 @@ function renderRadar(items, color, title){
   // data polygon (shaded in the spiral's color; no vertex markers)
   const pts = items.map((it,i)=>pt(i, Math.min(it.comp,1)).join(',')).join(' ');
   add('polygon',{points:pts,fill:color,'fill-opacity':0.28,stroke:color,'stroke-width':2,'stroke-linejoin':'round'});
-  // labels (only if not too crowded)
+  // labels (only if not too crowded) — abbreviate Identifier→ID and word-wrap onto multiple lines
   if (N <= 30){
+    const LH = 9.5;
     items.forEach((it,i)=>{
       const [x,y]=pt(i,1.12);
       const a = ang(i);
       const anchor = Math.abs(Math.cos(a))<0.3 ? 'middle' : (Math.cos(a)>0 ? 'start':'end');
+      const lines = wrapLabel(displayConcept(it.concept), 14);
       const t = add('text',{x,y,'text-anchor':anchor,'dominant-baseline':'middle','font-size':9,fill:'#6b7280'});
-      const label = it.concept.length > 22 ? it.concept.slice(0,21)+'…' : it.concept;
-      t.textContent = label;
+      lines.forEach((ln,k)=>{
+        const ts = document.createElementNS(ns,'tspan');
+        ts.setAttribute('x', x);
+        ts.setAttribute('dy', k===0 ? (-(lines.length-1)/2*LH).toFixed(1) : LH);
+        ts.textContent = ln;
+        t.appendChild(ts);
+      });
     });
   }
 }
@@ -803,18 +826,21 @@ function radarSvgMarkup(items, color){
   for (let i=0;i<N;i++){ const [x,y]=pt(i,1); g += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#ece9f3" stroke-width="1"/>`; }
   const pts = items.map((it,i) => pt(i, Math.min(it.comp,1)).join(',')).join(' ');
   g += `<polygon points="${pts}" fill="${color}" fill-opacity="0.28" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`;
+  const LH = 9;
   items.forEach((it,i) => {
     const [x,y] = pt(i, 1.08); const a = ang(i);
     const anchor = Math.abs(Math.cos(a)) < 0.3 ? 'middle' : (Math.cos(a) > 0 ? 'start' : 'end');
-    const label = it.concept.length > 26 ? it.concept.slice(0,25)+'…' : it.concept;
-    g += `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle" font-size="8" fill="#6b7280">${escHtml(label)}</text>`;
+    const lines = wrapLabel(displayConcept(it.concept), 16);
+    const tspans = lines.map((ln,k) =>
+      `<tspan x="${x}" dy="${k===0 ? (-(lines.length-1)/2*LH).toFixed(1) : LH}">${escHtml(ln)}</tspan>`).join('');
+    g += `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle" font-size="8" fill="#6b7280">${tspans}</text>`;
   });
   return `<svg viewBox="0 0 ${W} ${W}" width="${W}" height="${W}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
 }
 
 function reportTableMarkup(res, color){
   const rows = res.items.map(i => `<tr>
-      <td>${escHtml(i.concept)}</td>
+      <td>${escHtml(displayConcept(i.concept))}</td>
       <td class="num">${i.errored ? '—' : fmtPct(i.comp)}</td>
       <td><div class="bar"><i style="width:${(Math.min(i.comp,1)*100).toFixed(1)}%;background:${color}"></i></div></td>
     </tr>`).join('');
