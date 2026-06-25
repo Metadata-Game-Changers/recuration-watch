@@ -289,7 +289,10 @@ const ACTOR_COLORS = { repo:'#3a9d6e', admin:'#c0504d', other:'#9aa0ab' };
 /* High-level change-property labels — mirrors Re-Curation Watch's FIELD_LABELS */
 const FIELD_LABELS = {
   url:'URL', doi:'DOI', titles:'Titles', creators:'Creators',
-  contributors:'Contributors', descriptions:'Descriptions', subjects:'Subjects',
+  'creators.nameIdentifiers':'Creator IDs', 'creators.affiliation':'Creator Affiliations',
+  contributors:'Contributors',
+  'contributors.nameIdentifiers':'Contributor IDs', 'contributors.affiliation':'Contributor Affiliations',
+  descriptions:'Descriptions', subjects:'Subjects',
   dates:'Dates', types:'Types', rights_list:'Rights / Licenses',
   related_identifiers:'Related IDs', funding_references:'Funding',
   geo_locations:'Geo Locations', publisher:'Publisher',
@@ -302,6 +305,7 @@ const CHANGE_SKIP = new Set(['doi','regenerate','only_validate','should_validate
 
 const PROP_PALETTE = ['#2f6fb0','#d4910b','#9167b0','#3a9d6e','#c0504d','#1f9e9e','#e0691a','#b0457f','#5a6b8c','#7d8b3a'];
 const REGISTERED_KEY = '__registered__', OTHER_KEY = '__other__';
+const PINNED_PROP_KEYS = ['creators.nameIdentifiers','creators.affiliation','contributors.nameIdentifiers','contributors.affiliation'];  // always shown in the chart when present
 const REGISTERED_COLOR = '#6b7280', OTHER_COLOR = '#cfcad8';
 const TOP_N = 9;
 
@@ -343,10 +347,52 @@ async function fetchActivityTotal(clientId){
   const json = await res.json();
   return json.meta && typeof json.meta.total === 'number' ? json.meta.total : null;
 }
+// creators/contributors carry interesting sub-properties. Reduce a list of person objects to
+// three comparable sets: the people themselves, their affiliations, and their name identifiers.
+function personFacets(list){
+  const arr = Array.isArray(list) ? list : [];
+  const people = new Set(), affs = new Set(), ids = new Set();
+  for (const p of arr){
+    if (!p || typeof p !== 'object') continue;
+    const who = p.name || [p.givenName, p.familyName].filter(Boolean).join(' ');
+    if (who) people.add(who);
+    for (const aff of (Array.isArray(p.affiliation) ? p.affiliation : [])){
+      const v = aff && (aff.affiliationIdentifier || aff.name);   // empty placeholder ({name:null,...}) contributes nothing
+      if (v) affs.add(v);
+    }
+    for (const nid of (Array.isArray(p.nameIdentifiers) ? p.nameIdentifiers : [])){
+      const v = nid && nid.nameIdentifier;
+      if (v) ids.add(v);
+    }
+  }
+  return { people, affs, ids };
+}
+const setsEqual = (a, b) => a.size === b.size && [...a].every(x => b.has(x));
+// Split a creators/contributors [before, after] change into the sub-properties that actually
+// changed. Set-based, so it is robust to reordering and additions/removals. Falls back to the
+// coarse field when nothing more specific is detectable.
+function refinePersonChange(field, before, after){
+  const b = personFacets(before), a = personFacets(after);
+  const keys = [];
+  if (!setsEqual(b.people, a.people)) keys.push(field);                  // people added / removed / renamed
+  if (!setsEqual(b.affs,   a.affs))   keys.push(field + '.affiliation');
+  if (!setsEqual(b.ids,    a.ids))    keys.push(field + '.nameIdentifiers');
+  return keys.length ? keys : [field];
+}
 function changedProps(changes, action){
   if ((action||'') === 'create') return [];
   if (!changes || typeof changes !== 'object') return [];
-  return Object.keys(changes).filter(k => !CHANGE_SKIP.has(k));
+  const out = [];
+  for (const k of Object.keys(changes)){
+    if (CHANGE_SKIP.has(k)) continue;
+    const v = changes[k];
+    if ((k === 'creators' || k === 'contributors') && Array.isArray(v) && v.length === 2){
+      out.push(...refinePersonChange(k, v[0], v[1]));                    // creators.affiliation / creators.nameIdentifiers / creators
+    } else {
+      out.push(k);
+    }
+  }
+  return out;
 }
 // prov:wasAttributedTo → 'repo' (this repository), 'admin' (DataCite system), or 'other' (member/parent/transferred)
 function classifyActor(attributedTo, clientId){
@@ -491,9 +537,13 @@ function buildModel(events, g, stackBy){
     }
     const otherFloor = tally.get(OTHER_KEY) || 0; tally.delete(OTHER_KEY);
     const ranked = [...tally.entries()].sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0]));
-    const top = ranked.slice(0, TOP_N).map(e=>e[0]);
-    const topSet = new Set(top);
-    const overflow = ranked.slice(TOP_N).reduce((s,e)=>s+e[1], 0);
+    // The creator/contributor sub-property categories are the point of interest, so always surface
+    // them when present even if their counts fall outside the top N (they'd otherwise hide in Other).
+    const pinnedLabels = new Set(PINNED_PROP_KEYS.map(fieldLabel));
+    const topSet = new Set(); const top = [];
+    for (const [lbl] of ranked.slice(0, TOP_N)) if (!topSet.has(lbl)){ topSet.add(lbl); top.push(lbl); }
+    for (const [lbl] of ranked) if (pinnedLabels.has(lbl) && !topSet.has(lbl)){ topSet.add(lbl); top.push(lbl); }
+    const overflow = ranked.filter(([lbl]) => !topSet.has(lbl)).reduce((s,e)=>s+e[1], 0);
     categories = [];
     if (hasRegistered) categories.push({ key:REGISTERED_KEY, label:'Registered', color:REGISTERED_COLOR });
     top.forEach((lbl,i) => categories.push({ key:lbl, label:lbl, color:PROP_PALETTE[i % PROP_PALETTE.length] }));
@@ -695,6 +745,23 @@ function changeSummary(changes, action){
   if (!keys.length) return 'Metadata updated.';
   return 'Updated ' + keys.map(k => '<strong>'+escHtml(fieldLabel(k))+'</strong>').join(', ') + '.';
 }
+// Detail rows for a creators/contributors change: a before→after row for each sub-property
+// (people, affiliation, name identifiers) that actually changed.
+function personChangeRows(field, before, after){
+  const b = personFacets(before), a = personFacets(after);
+  const rows = [];
+  const facetRow = (labelKey, bset, aset) => {
+    if (setsEqual(bset, aset)) return;
+    const fmt = set => [...set].join(', ') || '(none)';
+    rows.push(`<div class="diff-row"><span class="diff-field">${escHtml(fieldLabel(labelKey))}</span><div class="diff-values">`
+      + `<span class="diff-before">${escHtml(fmt(bset))}</span><span class="diff-arrow">→</span>`
+      + `<span class="diff-after">${escHtml(fmt(aset))}</span></div></div>`);
+  };
+  facetRow(field,                      b.people, a.people);
+  facetRow(field + '.affiliation',     b.affs,   a.affs);
+  facetRow(field + '.nameIdentifiers', b.ids,    a.ids);
+  return rows;
+}
 function renderChangesDiff(changes, action){
   if (!changes || typeof changes !== 'object') return '';
   const isCreate = (action??'').toLowerCase().includes('create');
@@ -703,6 +770,10 @@ function renderChangesDiff(changes, action){
   for (const [field, val] of Object.entries(changes)){
     if (SKIP.has(field)) continue;
     const label = escHtml(fieldLabel(field));
+    if (!isCreate && (field === 'creators' || field === 'contributors') && Array.isArray(val) && val.length === 2){
+      rows.push(...personChangeRows(field, val[0], val[1]));    // one row per changed sub-property (people / affiliation / IDs)
+      continue;
+    }
     if (isCreate){
       const s = summariseValue(val);
       if (!s||s==='—'||s==='(empty)') continue;
