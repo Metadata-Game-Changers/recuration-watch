@@ -290,8 +290,10 @@ const ACTOR_COLORS = { repo:'#3a9d6e', admin:'#c0504d', other:'#9aa0ab' };
 const FIELD_LABELS = {
   url:'URL', doi:'DOI', titles:'Titles', creators:'Creators',
   'creators.nameIdentifiers':'Creator IDs', 'creators.affiliation':'Creator Affiliations',
+  'creators.affiliationIdentifier':'Creator Affiliation IDs',
   contributors:'Contributors',
   'contributors.nameIdentifiers':'Contributor IDs', 'contributors.affiliation':'Contributor Affiliations',
+  'contributors.affiliationIdentifier':'Contributor Affiliation IDs',
   descriptions:'Descriptions', subjects:'Subjects',
   dates:'Dates', types:'Types', rights_list:'Rights / Licenses',
   related_identifiers:'Related IDs', funding_references:'Funding',
@@ -305,7 +307,7 @@ const CHANGE_SKIP = new Set(['doi','regenerate','only_validate','should_validate
 
 const PROP_PALETTE = ['#2f6fb0','#d4910b','#9167b0','#3a9d6e','#c0504d','#1f9e9e','#e0691a','#b0457f','#5a6b8c','#7d8b3a'];
 const REGISTERED_KEY = '__registered__', OTHER_KEY = '__other__';
-const PINNED_PROP_KEYS = ['creators.nameIdentifiers','creators.affiliation','contributors.nameIdentifiers','contributors.affiliation'];  // always shown in the chart when present
+const PINNED_PROP_KEYS = ['creators.nameIdentifiers','creators.affiliation','creators.affiliationIdentifier','contributors.nameIdentifiers','contributors.affiliation','contributors.affiliationIdentifier'];  // always shown in the chart when present
 const REGISTERED_COLOR = '#6b7280', OTHER_COLOR = '#cfcad8';
 const TOP_N = 9;
 
@@ -348,24 +350,25 @@ async function fetchActivityTotal(clientId){
   return json.meta && typeof json.meta.total === 'number' ? json.meta.total : null;
 }
 // creators/contributors carry interesting sub-properties. Reduce a list of person objects to
-// three comparable sets: the people themselves, their affiliations, and their name identifiers.
+// comparable sets: the people themselves, their affiliation names, their affiliation identifiers,
+// and their name identifiers.
 function personFacets(list){
   const arr = Array.isArray(list) ? list : [];
-  const people = new Set(), affs = new Set(), ids = new Set();
+  const people = new Set(), affs = new Set(), affIds = new Set(), ids = new Set();
   for (const p of arr){
     if (!p || typeof p !== 'object') continue;
     const who = p.name || [p.givenName, p.familyName].filter(Boolean).join(' ');
     if (who) people.add(who);
     for (const aff of (Array.isArray(p.affiliation) ? p.affiliation : [])){
-      const v = aff && (aff.affiliationIdentifier || aff.name);   // empty placeholder ({name:null,...}) contributes nothing
-      if (v) affs.add(v);
+      if (aff && aff.name) affs.add(aff.name);                          // affiliation name
+      if (aff && aff.affiliationIdentifier) affIds.add(aff.affiliationIdentifier);  // affiliation identifier (ROR, etc.)
     }
     for (const nid of (Array.isArray(p.nameIdentifiers) ? p.nameIdentifiers : [])){
       const v = nid && nid.nameIdentifier;
       if (v) ids.add(v);
     }
   }
-  return { people, affs, ids };
+  return { people, affs, affIds, ids };
 }
 const setsEqual = (a, b) => a.size === b.size && [...a].every(x => b.has(x));
 // Split a creators/contributors [before, after] change into the sub-properties that actually
@@ -376,6 +379,7 @@ function refinePersonChange(field, before, after){
   const keys = [];
   if (!setsEqual(b.people, a.people)) keys.push(field);                  // people added / removed / renamed
   if (!setsEqual(b.affs,   a.affs))   keys.push(field + '.affiliation');
+  if (!setsEqual(b.affIds, a.affIds)) keys.push(field + '.affiliationIdentifier');
   if (!setsEqual(b.ids,    a.ids))    keys.push(field + '.nameIdentifiers');
   return keys.length ? keys : [field];
 }
@@ -771,14 +775,15 @@ function personChangeRows(field, before, after){
   const rows = [];
   const facetRow = (labelKey, bset, aset) => {
     if (setsEqual(bset, aset)) return;
-    const fmt = set => [...set].join(', ') || '(none)';
+    const fmt = set => [...set].join('; ') || '(none)';   // ';' so it doesn't collide with the comma in "Family, Given" names
     rows.push(`<div class="diff-row"><span class="diff-field">${escHtml(fieldLabel(labelKey))}</span><div class="diff-values">`
       + `<span class="diff-before">${escHtml(fmt(bset))}</span><span class="diff-arrow">→</span>`
       + `<span class="diff-after">${escHtml(fmt(aset))}</span></div></div>`);
   };
-  facetRow(field,                      b.people, a.people);
-  facetRow(field + '.affiliation',     b.affs,   a.affs);
-  facetRow(field + '.nameIdentifiers', b.ids,    a.ids);
+  facetRow(field,                            b.people, a.people);
+  facetRow(field + '.affiliation',           b.affs,   a.affs);
+  facetRow(field + '.affiliationIdentifier', b.affIds, a.affIds);
+  facetRow(field + '.nameIdentifiers',       b.ids,    a.ids);
   return rows;
 }
 function renderChangesDiff(changes, action){
