@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Metadata Use Cases — DataCite</title>
+<link rel="icon" type="image/png" href="favicon_MGC.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{ --accent:#9167b0; --accent-dk:#673289; --tint:#f0eaf5; --ink:#1f2330; --muted:#6b7280; --line:#e6e3ec; --bg:#fbfafe; }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:0}
+  .topbar{border-bottom:2px solid var(--ink);padding:0 2rem}
+  .topbar-inner{max-width:1040px;margin:0 auto;display:flex;align-items:stretch;gap:0}
+  .topbar-brand{padding:.5rem 2rem .3rem 0;display:flex;flex-direction:row;align-items:flex-end;gap:1rem}
+  .brand-logo{height:64px;width:auto;display:block;flex-shrink:0}
+  .brand-title-wrap{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:.15rem}
+  .brand-tool-name{font-family:'Montserrat',sans-serif;font-size:2rem;font-weight:400;letter-spacing:.02em;color:#673289;line-height:1;white-space:nowrap;text-transform:uppercase}
+  .topbar-links{padding:0 0 0 1.5rem;display:flex;flex-direction:column;justify-content:center;gap:.25rem;margin-left:auto}
+  .topbar-links a{font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4}
+  .topbar-links a:hover{color:var(--accent-dk)}
+  @media(max-width:820px){.topbar{padding:0 1rem}.topbar-inner{flex-direction:column}.topbar-brand{padding-right:0}.brand-tool-name{font-size:1.5rem}.topbar-links{flex-direction:row;flex-wrap:wrap;gap:.75rem;padding:.25rem 0 .5rem}}
+  .wrap{max-width:1080px;margin:0 auto;padding:1.5rem 1.25rem 3rem}
+  .about-intro{font-size:.85rem;color:var(--ink);line-height:1.6;max-width:760px;margin:.6rem 0 1rem}
+  .about-intro h2{font-size:1.25rem;color:var(--accent-dk);margin:.4rem 0}
+  .about-intro p{margin:.6rem 0}
+  .about-intro a{color:var(--accent);text-decoration:none}
+  .about-intro a:hover{text-decoration:underline}
+  .about-intro ul{margin:.4rem 0 .6rem 1.1rem;padding:0}
+  .about-intro li{margin:.2rem 0}
+  .about-h3{font-size:1.1rem;color:var(--accent-dk);margin:1.5rem 0 .25rem}
+  .about-sub{font-size:.78rem;color:var(--muted);margin:0 0 1rem}
+  .about-group{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:1.6rem 0 .5rem;border-bottom:1px solid var(--line);padding-bottom:.3rem}
+  .about-uc{font-size:.95rem;font-weight:600;margin:1rem 0 .35rem;padding-left:.5rem;border-left:4px solid var(--accent)}
+  .about-uc .uc-n{font-weight:400;color:var(--muted);font-size:.78rem}
+  table.path-table{border-collapse:collapse;width:100%;font-size:.8rem;margin-bottom:.5rem}
+  table.path-table th,table.path-table td{text-align:left;padding:.32rem .55rem;border-bottom:1px solid #f0eef5;vertical-align:top}
+  table.path-table th{font-size:.66rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:600}
+  table.path-table td.concept{white-space:nowrap;font-weight:500}
+  table.path-table td.path{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.74rem;color:#4b4f5e;word-break:break-word}
+  footer{margin-top:2.5rem;font-size:.72rem;color:var(--muted);border-top:1px solid var(--line);padding-top:.9rem;line-height:1.5}
+  footer a{color:var(--accent);text-decoration:none}
+  @media print{.topbar-links{display:none} table.path-table{break-inside:auto} .about-uc,tr{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" onerror="this.style.display='none'" />
+      </a>
+      <div class="brand-title-wrap"><div class="brand-tool-name">Metadata Use Cases</div></div>
+    </div>
+    <div class="topbar-links">
+      <a href="completeness.html" target="_blank" rel="noopener">Metadata Completeness ↗</a>
+      <a href="repo-activity.html" target="_blank" rel="noopener">Repository Activity ↗</a>
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers ↗</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="about-intro">
+  <h2>Metadata Use Cases</h2>
+  <p>Metadata are created and used in many different communities which support their own metadata standards, repositories, and infrastructures. Many of these communities have similar needs, and they support many of the same use cases to address those needs. For example, essentially all repositories, regardless of the metadata standard they use, support resource discovery, some form of access and the metadata support those processes. As these standards all support the same conceptual documentation language, we call them <em>metadata dialects</em>.</p>
+  <p>The DataCite metadata schema has existed since 2011 with the goal of facilitating <a href="https://schema.datacite.org/archive/kernel-2.0/doc/DataCite-MetadataKernel_v2.0.pdf" target="_blank" rel="noopener">identification and citation</a> of datasets and other kinds of research outputs (resources). The schema has <a href="https://metadatagamechangers.com/blog/2021/1/11/fair-datacite-metadata-evolution" target="_blank" rel="noopener">evolved considerably</a> throughout its history and can now support other important metadata use cases. In particular, a recommendation for how the DataCite metadata schema can support all of the <a href="https://datacite.org/blog/metadig-recommendations-for-fair-datacite-metadata/" target="_blank" rel="noopener">FAIR use cases</a> (Findability, Accessibility, Interoperability, and Re-use) was proposed several years ago and has been used to evaluate metadata in many repositories all over the world (<a href="https://metadatagamechangers.com/blog/2024/9/22/brightspots-get-brighter" target="_blank" rel="noopener">Bright Spots get Brighter</a>, <a href="https://metadatagamechangers.com/blog/2021/2/2/a-pid-feast-for-research-pidapalooza-2021" target="_blank" rel="noopener">A PID Feast for Research - PIDapalooza 2021</a>).</p>
+  <p>This page lists the metadata use cases used by the Metadata Game Changers completeness tools, and the DataCite metadata paths each concept is drawn from. Background is available in:</p>
+  <ul>
+    <li><a href="https://datacite.org/blog/metadig-recommendations-for-fair-datacite-metadata/" target="_blank" rel="noopener">MetaDIG recommendations for FAIR DataCite metadata</a></li>
+    <li><a href="https://doi.org/10.59350/kanrj-qt678" target="_blank" rel="noopener">Minimum Metadata</a></li>
+    <li><a href="https://doi.org/10.59350/ryh7v-rmy52" target="_blank" rel="noopener">A PID Feast for Research – PIDapalooza 2021</a></li>
+    <li><a href="https://doi.org/10.59350/v6enq-99z90" target="_blank" rel="noopener">FAIR DataCite Metadata - University and College Bright Spots</a></li>
+    <li><a href="https://metadatagamechangers.com/blog/2024/9/22/brightspots-get-brighter" target="_blank" rel="noopener">Bright Spots get Brighter</a></li>
+  </ul>
+  <p><em>Note:</em> these results measure completeness with respect to a known recommendation. They should not be construed as a measure of metadata quality. They could be a small part of an assessment of metadata quality, but we should be careful not to use that term to describe them.</p>
+  </div>
+
+  <h3 class="about-h3">Concepts mapped to DataCite paths</h3>
+  <p class="about-sub">Each use case's concepts and the DataCite metadata paths (after <code>data[*].attributes</code>) they are drawn from.</p>
+
+  <div class="about-group">FAIR use cases</div>
+  <div class="about-uc" style="border-left-color:#E97131">FAIR Text <span class="uc-n">— 15 concepts</span></div>
+  <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
+      <tr><td class="concept">Abstract</td><td class="path">descriptions[?(@.descriptionType="Abstract")].description</td></tr>
+      <tr><td class="concept">Award Title</td><td class="path">fundingReferences[*].awardTitle</td></tr>
+      <tr><td class="concept">Date Created</td><td class="path">dates[?(@.dateType="Created")].date</td></tr>
+      <tr><td class="concept">Keyword</td><td class="path">subjects[*].subject</td></tr>
+      <tr><td class="concept">Keyword Vocabulary</td><td class="path">subjects[*].subjectScheme</td></tr>
+      <tr><td class="concept">Project Funder</td><td class="path">fundingReferences[*].funderName</td></tr>
+      <tr><td class="concept">Resource Author</td><td class="path">creators[*].name</td></tr>
+      <tr><td class="concept">Resource Author Affiliation</td><td class="path">creators[*].affiliation[*].name</td></tr>
+      <tr><td class="concept">Resource ID</td><td class="path">data[*].attributes.doi, identifiers[*].identifier</td></tr>
+      <tr><td class="concept">Resource Publication Date</td><td class="path">data[*].attributes.publicationYear</td></tr>
+      <tr><td class="concept">Resource Publisher</td><td class="path">publisher.name</td></tr>
+      <tr><td class="concept">Resource Title</td><td class="path">titles[*].title</td></tr>
+      <tr><td class="concept">Resource Type General</td><td class="path">types.resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Spatial Extent</td><td class="path">geoLocations[*].geoLocationBox, geoLocations[*].geoLocationPoint, geoLocations[*].geoLocationPolygon, geoLocations[*].geoLocationPlace</td></tr>
+      <tr><td class="concept">Temporal Extent</td><td class="path">dates[?(@.dateType="Collected")].date, dates[?(@.dateType="Coverage")].date</td></tr>
+    </tbody></table>
+  <div class="about-uc" style="border-left-color:#0070C0">FAIR Identifiers <span class="uc-n">— 18 concepts</span></div>
+  <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
+      <tr><td class="concept">Award Number</td><td class="path">fundingReferences[*].awardNumber</td></tr>
+      <tr><td class="concept">Award URI</td><td class="path">fundingReferences[*].awardUri</td></tr>
+      <tr><td class="concept">Date Submitted</td><td class="path">dates[?(@.dateType="Submitted")].date</td></tr>
+      <tr><td class="concept">Funder ID</td><td class="path">fundingReferences[*].funderIdentifier</td></tr>
+      <tr><td class="concept">Funder ID Type</td><td class="path">fundingReferences[*].funderIdentifierType</td></tr>
+      <tr><td class="concept">Keyword Value URI</td><td class="path">subjects[*].valueURI, subjects[*].valueUri</td></tr>
+      <tr><td class="concept">Keyword Vocabulary URI</td><td class="path">subjects[*].schemeURI, subjects[*].schemeUri</td></tr>
+      <tr><td class="concept">Publisher ID</td><td class="path">publisher.publisherIdentifier</td></tr>
+      <tr><td class="concept">Publisher ID Scheme URI</td><td class="path">publisher.schemeUri</td></tr>
+      <tr><td class="concept">Publisher ID Type</td><td class="path">publisher.publisherIdentifierScheme</td></tr>
+      <tr><td class="concept">Resource Author Affiliation ID</td><td class="path">creators[*].affiliation[*].affiliationIdentifier</td></tr>
+      <tr><td class="concept">Resource Author Affiliation ID Scheme URI</td><td class="path">creators[*].affiliation[*].schemeUri</td></tr>
+      <tr><td class="concept">Resource Author Affiliation ID Type</td><td class="path">creators[*].affiliation[*].affiliationIdentifierScheme</td></tr>
+      <tr><td class="concept">Resource Author ID</td><td class="path">creators[*].nameIdentifiers[*].nameIdentifier</td></tr>
+      <tr><td class="concept">Resource Author ID Type</td><td class="path">creators[*].nameIdentifiers[*].nameIdentifierScheme</td></tr>
+      <tr><td class="concept">Resource Author Type</td><td class="path">creators[*].nameType</td></tr>
+      <tr><td class="concept">Resource ID Type</td><td class="path">identifiers[*].identifierType</td></tr>
+      <tr><td class="concept">Resource Type</td><td class="path">types.resourceType</td></tr>
+    </tbody></table>
+  <div class="about-uc" style="border-left-color:#A02C93">FAIR Connections <span class="uc-n">— 18 concepts</span></div>
+  <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
+      <tr><td class="concept">CitedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsCitedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Date Available</td><td class="path">dates[?(@.dateType="Available")].date</td></tr>
+      <tr><td class="concept">DescribedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsDescribedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Distribution Contact</td><td class="path">contributors[?(@.contributorType='Distributor')].name, contributors[?(@.contributorType='Distributor')].givenName, contributors[?(@.contributorType='Distributor')].familyName</td></tr>
+      <tr><td class="concept">DocumentedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsDocumentedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">HasMetadata</td><td class="path">relatedIdentifiers[?(@.relationType='HasMetadata')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Methods</td><td class="path">descriptions[?(@.descriptionType="Methods")].description</td></tr>
+      <tr><td class="concept">ReferencedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsReferencedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Resource Contact</td><td class="path">contributors[?(@.contributorType='ContactPerson')].name, contributors[?(@.contributorType='ContactPerson')].givenName, contributors[?(@.contributorType='ContactPerson')].familyName</td></tr>
+      <tr><td class="concept">Resource Format</td><td class="path">data[*].attributes.formats</td></tr>
+      <tr><td class="concept">Resource Size</td><td class="path">data[*].attributes.sizes</td></tr>
+      <tr><td class="concept">Resource URL</td><td class="path">data[*].attributes.url</td></tr>
+      <tr><td class="concept">ReviewedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsReviewedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Rights</td><td class="path">rightsList[*].rights</td></tr>
+      <tr><td class="concept">RightsHolder</td><td class="path">contributors[?(@.contributorType='RightsHolder')].name, contributors[?(@.contributorType='RightsHolder')].givenName, contributors[?(@.contributorType='RightsHolder')].familyName</td></tr>
+      <tr><td class="concept">SourceOf</td><td class="path">relatedIdentifiers[?(@.relationType='IsSourceOf')].relatedIdentifier</td></tr>
+      <tr><td class="concept">SupplementTo</td><td class="path">relatedIdentifiers[?(@.relationType='IsSupplementTo')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Technical Information</td><td class="path">descriptions[?(@.descriptionType="TechnicalInfo")].description</td></tr>
+    </tbody></table>
+  <div class="about-uc" style="border-left-color:#4EA62E">FAIR Contacts <span class="uc-n">— 10 concepts</span></div>
+  <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
+      <tr><td class="concept">Distribution Contact ID</td><td class="path">contributors[?(@.contributorType='Distributor')].nameIdentifiers[*].nameIdentifier</td></tr>
+      <tr><td class="concept">Distribution Contact ID Scheme</td><td class="path">contributors[?(@.contributorType='Distributor')].nameIdentifiers[*].nameIdentifierScheme</td></tr>
+      <tr><td class="concept">Distribution Contact ID Scheme URI</td><td class="path">contributors[?(@.contributorType='Distributor')].nameIdentifiers[*].schemeURI, contributors[?(@.contributorType='Distributor')].nameIdentifiers[*].schemeUri</td></tr>
+      <tr><td class="concept">Resource Contact ID</td><td class="path">contributors[?(@.contributorType='ContactPerson')].nameIdentifiers[*].nameIdentifier</td></tr>
+      <tr><td class="concept">Resource Contact ID Scheme</td><td class="path">contributors[?(@.contributorType='ContactPerson')].nameIdentifiers[*].nameIdentifierScheme</td></tr>
+      <tr><td class="concept">Resource Contact ID Scheme URI</td><td class="path">contributors[?(@.contributorType='ContactPerson')].nameIdentifiers[*].schemeUri, contributors[?(@.contributorType='ContactPerson')].nameIdentifiers[*].schemeURI</td></tr>
+      <tr><td class="concept">Rights Holder ID</td><td class="path">contributors[?(@.contributorType='RightsHolder')].nameIdentifiers[*].nameIdentifier</td></tr>
+      <tr><td class="concept">Rights Holder ID Scheme</td><td class="path">contributors[?(@.contributorType='RightsHolder')].nameIdentifiers[*].nameIdentifierScheme</td></tr>
+      <tr><td class="concept">Rights Holder ID Scheme URI</td><td class="path">contributors[?(@.contributorType='RightsHolder')].nameIdentifiers[*].schemeURI, contributors[?(@.contributorType='RightsHolder')].nameIdentifiers[*].schemeUri</td></tr>
+      <tr><td class="concept">Rights URI</td><td class="path">rightsList[*].rightsUri</td></tr>
+    </tbody></table>
+  <div class="about-group">Project use cases</div>
+  <div class="about-uc" style="border-left-color:#7A5195">Project Team Members <span class="uc-n">— 30 concepts</span></div>
+  <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
+      <tr><td class="concept">ContactPerson</td><td class="path">contributors[?(@.contributorType='ContactPerson')].name</td></tr>
+      <tr><td class="concept">DataManager</td><td class="path">contributors[?(@.contributorType='DataManager')].name</td></tr>
+      <tr><td class="concept">Editor</td><td class="path">contributors[?(@.contributorType='Editor')].name</td></tr>
+      <tr><td class="concept">Funder ID</td><td class="path">fundingReferences[*].funderIdentifier</td></tr>
+      <tr><td class="concept">Funder Name</td><td class="path">fundingReferences[*].funderName</td></tr>
+      <tr><td class="concept">HostingInstitution</td><td class="path">contributors[?(@.contributorType='HostingInstitution')].name</td></tr>
+      <tr><td class="concept">Other</td><td class="path">contributors[?(@.contributorType='Other')].name</td></tr>
+      <tr><td class="concept">Producer</td><td class="path">contributors[?(@.contributorType='Producer')].name</td></tr>
+      <tr><td class="concept">ProjectLeader</td><td class="path">contributors[?(@.contributorType='ProjectLeader')].name</td></tr>
+      <tr><td class="concept">ProjectManager</td><td class="path">contributors[?(@.contributorType='ProjectManager')].name</td></tr>
+      <tr><td class="concept">ProjectMember</td><td class="path">contributors[?(@.contributorType='ProjectMember')].name</td></tr>
+      <tr><td class="concept">RegistrationAgency</td><td class="path">contributors[?(@.contributorType='RegistrationAgency')].name</td></tr>
+      <tr><td class="concept">RelatedPerson</td><td class="path">contributors[?(@.contributorType='RelatedPerson')].name</td></tr>
+      <tr><td class="concept">Researcher</td><td class="path">contributors[?(@.contributorType='Researcher')].name</td></tr>
+      <tr><td class="concept">Resource Author</td><td class="path">creators[*].name</td></tr>
+      <tr><td class="concept">Resource Author Affiliation</td><td class="path">creators[*].affiliation, creators[*].affiliation[*].name</td></tr>
+      <tr><td class="concept">Resource Author Affiliation ID</td><td class="path">creators[*].affiliation[*].affiliationIdentifier</td></tr>
+      <tr><td class="concept">Resource Author Affiliation ID Type</td><td class="path">creators[*].affiliation[*].affiliationIdentifierScheme</td></tr>
+      <tr><td class="concept">Resource Author ID</td><td class="path">creators[*].nameIdentifiers[*].nameIdentifier</td></tr>
+      <tr><td class="concept">Resource Author ID Type</td><td class="path">creators[*].nameIdentifiers[*].nameIdentifierScheme</td></tr>
+      <tr><td class="concept">Resource Author Type</td><td class="path">creators[*].nameType</td></tr>
+      <tr><td class="concept">Resource Contributor Affiliation</td><td class="path">contributors[*].affiliation, contributors[*].affiliation[*].name</td></tr>
+      <tr><td class="concept">Resource Contributor Affiliation ID</td><td class="path">contributors[*].affiliationIdentifier, contributors[*].affiliation[*].affiliationIdentifier</td></tr>
+      <tr><td class="concept">Resource Contributor ID</td><td class="path">contributors[*].nameIdentifiers[*].nameIdentifier</td></tr>
+      <tr><td class="concept">Resource Contributor ID Type</td><td class="path">contributors[*].nameIdentifiers[*].nameIdentifierScheme</td></tr>
+      <tr><td class="concept">Resource Contributor Name</td><td class="path">contributors[*].name</td></tr>
+      <tr><td class="concept">Sponsor</td><td class="path">contributors[?(@.contributorType='Sponsor')].name</td></tr>
+      <tr><td class="concept">Supervisor</td><td class="path">contributors[?(@.contributorType='Supervisor')].name</td></tr>
+      <tr><td class="concept">Temporal Extent</td><td class="path">dates[?(@.dateType="Coverage")].date</td></tr>
+      <tr><td class="concept">WorkPackageLeader</td><td class="path">contributors[?(@.contributorType='WorkPackageLeader')].name</td></tr>
+    </tbody></table>
+  <div class="about-uc" style="border-left-color:#EF9B20">Project Items <span class="uc-n">— 20 concepts</span></div>
+  <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
+      <tr><td class="concept">Audiovisual</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='Audiovisual')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Award</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='Award')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Book</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='Book')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">BookChapter</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='BookChapter')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Collection</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='Collection')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">ComputationalNotebook</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='ComputationalNotebook')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">ConferencePaper</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='ConferencePaper')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">ConferenceProceeding</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='ConferenceProceeding')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Dataset</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='Dataset')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Event</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='Event')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">JournalArticle</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='JournalArticle')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Other</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='Other')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">OutputManagementPlan</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='OutputManagementPlan')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">PhysicalObject</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='PhysicalObject')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Project</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='Project')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Report</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='Report')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Software</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='Software')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Standard</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='Standard')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Text</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='Text')].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Workflow</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral='Workflow')].resourceTypeGeneral</td></tr>
+    </tbody></table>
+  <div class="about-uc" style="border-left-color:#BC5090">Project Relations <span class="uc-n">— 24 concepts</span></div>
+  <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
+      <tr><td class="concept">Continues</td><td class="path">relatedIdentifiers[?(@.relationType='Continues')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Describes</td><td class="path">relatedIdentifiers[?(@.relationType='Describes')].relatedIdentifier</td></tr>
+      <tr><td class="concept">HasPart</td><td class="path">relatedIdentifiers[?(@.relationType='HasPart')].relatedIdentifier</td></tr>
+      <tr><td class="concept">HasVersion</td><td class="path">relatedIdentifiers[?(@.relationType='HasVersion')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsCitedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsCitedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsContinuedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsContinuedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsDerivedFrom</td><td class="path">relatedIdentifiers[?(@.relationType='IsDerivedFrom')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsDocumentedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsDocumentedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsIdenticalTo</td><td class="path">relatedIdentifiers[?(@.relationType='IsIdenticalTo')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsObsoletedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsObsoletedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsPartOf</td><td class="path">relatedIdentifiers[?(@.relationType='IsPartOf')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsPublishedIn</td><td class="path">relatedIdentifiers[?(@.relationType='IsPublishedIn')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsReferencedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsReferencedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsSourceOf</td><td class="path">relatedIdentifiers[?(@.relationType='IsSourceOf')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsSupplementedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsSupplementedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsSupplementTo</td><td class="path">relatedIdentifiers[?(@.relationType='IsSupplementTo')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsVariantFormOf</td><td class="path">relatedIdentifiers[?(@.relationType='IsVariantFormOf')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsVersionOf</td><td class="path">relatedIdentifiers[?(@.relationType='IsVersionOf')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Obsoletes</td><td class="path">relatedIdentifiers[?(@.relationType='Obsoletes')].relatedIdentifier</td></tr>
+      <tr><td class="concept">References</td><td class="path">relatedIdentifiers[?(@.relationType='References')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Related ID</td><td class="path">relatedIdentifiers[*].relatedIdentifier</td></tr>
+      <tr><td class="concept">Related ID Type</td><td class="path">relatedIdentifiers[*].relatedIdentifierType</td></tr>
+      <tr><td class="concept">Related Item Type</td><td class="path">relatedIdentifiers[*].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Relation Type</td><td class="path">relatedIdentifiers[*].relationType</td></tr>
+    </tbody></table>
+  <div class="about-group">Additional DataCite use cases</div>
+  <div class="about-uc" style="border-left-color:#C0392B">DataCite Relations <span class="uc-n">— 41 concepts</span></div>
+  <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
+      <tr><td class="concept">Cites</td><td class="path">relatedIdentifiers[?(@.relationType='Cites')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Collects</td><td class="path">relatedIdentifiers[?(@.relationType='Collects')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Compiles</td><td class="path">relatedIdentifiers[?(@.relationType='Compiles')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Continues</td><td class="path">relatedIdentifiers[?(@.relationType='Continues')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Describes</td><td class="path">relatedIdentifiers[?(@.relationType='Describes')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Documents</td><td class="path">relatedIdentifiers[?(@.relationType='Documents')].relatedIdentifier</td></tr>
+      <tr><td class="concept">HasMetadata</td><td class="path">relatedIdentifiers[?(@.relationType='HasMetadata')].relatedIdentifier</td></tr>
+      <tr><td class="concept">HasPart</td><td class="path">relatedIdentifiers[?(@.relationType='HasPart')].relatedIdentifier</td></tr>
+      <tr><td class="concept">HasTranslation</td><td class="path">relatedIdentifiers[?(@.relationType='HasTranslation')].relatedIdentifier</td></tr>
+      <tr><td class="concept">HasVersion</td><td class="path">relatedIdentifiers[?(@.relationType='HasVersion')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsCitedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsCitedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsCollectedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsCollectedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsCompiledBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsCompiledBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsContinuedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsContinuedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsDerivedFrom</td><td class="path">relatedIdentifiers[?(@.relationType='IsDerivedFrom')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsDescribedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsDescribedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsDocumentedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsDocumentedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsIdenticalTo</td><td class="path">relatedIdentifiers[?(@.relationType='IsIdenticalTo')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsMetadataFor</td><td class="path">relatedIdentifiers[?(@.relationType='IsMetadataFor')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsNewVersionOf</td><td class="path">relatedIdentifiers[?(@.relationType='IsNewVersionOf')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsObsoletedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsObsoletedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsOriginalFormOf</td><td class="path">relatedIdentifiers[?(@.relationType='IsOriginalFormOf')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsPartOf</td><td class="path">relatedIdentifiers[?(@.relationType='IsPartOf')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsPreviousVersionOf</td><td class="path">relatedIdentifiers[?(@.relationType='IsPreviousVersionOf')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsPublishedIn</td><td class="path">relatedIdentifiers[?(@.relationType='IsPublishedIn')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsReferencedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsReferencedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsRequiredBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsRequiredBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsReviewedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsReviewedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsSourceOf</td><td class="path">relatedIdentifiers[?(@.relationType='IsSourceOf')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsSupplementedBy</td><td class="path">relatedIdentifiers[?(@.relationType='IsSupplementedBy')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsSupplementTo</td><td class="path">relatedIdentifiers[?(@.relationType='IsSupplementTo')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsTranslationOf</td><td class="path">relatedIdentifiers[?(@.relationType='IsTranslationOf')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsVariantFormOf</td><td class="path">relatedIdentifiers[?(@.relationType='IsVariantFormOf')].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsVersionOf</td><td class="path">relatedIdentifiers[?(@.relationType='IsVersionOf')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Obsoletes</td><td class="path">relatedIdentifiers[?(@.relationType='Obsoletes')].relatedIdentifier</td></tr>
+      <tr><td class="concept">References</td><td class="path">relatedIdentifiers[?(@.relationType='References')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Related ID</td><td class="path">relatedIdentifiers[*].relatedIdentifier</td></tr>
+      <tr><td class="concept">Related ID Type</td><td class="path">relatedIdentifiers[*].relatedIdentifierType</td></tr>
+      <tr><td class="concept">Related Item Type</td><td class="path">relatedIdentifiers[*].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Requires</td><td class="path">relatedIdentifiers[?(@.relationType='Requires')].relatedIdentifier</td></tr>
+      <tr><td class="concept">Reviews</td><td class="path">relatedIdentifiers[?(@.relationType='Reviews')].relatedIdentifier</td></tr>
+    </tbody></table>
+  <div class="about-uc" style="border-left-color:#0E8A8A">DataCite Contributors <span class="uc-n">— 20 concepts</span></div>
+  <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
+      <tr><td class="concept">ContactPerson</td><td class="path">contributors[?(@.contributorType='ContactPerson')].name, contributors[?(@.contributorType='ContactPerson')].givenName, contributors[?(@.contributorType='ContactPerson')].familyName</td></tr>
+      <tr><td class="concept">DataCollector</td><td class="path">contributors[?(@.contributorType='DataCollector')].name</td></tr>
+      <tr><td class="concept">DataCurator</td><td class="path">contributors[?(@.contributorType='DataCurator')].name, contributors[?(@.contributorType='DataCurator')].givenName, contributors[?(@.contributorType='DataCurator')].familyName</td></tr>
+      <tr><td class="concept">DataManager</td><td class="path">contributors[?(@.contributorType='DataManager')].name, contributors[?(@.contributorType='DataManager')].givenName, contributors[?(@.contributorType='DataManager')].familyName</td></tr>
+      <tr><td class="concept">Distributor</td><td class="path">contributors[?(@.contributorType='Distributor')].name, contributors[?(@.contributorType='Distributor')].givenName, contributors[?(@.contributorType='Distributor')].familyName</td></tr>
+      <tr><td class="concept">HostingInstitution</td><td class="path">contributors[?(@.contributorType='HostingInstitution')].name</td></tr>
+      <tr><td class="concept">OtherContributor</td><td class="path">contributors[?(@.contributorType='Other')].name</td></tr>
+      <tr><td class="concept">Producer</td><td class="path">contributors[?(@.contributorType='Producer')].name, contributors[?(@.contributorType='Producer')].givenName, contributors[?(@.contributorType='Producer')].familyName</td></tr>
+      <tr><td class="concept">ProjectLeader</td><td class="path">contributors[?(@.contributorType='ProjectLeader')].name, contributors[?(@.contributorType='ProjectLeader')].givenName, contributors[?(@.contributorType='ProjectLeader')].familyName</td></tr>
+      <tr><td class="concept">ProjectManager</td><td class="path">contributors[?(@.contributorType='ProjectManager')].name, contributors[?(@.contributorType='ProjectManager')].givenName, contributors[?(@.contributorType='ProjectManager')].familyName</td></tr>
+      <tr><td class="concept">ProjectMember</td><td class="path">contributors[?(@.contributorType='ProjectMember')].name, contributors[?(@.contributorType='ProjectMember')].givenName, contributors[?(@.contributorType='ProjectMember')].familyName</td></tr>
+      <tr><td class="concept">RegistrationAgency</td><td class="path">contributors[?(@.contributorType='RegistrationAgency')].name, contributors[?(@.contributorType='RegistrationAgency')].givenName, contributors[?(@.contributorType='RegistrationAgency')].familyName</td></tr>
+      <tr><td class="concept">RegistrationAuthority</td><td class="path">contributors[?(@.contributorType='RegistrationAuthority')].name, contributors[?(@.contributorType='RegistrationAuthority')].givenName, contributors[?(@.contributorType='RegistrationAuthority')].familyName</td></tr>
+      <tr><td class="concept">RelatedPerson</td><td class="path">contributors[?(@.contributorType='RelatedPerson')].name, contributors[?(@.contributorType='RelatedPerson')].givenName, contributors[?(@.contributorType='RelatedPerson')].familyName</td></tr>
+      <tr><td class="concept">Researcher</td><td class="path">contributors[?(@.contributorType='Researcher')].name, contributors[?(@.contributorType='Researcher')].givenName, contributors[?(@.contributorType='Researcher')].familyName</td></tr>
+      <tr><td class="concept">ResearchGroup</td><td class="path">contributors[?(@.contributorType='ResearchGroup')].name, contributors[?(@.contributorType='ResearchGroup')].givenName, contributors[?(@.contributorType='ResearchGroup')].familyName</td></tr>
+      <tr><td class="concept">RightsHolder</td><td class="path">contributors[?(@.contributorType='RightsHolder')].name, contributors[?(@.contributorType='RightsHolder')].givenName, contributors[?(@.contributorType='RightsHolder')].familyName</td></tr>
+      <tr><td class="concept">Sponsor</td><td class="path">contributors[?(@.contributorType='Sponsor')].name, contributors[?(@.contributorType='Sponsor')].givenName, contributors[?(@.contributorType='Sponsor')].familyName</td></tr>
+      <tr><td class="concept">Supervisor</td><td class="path">contributors[?(@.contributorType='Supervisor')].name, contributors[?(@.contributorType='Supervisor')].givenName, contributors[?(@.contributorType='Supervisor')].familyName</td></tr>
+      <tr><td class="concept">WorkPackageLeader</td><td class="path">contributors[?(@.contributorType='WorkPackageLeader')].name, contributors[?(@.contributorType='WorkPackageLeader')].givenName, contributors[?(@.contributorType='WorkPackageLeader')].familyName</td></tr>
+    </tbody></table>
+
+  <footer>
+    Metadata Use Cases © Metadata Game Changers, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>.
+    Source of truth for the use cases is the Metadata Game Changers spirals methodology.
+  </footer>
+</div>
+</body>
+</html>
