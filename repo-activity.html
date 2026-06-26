@@ -379,6 +379,25 @@ function refinePersonChange(field, before, after){
   if (!setsEqual(b.ids,    a.ids))    keys.push(field + '.nameIdentifiers');
   return keys.length ? keys : [field];
 }
+// DataCite's change feed often re-serializes a record or fills in explicit null fields, which
+// shows up as a "change" with no human-meaningful difference. Treat a [before, after] pair as a
+// no-op when the two sides are equal after stripping null / empty values. Object keys are sorted
+// so field reordering is ignored; array order is preserved (e.g. author order is significant).
+function pruneEmpty(v){
+  if (Array.isArray(v)){
+    const a = v.map(pruneEmpty).filter(x => x !== undefined);
+    return a.length ? a : undefined;
+  }
+  if (v && typeof v === 'object'){
+    const o = {};
+    for (const k of Object.keys(v).sort()){ const pv = pruneEmpty(v[k]); if (pv !== undefined) o[k] = pv; }
+    return Object.keys(o).length ? o : undefined;
+  }
+  return (v === null || v === undefined || v === '') ? undefined : v;
+}
+const canonValue = v => JSON.stringify(pruneEmpty(v)) ?? '';
+const isNoopChange = val => Array.isArray(val) && val.length === 2 && canonValue(val[0]) === canonValue(val[1]);
+
 function changedProps(changes, action){
   if ((action||'') === 'create') return [];
   if (!changes || typeof changes !== 'object') return [];
@@ -386,6 +405,7 @@ function changedProps(changes, action){
   for (const k of Object.keys(changes)){
     if (CHANGE_SKIP.has(k)) continue;
     const v = changes[k];
+    if (isNoopChange(v)) continue;                                       // normalization-only no-op — not a real change
     if ((k === 'creators' || k === 'contributors') && Array.isArray(v) && v.length === 2){
       out.push(...refinePersonChange(k, v[0], v[1]));                    // creators.affiliation / creators.nameIdentifiers / creators
     } else {
@@ -736,14 +756,13 @@ function summariseValue(val){
 }
 function changeSummary(changes, action){
   if (!changes || typeof changes !== 'object') return '';
-  const SKIP = new Set(['doi','regenerate','only_validate','should_validate','aasm_state','content_url','landing_page','container','reason','source']);
   if ((action||'').toLowerCase() === 'create'){
     const title = changes.titles?.[0]?.title ?? '';
     return 'DOI registered' + (title ? ': <strong>'+escHtml(title)+'</strong>' : '') + '.';
   }
-  const keys = Object.keys(changes).filter(k => !SKIP.has(k));
-  if (!keys.length) return 'Metadata updated.';
-  return 'Updated ' + keys.map(k => '<strong>'+escHtml(fieldLabel(k))+'</strong>').join(', ') + '.';
+  const labels = [...new Set(changedProps(changes, action).map(fieldLabel))];  // same set the chart/detail use (no-ops dropped, creators/contributors refined)
+  if (!labels.length) return 'Metadata updated.';
+  return 'Updated ' + labels.map(l => '<strong>'+escHtml(l)+'</strong>').join(', ') + '.';
 }
 // Detail rows for a creators/contributors change: a before→after row for each sub-property
 // (people, affiliation, name identifiers) that actually changed.
@@ -769,9 +788,15 @@ function renderChangesDiff(changes, action){
   const rows = [];
   for (const [field, val] of Object.entries(changes)){
     if (SKIP.has(field)) continue;
+    if (!isCreate && isNoopChange(val)) continue;              // normalization-only no-op — keep summary, chart, and detail in agreement
     const label = escHtml(fieldLabel(field));
     if (!isCreate && (field === 'creators' || field === 'contributors') && Array.isArray(val) && val.length === 2){
-      rows.push(...personChangeRows(field, val[0], val[1]));    // one row per changed sub-property (people / affiliation / IDs)
+      const pr = personChangeRows(field, val[0], val[1]);      // one row per changed sub-property (people / affiliation / IDs)
+      if (pr.length){ rows.push(...pr); }
+      else {                                                   // real change outside those facets (e.g. contributorType) — show a generic row
+        const b = summariseValue(val[0]), a2 = summariseValue(val[1]);
+        if (b!==a2) rows.push(`<div class="diff-row"><span class="diff-field">${label}</span><div class="diff-values"><span class="diff-before">${escHtml(b)}</span><span class="diff-arrow">→</span><span class="diff-after">${escHtml(a2)}</span></div></div>`);
+      }
       continue;
     }
     if (isCreate){
