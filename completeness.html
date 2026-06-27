@@ -334,6 +334,7 @@
         <div class="modal-sub" id="values-sub"></div>
       </div>
       <div class="modal-head-actions">
+        <button class="dl-btn" id="values-copy" type="button" title="Copy the full list to the clipboard" style="display:none">⧉ Copy</button>
         <button class="dl-btn" id="values-download" type="button" style="display:none">⬇ CSV</button>
         <button class="modal-x" id="values-close" type="button" aria-label="Close">✕</button>
       </div>
@@ -659,6 +660,7 @@ async function openValues(spiral, conceptRaw){
   $('values-title').textContent = displayConcept(conceptRaw);
   $('values-sub').textContent = `${spiral.title} · computing…`;
   $('values-download').style.display = 'none';
+  $('values-copy').style.display = 'none';
   $('values-body').innerHTML = '<div style="padding:1rem;color:#6b7280;font-size:.8rem">Computing value frequencies…</div>';
   $('values-modal').style.display = 'flex';
   try {
@@ -676,6 +678,7 @@ async function openValues(spiral, conceptRaw){
       + shown.map(e => `<tr><td class="val">${escHtml(valDisplay(e.v))}</td><td class="num">${e.n.toLocaleString()}</td><td class="num">${(e.n/total*100).toFixed(1)}%</td></tr>`).join('')
       + '</tbody></table>';
     $('values-download').style.display = '';
+    $('values-copy').style.display = '';
   } catch (e){
     console.warn('value frequency error for', conceptRaw, e);
     $('values-sub').textContent = spiral.title;
@@ -694,6 +697,19 @@ function downloadValuesCsv(){
   a.href = url; a.download = `${safeId}_${safeConcept}_values.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+async function copyValues(){
+  if (!valuesState || !valuesState.freq.length) return;
+  // tab-separated so it pastes straight into a spreadsheet; full (uncapped) list, like the CSV
+  const tsv = ['Value\tCount', ...valuesState.freq.map(e => `${valDisplay(e.v).replace(/[\t\n\r]/g, ' ')}\t${e.n}`)].join('\n');
+  const btn = $('values-copy');
+  try {
+    await navigator.clipboard.writeText(tsv);
+    btn.textContent = '✓ Copied';
+  } catch (e){
+    btn.textContent = 'Copy failed';
+  }
+  setTimeout(() => { btn.textContent = '⧉ Copy'; }, 1600);
 }
 
 function renderRadar(items, color, title){
@@ -1386,6 +1402,7 @@ $('download-metadata').addEventListener('click', downloadMetadata);
 $('download-summary').addEventListener('click', downloadSummary);
 $('copy-radar').addEventListener('click', copyRadar);
 $('values-close').addEventListener('click', closeValues);
+$('values-copy').addEventListener('click', copyValues);
 $('values-download').addEventListener('click', downloadValuesCsv);
 $('values-modal').addEventListener('click', e => { if (e.target.id === 'values-modal') closeValues(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('values-modal').style.display !== 'none') closeValues(); });
