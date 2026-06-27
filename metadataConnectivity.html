@@ -219,11 +219,11 @@
 
   <div class="card" id="conn-card" style="display:none">
     <h2 id="conn-title">Identifier connectivity</h2>
-    <p class="conn-intro">Connectivity is the share of things that carry the identifier that could connect them — e.g. of the creators in a repository, how many have a name identifier (ORCID). Each bar covers only the records that have that item; its segments show the % of those records where <b>every</b> item is identified (complete), <b>some</b> are (partial), or <b>none</b> are (missing). <b>Click any bar</b> to list the individual items (worst connectivity first) — the ones that need identifiers added.</p>
+    <p class="conn-intro">Connectivity is the share of things that carry the identifier that could connect them — e.g. of the creators in a repository, how many have a name identifier (ORCID). The <b>%</b> is occurrence-based (identified occurrences ÷ all occurrences). The bar counts <b>distinct</b> entities (a person or affiliation that appears in many records is one entity): green = identified in <b>every</b> occurrence, yellow = identified in <b>some</b> (these are the quick wins — a known identifier to propagate), red = <b>never</b> identified. <b>Click any bar</b> to list them, worst connectivity first — the ones to add identifiers to.</p>
     <div class="conn-legend">
-      <span><i style="background:var(--green)"></i>Complete — all possible identifiers present</span>
-      <span><i style="background:var(--amber)"></i>Some — partially identified</span>
-      <span><i style="background:var(--red)"></i>None — no identifiers</span>
+      <span><i style="background:var(--green)"></i>Complete — identified in every occurrence</span>
+      <span><i style="background:var(--amber)"></i>Some — identified in some occurrences</span>
+      <span><i style="background:var(--red)"></i>None — never identified</span>
     </div>
     <div id="conn-body"></div>
   </div>
@@ -351,73 +351,33 @@ function renderSelection(clientId, meta, recordCount, random, repoTotal, resourc
 }
 
 /* ---------- connectivity computation ----------
-   Per record, per connector: connCnt = number of items that exist (e.g. creators), idCnt = how many
-   of them carry the identifier. A record is COMPLETE if idCnt >= connCnt (all identified), MISSING if
-   idCnt == 0, else PARTIAL. The bar aggregates over records that have the connector (connCnt > 0). */
-function personConn(list, kind){
-  const arr = Array.isArray(list) ? list : [];
-  let conn = 0, id = 0;
-  if (kind === 'affId'){
-    for (const p of arr){
-      const affs = (p && Array.isArray(p.affiliation) ? p.affiliation : []).filter(a => a && a.name);
-      conn += affs.length;
-      id += affs.filter(a => a.affiliationIdentifier).length;
-    }
-    return { conn, id };
-  }
-  for (const p of arr){
-    if (!p || typeof p !== 'object') continue;
-    if (!(p.name || p.givenName || p.familyName)) continue;     // count people that have a name
-    conn++;
-    if (kind === 'nameId'){
-      if (Array.isArray(p.nameIdentifiers) && p.nameIdentifiers.some(n => n && n.nameIdentifier)) id++;
-    } else {                                                     // 'aff' — does the person have an affiliation?
-      if (Array.isArray(p.affiliation) && p.affiliation.some(a => a && a.name)) id++;
-    }
-  }
-  return { conn, id };
-}
-function funderConn(attr){
-  const arr = Array.isArray(attr.fundingReferences) ? attr.fundingReferences : [];
-  let conn = 0, id = 0;
-  for (const f of arr){ if (f && f.funderName){ conn++; if (f.funderIdentifier) id++; } }
-  return { conn, id };
-}
-function publisherConn(attr){
-  const p = attr.publisher;
-  if (!p) return { conn: 0, id: 0 };
-  if (typeof p === 'string') return { conn: p ? 1 : 0, id: 0 };  // string form has no identifier
-  if (!p.name) return { conn: 0, id: 0 };
-  return { conn: 1, id: p.publisherIdentifier ? 1 : 0 };
-}
+   Each connector is grouped by distinct entity name across all records (connDetail): for an entity,
+   occ = total occurrences, id = occurrences carrying the identifier. The bar counts entities:
+   COMPLETE (id >= occ, every occurrence identified), MISSING (id == 0), else PARTIAL. The overall %
+   is occurrence-based (total identified / total occurrences). Quick wins = the propagatable gap
+   (occ − id) summed over partial entities. */
 const CONNECTORS = [
-  { group:'Creators',     label:'Name identifiers (ORCID, etc.)',       source:'creators',         kind:'nameId',    entity:'Creator',     fn: a => personConn(a.creators, 'nameId') },
-  { group:'Creators',     label:'Affiliations',                          source:'creators',         kind:'aff',       entity:'Creator',     fn: a => personConn(a.creators, 'aff') },
-  { group:'Creators',     label:'Affiliation identifiers (ROR, etc.)',   source:'creators',         kind:'affId',     entity:'Affiliation', fn: a => personConn(a.creators, 'affId') },
-  { group:'Contributors', label:'Name identifiers (ORCID, etc.)',        source:'contributors',     kind:'nameId',    entity:'Contributor', fn: a => personConn(a.contributors, 'nameId') },
-  { group:'Contributors', label:'Affiliations',                          source:'contributors',     kind:'aff',       entity:'Contributor', fn: a => personConn(a.contributors, 'aff') },
-  { group:'Contributors', label:'Affiliation identifiers (ROR, etc.)',   source:'contributors',     kind:'affId',     entity:'Affiliation', fn: a => personConn(a.contributors, 'affId') },
-  { group:'Funders',      label:'Funder identifiers',                    source:'fundingReferences', kind:'funder',   entity:'Funder',      fn: a => funderConn(a) },
-  { group:'Publisher',    label:'Publisher identifier',                  source:'publisher',         kind:'publisher', entity:'Publisher',   fn: a => publisherConn(a) },
+  { group:'Creators',     label:'Name identifiers (ORCID, etc.)',       source:'creators',          kind:'nameId',    entity:'Creator' },
+  { group:'Creators',     label:'Affiliations',                          source:'creators',          kind:'aff',       entity:'Creator' },
+  { group:'Creators',     label:'Affiliation identifiers (ROR, etc.)',   source:'creators',          kind:'affId',     entity:'Affiliation' },
+  { group:'Contributors', label:'Name identifiers (ORCID, etc.)',        source:'contributors',      kind:'nameId',    entity:'Contributor' },
+  { group:'Contributors', label:'Affiliations',                          source:'contributors',      kind:'aff',       entity:'Contributor' },
+  { group:'Contributors', label:'Affiliation identifiers (ROR, etc.)',   source:'contributors',      kind:'affId',     entity:'Affiliation' },
+  { group:'Funders',      label:'Funder identifiers',                    source:'fundingReferences', kind:'funder',    entity:'Funder' },
+  { group:'Publisher',    label:'Publisher identifier',                  source:'publisher',         kind:'publisher', entity:'Publisher' },
 ];
 function computeConnectivity(records){
   return CONNECTORS.map((c, idx) => {
-    let complete = 0, partial = 0, missing = 0, recordsWith = 0, sumConn = 0, sumId = 0;
-    for (const r of records){
-      const attr = r.attributes || {};
-      const { conn, id } = c.fn(attr);
-      if (conn <= 0) continue;
-      recordsWith++; sumConn += conn; sumId += id;
-      if (id === 0) missing++;
-      else if (id >= conn) complete++;
-      else partial++;
+    const detail = connDetail(records, c);             // distinct entity -> {occ, id}
+    let complete = 0, partial = 0, missing = 0, sumConn = 0, sumId = 0, quickWins = 0;
+    for (const e of detail.values()){
+      sumConn += e.occ; sumId += e.id;
+      if (e.id === 0) missing++;
+      else if (e.id >= e.occ) complete++;
+      else { partial++; quickWins += (e.occ - e.id); }   // partial entity → propagatable known identifier(s)
     }
-    // per-entity grouping (cached for the drill-down): quick wins = identifiers we already know for
-    // an entity that could be propagated to its other occurrences that lack them (0 < id < occ).
-    const detail = connDetail(records, c);
-    let quickWins = 0;
-    for (const e of detail.values()){ if (e.id > 0 && e.id < e.occ) quickWins += (e.occ - e.id); }
-    return { idx, group: c.group, label: c.label, complete, partial, missing, recordsWith,
+    return { idx, group: c.group, label: c.label, entity: c.entity,
+             complete, partial, missing, total: detail.size,
              overall: sumConn ? sumId / sumConn : 0, items: sumConn, identified: sumId, quickWins, detail };
   });
 }
@@ -431,17 +391,18 @@ function renderConnectivity(results){
   const seg = (cls, w) => w > 0 ? `<div class="seg ${cls}" style="width:${w.toFixed(1)}%"></div>` : '';
   $('conn-body').innerHTML = groups.map(g => {
     const rows = g.items.map(res => {
-      if (res.recordsWith === 0){
-        return `<div class="conn-row"><div class="conn-label">${escHtml(res.label)} <span class="conn-meta">not present in any analyzed record</span></div><div class="conn-empty">— no records with this item —</div></div>`;
+      const ent = res.entity.toLowerCase();
+      if (res.total === 0){
+        return `<div class="conn-row"><div class="conn-label">${escHtml(res.label)} <span class="conn-meta">not present in any analyzed record</span></div><div class="conn-empty">— no ${escHtml(ent)}s in the analyzed sample —</div></div>`;
       }
-      const c = res.complete / res.recordsWith * 100,
-            p = res.partial  / res.recordsWith * 100,
-            m = res.missing  / res.recordsWith * 100;
+      const c = res.complete / res.total * 100,
+            p = res.partial  / res.total * 100,
+            m = res.missing  / res.total * 100;
       return `<div class="conn-row">
         <div class="conn-label">${escHtml(res.label)}
-          <span class="conn-meta">${res.identified.toLocaleString()} of ${res.items.toLocaleString()} identified · <b class="conn-pct">${(res.overall*100).toFixed(0)}%</b> · ${res.recordsWith.toLocaleString()} record${res.recordsWith===1?'':'s'}${res.quickWins>0 ? ` · <b class="conn-qw" title="Known identifiers that could be propagated to the same entity's other occurrences — no lookup needed">${res.quickWins.toLocaleString()} quick win${res.quickWins===1?'':'s'}</b>` : ''}</span>
+          <span class="conn-meta">${res.identified.toLocaleString()} of ${res.items.toLocaleString()} occurrences identified · <b class="conn-pct">${(res.overall*100).toFixed(0)}%</b> · ${res.total.toLocaleString()} distinct ${escHtml(ent)}${res.total===1?'':'s'}${res.quickWins>0 ? ` · <b class="conn-qw" title="Known identifiers that could be propagated to the same entity's other occurrences — no lookup needed">${res.quickWins.toLocaleString()} quick win${res.quickWins===1?'':'s'}</b>` : ''}</span>
         </div>
-        <div class="conn-bar clickable" data-idx="${res.idx}" title="complete ${c.toFixed(0)}% · some ${p.toFixed(0)}% · none ${m.toFixed(0)}% — click for the list">${seg('green',c)}${seg('yellow',p)}${seg('red',m)}</div>
+        <div class="conn-bar clickable" data-idx="${res.idx}" title="${res.complete} complete · ${res.partial} partial · ${res.missing} missing ${escHtml(ent)}s — click for the list">${seg('green',c)}${seg('yellow',p)}${seg('red',m)}</div>
       </div>`;
     }).join('');
     return `<div class="conn-group">${escHtml(g.name)}</div>${rows}`;
