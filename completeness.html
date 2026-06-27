@@ -139,6 +139,24 @@
   .total-actions{margin-top:.85rem}
   .dl-btn{appearance:none;border:1px solid var(--accent);background:#fff;color:var(--accent-dk);font:inherit;font-size:.75rem;font-weight:600;padding:.42rem .85rem;border-radius:6px;cursor:pointer}
   .dl-btn:hover{background:var(--tint)}
+  /* concept value drill-down */
+  .tbl-hint{font-size:.7rem;color:var(--accent-dk);margin-top:.5rem}
+  .concept-link{appearance:none;border:none;background:none;font:inherit;color:var(--ink);cursor:pointer;padding:0;text-align:left}
+  .concept-link:hover{color:var(--accent-dk);text-decoration:underline}
+  .modal-overlay{position:fixed;inset:0;background:rgba(31,35,48,.45);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:5vh 1rem}
+  .modal-card{background:#fff;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.25);max-width:560px;width:100%;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+  .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:.9rem 1.1rem;border-bottom:1px solid var(--line)}
+  .modal-title{font-size:1rem;font-weight:600;color:var(--accent-dk)}
+  .modal-sub{font-size:.74rem;color:var(--muted);margin-top:.15rem}
+  .modal-head-actions{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+  .modal-x{appearance:none;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:.85rem;line-height:1}
+  .modal-x:hover{border-color:var(--accent);color:var(--accent-dk)}
+  .modal-body{padding:.4rem 1.1rem 1.1rem;overflow:auto}
+  table.values-table{border-collapse:collapse;width:100%;font-size:.8rem}
+  table.values-table th,table.values-table td{text-align:left;padding:.32rem .5rem;border-bottom:1px solid #f0eef5;vertical-align:top}
+  table.values-table th{font-size:.66rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:600;position:sticky;top:0;background:#fff}
+  table.values-table td.num,table.values-table th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  table.values-table td.val{word-break:break-word}
   /* About tab */
   .about-intro{font-size:.85rem;color:var(--ink);line-height:1.6;max-width:760px;margin:.6rem 0 1rem}
   .about-intro h2{font-size:1.05rem;color:var(--accent-dk);border:none;margin:.4rem 0}
@@ -297,12 +315,30 @@
         <thead><tr><th>Concept</th><th class="num">Record %</th><th>Completeness</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
+      <div class="tbl-hint">Tip: click a concept to see its values and how often each occurs.</div>
     </div>
   </div>
 
   <div class="note">
     <b>About:</b> This tool measures DataCite metadata completeness for a repository using the Metadata Game Changers FAIR use cases — Text, Identifiers, Connections, and Contacts. Each concept's score is the share of records that contain it; the Total index is the concept-weighted average across these four use cases. Five additional use cases — <b>DataCite Relations</b> (41 relation types), <b>DataCite Contributors</b> (20 contributor types), and <b>Project Team Members</b>, <b>Project Items</b>, and <b>Project Relations</b> — are also scored and viewable, but they are reported separately and do not contribute to the Total index. All scoring runs in your browser against live DataCite data — nothing is uploaded or stored.<br>
     <b>Troubleshooting:</b> if the scoring engine can't load from a CDN, download <code>jq.asm.bundle.js</code> from <code>https://unpkg.com/jq-web@0.5.1/jq.asm.bundle.js</code>, place it beside this file, and point the loader's first source at <code>./jq.asm.bundle.js</code>.
+  </div>
+</div>
+
+<!-- Value-frequency drill-down (one concept at a time, computed on demand) -->
+<div id="values-modal" class="modal-overlay" style="display:none">
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="values-title">—</div>
+        <div class="modal-sub" id="values-sub"></div>
+      </div>
+      <div class="modal-head-actions">
+        <button class="dl-btn" id="values-download" type="button" style="display:none">⬇ CSV</button>
+        <button class="modal-x" id="values-close" type="button" aria-label="Close">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="values-body"></div>
   </div>
 </div>
 
@@ -588,15 +624,76 @@ function renderResults(spiral, res){
   // table — record % shown as text; raw counts live in the bar tooltip
   $('rows').innerHTML = res.items.map(i => `
     <tr>
-      <td>${displayConcept(i.concept)}</td>
+      <td><button class="concept-link" type="button" data-concept="${escAttr(i.concept)}" title="Show value frequencies">${displayConcept(i.concept)}</button></td>
       <td class="num">${i.errored ? '—' : fmtPct(i.comp)}</td>
       <td>${i.errored
         ? '<span style="color:#b4322f;font-size:.78rem">query error (see console)</span>'
         : `<div class="bar" title="${i.matched} of ${res.total} records (${fmtPct(i.comp)})"><i style="width:${(i.comp*100).toFixed(1)}%;background:${color}"></i></div>`}</td>
     </tr>`).join('');
+  $('rows').querySelectorAll('.concept-link').forEach(el => el.addEventListener('click', () => openValues(spiral, el.dataset.concept)));
   renderRadar(res.items, color, spiral.title);
   $('legend').textContent = `${res.items.length} concepts`;
   $('copy-radar').style.display = '';
+}
+
+/* ---------- per-concept value frequencies (on-demand drill-down) ---------- */
+const VALUES_TOP_N = 50;
+let valuesState = null;   // { conceptRaw, freq:[{v,n}], spiralTitle }
+
+// Run ONE concept's FULL query (the values projection we strip for scoring is still in the catalog)
+// and let jq tally unique value → occurrence count in the same pass, so only the small result returns.
+async function computeValueFreq(item){
+  if (!lastRun._inputStr) lastRun._inputStr = JSON.stringify({ data: lastRun.records });
+  const prog = `[ ${item.jq_query} | .values ] | flatten | map(select(. != null)) | group_by(.) | map({v: .[0], n: length}) | sort_by([-.n, (.v|tostring)])`;
+  const out = await jq.promised.raw(lastRun._inputStr, prog, ['-c']);
+  const freq = (out && out.trim()) ? JSON.parse(out.trim()) : [];
+  const total = freq.reduce((s, e) => s + e.n, 0);
+  return { freq, total, unique: freq.length };
+}
+const valDisplay = v => (v !== null && typeof v === 'object') ? JSON.stringify(v) : String(v);
+
+async function openValues(spiral, conceptRaw){
+  if (!lastRun) return;
+  const item = (spiral.items || []).find(it => it.concept === conceptRaw);
+  if (!item || !item.jq_query) return;
+  $('values-title').textContent = displayConcept(conceptRaw);
+  $('values-sub').textContent = `${spiral.title} · computing…`;
+  $('values-download').style.display = 'none';
+  $('values-body').innerHTML = '<div style="padding:1rem;color:#6b7280;font-size:.8rem">Computing value frequencies…</div>';
+  $('values-modal').style.display = 'flex';
+  try {
+    const { freq, total, unique } = await computeValueFreq(item);
+    valuesState = { conceptRaw, freq, spiralTitle: spiral.title };
+    $('values-sub').textContent = unique === 0
+      ? `${spiral.title} · no values in this sample`
+      : `${spiral.title} · ${unique.toLocaleString()} unique value${unique===1?'':'s'} · ${total.toLocaleString()} occurrence${total===1?'':'s'}${unique>VALUES_TOP_N ? ` · showing top ${VALUES_TOP_N}` : ''}`;
+    if (!freq.length){
+      $('values-body').innerHTML = '<div style="padding:1rem;color:#6b7280;font-size:.8rem">No values found for this concept in the analyzed sample.</div>';
+      return;
+    }
+    const shown = freq.slice(0, VALUES_TOP_N);
+    $('values-body').innerHTML = '<table class="values-table"><thead><tr><th>Value</th><th class="num">Count</th><th class="num">%</th></tr></thead><tbody>'
+      + shown.map(e => `<tr><td class="val">${escHtml(valDisplay(e.v))}</td><td class="num">${e.n.toLocaleString()}</td><td class="num">${(e.n/total*100).toFixed(1)}%</td></tr>`).join('')
+      + '</tbody></table>';
+    $('values-download').style.display = '';
+  } catch (e){
+    console.warn('value frequency error for', conceptRaw, e);
+    $('values-sub').textContent = spiral.title;
+    $('values-body').innerHTML = `<div style="padding:1rem;color:#b4322f;font-size:.8rem">Could not compute values: ${escHtml((e && e.message) || String(e))}</div>`;
+  }
+}
+function closeValues(){ $('values-modal').style.display = 'none'; valuesState = null; }
+function downloadValuesCsv(){
+  if (!valuesState || !valuesState.freq.length) return;
+  const csv = v => { const s = valDisplay(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const body = [['Value','Count'], ...valuesState.freq.map(e => [csv(e.v), e.n])].map(r => r.join(',')).join('\r\n') + '\r\n';
+  const url = URL.createObjectURL(new Blob([body], { type: 'text/csv' }));
+  const safeId = (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_');
+  const safeConcept = valuesState.conceptRaw.replace(/[^A-Za-z0-9._-]+/g, '_');
+  const a = document.createElement('a');
+  a.href = url; a.download = `${safeId}_${safeConcept}_values.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function renderRadar(items, color, title){
@@ -1288,6 +1385,10 @@ $('download-html').addEventListener('click', downloadHtmlReport);
 $('download-metadata').addEventListener('click', downloadMetadata);
 $('download-summary').addEventListener('click', downloadSummary);
 $('copy-radar').addEventListener('click', copyRadar);
+$('values-close').addEventListener('click', closeValues);
+$('values-download').addEventListener('click', downloadValuesCsv);
+$('values-modal').addEventListener('click', e => { if (e.target.id === 'values-modal') closeValues(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('values-modal').style.display !== 'none') closeValues(); });
 document.querySelectorAll('#tabs .tab').forEach(b => b.addEventListener('click', () => selectTab(b.dataset.tab)));
 selectTab('FAIR');
 setStatus('Loading engine…');
