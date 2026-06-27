@@ -94,6 +94,7 @@
   .conn-label{font-size:.82rem;font-weight:500;margin-bottom:.28rem;display:flex;justify-content:space-between;gap:1rem;align-items:baseline}
   .conn-meta{font-size:.72rem;color:var(--muted);font-weight:400;white-space:nowrap}
   .conn-meta b{color:var(--accent-dk)}
+  .conn-meta b.conn-qw{color:var(--green);cursor:help}
   .conn-bar{display:flex;height:18px;border-radius:5px;overflow:hidden;background:#eef0f4}
   .conn-bar .seg{height:100%}
   .seg.green{background:var(--green)} .seg.yellow{background:var(--amber)} .seg.red{background:var(--red)}
@@ -411,8 +412,13 @@ function computeConnectivity(records){
       else if (id >= conn) complete++;
       else partial++;
     }
+    // per-entity grouping (cached for the drill-down): quick wins = identifiers we already know for
+    // an entity that could be propagated to its other occurrences that lack them (0 < id < occ).
+    const detail = connDetail(records, c);
+    let quickWins = 0;
+    for (const e of detail.values()){ if (e.id > 0 && e.id < e.occ) quickWins += (e.occ - e.id); }
     return { idx, group: c.group, label: c.label, complete, partial, missing, recordsWith,
-             overall: sumConn ? sumId / sumConn : 0, items: sumConn, identified: sumId };
+             overall: sumConn ? sumId / sumConn : 0, items: sumConn, identified: sumId, quickWins, detail };
   });
 }
 function renderConnectivity(results){
@@ -433,7 +439,7 @@ function renderConnectivity(results){
             m = res.missing  / res.recordsWith * 100;
       return `<div class="conn-row">
         <div class="conn-label">${escHtml(res.label)}
-          <span class="conn-meta">${res.identified.toLocaleString()} of ${res.items.toLocaleString()} identified · <b class="conn-pct">${(res.overall*100).toFixed(0)}%</b> · ${res.recordsWith.toLocaleString()} record${res.recordsWith===1?'':'s'}</span>
+          <span class="conn-meta">${res.identified.toLocaleString()} of ${res.items.toLocaleString()} identified · <b class="conn-pct">${(res.overall*100).toFixed(0)}%</b> · ${res.recordsWith.toLocaleString()} record${res.recordsWith===1?'':'s'}${res.quickWins>0 ? ` · <b class="conn-qw" title="Known identifiers that could be propagated to the same entity's other occurrences — no lookup needed">${res.quickWins.toLocaleString()} quick win${res.quickWins===1?'':'s'}</b>` : ''}</span>
         </div>
         <div class="conn-bar clickable" data-idx="${res.idx}" title="complete ${c.toFixed(0)}% · some ${p.toFixed(0)}% · none ${m.toFixed(0)}% — click for the list">${seg('green',c)}${seg('yellow',p)}${seg('red',m)}</div>
       </div>`;
@@ -495,7 +501,8 @@ let connDetailState = null;   // { entries:[{name,occ,id,pct}], c }
 function openConnDetail(idx){
   if (!lastRun) return;
   const c = CONNECTORS[idx];
-  const entries = [...connDetail(lastRun.records, c).entries()]
+  const map = (lastRun.results && lastRun.results[idx] && lastRun.results[idx].detail) || connDetail(lastRun.records, c);
+  const entries = [...map.entries()]
     .map(([name, e]) => ({ name, occ: e.occ, id: e.id, pct: e.occ ? e.id / e.occ : 0 }))
     .sort((a, b) => a.pct - b.pct || b.occ - a.occ || a.name.localeCompare(b.name));   // worst connectivity first
   connDetailState = { entries, c };
