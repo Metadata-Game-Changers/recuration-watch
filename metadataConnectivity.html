@@ -86,6 +86,8 @@
   /* ── Connectivity card ── */
   .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:1rem}
   .card h2{font-size:1rem;margin:0 0 .4rem;color:var(--accent-dk)}
+  .conn-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:.2rem}
+  .conn-actions{display:flex;gap:.5rem;flex-wrap:wrap}
   .conn-intro{font-size:.78rem;color:var(--muted);margin:0 0 1rem;line-height:1.5;max-width:760px}
   .conn-legend{display:flex;gap:1.3rem;flex-wrap:wrap;font-size:.72rem;color:var(--muted);margin-bottom:1.1rem}
   .conn-legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:.4rem;vertical-align:middle}
@@ -218,7 +220,16 @@
   <div id="apiurl" style="display:none"></div>
 
   <div class="card" id="conn-card" style="display:none">
-    <h2 id="conn-title">Identifier connectivity</h2>
+    <div class="conn-head">
+      <h2 id="conn-title">Identifier connectivity</h2>
+      <div class="conn-actions">
+        <button class="dl-btn" id="dl-json" type="button">⬇ Report (JSON)</button>
+        <button class="dl-btn" id="dl-html" type="button">⬇ Report (HTML)</button>
+        <button class="dl-btn" id="dl-png" type="button">⬇ Bars (PNG)</button>
+        <button class="dl-btn" id="dl-summary" type="button">⬇ Summary (CSV)</button>
+        <button class="dl-btn" id="dl-metadata" type="button">⬇ Metadata (JSON)</button>
+      </div>
+    </div>
     <p class="conn-intro">Connectivity is the share of things that carry the identifier that could connect them — e.g. of the creators in a repository, how many have a name identifier (ORCID). The <b>%</b> is occurrence-based (identified occurrences ÷ all occurrences). The bar counts <b>distinct</b> entities (a person or affiliation that appears in many records is one entity): green = identified in <b>every</b> occurrence, yellow = identified in <b>some</b> (these are the quick wins — a known identifier to propagate), red = <b>never</b> identified. <b>Click any bar</b> to list them, worst connectivity first — the ones to add identifiers to.</p>
     <div class="conn-legend">
       <span><i style="background:var(--green)"></i>Complete — identified in every occurrence</span>
@@ -507,6 +518,332 @@ async function connDetailCopy(){
   setTimeout(() => { btn.textContent = '⧉ Copy'; }, 1600);
 }
 
+/* ---------- reports (JSON + HTML) and PNG export ---------- */
+function nowStamp(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}`; }
+function safeRepoId(){ return (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_'); }
+function triggerDownload(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function runMeta(){
+  const analyzed  = lastRun.records.length;
+  const repoTotal = (lastRun.repoTotal != null) ? lastRun.repoTotal : analyzed;
+  const sampling  = (repoTotal > analyzed) ? (lastRun.random ? 'random sample' : 'sequential sample') : 'all records';
+  return { analyzed, repoTotal, sampling };
+}
+// Split a connector's distinct entities into complete / partial / missing name lists (worst lists matter most).
+function connEntityLists(res){
+  const complete=[], partial=[], missing=[];
+  if (res.detail) for (const [name, e] of res.detail){
+    if (e.id === 0) missing.push(name);
+    else if (e.id >= e.occ) complete.push(name);
+    else partial.push(name);
+  }
+  const byName = (a,b) => String(a).localeCompare(String(b));
+  return { complete: complete.sort(byName), partial: partial.sort(byName), missing: missing.sort(byName) };
+}
+
+/* JSON report: { repository, connectors }. Mirrors completeness.html's shape (no FAIR/Projects totals —
+   connectivity has no headline index). Entity name lists are joined with "; " because names commonly
+   contain commas (e.g. "University of Technology, Sydney"). */
+function buildConnReport(){
+  const round = x => Math.round(x*10000)/10000;
+  const { analyzed, repoTotal, sampling } = runMeta();
+  const SEP = '; ';
+  const connectors = lastRun.results.map(res => {
+    const lists = connEntityLists(res);
+    return {
+      group: res.group,
+      connector: res.label,
+      entity: res.entity,
+      distinctEntities: res.total,
+      complete: res.complete,
+      partial: res.partial,
+      missing: res.missing,
+      occurrences: res.items,
+      identified: res.identified,
+      connectivity: round(res.overall),
+      quickWins: res.quickWins,
+      completeList: lists.complete.join(SEP),
+      partialList: lists.partial.join(SEP),
+      missingList: lists.missing.join(SEP)
+    };
+  });
+  return {
+    repository: {
+      id:                lastRun.clientId,
+      name:              lastRun.repoName || lastRun.clientId,
+      dateTime:          nowStamp(),
+      records:           analyzed,
+      totalInRepository: repoTotal,
+      sampling,
+      resourceType:      lastRun.resourceTypeId || '',
+      query:             lastRun.query || ''
+    },
+    connectors
+  };
+}
+function downloadConnReport(){
+  if (!lastRun){ setStatus('Run an exploration first, then download the report.', true); return; }
+  triggerDownload(new Blob([JSON.stringify(buildConnReport(), null, 2)], { type:'application/json' }),
+    `${safeRepoId()}_connectivityReport__${nowStamp()}.json`);
+}
+
+/* Self-contained HTML report: the grouped bars (print-friendly) + a per-group stats table.
+   Full entity name lists live in the JSON report; here we keep it to visuals + counts. */
+function buildConnReportHtml(){
+  const created = nowStamp();
+  const d = new Date();
+  const { analyzed, repoTotal, sampling } = runMeta();
+  const filtered = !!(lastRun.resourceTypeId || lastRun.query);
+  const pct = x => `${(x*100).toFixed(0)}%`;
+  const seg = (cls, w) => w > 0 ? `<span class="seg ${cls}" style="width:${w.toFixed(1)}%"></span>` : '';
+  // group the flat results list
+  const groups = [];
+  for (const res of lastRun.results){
+    let g = groups.find(x => x.name === res.group);
+    if (!g){ g = { name: res.group, items: [] }; groups.push(g); }
+    g.items.push(res);
+  }
+  const groupBlock = g => {
+    const bars = g.items.map(res => {
+      const ent = res.entity.toLowerCase();
+      if (res.total === 0)
+        return `<div class="rrow"><div class="rlabel">${escHtml(res.label)} <span class="rmeta">not present in any analyzed record</span></div><div class="rempty">— no ${escHtml(ent)}s in the analyzed sample —</div></div>`;
+      const c = res.complete/res.total*100, p = res.partial/res.total*100, m = res.missing/res.total*100;
+      return `<div class="rrow">
+        <div class="rlabel">${escHtml(res.label)} <span class="rmeta">${res.identified.toLocaleString()} of ${res.items.toLocaleString()} occurrences identified · <b>${pct(res.overall)}</b> · ${res.total.toLocaleString()} distinct ${escHtml(ent)}${res.total===1?'':'s'}${res.quickWins>0?` · <b class="qw">${res.quickWins.toLocaleString()} quick win${res.quickWins===1?'':'s'}</b>`:''}</span></div>
+        <div class="rbar">${seg('green',c)}${seg('yellow',p)}${seg('red',m)}</div>
+      </div>`;
+    }).join('');
+    const trows = g.items.filter(r => r.total > 0).map(res => `<tr>
+        <td>${escHtml(res.label)}</td>
+        <td class="num">${res.total.toLocaleString()}</td>
+        <td class="num gc">${res.complete.toLocaleString()}</td>
+        <td class="num ac">${res.partial.toLocaleString()}</td>
+        <td class="num rc">${res.missing.toLocaleString()}</td>
+        <td class="num">${pct(res.overall)}</td>
+        <td class="num qw">${res.quickWins ? res.quickWins.toLocaleString() : '—'}</td>
+      </tr>`).join('');
+    return `<section class="grp">
+      <h2>${escHtml(g.name)}</h2>
+      ${bars}
+      <table class="stats"><thead><tr><th>Connector</th><th class="num">Distinct</th><th class="num">Complete</th><th class="num">Some</th><th class="num">None</th><th class="num">Connectivity</th><th class="num">Quick wins</th></tr></thead><tbody>${trows}</tbody></table>
+    </section>`;
+  };
+  const filterParts = [];
+  if (lastRun.resourceTypeId) filterParts.push(`resource type: <b>${escHtml(lastRun.resourceTypeId)}</b>`);
+  if (lastRun.query) filterParts.push(`query: <b>${escHtml(lastRun.query)}</b>`);
+  const filterLine = filterParts.length ? `<div class="meta-row">Filter — ${filterParts.join(' · ')}</div>` : '';
+  const repoLine = `${repoTotal.toLocaleString()} ${filtered ? 'matching' : 'in repository'} · ${analyzed.toLocaleString()} analyzed · ${sampling}`;
+  const css = `
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#1f2330;margin:0 auto;padding:2rem;max-width:1000px;line-height:1.5}
+    h1{font-size:1.5rem;color:#673289;margin:0 0 .25rem}
+    h2{font-size:1.05rem;color:#673289;border-bottom:1px solid #e6e3ec;padding-bottom:.3rem;margin:1.6rem 0 .9rem;text-transform:uppercase;letter-spacing:.03em;font-size:.85rem}
+    .report-head{border-bottom:2px solid #673289;padding-bottom:1rem;margin-bottom:1rem}
+    .meta-row{font-size:.82rem;color:#4b4f5e;margin-top:.2rem}
+    .meta-row .id{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:#6b7280}
+    .legend{display:flex;gap:1.3rem;flex-wrap:wrap;font-size:.74rem;color:#6b7280;margin:.9rem 0 0}
+    .legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:.4rem;vertical-align:middle}
+    section.grp{page-break-inside:auto}
+    .rrow{margin:.6rem 0;page-break-inside:avoid;break-inside:avoid}
+    .rlabel{font-size:.82rem;font-weight:500;margin-bottom:.28rem}
+    .rmeta{font-size:.72rem;color:#6b7280;font-weight:400}
+    .rmeta b{color:#673289} .rmeta b.qw{color:#3a9d6e}
+    .rbar{display:flex;height:18px;border-radius:5px;overflow:hidden;background:#eef0f4}
+    .rbar .seg{height:100%}
+    .seg.green{background:#3a9d6e}.seg.yellow{background:#d4910b}.seg.red{background:#c0392b}
+    .rempty{font-size:.76rem;color:#6b7280;font-style:italic}
+    table.stats{border-collapse:collapse;width:100%;font-size:.76rem;margin:.9rem 0 .4rem;page-break-inside:avoid}
+    table.stats th,table.stats td{text-align:left;padding:.3rem .45rem;border-bottom:1px solid #f0eef5}
+    table.stats th{color:#6b7280;font-weight:600;font-size:.66rem;text-transform:uppercase;letter-spacing:.03em}
+    td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+    td.gc{color:#3a9d6e}td.ac{color:#d4910b}td.rc{color:#c0392b}td.qw{color:#3a9d6e}
+    footer{margin-top:2rem;font-size:.72rem;color:#6b7280;border-top:1px solid #e6e3ec;padding-top:.8rem}
+    @media print{body{padding:0}}
+  `;
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<title>Connectivity Report: ${escHtml(lastRun.repoName)} (${escHtml(lastRun.clientId)})</title>
+<style>${css}</style></head>
+<body>
+  <div class="report-head">
+    <h1>Identifier Connectivity Report</h1>
+    <div class="meta-row"><b>${escHtml(lastRun.repoName)}</b> <span class="id">${escHtml(lastRun.clientId)}</span></div>
+    <div class="meta-row">${repoLine} · ${d.toISOString()}</div>
+    ${filterLine}
+    <div class="legend">
+      <span><i style="background:#3a9d6e"></i>Complete — identified in every occurrence</span>
+      <span><i style="background:#d4910b"></i>Some — identified in some occurrences</span>
+      <span><i style="background:#c0392b"></i>None — never identified</span>
+    </div>
+  </div>
+  ${groups.map(groupBlock).join('')}
+  <footer>
+    <p>Connectivity = the share of things that carry the identifier that could connect them. The bar counts distinct entities (complete / some / none identified); the percentage is occurrence-based (identified occurrences ÷ all occurrences). "Quick wins" are known identifiers that could be propagated to the same entity's other occurrences.</p>
+    <p>Generated by the Metadata Game Changers Connectivity tool against live DataCite data (api.datacite.org). Report created ${created} © by Metadata Game Changers is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a></p>
+  </footer>
+</body></html>`;
+}
+function downloadConnReportHtml(){
+  if (!lastRun){ setStatus('Run an exploration first, then download the report.', true); return; }
+  triggerDownload(new Blob([buildConnReportHtml()], { type:'text/html' }),
+    `${safeRepoId()}_connectivityReport__${nowStamp()}.html`);
+}
+
+/* One-row CSV summary: repository id, datetime, records analyzed, each connector's connectivity
+   (0–1, 4 dp, in card order) and the total quick wins. Easy to append across repositories. */
+function buildConnSummaryCsv(){
+  const round = x => Math.round(x*10000)/10000;
+  const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const shortLabel = res => `${res.group}: ${res.label.split(' (')[0]}`;
+  const totalQuickWins = lastRun.results.reduce((s, res) => s + res.quickWins, 0);
+  const headers = ['Repository_ID', 'DateTime', 'Records', ...lastRun.results.map(shortLabel), 'Total_Quick_Wins'];
+  const row = [
+    lastRun.clientId, nowStamp(), lastRun.records.length,
+    ...lastRun.results.map(res => res.total ? round(res.overall) : ''),
+    totalQuickWins
+  ];
+  return headers.map(csv).join(',') + '\r\n' + row.map(csv).join(',') + '\r\n';
+}
+function downloadConnSummary(){
+  if (!lastRun){ setStatus('Run an exploration first, then download the summary.', true); return; }
+  triggerDownload(new Blob([buildConnSummaryCsv()], { type:'text/csv' }),
+    `${safeRepoId()}_connectivitySummary__${nowStamp()}.csv`);
+}
+
+/* Raw metadata: the fetched DataCite records as { data: [...] } — the same shape the scorer uses
+   and that DataCite returns, so it's directly re-usable. Timestamp is YYYYMMDDThh (no dashes). */
+function downloadConnMetadata(){
+  if (!lastRun){ setStatus('Run an exploration first, then download the metadata.', true); return; }
+  const d = new Date(); const p = n => String(n).padStart(2, '0');
+  const stamp = `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}T${p(d.getHours())}`;
+  triggerDownload(new Blob([JSON.stringify({ data: lastRun.records }, null, 2)], { type:'application/json' }),
+    `${safeRepoId()}__${stamp}.json`);
+}
+
+/* PNG of the connectivity bars — drawn directly to a canvas (no external dependency), so the visual
+   can be dropped into slides/docs. Mirrors the on-screen grouping, labels, meta line and legend. */
+function roundRectPath(ctx, x, y, w, h, r){
+  r = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y,   x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x,   y+h, r);
+  ctx.arcTo(x,   y+h, x,   y,   r);
+  ctx.arcTo(x,   y,   x+w, y,   r);
+  ctx.closePath();
+}
+async function downloadConnPng(){
+  if (!lastRun){ setStatus('Run an exploration first, then download the bars.', true); return; }
+  try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch {}
+  const C = { ink:'#1f2330', muted:'#6b7280', accentDk:'#673289', line:'#e6e3ec',
+              track:'#eef0f4', green:'#3a9d6e', amber:'#d4910b', red:'#c0392b' };
+  const { analyzed, repoTotal, sampling } = runMeta();
+  const filtered = !!(lastRun.resourceTypeId || lastRun.query);
+  const groups = [];
+  for (const res of lastRun.results){
+    let g = groups.find(x => x.name === res.group);
+    if (!g){ g = { name: res.group, items: [] }; groups.push(g); }
+    g.items.push(res);
+  }
+  const scale = 2, W = 940, padX = 36;
+  const headH = 96, legendH = 30, footH = 40, groupH = 32, rowH = 56, barH = 16;
+  let H = 24 + headH + legendH;
+  for (const g of groups) H += groupH + g.items.length * rowH;
+  H += footH + 24;
+
+  const cv = document.createElement('canvas');
+  cv.width = W * scale; cv.height = H * scale;
+  const ctx = cv.getContext('2d'); ctx.scale(scale, scale);
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  const FONT = "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+  const MONO = "'IBM Plex Mono', ui-monospace, monospace";
+  const ellip = (text, font, maxW) => {
+    ctx.font = font;
+    if (ctx.measureText(text).width <= maxW) return text;
+    let t = text;
+    while (t.length > 1 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+    return t + '…';
+  };
+  let y = 24;
+  // ── header ──
+  ctx.fillStyle = C.accentDk; ctx.font = `700 22px ${FONT}`; ctx.textAlign = 'left';
+  ctx.fillText(ellip(lastRun.repoName || lastRun.clientId, `700 22px ${FONT}`, W - padX*2), padX, y + 22);
+  ctx.fillStyle = C.muted; ctx.font = `12px ${MONO}`;
+  ctx.fillText(lastRun.clientId, padX, y + 42);
+  ctx.font = `13px ${FONT}`;
+  const sub = `${analyzed.toLocaleString()} of ${repoTotal.toLocaleString()} ${filtered ? 'matching' : 'records'} · ${sampling} · ${nowStamp()}`;
+  ctx.fillText(sub, padX, y + 62);
+  ctx.fillStyle = C.accentDk; ctx.font = `600 13px ${FONT}`;
+  ctx.fillText('Identifier connectivity', padX, y + 84);
+  ctx.strokeStyle = C.line; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(padX, y + headH - 4); ctx.lineTo(W - padX, y + headH - 4); ctx.stroke();
+  y += headH;
+  // ── legend ──
+  const legend = [['Complete', C.green], ['Some', C.amber], ['None', C.red]];
+  let lx = padX;
+  ctx.font = `12px ${FONT}`;
+  for (const [text, col] of legend){
+    ctx.fillStyle = col; roundRectPath(ctx, lx, y + 4, 11, 11, 2); ctx.fill();
+    ctx.fillStyle = C.muted; ctx.textAlign = 'left'; ctx.fillText(text, lx + 17, y + 14);
+    lx += 17 + ctx.measureText(text).width + 22;
+  }
+  y += legendH;
+  // ── groups & bars ──
+  for (const g of groups){
+    ctx.fillStyle = C.muted; ctx.font = `600 11px ${FONT}`; ctx.textAlign = 'left';
+    ctx.fillText(g.name.toUpperCase(), padX, y + 16);
+    ctx.strokeStyle = C.line; ctx.beginPath(); ctx.moveTo(padX, y + 24); ctx.lineTo(W - padX, y + 24); ctx.stroke();
+    y += groupH;
+    for (const res of g.items){
+      const ent = res.entity.toLowerCase();
+      const barW = W - padX*2;
+      // meta line (right) + label (left), label truncates to leave room for meta
+      const metaFont = `11px ${FONT}`;
+      const meta = res.total === 0
+        ? 'not present in any analyzed record'
+        : `${(res.overall*100).toFixed(0)}% · ${res.total.toLocaleString()} ${ent}${res.total===1?'':'s'}${res.quickWins>0?` · ${res.quickWins.toLocaleString()} quick win${res.quickWins===1?'':'s'}`:''}`;
+      ctx.font = metaFont; const metaW = ctx.measureText(meta).width;
+      ctx.fillStyle = C.ink; ctx.font = `500 13px ${FONT}`; ctx.textAlign = 'left';
+      ctx.fillText(ellip(res.label, `500 13px ${FONT}`, barW - metaW - 14), padX, y + 12);
+      ctx.fillStyle = res.quickWins > 0 ? C.green : C.muted; ctx.font = metaFont; ctx.textAlign = 'right';
+      ctx.fillText(meta, W - padX, y + 12);
+      // bar
+      const by = y + 22;
+      if (res.total === 0){
+        ctx.fillStyle = C.track; roundRectPath(ctx, padX, by, barW, barH, 5); ctx.fill();
+        ctx.fillStyle = C.muted; ctx.font = `italic 11px ${FONT}`; ctx.textAlign = 'left';
+        ctx.fillText(`— no ${ent}s in the analyzed sample —`, padX + 8, by + 12);
+      } else {
+        ctx.save();
+        roundRectPath(ctx, padX, by, barW, barH, 5); ctx.fillStyle = C.track; ctx.fill(); ctx.clip();
+        let sx = padX;
+        const widths = [[res.complete, C.green], [res.partial, C.amber], [res.missing, C.red]];
+        for (const [n, col] of widths){
+          const w = n / res.total * barW;
+          if (w > 0){ ctx.fillStyle = col; ctx.fillRect(sx, by, w + 0.5, barH); sx += w; }
+        }
+        ctx.restore();
+      }
+      ctx.textAlign = 'left';
+      y += rowH;
+    }
+  }
+  // ── footer ──
+  ctx.strokeStyle = C.line; ctx.beginPath(); ctx.moveTo(padX, y + 6); ctx.lineTo(W - padX, y + 6); ctx.stroke();
+  ctx.fillStyle = C.muted; ctx.font = `11px ${FONT}`; ctx.textAlign = 'left';
+  ctx.fillText('Metadata Game Changers · Identifier connectivity · live DataCite data', padX, y + 24);
+
+  cv.toBlob(blob => {
+    if (!blob){ setStatus('Could not render the PNG.', true); return; }
+    triggerDownload(blob, `${safeRepoId()}_connectivity__${nowStamp()}.png`);
+  }, 'image/png');
+}
+
 /* ---------- run ---------- */
 let lastRun = null;
 function setLink(id, base, clientId){ const el = $(id); if (el) el.href = base + '?client=' + encodeURIComponent(clientId); }
@@ -528,7 +865,7 @@ async function run(){
     renderSelection(clientId, meta, records.length, usedRandom, repoTotal, resourceTypeId, query);
     setStatus('Computing connectivity…');
     const results = computeConnectivity(records);
-    lastRun = { records, clientId, resourceTypeId, query, repoName: (meta && meta.name) ? meta.name : clientId, results };
+    lastRun = { records, clientId, resourceTypeId, query, repoName: (meta && meta.name) ? meta.name : clientId, results, repoTotal, random: usedRandom };
     $('conn-card').style.display = '';
     renderConnectivity(results);
     hideProgress();
@@ -591,6 +928,11 @@ document.addEventListener('click', e => { if (!e.target.closest('.hero-search'))
 
 /* ---------- boot ---------- */
 $('repo-go').addEventListener('click', run);
+$('dl-json').addEventListener('click', downloadConnReport);
+$('dl-html').addEventListener('click', downloadConnReportHtml);
+$('dl-png').addEventListener('click', downloadConnPng);
+$('dl-summary').addEventListener('click', downloadConnSummary);
+$('dl-metadata').addEventListener('click', downloadConnMetadata);
 $('cd-close').addEventListener('click', closeConnDetail);
 $('cd-copy').addEventListener('click', connDetailCopy);
 $('cd-download').addEventListener('click', connDetailDownloadCsv);
