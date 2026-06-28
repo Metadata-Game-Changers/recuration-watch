@@ -102,6 +102,23 @@
   .seg.green{background:var(--green)} .seg.yellow{background:var(--amber)} .seg.red{background:var(--red)}
   .conn-empty{font-size:.76rem;color:var(--muted);font-style:italic}
   .conn-pct{font-variant-numeric:tabular-nums}
+  /* ── potential-duplicates panel ── */
+  .dup-th{font-size:.72rem;color:#5b3d7a;display:flex;align-items:center;gap:.35rem}
+  .dup-th select{border:1px solid rgba(145,103,176,.4);background:#fff;padding:.3rem .5rem;font-family:inherit;font-size:.72rem;color:var(--ink);border-radius:6px;cursor:pointer}
+  details.dup-cl{border:1px solid var(--line);border-radius:8px;margin:.4rem 0;background:#fff;overflow:hidden}
+  details.dup-cl>summary{list-style:none;cursor:pointer;padding:.5rem .7rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+  details.dup-cl>summary::-webkit-details-marker{display:none}
+  details.dup-cl>summary::before{content:"▸";color:var(--muted);font-size:.7rem}
+  details.dup-cl[open]>summary::before{content:"▾"}
+  details.dup-cl[open]>summary{border-bottom:1px solid var(--line)}
+  .dup-canon{font-size:.84rem;font-weight:600;color:var(--ink)}
+  .dup-count{font-size:.72rem;color:var(--muted)}
+  .dup-badge{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em;padding:.12rem .4rem;border-radius:4px;white-space:nowrap}
+  .dup-badge.hi{background:#e6f4ec;color:var(--green)}
+  .dup-badge.med{background:#fbf0d8;color:var(--amber)}
+  .dup-badge.warn{background:#fae3e0;color:var(--red)}
+  .dup-badge.prop{background:var(--tint);color:var(--accent-dk)}
+  details.dup-cl table.cd-table{margin:.2rem .2rem .4rem}
   .note{font-size:.78rem;color:var(--muted);background:var(--tint);border-radius:8px;padding:.7rem .85rem;line-height:1.5}
   .note code{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.82em;background:#fff;padding:.05rem .3rem;border-radius:4px}
   /* clickable bar + drill-down modal */
@@ -237,6 +254,25 @@
       <span><i style="background:var(--red)"></i>None — never identified</span>
     </div>
     <div id="conn-body"></div>
+  </div>
+
+  <div class="card" id="dup-card" style="display:none">
+    <div class="conn-head">
+      <h2>Potential duplicates<span class="proto-flag">advisory</span></h2>
+      <div class="conn-actions">
+        <label class="dup-th">Match
+          <select id="dup-threshold">
+            <option value="strict">strict</option>
+            <option value="balanced" selected>balanced</option>
+            <option value="loose">loose</option>
+          </select>
+        </label>
+        <button class="dl-btn" id="dup-copy" type="button" title="Copy all clusters to the clipboard">⧉ Copy</button>
+        <button class="dl-btn" id="dup-csv" type="button">⬇ Duplicates (CSV)</button>
+      </div>
+    </div>
+    <p class="conn-intro">Likely-same people and organizations that appear under more than one spelling — to review and reconcile. This <b>does not change the bars above</b>. <b>High confidence</b> clusters share an identifier (the same ORCID/ROR under different names); <b>review</b> clusters are fuzzy string matches. “Can propagate” counts occurrences that could inherit a known identifier already present on another spelling. Acronyms vs full names (e.g. “MIT” vs the spelled-out name) only match when they share an identifier.</p>
+    <div id="dup-body"></div>
   </div>
 
   <div class="note">
@@ -571,6 +607,12 @@ function buildConnReport(){
       missingList: lists.missing.join(SEP)
     };
   });
+  const dup = lastRun.duplicates || findDuplicates(lastRun.records, dupThreshold());
+  const serializeClusters = arr => arr.map(c => ({
+    canonical: c.canonical, confidence: c.confidence, basis: c.basis, conflict: !!c.conflict,
+    totalOccurrences: c.totalOcc, identifiedOccurrences: c.totalId, propagatable: c.propagatable,
+    variants: c.variants.map(v => ({ name: v.name, occurrences: v.occ, identified: v.id, sources: v.sources, identifier: v.identifier }))
+  }));
   return {
     repository: {
       id:                lastRun.clientId,
@@ -582,7 +624,12 @@ function buildConnReport(){
       resourceType:      lastRun.resourceTypeId || '',
       query:             lastRun.query || ''
     },
-    connectors
+    connectors,
+    potentialDuplicates: {
+      threshold:    dup.threshold,
+      people:       serializeClusters(dup.people),
+      affiliations: serializeClusters(dup.affiliations)
+    }
   };
 }
 function downloadConnReport(){
@@ -663,6 +710,11 @@ function buildConnReportHtml(){
     td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
     td.gc{color:#3a9d6e}td.ac{color:#d4910b}td.rc{color:#c0392b}td.qw{color:#3a9d6e}
     footer{margin-top:2rem;font-size:.72rem;color:#6b7280;border-top:1px solid #e6e3ec;padding-top:.8rem}
+    .dups{margin-top:1.6rem;page-break-inside:auto}
+    .dups h3{font-size:.92rem;color:#1f2330;margin:1rem 0 .4rem}
+    .dups-sub{font-size:.72rem;font-weight:400;color:#6b7280}
+    .dups-note{font-weight:400;text-transform:none;letter-spacing:0;color:#6b7280;font-size:.7rem}
+    .dups-empty{font-size:.78rem;color:#6b7280;font-style:italic;margin:.2rem 0 .6rem}
     @media print{body{padding:0}}
   `;
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
@@ -681,11 +733,32 @@ function buildConnReportHtml(){
     </div>
   </div>
   ${groups.map(groupBlock).join('')}
+  ${dupReportSection()}
   <footer>
     <p>Connectivity = the share of things that carry the identifier that could connect them. The bar counts distinct entities (complete / some / none identified); the percentage is occurrence-based (identified occurrences ÷ all occurrences). "Quick wins" are known identifiers that could be propagated to the same entity's other occurrences.</p>
     <p>Generated by the Metadata Game Changers Connectivity tool against live DataCite data (api.datacite.org). Report created ${created} © by Metadata Game Changers is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a></p>
   </footer>
 </body></html>`;
+}
+// Compact "Potential duplicates" section for the shareable HTML report (counts + per-pool table).
+function dupReportSection(){
+  const dup = lastRun.duplicates || findDuplicates(lastRun.records, dupThreshold());
+  const confLabel = c => c.confidence === 'conflict' ? '⚠ Shared id · diff names' : c.confidence === 'high' ? 'High · identifier' : 'Review · fuzzy';
+  const pool = (title, clusters) => {
+    const hi = clusters.filter(c => c.confidence === 'high').length;
+    const cf = clusters.filter(c => c.confidence === 'conflict').length;
+    const tags = [hi ? `${hi} identifier-confirmed` : '', cf ? `${cf} shared-id conflict${cf === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · ');
+    const sub = `${clusters.length} ${clusters.length === 1 ? 'cluster' : 'clusters'}${tags ? ` · ${tags}` : ''}`;
+    if (!clusters.length) return `<h3>${escHtml(title)} <span class="dups-sub">${sub}</span></h3><p class="dups-empty">None found at the “${escHtml(dup.threshold)}” match level.</p>`;
+    const rows = clusters.map(c => `<tr><td>${escHtml(c.canonical)}</td><td class="num">${c.variants.length}</td><td>${confLabel(c)}</td><td class="num">${c.totalOcc.toLocaleString()}</td><td class="num">${c.propagatable ? c.propagatable.toLocaleString() : '—'}</td></tr>`).join('');
+    return `<h3>${escHtml(title)} <span class="dups-sub">${sub}</span></h3>
+      <table class="stats"><thead><tr><th>Canonical</th><th class="num">Spellings</th><th>Confidence</th><th class="num">Occurrences</th><th class="num">Can propagate</th></tr></thead><tbody>${rows}</tbody></table>`;
+  };
+  return `<section class="dups">
+    <h2>Potential duplicates <span class="dups-note">advisory — does not affect the bars above</span></h2>
+    ${pool('People (creators + contributors)', dup.people)}
+    ${pool('Affiliations', dup.affiliations)}
+  </section>`;
 }
 function downloadConnReportHtml(){
   if (!lastRun){ setStatus('Run an exploration first, then download the report.', true); return; }
@@ -844,6 +917,259 @@ async function downloadConnPng(){
   }, 'image/png');
 }
 
+/* ---------- potential-duplicate detection (advisory; does NOT change the bars) ----------
+   Two signals, layered by confidence:
+   • identifier-anchored (high): distinct-name entities sharing an ORCID (people) or ROR
+     (affiliations) are the same — unioned regardless of threshold (~0 false positives).
+   • fuzzy (medium/review): remaining entities linked by normalized string similarity above a
+     tunable threshold. All advisory: the connectivity bars/percentages above are untouched. */
+const DUP_THRESHOLDS = { strict:{ jw:0.95, jac:0.80 }, balanced:{ jw:0.90, jac:0.60 }, loose:{ jw:0.85, jac:0.50 } };
+const AFFIL_STOP = new Set(['of','the','and','for','at','in','de','la','le','el','und','von','der','di','da','do','des','du','a','an','on']);
+const DUP_MAX_FUZZY = 4000;   // skip the O(n²)-within-block pass above this many entities (identifier-only)
+
+function stripDiacritics(s){ return String(s).normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+function normName(s){ return stripDiacritics(s).toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim(); }
+function normAffil(s){ return normName(s); }
+// "Last, First" → "First Last"; returns normalized token array (family token ends up last)
+function nameParts(raw){
+  raw = String(raw);
+  const s = raw.includes(',') ? (raw.split(',').slice(1).join(' ') + ' ' + raw.split(',')[0]) : raw;
+  return normName(s).split(' ').filter(Boolean);
+}
+// Matching key vs display: "https://orcid.org/0000-0003-3585-6733", "0000-0003-3585-6733" and
+// "0000000335856733" all share one key (alphanumerics only) but display the readable host-stripped form.
+function idKey(v){ return String(v).toLowerCase().replace(/^https?:\/\/[^/]+\//, '').replace(/[^a-z0-9]/g, ''); }
+function idDisplay(v){ return String(v).replace(/^https?:\/\/[^/]+\//, '').replace(/\/+$/, '').trim(); }
+
+function jaroWinkler(s1, s2){
+  if (s1 === s2) return 1;
+  const l1 = s1.length, l2 = s2.length;
+  if (!l1 || !l2) return 0;
+  const md = Math.max(0, Math.floor(Math.max(l1, l2) / 2) - 1);
+  const m1 = new Array(l1).fill(false), m2 = new Array(l2).fill(false);
+  let m = 0;
+  for (let i = 0; i < l1; i++){
+    const lo = Math.max(0, i - md), hi = Math.min(i + md + 1, l2);
+    for (let j = lo; j < hi; j++){ if (!m2[j] && s1[i] === s2[j]){ m1[i] = m2[j] = true; m++; break; } }
+  }
+  if (!m) return 0;
+  let t = 0, k = 0;
+  for (let i = 0; i < l1; i++){ if (m1[i]){ while (!m2[k]) k++; if (s1[i] !== s2[k]) t++; k++; } }
+  t /= 2;
+  const jaro = (m / l1 + m / l2 + (m - t) / m) / 3;
+  let p = 0; const maxP = Math.min(4, l1, l2);
+  while (p < maxP && s1[p] === s2[p]) p++;
+  return jaro + p * 0.1 * (1 - jaro);
+}
+function jaccard(a, b){
+  if (!a.length || !b.length) return 0;
+  const sb = new Set(b); let inter = 0;
+  for (const x of new Set(a)) if (sb.has(x)) inter++;
+  return inter / new Set([...a, ...b]).size;
+}
+// people: shared surname (equal or high JW) + compatible first given (full / initial / high JW)
+function givenCompat(ga, gb, jw){
+  if (!ga.length || !gb.length) return false;     // surname-only is too ambiguous to fuzzy-link
+  const a = ga[0], b = gb[0];
+  if (a === b) return true;
+  if (a.length === 1 || b.length === 1) return a[0] === b[0];
+  return jaroWinkler(a, b) >= jw;
+}
+function personSimilar(A, B, jw){
+  const sa = A.tokens[A.tokens.length - 1], sb = B.tokens[B.tokens.length - 1];
+  if (!sa || !sb) return false;
+  const surnameOk = sa === sb || (sa.length > 1 && sb.length > 1 && jaroWinkler(sa, sb) >= jw);
+  if (!surnameOk) return false;
+  return givenCompat(A.tokens.slice(0, -1), B.tokens.slice(0, -1), jw);
+}
+function affilSimilar(A, B, jw, jac){
+  return jaccard(A.tokenSet, B.tokenSet) >= jac || jaroWinkler(A.norm, B.norm) >= jw;
+}
+
+function makeUF(n){
+  const p = Array.from({ length: n }, (_, i) => i);
+  const find = i => { while (p[i] !== i){ p[i] = p[p[i]]; i = p[i]; } return i; };
+  return { find, union: (a, b) => { p[find(a)] = find(b); } };
+}
+// Pool people across creators + contributors (distinct by exact name, enriched with identifiers/sources).
+function collectPeople(records){
+  const map = new Map();
+  const add = (name, idvals, source) => {
+    if (!name) return;
+    let e = map.get(name);
+    if (!e){ e = { name, occ:0, id:0, ids:new Map(), sources:new Set() }; map.set(name, e); }
+    e.occ++; if (idvals.length) e.id++;
+    for (const v of idvals) e.ids.set(idKey(v), idDisplay(v));
+    e.sources.add(source);
+  };
+  for (const r of records){
+    for (const [source, key] of [['Creator','creators'], ['Contributor','contributors']]){
+      const arr = (r.attributes && Array.isArray(r.attributes[key])) ? r.attributes[key] : [];
+      for (const p of arr){
+        if (!p || typeof p !== 'object') continue;
+        const name = p.name || [p.givenName, p.familyName].filter(Boolean).join(' ');
+        if (!name) continue;
+        const idvals = (Array.isArray(p.nameIdentifiers) ? p.nameIdentifiers : [])
+          .map(n => n && n.nameIdentifier).filter(Boolean);
+        add(name, idvals, source);
+      }
+    }
+  }
+  return [...map.values()];
+}
+function collectAffiliations(records){
+  const map = new Map();
+  const add = (name, idval, source) => {
+    if (!name) return;
+    let e = map.get(name);
+    if (!e){ e = { name, occ:0, id:0, ids:new Map(), sources:new Set() }; map.set(name, e); }
+    e.occ++; if (idval){ e.id++; e.ids.set(idKey(idval), idDisplay(idval)); }
+    e.sources.add(source);
+  };
+  for (const r of records){
+    for (const [source, key] of [['Creator','creators'], ['Contributor','contributors']]){
+      const arr = (r.attributes && Array.isArray(r.attributes[key])) ? r.attributes[key] : [];
+      for (const p of arr){
+        if (!p || typeof p !== 'object') continue;
+        for (const a of (Array.isArray(p.affiliation) ? p.affiliation : [])){
+          if (a && a.name) add(a.name, a.affiliationIdentifier, source);
+        }
+      }
+    }
+  }
+  return [...map.values()];
+}
+// Are all members of a cluster mutually linkable by name alone? (single component under `sim`)
+function nameCoherent(members, sim){
+  const k = members.length;
+  if (k < 2) return true;
+  const uf = makeUF(k);
+  for (let a = 0; a < k; a++) for (let b = a + 1; b < k; b++) if (sim(members[a], members[b])) uf.union(a, b);
+  const root = uf.find(0);
+  return members.every((_, i) => uf.find(i) === root);
+}
+function clusterEntities(entities, sim){
+  const n = entities.length, uf = makeUF(n);
+  // 1) identifier-anchored unions (always)
+  const byId = new Map();
+  entities.forEach((e, i) => { for (const v of e.ids.keys()){ if (byId.has(v)) uf.union(i, byId.get(v)); else byId.set(v, i); } });
+  // 2) fuzzy unions within blocks (skipped for very large entity counts)
+  if (n <= DUP_MAX_FUZZY){
+    const blocks = new Map();
+    entities.forEach((e, i) => { const k = e.block || '#'; if (!blocks.has(k)) blocks.set(k, []); blocks.get(k).push(i); });
+    for (const idxs of blocks.values()){
+      for (let a = 0; a < idxs.length; a++) for (let b = a + 1; b < idxs.length; b++){
+        const i = idxs[a], j = idxs[b];
+        if (uf.find(i) === uf.find(j)) continue;
+        if (sim(entities[i], entities[j])) uf.union(i, j);
+      }
+    }
+  }
+  // 3) collect clusters of size >= 2
+  const groups = new Map();
+  entities.forEach((e, i) => { const r = uf.find(i); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(e); });
+  const clusters = [];
+  for (const members of groups.values()){
+    if (members.length < 2) continue;
+    members.sort((a, b) => b.occ - a.occ || a.name.localeCompare(b.name));
+    const idCount = new Map();
+    members.forEach(m => { for (const v of m.ids.keys()) idCount.set(v, (idCount.get(v) || 0) + 1); });
+    const shared = [...idCount.values()].some(c => c >= 2);   // same identifier on ≥2 spellings
+    const conflict = shared && !nameCoherent(members, sim);   // one identifier across genuinely different names
+    const totalOcc = members.reduce((s, m) => s + m.occ, 0);
+    const totalId  = members.reduce((s, m) => s + m.id, 0);
+    const canonical = members.reduce((best, m) => (m.occ > best.occ || (m.occ === best.occ && m.name.length > best.name.length)) ? m : best, members[0]);
+    clusters.push({
+      canonical: canonical.name,
+      confidence: conflict ? 'conflict' : (shared ? 'high' : 'medium'),
+      basis: shared ? 'identifier' : 'fuzzy',
+      conflict,
+      totalOcc, totalId,
+      propagatable: totalId > 0 ? totalOcc - totalId : 0,
+      variants: members.map(m => ({ name: m.name, occ: m.occ, id: m.id, sources: [...m.sources], identifier: [...m.ids.values()].join('; ') }))
+    });
+  }
+  clusters.sort((a, b) => b.propagatable - a.propagatable || b.totalOcc - a.totalOcc || b.variants.length - a.variants.length);
+  return clusters;
+}
+function findDuplicates(records, threshold){
+  const t = DUP_THRESHOLDS[threshold] || DUP_THRESHOLDS.balanced;
+  const people = collectPeople(records);
+  people.forEach(e => { e.tokens = nameParts(e.name); e.block = (e.tokens[e.tokens.length - 1] || '').slice(0, 1) || '#'; });
+  const affils = collectAffiliations(records);
+  affils.forEach(e => {
+    e.norm = normAffil(e.name);
+    e.tokenSet = [...new Set(e.norm.split(' ').filter(Boolean))];
+    // block by the alphabetically-first content word (shared across abbreviation variants, e.g.
+    // "University of Colorado" / "Univ. of Colorado" both block on "colorado"), ignoring stopwords
+    const content = e.tokenSet.filter(t => t.length > 1 && !AFFIL_STOP.has(t)).sort();
+    e.block = ((content[0] || e.tokenSet.slice().sort()[0]) || '').slice(0, 3) || '#';
+  });
+  return {
+    threshold,
+    people:       clusterEntities(people, (a, b) => personSimilar(a, b, t.jw)),
+    affiliations: clusterEntities(affils, (a, b) => affilSimilar(a, b, t.jw, t.jac))
+  };
+}
+
+/* ---------- duplicates: render + export ---------- */
+let dupState = null;
+function dupThreshold(){ const el = $('dup-threshold'); return el ? el.value : 'balanced'; }
+function dupBadges(cl){
+  const conf = cl.confidence === 'conflict'
+    ? '<span class="dup-badge warn">⚠ shared identifier · different names</span>'
+    : cl.confidence === 'high'
+      ? '<span class="dup-badge hi">high · identifier match</span>'
+      : '<span class="dup-badge med">review · fuzzy match</span>';
+  const prop = cl.propagatable > 0 ? `<span class="dup-badge prop">${cl.propagatable.toLocaleString()} can propagate</span>` : '';
+  return conf + prop;
+}
+function dupClusterMarkup(cl, entLabel){
+  const rows = cl.variants.map(v =>
+    `<tr><td class="val">${escHtml(v.name)}</td><td class="num">${v.occ.toLocaleString()}</td><td class="num">${v.id.toLocaleString()}</td><td class="val">${escHtml(v.sources.join(', '))}</td><td class="val">${escHtml(v.identifier)}</td></tr>`).join('');
+  return `<details class="dup-cl"><summary><span class="dup-canon">${escHtml(cl.canonical)}</span> <span class="dup-count">${cl.variants.length} spellings · ${cl.totalOcc.toLocaleString()} occ</span> ${dupBadges(cl)}</summary>
+    <table class="cd-table"><thead><tr><th>${escHtml(entLabel)}</th><th class="num">Occ</th><th class="num">Identified</th><th>Source</th><th>Identifier</th></tr></thead><tbody>${rows}</tbody></table></details>`;
+}
+function renderDuplicates(){
+  if (!lastRun) return;
+  const dup = findDuplicates(lastRun.records, dupThreshold());
+  lastRun.duplicates = dup; dupState = dup;
+  const section = (title, clusters, entLabel) => {
+    const hi = clusters.filter(c => c.confidence === 'high').length;
+    const cf = clusters.filter(c => c.confidence === 'conflict').length;
+    const tags = [hi ? `${hi} identifier-confirmed` : '', cf ? `${cf} ⚠ shared-id conflict${cf === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · ');
+    const head = `<div class="conn-group">${escHtml(title)} — ${clusters.length} potential ${clusters.length === 1 ? 'cluster' : 'clusters'}${tags ? ` · ${tags}` : ''}</div>`;
+    return head + (clusters.length ? clusters.map(c => dupClusterMarkup(c, entLabel)).join('') : '<div class="conn-empty">— none found at this match level —</div>');
+  };
+  $('dup-body').innerHTML = section('People (creators + contributors)', dup.people, 'Person')
+                          + section('Affiliations', dup.affiliations, 'Affiliation');
+  $('dup-card').style.display = '';
+}
+function duplicateRows(){
+  const dup = dupState || findDuplicates(lastRun.records, dupThreshold());
+  const rows = [['Pool', 'ClusterID', 'Canonical', 'Confidence', 'Basis', 'Variant', 'Occurrences', 'Identified', 'Sources', 'Identifier']];
+  const addPool = (pool, clusters) => clusters.forEach((c, i) => { const cid = `${pool[0]}${i + 1}`;
+    c.variants.forEach(v => rows.push([pool, cid, c.canonical, c.confidence, c.basis, v.name, v.occ, v.id, v.sources.join('; '), v.identifier])); });
+  addPool('People', dup.people); addPool('Affiliation', dup.affiliations);
+  return rows;
+}
+function buildDuplicatesCsv(){
+  const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  return duplicateRows().map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
+}
+function downloadDuplicatesCsv(){
+  if (!lastRun){ setStatus('Run an exploration first, then download duplicates.', true); return; }
+  triggerDownload(new Blob([buildDuplicatesCsv()], { type:'text/csv' }), `${safeRepoId()}_connectivityDuplicates__${nowStamp()}.csv`);
+}
+async function dupCopy(){
+  if (!lastRun) return;
+  const tsv = duplicateRows().map(r => r.map(c => String(c).replace(/[\t\n\r]/g, ' ')).join('\t')).join('\n');
+  const btn = $('dup-copy');
+  try { await navigator.clipboard.writeText(tsv); btn.textContent = '✓ Copied'; }
+  catch { btn.textContent = 'Copy failed'; }
+  setTimeout(() => { btn.textContent = '⧉ Copy'; }, 1600);
+}
+
 /* ---------- run ---------- */
 let lastRun = null;
 function setLink(id, base, clientId){ const el = $(id); if (el) el.href = base + '?client=' + encodeURIComponent(clientId); }
@@ -868,6 +1194,7 @@ async function run(){
     lastRun = { records, clientId, resourceTypeId, query, repoName: (meta && meta.name) ? meta.name : clientId, results, repoTotal, random: usedRandom };
     $('conn-card').style.display = '';
     renderConnectivity(results);
+    renderDuplicates();
     hideProgress();
     const sampleNote = usedRandom ? `random sample of ${records.length}` : `${records.length} sequential`;
     setStatus(`Done — connectivity over ${sampleNote} record${records.length===1?'':'s'}.`);
@@ -933,6 +1260,9 @@ $('dl-html').addEventListener('click', downloadConnReportHtml);
 $('dl-png').addEventListener('click', downloadConnPng);
 $('dl-summary').addEventListener('click', downloadConnSummary);
 $('dl-metadata').addEventListener('click', downloadConnMetadata);
+$('dup-threshold').addEventListener('change', () => { if (lastRun) renderDuplicates(); });
+$('dup-copy').addEventListener('click', dupCopy);
+$('dup-csv').addEventListener('click', downloadDuplicatesCsv);
 $('cd-close').addEventListener('click', closeConnDetail);
 $('cd-copy').addEventListener('click', connDetailCopy);
 $('cd-download').addEventListener('click', connDetailDownloadCsv);
