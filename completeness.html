@@ -1263,6 +1263,17 @@ function renderSelection(clientId, meta, recordCount, random, repoTotal, resourc
   $('sel-filter').style.display = parts.length ? '' : 'none';
 }
 
+/* ---------- deep-link: keep the repository (and filters) in the URL, shared with index/activity/connectivity ---------- */
+function syncUrl(clientId, resourceTypeId, query){
+  try {
+    const url = new URL(location.href);
+    url.searchParams.set('client', clientId);
+    if (resourceTypeId) url.searchParams.set('resource-type', resourceTypeId); else url.searchParams.delete('resource-type');
+    url.searchParams.delete('resourceType');   // normalize the legacy alias
+    if (query) url.searchParams.set('query', query); else url.searchParams.delete('query');
+    history.replaceState({}, '', url);
+  } catch (e) { /* non-fatal */ }
+}
 async function run(){
   const clientId = $('repo-input').value.trim();
   const cap = Math.max(1, Math.min(10000, parseInt($('cap').value,10) || 200));
@@ -1272,6 +1283,7 @@ async function run(){
   if (!clientId) return;
   $('activity-link').href = 'repo-activity.html?client=' + encodeURIComponent(clientId);   // carry repo to the activity app
   $('connectivity-link').href = 'metadataConnectivity.html?client=' + encodeURIComponent(clientId);
+  syncUrl(clientId, resourceTypeId, query);
   closeAutocomplete();
   $('repo-go').disabled = true;
   startTips();

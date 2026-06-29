@@ -82,6 +82,13 @@
   @keyframes indet{0%{margin-left:-40%}100%{margin-left:100%}}
   #apiurl{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;color:var(--muted);background:#f3f1f8;border-radius:6px;padding:.45rem .6rem;margin:0 0 1rem;word-break:break-all;line-height:1.5}
   #apiurl b{color:var(--ink);font-weight:600}
+  .tips{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;background:#fff;padding:.7rem .9rem;margin:0 0 1rem;max-width:560px}
+  .tips .tips-head{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.35rem}
+  .tips .tips-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-dk);font-weight:600;margin-bottom:.2rem}
+  .tips .tips-text{font-size:.82rem;color:var(--ink);line-height:1.5}
+  .tips .tips-text strong{color:var(--accent-dk)}
+  .tips .tips-link{display:inline-block;margin-top:.4rem;font-size:.68rem;color:var(--accent);text-decoration:none}
+  .tips .tips-link:hover{text-decoration:underline}
 
   /* ── Connectivity card ── */
   .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:1rem}
@@ -235,6 +242,7 @@
   <div id="status">Search for a repository (or enter a client ID) and click Explore.</div>
   <div id="progress"><i></i></div>
   <div id="apiurl" style="display:none"></div>
+  <div id="tips" class="tips" style="display:none"></div>
 
   <div class="card" id="conn-card" style="display:none">
     <div class="conn-head">
@@ -1170,6 +1178,50 @@ async function dupCopy(){
   setTimeout(() => { btn.textContent = '⧉ Copy'; }, 1600);
 }
 
+/* ---------- loading tips (shown while records fetch / connectivity computes) ---------- */
+const CONNECTIVITY_TIPS = [
+  { label:'Connectivity', text:'<strong>Connectivity</strong> measures whether the things in your metadata carry the identifiers that <em>connect</em> them — ORCIDs on people, RORs on organizations.', link:'https://metadatagamechangers.com' },
+  { label:'Distinct entities', text:'The bars count <strong>distinct entities</strong>, not occurrences — a creator who appears in 50 records is one person to identify once.', link:'https://metadatagamechangers.com/blog' },
+  { label:'Quick wins', text:'<strong>Yellow</strong> segments are quick wins: an identifier already known for an entity that just needs to be <em>propagated</em> to its other occurrences — no lookup required.', link:'https://metadatagamechangers.com/blog' },
+  { label:'ORCID', text:'An <strong>ORCID</strong> on a creator or contributor links every one of their outputs across repositories — the single highest-leverage identifier to add.', link:'https://orcid.org' },
+  { label:'ROR', text:'<strong>ROR</strong> identifiers on affiliations disambiguate organizations far better than free-text names like “Univ. of Colorado”.', link:'https://ror.org' },
+  { label:'Duplicates', text:'The same person or org shows up under many spellings. The <strong>potential-duplicates</strong> panel groups likely matches — even across creators and contributors.', link:'https://metadatagamechangers.com/blog' },
+  { label:'Click a bar', text:'<strong>Click any bar</strong> to list its distinct entities, worst connectivity first — the exact people or organizations to add identifiers to.', link:'https://metadatagamechangers.com' },
+  { label:'In your browser', text:'Everything is computed <strong>in your browser</strong> against live DataCite data — nothing is uploaded or stored.', link:'https://metadatagamechangers.com' },
+];
+let tipTimer = null, tipDelay = null, tipIndex = 0;
+function renderTip(){
+  const t = CONNECTIVITY_TIPS[tipIndex];
+  $('tips').innerHTML =
+    '<div class="tips-head">While you wait…</div>' +
+    '<div class="tips-label">' + t.label + '</div>' +
+    '<div class="tips-text">' + t.text + '</div>' +
+    (t.link ? '<a class="tips-link" href="' + t.link + '" target="_blank" rel="noopener">Learn more at Metadata Game Changers ↗</a>' : '');
+}
+function startTips(){
+  stopTips();
+  // small delay so quick runs don't flash a tip
+  tipDelay = setTimeout(() => {
+    tipIndex = Math.floor(Math.random() * CONNECTIVITY_TIPS.length);
+    renderTip();
+    $('tips').style.display = '';
+    tipTimer = setInterval(() => { tipIndex = (tipIndex + 1) % CONNECTIVITY_TIPS.length; renderTip(); }, 4500);
+  }, 1200);
+}
+function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay = tipTimer = null; $('tips').style.display = 'none'; }
+
+/* ---------- deep-link: keep the repository (and filters) in the URL, shared with index/completeness/activity ---------- */
+function syncUrl(clientId, resourceTypeId, query){
+  try {
+    const url = new URL(location.href);
+    url.searchParams.set('client', clientId);
+    if (resourceTypeId) url.searchParams.set('resource-type', resourceTypeId); else url.searchParams.delete('resource-type');
+    url.searchParams.delete('resourceType');   // normalize the legacy alias
+    if (query) url.searchParams.set('query', query); else url.searchParams.delete('query');
+    history.replaceState({}, '', url);
+  } catch (e) { /* non-fatal */ }
+}
+
 /* ---------- run ---------- */
 let lastRun = null;
 function setLink(id, base, clientId){ const el = $(id); if (el) el.href = base + '?client=' + encodeURIComponent(clientId); }
@@ -1182,8 +1234,10 @@ async function run(){
   if (!clientId) return;
   setLink('completeness-link', 'completeness.html', clientId);
   setLink('activity-link', 'repo-activity.html', clientId);
+  syncUrl(clientId, resourceTypeId, query);
   closeAutocomplete();
   $('repo-go').disabled = true;
+  startTips();
   try {
     const { records, repoTotal, random: usedRandom } = await fetchRepo(clientId, cap, random, resourceTypeId, query);
     if (!records.length){ hideProgress(); setStatus('No records returned for that selection.', true); return; }
@@ -1201,6 +1255,7 @@ async function run(){
   } catch (e){
     console.error(e); hideProgress(); setStatus(e.message || String(e), true);
   } finally {
+    stopTips();
     $('repo-go').disabled = false;
   }
 }

@@ -889,12 +889,17 @@ async function openDoiHistory(doiId){
 }
 $('history-close').addEventListener('click', () => { $('history-card').style.display='none'; });
 
+/* ---------- deep-link: keep the repository in the URL, shared with index/completeness/connectivity ---------- */
+function syncUrl(clientId){
+  try { const url = new URL(location.href); url.searchParams.set('client', clientId); history.replaceState({}, '', url); } catch (e) { /* non-fatal */ }
+}
 /* ---------- run ---------- */
 async function run(){
   const clientId = $('repo-input').value.trim().toLowerCase();
   if (!clientId) return;
   $('completeness-link').href = 'completeness.html?client=' + encodeURIComponent(clientId);   // carry repo to the completeness app
   $('connectivity-link').href = 'metadataConnectivity.html?client=' + encodeURIComponent(clientId);
+  syncUrl(clientId);
   closeAutocomplete();
   $('repo-go').disabled = true;
   $('period-card').style.display='none'; $('history-card').style.display='none';
