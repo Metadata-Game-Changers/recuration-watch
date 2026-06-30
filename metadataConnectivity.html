@@ -284,7 +284,7 @@
   </div>
 
   <div class="note">
-    <b>About:</b> This tool measures <b>identifier connectivity</b> for a DataCite repository — distinct from completeness (whether an element is present). For each connector it reports, of the records that contain it, the share where every item is identified, some are, or none are; the per-bar percentage is the overall fraction of items that carry the identifier. Connectors: creators &amp; contributors (name identifiers, affiliations, affiliation identifiers), funders (funder identifiers), and the publisher (publisher identifier). All computation runs in your browser against live DataCite data sent with <code>affiliation=true&amp;publisher=true</code> — nothing is uploaded or stored.
+    <b>About:</b> This tool measures <b>identifier connectivity</b> for a DataCite repository — distinct from completeness (whether an element is present). For each connector it reports, of the records that contain it, the share where every item is identified, some are, or none are; the per-bar percentage is the overall fraction of items that carry the identifier. Connectors: creators &amp; contributors (name identifiers, affiliations, affiliation identifiers), funders (funder identifiers), the publisher (publisher identifier), and rights (rights URIs, rights identifiers). All computation runs in your browser against live DataCite data sent with <code>affiliation=true&amp;publisher=true</code> — nothing is uploaded or stored.
   </div>
 </div>
 
@@ -420,6 +420,8 @@ const CONNECTORS = [
   { group:'Contributors', label:'Affiliation identifiers (ROR, etc.)',   source:'contributors',      kind:'affId',     entity:'Affiliation' },
   { group:'Funders',      label:'Funder identifiers',                    source:'fundingReferences', kind:'funder',    entity:'Funder' },
   { group:'Publisher',    label:'Publisher identifier',                  source:'publisher',         kind:'publisher', entity:'Publisher' },
+  { group:'Rights',       label:'Rights URIs',                           source:'rightsList',        kind:'rightsUri', entity:'Rights statement' },
+  { group:'Rights',       label:'Rights identifiers (SPDX, etc.)',       source:'rightsList',        kind:'rightsId',  entity:'Rights statement' },
 ];
 function computeConnectivity(records){
   return CONNECTORS.map((c, idx) => {
@@ -508,9 +510,24 @@ function publisherDetail(records){
   }
   return map;
 }
+// Group by the distinct rights statement (its name, falling back to the URI/identifier), counting
+// how many occurrences carry a rightsUri or a rightsIdentifier — same shape as the other detail maps.
+function rightsDetail(records, kind){
+  const map = new Map();
+  for (const r of records){
+    for (const x of ((r.attributes && Array.isArray(r.attributes.rightsList)) ? r.attributes.rightsList : [])){
+      if (!x || typeof x !== 'object') continue;
+      const name = x.rights || x.rightsUri || x.rightsIdentifier; if (!name) continue;
+      let e = map.get(name); if (!e){ e = { occ:0, id:0 }; map.set(name, e); }
+      e.occ++; if (kind === 'rightsUri' ? !!x.rightsUri : !!x.rightsIdentifier) e.id++;
+    }
+  }
+  return map;
+}
 function connDetail(records, c){
   if (c.kind === 'funder') return funderDetail(records);
   if (c.kind === 'publisher') return publisherDetail(records);
+  if (c.kind === 'rightsUri' || c.kind === 'rightsId') return rightsDetail(records, c.kind);
   return personDetail(records, c.source, c.kind);
 }
 let connDetailState = null;   // { entries:[{name,occ,id,pct}], c }
