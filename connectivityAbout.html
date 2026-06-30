@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Connectivity — DataCite</title>
+<link rel="icon" type="image/png" href="favicon_MGC.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{ --accent:#9167b0; --accent-dk:#673289; --tint:#f0eaf5; --ink:#1f2330; --muted:#6b7280; --line:#e6e3ec; --bg:#fbfafe; --green:#3a9d6e; --amber:#d4910b; --red:#c0392b; --blue:#0070C0; }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:0}
+  .topbar{border-bottom:2px solid var(--ink);padding:0 2rem}
+  .topbar-inner{max-width:1040px;margin:0 auto;display:flex;align-items:stretch;gap:0}
+  .topbar-brand{padding:.5rem 2rem .3rem 0;display:flex;flex-direction:row;align-items:flex-end;gap:1rem}
+  .brand-logo{height:64px;width:auto;display:block;flex-shrink:0}
+  .brand-title-wrap{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:.15rem}
+  .brand-tool-name{font-family:'Montserrat',sans-serif;font-size:2rem;font-weight:400;letter-spacing:.02em;color:#673289;line-height:1;white-space:nowrap;text-transform:uppercase}
+  .topbar-links{padding:0 0 0 1.5rem;display:flex;flex-direction:column;justify-content:center;gap:.25rem;margin-left:auto}
+  .topbar-links a{font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4}
+  .topbar-links a:hover{color:var(--accent-dk)}
+  @media(max-width:820px){.topbar{padding:0 1rem}.topbar-inner{flex-direction:column}.topbar-brand{padding-right:0}.brand-tool-name{font-size:1.5rem}.topbar-links{flex-direction:row;flex-wrap:wrap;gap:.75rem;padding:.25rem 0 .5rem}}
+  .wrap{max-width:1080px;margin:0 auto;padding:1.5rem 1.25rem 3rem}
+  .about-intro{font-size:.85rem;color:var(--ink);line-height:1.6;max-width:760px;margin:.6rem 0 1rem}
+  .about-intro h2{font-size:1.25rem;color:var(--accent-dk);margin:.4rem 0}
+  .about-intro p{margin:.6rem 0}
+  .about-intro a{color:var(--accent);text-decoration:none}
+  .about-intro a:hover{text-decoration:underline}
+  .about-intro ul{margin:.4rem 0 .6rem 1.1rem;padding:0}
+  .about-intro li{margin:.2rem 0}
+  .about-h3{font-size:1.1rem;color:var(--accent-dk);margin:1.8rem 0 .25rem}
+  .about-sub{font-size:.78rem;color:var(--muted);margin:0 0 1rem;max-width:760px;line-height:1.55}
+  .about-group{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:1.6rem 0 .5rem;border-bottom:1px solid var(--line);padding-bottom:.3rem}
+  .fig-card{border:1px solid var(--line);border-radius:12px;background:#fff;padding:1rem 1.1rem .8rem;margin:1rem 0 1.4rem;max-width:920px}
+  .fig-card svg{width:100%;height:auto;display:block}
+  .fig-cap{font-size:.76rem;color:var(--muted);line-height:1.5;margin:.5rem .2rem 0}
+  .fig-cap b{color:var(--accent-dk)}
+  table.path-table{border-collapse:collapse;width:100%;font-size:.8rem;margin-bottom:.5rem;max-width:920px}
+  table.path-table th,table.path-table td{text-align:left;padding:.32rem .55rem;border-bottom:1px solid #f0eef5;vertical-align:top}
+  table.path-table th{font-size:.66rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:600}
+  table.path-table td.concept{white-space:nowrap;font-weight:500}
+  table.path-table td.idn{white-space:nowrap;color:var(--accent-dk)}
+  table.path-table td.path{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.74rem;color:#4b4f5e;word-break:break-word}
+  footer{margin-top:2.5rem;font-size:.72rem;color:var(--muted);border-top:1px solid var(--line);padding-top:.9rem;line-height:1.5}
+  footer a{color:var(--accent);text-decoration:none}
+  @media print{.topbar-links{display:none} table.path-table{break-inside:auto} tr{break-inside:avoid} .fig-card{break-inside:avoid}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" onerror="this.style.display='none'" />
+      </a>
+      <div class="brand-title-wrap"><div class="brand-tool-name">Connectivity</div></div>
+    </div>
+    <div class="topbar-links">
+      <a href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity ↗</a>
+      <a href="completeness.html" target="_blank" rel="noopener">Metadata Completeness ↗</a>
+      <a href="repo-activity.html" target="_blank" rel="noopener">Repository Activity ↗</a>
+      <a href="useCases.html" target="_blank" rel="noopener">Use Cases ↗</a>
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers ↗</a>
+    </div>
+  </div>
+</div>
+
+<!-- shared figure glyphs -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1f2330"/></marker>
+  <g id="person" fill="#ffffff"><circle cx="28" cy="18" r="11"/><path d="M6,56 C6,34 16,30 28,30 C40,30 50,34 50,56 Z"/></g>
+  <g id="bldg" fill="#6b7280"><polygon points="6,20 33,6 60,20"/><rect x="9" y="20" width="48" height="5"/><rect x="12" y="27" width="6" height="24"/><rect x="24" y="27" width="6" height="24"/><rect x="36" y="27" width="6" height="24"/><rect x="48" y="27" width="6" height="24"/><rect x="8" y="52" width="50" height="5"/></g>
+  <g id="doc"><path d="M2,2 H38 L54,18 V70 H2 Z" fill="#ffffff" stroke="#1f2330" stroke-width="2"/><path d="M38,2 V18 H54" fill="none" stroke="#1f2330" stroke-width="2"/><g stroke="#aab0ba" stroke-width="2"><line x1="11" y1="29" x2="45" y2="29"/><line x1="11" y1="37" x2="45" y2="37"/><line x1="11" y1="45" x2="45" y2="45"/><line x1="11" y1="53" x2="36" y2="53"/></g></g>
+  <g id="boxE"><rect x="0" y="0" width="18" height="18" rx="2.5" fill="#fff" stroke="#1f2330" stroke-width="1.6"/></g>
+  <g id="boxC"><rect x="0" y="0" width="18" height="18" rx="2.5" fill="#fff" stroke="#1f2330" stroke-width="1.6"/><path d="M3.5,9.5 L7.5,13.5 L15,4.3" fill="none" stroke="#3a9d6e" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></g>
+</defs></svg>
+
+<div class="wrap">
+  <div class="about-intro">
+    <h2>What is connectivity?</h2>
+    <p><b>Connectivity</b> is the state or extent of being connected — for a research object, whether the
+      people, organizations, funders, and other things it names carry the <b>identifiers</b> that link them to
+      everything else. It is distinct from <a href="completeness.html" target="_blank" rel="noopener">completeness</a>:
+      completeness asks <em>do we have the value?</em> (is there a creator, an affiliation, a publisher);
+      connectivity asks <em>is that thing identified, so it can be found and linked?</em> A creator name is
+      <em>complete</em>; a creator name <em>with an ORCID</em> is <em>connected</em>.</p>
+    <p>Identifiers are the lifeblood of these connections. An <a href="https://orcid.org" target="_blank" rel="noopener">ORCID</a>
+      on a person, a <a href="https://ror.org" target="_blank" rel="noopener">ROR</a> (or GRID/ISNI) on an
+      organization, a DOI on a funder or a related work — each one turns a piece of free text into a node in the
+      research graph. High connectivity changes how things are found: instead of searching inside one repository's
+      portal, you arrive by traversing the graph — <em>finding interesting things because they are connected to
+      things you already care about</em>. As Ted Habermann put it, <em>items with high connectivity get
+      discovered</em>.</p>
+    <p>This page explains the idea behind the
+      <a href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity tool</a>. The two
+      figures below are from <a href="https://metadatagamechangers.com/blog/2021/1/27/connectivity" target="_blank" rel="noopener">Connectivity</a>
+      (Ted Habermann, Metadata Game Changers, 2021).</p>
+  </div>
+
+  <h3 class="about-h3">Measuring connectivity</h3>
+  <p class="about-sub">Connectivity is a simple ratio — the share of things that carry the identifier that could
+    connect them — reported on a 0&ndash;1 scale: <b>0% Missing</b>, <b>50% Partial</b>, <b>100% Complete</b>.
+    For people the things are authors and the identifier is an ORCID; for organizations the things are
+    affiliations and the identifier is a ROR.</p>
+
+  <div class="fig-card">
+    <svg viewBox="0 0 1040 330" role="img" aria-label="Person connectivity = number of identifiers divided by number of people; Case 1 neither author has an ORCID = 0% Missing; Case 2 one author has an ORCID = 50% Partial; Case 3 both authors have ORCIDs = 100% Complete.">
+      <!-- left: a research object with two authors -->
+      <text x="20" y="30" font-size="18" font-weight="600" fill="#1f2330">A research object has <tspan text-decoration="underline" font-weight="700">two authors</tspan></text>
+      <use href="#doc" x="36" y="150"/>
+      <text x="63" y="248" text-anchor="middle" font-size="13" fill="#6b7280">DOI</text>
+      <line x1="96" y1="178" x2="158" y2="162" stroke="#1f2330" stroke-width="2" marker-end="url(#arw)"/>
+      <line x1="96" y1="192" x2="158" y2="270" stroke="#1f2330" stroke-width="2" marker-end="url(#arw)"/>
+      <rect x="160" y="120" width="84" height="84" rx="9" fill="#9167b0"/><use href="#person" x="174" y="132"/>
+      <rect x="160" y="228" width="84" height="84" rx="9" fill="#9167b0"/><use href="#person" x="174" y="240"/>
+      <text x="202" y="326" text-anchor="middle" font-size="13" fill="#6b7280">ORCID</text>
+
+      <!-- formula -->
+      <text x="560" y="34" text-anchor="end" font-size="15" font-weight="700" fill="#673289">Person</text>
+      <text x="560" y="52" text-anchor="end" font-size="15" font-weight="700" fill="#673289">Connectivity</text>
+      <text x="576" y="47" font-size="16" fill="#1f2330">=</text>
+      <text x="820" y="36" text-anchor="middle" font-size="12.5" fill="#0070C0">Number of Identifiers</text>
+      <line x1="700" y1="43" x2="940" y2="43" stroke="#0070C0" stroke-width="1.2"/>
+      <text x="820" y="58" text-anchor="middle" font-size="12.5" fill="#0070C0">Number of People</text>
+
+      <!-- dashed dividers -->
+      <line x1="685" y1="78" x2="685" y2="318" stroke="#b8b2c6" stroke-width="1.4" stroke-dasharray="4 5"/>
+      <line x1="855" y1="78" x2="855" y2="318" stroke="#b8b2c6" stroke-width="1.4" stroke-dasharray="4 5"/>
+
+      <!-- Case 1 (cx 600) -->
+      <text x="600" y="96" text-anchor="middle" font-size="14" font-style="italic" font-weight="700" fill="#1f2330">Case 1</text>
+      <text x="546" y="152" font-size="12.5" fill="#1f2330">Identifier:</text><use href="#boxE" x="616" y="139"/>
+      <text x="546" y="232" font-size="12.5" fill="#1f2330">Identifier:</text><use href="#boxE" x="616" y="219"/>
+      <text x="600" y="286" text-anchor="middle" font-size="16" font-weight="700" fill="#1f2330">C = 0%</text>
+      <text x="600" y="310" text-anchor="middle" font-size="12.5" font-style="italic" fill="#6b7280">&ldquo;Missing&rdquo;</text>
+
+      <!-- Case 2 (cx 770) -->
+      <text x="770" y="96" text-anchor="middle" font-size="14" font-style="italic" font-weight="700" fill="#1f2330">Case 2</text>
+      <text x="820" y="96" font-size="14" fill="#3a9d6e">&#10003;</text>
+      <text x="716" y="152" font-size="12.5" fill="#1f2330">Identifier:</text><use href="#boxC" x="786" y="139"/>
+      <text x="716" y="232" font-size="12.5" fill="#1f2330">Identifier:</text><use href="#boxE" x="786" y="219"/>
+      <text x="770" y="286" text-anchor="middle" font-size="16" font-weight="700" fill="#1f2330">C = 50%</text>
+      <text x="770" y="310" text-anchor="middle" font-size="12.5" font-style="italic" fill="#6b7280">&ldquo;Partial&rdquo;</text>
+
+      <!-- Case 3 (cx 940) -->
+      <text x="940" y="96" text-anchor="middle" font-size="14" font-style="italic" font-weight="700" fill="#1f2330">Case 3</text>
+      <text x="990" y="96" font-size="14" fill="#3a9d6e">&#10003;</text>
+      <text x="886" y="152" font-size="12.5" fill="#1f2330">Identifier:</text><use href="#boxC" x="956" y="139"/>
+      <text x="886" y="232" font-size="12.5" fill="#1f2330">Identifier:</text><use href="#boxC" x="956" y="219"/>
+      <text x="940" y="286" text-anchor="middle" font-size="16" font-weight="700" fill="#1f2330">C = 100%</text>
+      <text x="940" y="310" text-anchor="middle" font-size="12.5" font-style="italic" fill="#6b7280">&ldquo;Complete&rdquo;</text>
+    </svg>
+    <div class="fig-cap"><b>Person connectivity</b> = number of ORCID identifiers &divide; number of people. With
+      two authors, connectivity is 0% when neither has an ORCID, 50% when one does, and 100% when both do.</div>
+  </div>
+
+  <div class="fig-card">
+    <svg viewBox="0 0 1040 330" role="img" aria-label="Organization connectivity = number of identifiers divided by number of organizations; Case 1 neither organization has a ROR = 0% Missing; Case 2 one does = 50% Partial; Case 3 both do = 100% Complete.">
+      <!-- left: two authors who work at two organizations -->
+      <text x="20" y="26" font-size="17" font-weight="600" fill="#1f2330">A research object has two authors who</text>
+      <text x="20" y="48" font-size="17" font-weight="600" fill="#1f2330">work at <tspan text-decoration="underline" font-weight="700">two organizations</tspan></text>
+      <use href="#doc" x="22" y="158"/>
+      <text x="49" y="252" text-anchor="middle" font-size="12.5" fill="#6b7280">DOI</text>
+      <line x1="82" y1="186" x2="132" y2="168" stroke="#1f2330" stroke-width="2" marker-end="url(#arw)"/>
+      <line x1="82" y1="198" x2="132" y2="272" stroke="#1f2330" stroke-width="2" marker-end="url(#arw)"/>
+      <rect x="134" y="128" width="80" height="80" rx="9" fill="#9167b0"/><use href="#person" x="146" y="142"/>
+      <rect x="134" y="232" width="80" height="80" rx="9" fill="#9167b0"/><use href="#person" x="146" y="246"/>
+      <text x="174" y="100" text-anchor="middle" font-size="12.5" fill="#6b7280">ORCID</text>
+      <line x1="216" y1="168" x2="252" y2="168" stroke="#1f2330" stroke-width="2" marker-end="url(#arw)"/>
+      <line x1="216" y1="272" x2="252" y2="272" stroke="#1f2330" stroke-width="2" marker-end="url(#arw)"/>
+      <rect x="254" y="128" width="80" height="80" rx="9" fill="#e6e3ec"/><use href="#bldg" x="264" y="142"/>
+      <rect x="254" y="232" width="80" height="80" rx="9" fill="#e6e3ec"/><use href="#bldg" x="264" y="246"/>
+      <text x="294" y="100" text-anchor="middle" font-size="12.5" fill="#6b7280">ROR / GRID</text>
+
+      <!-- formula -->
+      <text x="566" y="34" text-anchor="end" font-size="15" font-weight="700" fill="#673289">Organization</text>
+      <text x="566" y="52" text-anchor="end" font-size="15" font-weight="700" fill="#673289">Connectivity</text>
+      <text x="582" y="47" font-size="16" fill="#1f2330">=</text>
+      <text x="828" y="36" text-anchor="middle" font-size="12.5" fill="#0070C0">Number of Identifiers</text>
+      <line x1="700" y1="43" x2="956" y2="43" stroke="#0070C0" stroke-width="1.2"/>
+      <text x="828" y="58" text-anchor="middle" font-size="12.5" fill="#0070C0">Number of Organizations</text>
+
+      <!-- dashed dividers -->
+      <line x1="685" y1="78" x2="685" y2="318" stroke="#b8b2c6" stroke-width="1.4" stroke-dasharray="4 5"/>
+      <line x1="855" y1="78" x2="855" y2="318" stroke="#b8b2c6" stroke-width="1.4" stroke-dasharray="4 5"/>
+
+      <!-- Case 1 -->
+      <text x="600" y="96" text-anchor="middle" font-size="14" font-style="italic" font-weight="700" fill="#1f2330">Case 1</text>
+      <text x="546" y="152" font-size="12.5" fill="#1f2330">Identifier:</text><use href="#boxE" x="616" y="139"/>
+      <text x="546" y="232" font-size="12.5" fill="#1f2330">Identifier:</text><use href="#boxE" x="616" y="219"/>
+      <text x="600" y="286" text-anchor="middle" font-size="16" font-weight="700" fill="#1f2330">C = 0%</text>
+      <text x="600" y="310" text-anchor="middle" font-size="12.5" font-style="italic" fill="#6b7280">&ldquo;Missing&rdquo;</text>
+
+      <!-- Case 2 -->
+      <text x="770" y="96" text-anchor="middle" font-size="14" font-style="italic" font-weight="700" fill="#1f2330">Case 2</text>
+      <text x="820" y="96" font-size="14" fill="#3a9d6e">&#10003;</text>
+      <text x="716" y="152" font-size="12.5" fill="#1f2330">Identifier:</text><use href="#boxC" x="786" y="139"/>
+      <text x="716" y="232" font-size="12.5" fill="#1f2330">Identifier:</text><use href="#boxE" x="786" y="219"/>
+      <text x="770" y="286" text-anchor="middle" font-size="16" font-weight="700" fill="#1f2330">C = 50%</text>
+      <text x="770" y="310" text-anchor="middle" font-size="12.5" font-style="italic" fill="#6b7280">&ldquo;Partial&rdquo;</text>
+
+      <!-- Case 3 -->
+      <text x="940" y="96" text-anchor="middle" font-size="14" font-style="italic" font-weight="700" fill="#1f2330">Case 3</text>
+      <text x="990" y="96" font-size="14" fill="#3a9d6e">&#10003;</text>
+      <text x="886" y="152" font-size="12.5" fill="#1f2330">Identifier:</text><use href="#boxC" x="956" y="139"/>
+      <text x="886" y="232" font-size="12.5" fill="#1f2330">Identifier:</text><use href="#boxC" x="956" y="219"/>
+      <text x="940" y="286" text-anchor="middle" font-size="16" font-weight="700" fill="#1f2330">C = 100%</text>
+      <text x="940" y="310" text-anchor="middle" font-size="12.5" font-style="italic" fill="#6b7280">&ldquo;Complete&rdquo;</text>
+    </svg>
+    <div class="fig-cap"><b>Organization connectivity</b> = number of ROR (or GRID/ISNI) identifiers &divide; number
+      of organizations. The same 0 / 50 / 100% pattern applies to the affiliations of the authors.</div>
+  </div>
+
+  <h3 class="about-h3">How this tool measures it</h3>
+  <p class="about-sub">The <a href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity tool</a>
+    applies this idea across a whole repository. For each connector it reports two things. The <b>percentage</b> is
+    occurrence-based — identified occurrences &divide; all occurrences — the repository-wide version of the ratio
+    above. The <b>bar</b> counts <b>distinct entities</b> (a person or organization that appears in many records is
+    one entity): <span style="color:var(--green);font-weight:600">green</span> = identified in every occurrence
+    (Complete), <span style="color:var(--amber);font-weight:600">yellow</span> = identified in some (Partial), and
+    <span style="color:var(--red);font-weight:600">red</span> = never identified (Missing). The yellow segment marks
+    the <b>quick wins</b>: an identifier already known for an entity that just needs to be propagated to its other
+    occurrences &mdash; no lookup required.</p>
+
+  <div class="about-group">Connectors and their identifiers</div>
+  <table class="path-table">
+    <thead><tr><th>Connector</th><th>Identifier</th><th>DataCite path (after data[*].attributes)</th></tr></thead>
+    <tbody>
+      <tr><td class="concept">Creators &mdash; name identifier</td><td class="idn">ORCID</td><td class="path">creators[*].nameIdentifiers[*].nameIdentifier</td></tr>
+      <tr><td class="concept">Creators &mdash; affiliation</td><td class="idn">name present</td><td class="path">creators[*].affiliation[*].name</td></tr>
+      <tr><td class="concept">Creators &mdash; affiliation identifier</td><td class="idn">ROR</td><td class="path">creators[*].affiliation[*].affiliationIdentifier</td></tr>
+      <tr><td class="concept">Contributors &mdash; name identifier</td><td class="idn">ORCID</td><td class="path">contributors[*].nameIdentifiers[*].nameIdentifier</td></tr>
+      <tr><td class="concept">Contributors &mdash; affiliation</td><td class="idn">name present</td><td class="path">contributors[*].affiliation[*].name</td></tr>
+      <tr><td class="concept">Contributors &mdash; affiliation identifier</td><td class="idn">ROR</td><td class="path">contributors[*].affiliation[*].affiliationIdentifier</td></tr>
+      <tr><td class="concept">Funders &mdash; funder identifier</td><td class="idn">Crossref Funder ID / ROR</td><td class="path">fundingReferences[*].funderIdentifier</td></tr>
+      <tr><td class="concept">Publisher &mdash; publisher identifier</td><td class="idn">ROR</td><td class="path">publisher.publisherIdentifier</td></tr>
+      <tr><td class="concept">Rights &mdash; rights URI</td><td class="idn">license URI</td><td class="path">rightsList[*].rightsUri</td></tr>
+      <tr><td class="concept">Rights &mdash; rights identifier</td><td class="idn">SPDX</td><td class="path">rightsList[*].rightsIdentifier</td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="about-h3">Why it matters</h3>
+  <p class="about-sub">Connectivity makes improvement visible. As identifiers proliferate in metadata over time, a
+    repository&rsquo;s distribution shifts from red toward green &mdash; and each added ORCID or ROR is a new edge in
+    the research graph, making the work it describes easier to find, cite, and credit. The connectivity bars turn
+    that into a punch list: the red and yellow entities are exactly where adding an identifier pays off.</p>
+
+  <div class="about-group">Background</div>
+  <ul class="about-intro" style="margin-top:.2rem">
+    <li><a href="https://metadatagamechangers.com/blog/2021/1/27/connectivity" target="_blank" rel="noopener">Connectivity</a> &mdash; Ted Habermann, Metadata Game Changers (2021)</li>
+    <li><a href="https://orcid.org" target="_blank" rel="noopener">ORCID</a> &mdash; persistent identifiers for people</li>
+    <li><a href="https://ror.org" target="_blank" rel="noopener">ROR</a> (Research Organization Registry) &mdash; persistent identifiers for organizations</li>
+    <li><a href="https://doi.org/10.5438/2chg-b074" target="_blank" rel="noopener">MetaDIG recommendations for FAIR DataCite metadata</a></li>
+    <li><a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers</a></li>
+  </ul>
+
+  <footer>
+    Connectivity &copy; Metadata Game Changers, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="noopener">CC BY-NC-SA 4.0</a>.
+    Figures adapted from <a href="https://metadatagamechangers.com/blog/2021/1/27/connectivity" target="_blank" rel="noopener">Connectivity</a> (Ted Habermann, 2021).
+  </footer>
+</div>
+</body>
+</html>
