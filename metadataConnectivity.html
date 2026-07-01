@@ -1450,7 +1450,7 @@ function openDocsModal(name, docs, subContext, cap){
   const shown = capped ? allDocs.slice(0, cap) : allDocs;
   dupDocsState = { name, docs: allDocs };   // Copy always exports the full list
   const rowHtml = d => `<tr><td class="val"><a href="https://doi.org/${escAttr(d.doi)}" target="_blank" rel="noopener">${escHtml(d.title)}</a></td>`
-      + `<td class="val"><a href="https://api.datacite.org/dois/${escAttr(d.doi)}" target="_blank" rel="noopener" title="Open the DOI metadata (JSON) at the DataCite API">${escHtml(d.doi)}</a></td></tr>`;
+      + `<td class="val"><a href="https://api.datacite.org/dois/${escAttr(d.doi)}?affiliation=true&amp;publisher=true" target="_blank" rel="noopener" title="Open the DOI metadata (JSON) at the DataCite API, with affiliation and publisher identifiers included">${escHtml(d.doi)}</a></td></tr>`;
   $('dd-title').textContent = name;
   $('dd-sub').textContent = `${allDocs.length.toLocaleString()} DOI${allDocs.length === 1 ? '' : 's'}${subContext ? ' · ' + subContext : ''}`
     + (capped ? ` · showing the first ${cap} — ⧉ Copy for all` : '')
