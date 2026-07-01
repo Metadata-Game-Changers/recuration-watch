@@ -152,6 +152,8 @@
   a.dup-doc-link{color:var(--accent-dk);cursor:pointer;border-bottom:1px dotted var(--accent);font-variant-numeric:tabular-nums}
   a.dup-doc-link:hover{color:var(--accent);border-bottom-style:solid}
   td.pc-red{color:var(--red);font-weight:600} td.pc-amber{color:var(--amber);font-weight:600} td.pc-green{color:var(--green)}
+  table.cd-table tr.qw-row td{background:#e9f6ee}
+  .qw-tag{display:inline-block;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#2f7d57;background:#d3efe0;border-radius:4px;padding:.05rem .35rem;margin-left:.4rem;vertical-align:middle}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" defer></script>
 </head>
@@ -263,7 +265,7 @@
         <button class="dl-btn" id="dl-metadata" type="button">⬇ Metadata (JSON)</button>
       </div>
     </div>
-    <p class="conn-intro">Connectivity is the share of things that carry the identifier that could connect them — e.g. of the creators in a repository, how many have a name identifier (ORCID). The <b>%</b> is occurrence-based (identified occurrences ÷ all occurrences). The bar counts <b>distinct</b> entities (a person or affiliation that appears in many records is one entity): green = identified in <b>every</b> occurrence, yellow = identified in <b>some</b> (these are the quick wins — a known identifier to propagate), red = <b>never</b> identified. <b>Click any bar</b> to list them, worst connectivity first — the ones to add identifiers to.</p>
+    <p class="conn-intro">Connectivity is the share of things that carry the identifier that could connect them — e.g. of the creators in a repository, how many have a name identifier (ORCID). The <b>%</b> is occurrence-based (identified occurrences ÷ all occurrences). The bar counts <b>distinct</b> entities (a person or affiliation that appears in many records is one entity): green = identified in <b>every</b> occurrence, yellow = identified in <b>some</b> (these are the quick wins — a known identifier to propagate), red = <b>never</b> identified. <b>Click any bar</b> to list them — <b>quick wins first</b> (a known identifier to propagate, shaded green), then the ones still missing an identifier.</p>
     <div class="conn-legend">
       <span><i style="background:var(--green)"></i>Complete — identified in every occurrence</span>
       <span><i style="background:var(--amber)"></i>Some — identified in some occurrences</span>
@@ -560,21 +562,25 @@ function openConnDetail(idx){
   if (!lastRun) return;
   const c = CONNECTORS[idx];
   const map = (lastRun.results && lastRun.results[idx] && lastRun.results[idx].detail) || connDetail(lastRun.records, c);
+  const isQw = e => e.id > 0 && e.id < e.occ;               // a known identifier that can be propagated
+  const rank = e => (isQw(e) ? 0 : (e.id === 0 ? 1 : 2));   // quick wins first, then missing, then complete
   const entries = [...map.entries()]
     .map(([name, e]) => ({ name, occ: e.occ, id: e.id, pct: e.occ ? e.id / e.occ : 0 }))
-    .sort((a, b) => a.pct - b.pct || b.occ - a.occ || a.name.localeCompare(b.name));   // worst connectivity first
+    .sort((a, b) => rank(a) - rank(b)
+      || (isQw(a) ? (b.occ - b.id) - (a.occ - a.id) : 0)    // within quick wins, biggest propagatable gap first
+      || b.occ - a.occ || a.name.localeCompare(b.name));
   connDetailState = { entries, c };
   const missing = entries.filter(e => e.id === 0).length;
-  const partial = entries.filter(e => e.id > 0 && e.id < e.occ).length;
+  const partial = entries.filter(e => isQw(e)).length;
   const complete = entries.filter(e => e.id >= e.occ).length;
   const ent = c.entity.toLowerCase();
   $('cd-title').textContent = `${c.group} · ${c.label.split(' (')[0]}`;
-  $('cd-sub').textContent = `${entries.length.toLocaleString()} distinct ${ent}${entries.length===1?'':'s'} · ${missing} missing · ${partial} partial · ${complete} complete`;
+  $('cd-sub').textContent = `${entries.length.toLocaleString()} distinct ${ent}${entries.length===1?'':'s'} · ${partial.toLocaleString()} quick win${partial===1?'':'s'} (green, shown first) · ${missing.toLocaleString()} missing · ${complete.toLocaleString()} complete`;
   const cls = e => e.id === 0 ? 'pc-red' : (e.id >= e.occ ? 'pc-green' : 'pc-amber');
   $('cd-body').innerHTML = entries.length === 0
     ? '<div style="padding:1rem;color:#6b7280;font-size:.8rem">No items found in the analyzed sample.</div>'
     : `<table class="cd-table"><thead><tr><th>${escHtml(c.entity)}</th><th class="num">Occurrences</th><th class="num">Identified</th><th class="num">%</th></tr></thead><tbody>`
-      + entries.map(e => `<tr><td class="val">${escHtml(e.name)}</td><td class="num">${e.occ.toLocaleString()}</td><td class="num">${e.id.toLocaleString()}</td><td class="num ${cls(e)}">${(e.pct*100).toFixed(0)}%</td></tr>`).join('')
+      + entries.map(e => `<tr class="${isQw(e) ? 'qw-row' : ''}"><td class="val">${escHtml(e.name)}${isQw(e) ? ' <span class="qw-tag">quick win</span>' : ''}</td><td class="num">${e.occ.toLocaleString()}</td><td class="num">${e.id.toLocaleString()}</td><td class="num ${cls(e)}">${(e.pct*100).toFixed(0)}%</td></tr>`).join('')
       + '</tbody></table>';
   $('cd-modal').style.display = 'flex';
 }
@@ -1474,7 +1480,7 @@ const CONNECTIVITY_TIPS = [
   { label:'ORCID', text:'An <strong>ORCID</strong> on a creator or contributor links every one of their outputs across repositories — the single highest-leverage identifier to add.', link:'https://orcid.org' },
   { label:'ROR', text:'<strong>ROR</strong> identifiers on affiliations disambiguate organizations far better than free-text names like “Univ. of Colorado”.', link:'https://ror.org' },
   { label:'Duplicates', text:'The same person or org shows up under many spellings. The <strong>potential-duplicates</strong> panel groups likely matches — even across creators and contributors.', link:'https://metadatagamechangers.com/blog' },
-  { label:'Click a bar', text:'<strong>Click any bar</strong> to list its distinct entities, worst connectivity first — the exact people or organizations to add identifiers to.', link:'https://metadatagamechangers.com' },
+  { label:'Click a bar', text:'<strong>Click any bar</strong> to list its distinct entities — quick wins first (a known identifier to propagate), then the ones still missing an identifier.', link:'https://metadatagamechangers.com' },
   { label:'In your browser', text:'Everything is computed <strong>in your browser</strong> against live DataCite data — nothing is uploaded or stored.', link:'https://metadatagamechangers.com' },
 ];
 let tipTimer = null, tipDelay = null, tipIndex = 0;
