@@ -1419,13 +1419,13 @@ function openDupDocs(pool, ci, vi){
   dupDocsState = { name: v.name, docs: allDocs };   // Copy always exports the full list
   const poolLabel = { people:'people', affiliations:'affiliations', rights:'rights statements' }[pool] || pool;
   const rowHtml = d => `<tr><td class="val"><a href="https://doi.org/${escAttr(d.doi)}" target="_blank" rel="noopener">${escHtml(d.title)}</a></td>`
-      + `<td class="val"><a href="https://commons.datacite.org/doi.org/${escAttr(d.doi)}" target="_blank" rel="noopener" title="Open in DataCite Commons">${escHtml(d.doi)}</a></td></tr>`;
+      + `<td class="val"><a href="https://api.datacite.org/dois/${escAttr(d.doi)}" target="_blank" rel="noopener" title="Open the DOI metadata (JSON) at the DataCite API">${escHtml(d.doi)}</a></td></tr>`;
   $('dd-title').textContent = v.name;
   $('dd-sub').textContent = `${allDocs.length.toLocaleString()} DOI${allDocs.length === 1 ? '' : 's'} · ${poolLabel}`
     + (capped ? ` · showing the first ${DUP_DOC_CAP} (most common spelling) — ⧉ Copy for all` : '')
-    + ' · click a DOI to open its DataCite Commons page';
+    + ' · click a DOI for its metadata (JSON)';
   $('dd-body').innerHTML = allDocs.length
-    ? '<table class="cd-table"><thead><tr><th>Title</th><th>DOI</th></tr></thead><tbody>'
+    ? '<table class="cd-table"><thead><tr><th>Title</th><th>DOI Metadata (JSON)</th></tr></thead><tbody>'
       + shown.map(rowHtml).join('')
       + (capped ? `<tr><td colspan="2" style="color:#6b7280;font-style:italic;padding-top:.5rem">…and ${(allDocs.length - DUP_DOC_CAP).toLocaleString()} more — use ⧉ Copy to get the full list</td></tr>` : '')
       + '</tbody></table>'
