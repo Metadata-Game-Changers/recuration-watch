@@ -588,10 +588,19 @@ function openConnDetail(idx){
   $('cd-sub').textContent = `${entries.length.toLocaleString()} distinct ${ent}${entries.length===1?'':'s'} · ${partial.toLocaleString()} quick win${partial===1?'':'s'} (shown first) · ${missing.toLocaleString()} missing · ${complete.toLocaleString()} complete`;
   const cls = e => e.id === 0 ? 'pc-red' : (e.id >= e.occ ? 'pc-green' : 'pc-amber');
   const rowCls = e => isQw(e) ? 'row-qw' : (e.id === 0 ? 'row-missing' : 'row-complete');   // color-code rows to match the bars
+  // Name-identifier rows link the name to an ORCID search; affiliation-identifier rows link to a ROR search.
+  const searchLink = c.kind === 'nameId'
+    ? { url: n => `https://orcid.org/orcid-search/search?searchQuery=${encodeURIComponent(n)}`, title: 'Search ORCID for this name' }
+    : c.kind === 'affId'
+    ? { url: n => `https://ror.org/search?query=${encodeURIComponent(n)}`, title: 'Search ROR for this affiliation' }
+    : null;
+  const nameCell = n => searchLink
+    ? `<a href="${escAttr(searchLink.url(n))}" target="_blank" rel="noopener" title="${searchLink.title}">${escHtml(n)}</a>`
+    : escHtml(n);
   $('cd-body').innerHTML = entries.length === 0
     ? '<div style="padding:1rem;color:#6b7280;font-size:.8rem">No items found in the analyzed sample.</div>'
     : `<table class="cd-table"><thead><tr><th>${escHtml(c.entity)}</th><th class="num">Occurrences</th><th class="num">Identified</th><th class="num">%</th></tr></thead><tbody>`
-      + entries.map((e, ei) => `<tr class="${rowCls(e)}"><td class="val">${escHtml(e.name)}${isQw(e) ? ' <span class="qw-tag">quick win</span>' : ''}</td>`
+      + entries.map((e, ei) => `<tr class="${rowCls(e)}"><td class="val">${nameCell(e.name)}${isQw(e) ? ' <span class="qw-tag">quick win</span>' : ''}</td>`
         + `<td class="num">${e.docs.length ? `<a class="dup-doc-link" data-ei="${ei}" title="List the DOIs where this ${escAttr(ent)} occurs">${e.occ.toLocaleString()}</a>` : e.occ.toLocaleString()}</td>`
         + `<td class="num">${e.id.toLocaleString()}</td><td class="num ${cls(e)}">${(e.pct*100).toFixed(0)}%</td></tr>`).join('')
       + '</tbody></table>';
