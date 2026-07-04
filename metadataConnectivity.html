@@ -1676,7 +1676,14 @@ $('cd-ror').addEventListener('click', () => {
   if (!affs.length) return;
   let url = 'rorRetriever.html?input=stored&auto=1';
   try {
-    localStorage.setItem('ror-retriever-input', JSON.stringify({ affiliations: affs, source: 'metadataConnectivity', clientId: lastRun && lastRun.clientId }));
+    // describe the source run so the ROR Retriever can show what dataset the affiliations came from
+    localStorage.setItem('ror-retriever-input', JSON.stringify({
+      affiliations: affs, source: 'metadataConnectivity',
+      clientId: lastRun.clientId, repoName: lastRun.repoName,
+      records: lastRun.records.length, repoTotal: lastRun.repoTotal, random: lastRun.random,
+      resourceTypeId: lastRun.resourceTypeId, query: lastRun.query,
+      context: `${connDetailState.c.group} · ${connDetailState.c.label.split(' (')[0]}`
+    }));
   } catch (e){
     url = 'rorRetriever.html#affiliations=' + encodeURIComponent(affs.join('\n')) + '&auto=1';
   }
