@@ -1548,13 +1548,15 @@ function startTips(){
 function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay = tipTimer = null; $('tips').style.display = 'none'; }
 
 /* ---------- deep-link: keep the repository (and filters) in the URL, shared with index/completeness/activity ---------- */
-function syncUrl(clientId, resourceTypeId, query){
+function syncUrl(clientId, resourceTypeId, query, cap, random){
   try {
     const url = new URL(location.href);
     url.searchParams.set('client', clientId);
     if (resourceTypeId) url.searchParams.set('resource-type', resourceTypeId); else url.searchParams.delete('resource-type');
     url.searchParams.delete('resourceType');   // normalize the legacy alias
     if (query) url.searchParams.set('query', query); else url.searchParams.delete('query');
+    if (cap && cap !== 200) url.searchParams.set('max', cap); else url.searchParams.delete('max');
+    if (random === false) url.searchParams.set('random', '0'); else url.searchParams.delete('random');
     history.replaceState({}, '', url);
   } catch (e) { /* non-fatal */ }
 }
@@ -1571,7 +1573,7 @@ async function run(){
   if (!clientId) return;
   setLink('completeness-link', 'completeness.html', clientId);
   setLink('activity-link', 'repo-activity.html', clientId);
-  syncUrl(clientId, resourceTypeId, query);
+  syncUrl(clientId, resourceTypeId, query, cap, random);
   closeAutocomplete();
   $('repo-go').disabled = true;
   startTips();
@@ -1669,7 +1671,9 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('dd-moda
 if (location.protocol === 'file:') {
   setStatus('This page is open as a local file (file://). DataCite requests will be blocked — serve it over http (e.g. "python3 -m http.server" → http://localhost:8000/metadataConnectivity.html).', true);
 }
-// optional URL parameters (lets other apps deep-link a repository): ?client=…&resource-type=…&query=…
+// optional URL parameters (lets other apps deep-link a repository):
+//   ?client=…&resource-type=…&query=…&max=…&random=0
+// client is required for the auto-run; the rest override the form defaults (max 200, random on).
 (() => {
   const params = new URLSearchParams(location.search);
   const clientFromUrl = params.get('client');
@@ -1678,6 +1682,10 @@ if (location.protocol === 'file:') {
     const rt = params.get('resource-type') || params.get('resourceType');
     if (rt && [...$('resource-type').options].some(o => o.value === rt)) $('resource-type').value = rt;
     const q = params.get('query'); if (q) $('query-input').value = q;
+    const max = parseInt(params.get('max'), 10);
+    if (max > 0) $('cap').value = Math.min(10000, max);
+    const rand = params.get('random');
+    if (rand != null) $('random').checked = !/^(0|false|no)$/i.test(rand);
     run();
   }
 })();
