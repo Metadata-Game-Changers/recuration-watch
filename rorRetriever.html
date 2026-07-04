@@ -142,7 +142,7 @@
         <button class="dl-btn" id="res-tsv" type="button" title="Download the results in the RORRetriever.py TSV layout">⬇ Results (TSV)</button>
       </div>
     </div>
-    <p class="res-intro">Rows are colored by outcome: green = a ROR was <b>chosen</b> by the matching algorithm, amber = a <b>best-score</b> match accepted without being chosen (only with the option above), red = <b>no match</b>. Click an affiliation or its result count to see every candidate the API returned. The TSV and CSV downloads match the <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">RORRetriever.py</code> output columns.</p>
+    <p class="res-intro">Rows are colored by outcome: green = a ROR was <b>chosen</b> by the matching algorithm, amber = a <b>best-score</b> match accepted without being chosen (only with the option above), red = <b>no match</b>. Affiliations the matcher can&rsquo;t place are automatically retried with ror.org&rsquo;s keyword search (the website&rsquo;s more forgiving query); its top hit appears in amber with <b>QUERY</b> in the Match column — verify those by eye. Click an affiliation or its result count to see every candidate the API returned. The TSV and CSV downloads match the <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">RORRetriever.py</code> output columns.</p>
     <div class="res-summary" id="res-summary"></div>
     <div style="overflow-x:auto">
     <table class="cd-table"><thead><tr>
@@ -220,6 +220,22 @@ async function matchAffiliation(affiliation, opts){
   return { rows: chosen.map(x => itemRow(affiliation, x, n)), items };
 }
 
+/* Fallback for affiliations the matcher can't place: ror.org's keyword search (the same
+   ?query= the website's search box uses — more forgiving, e.g. when the registered name
+   carries a "(Country)" suffix). Its top hit is reported with matching type QUERY. */
+async function queryFallback(affiliation){
+  const res = await fetch(`${ROR_API}?query=${encodeURIComponent(affiliation)}`);
+  if (res.status === 429){ await sleep(10000); return queryFallback(affiliation); }
+  if (!res.ok) throw new Error(`ROR API error ${res.status}`);
+  const json = await res.json();
+  const org = (json.items || [])[0];   // items are organizations, ranked — take the top hit
+  if (!org) return null;
+  const d = rorDisplay(org);
+  return { affiliation, searchString: affiliation, ror: org.id, orgName: d.value || '', orgLang: d.lang || '',
+    country: orgCountry(org), chosen: false, score: '', match: 'QUERY',
+    numberOfResults: json.number_of_results, valid: true };
+}
+
 /* ---------- run ---------- */
 let results = [];          // flat output rows, RORRetriever.py TSV order
 let candidates = new Map(); // affiliation -> raw API items (for the drill-down)
@@ -230,7 +246,7 @@ function renderRow(r){
   const ri = results.length - 1;
   const cand = candidates.get(r.affiliation) || [];
   return `<tr class="${rowCls(r)}">`
-    + `<td class="val">${cand.length ? `<a class="dup-doc-link" data-aff="${escAttr(r.affiliation)}" title="Show every candidate the ROR API returned for this affiliation">${escHtml(r.affiliation)}</a>` : escHtml(r.affiliation)}${r.valid && r.chosen !== true ? ' <span class="best-tag">best score</span>' : ''}</td>`
+    + `<td class="val">${cand.length ? `<a class="dup-doc-link" data-aff="${escAttr(r.affiliation)}" title="Show every candidate the ROR API returned for this affiliation">${escHtml(r.affiliation)}</a>` : escHtml(r.affiliation)}${r.valid && r.chosen !== true ? ` <span class="best-tag">${r.match === 'QUERY' ? 'query' : 'best score'}</span>` : ''}</td>`
     + `<td class="mono">${r.ror ? `<a href="${escAttr(r.ror)}" target="_blank" rel="noopener" title="Open this organization at ror.org">${escHtml(r.ror.replace('https://ror.org/',''))}</a>` : '—'}</td>`
     + `<td class="val">${escHtml(r.orgName || '—')}</td><td class="val">${escHtml(r.country || '—')}</td>`
     + `<td class="num">${r.score === '' ? '—' : Number(r.score).toFixed(2)}</td>`
@@ -242,8 +258,9 @@ function renderSummary(done, total){
   const noMatch = results.filter(r => r.match === 'No Match').length;
   const noResult = results.filter(r => r.match === 'No Result').length;
   const errors = results.filter(r => r.match === 'Error').length;
+  const viaQuery = results.filter(r => r.match === 'QUERY').length;
   $('res-summary').innerHTML = `<b>${done.toLocaleString()}</b> of <b>${total.toLocaleString()}</b> affiliations processed · `
-    + `<b>${found.toLocaleString()}</b> ROR${found===1?'':'s'} found · <b>${noMatch.toLocaleString()}</b> no match · <b>${noResult.toLocaleString()}</b> no result`
+    + `<b>${found.toLocaleString()}</b> ROR${found===1?'':'s'} found${viaQuery ? ` (<b>${viaQuery.toLocaleString()}</b> via query search)` : ''} · <b>${noMatch.toLocaleString()}</b> no match · <b>${noResult.toLocaleString()}</b> no result`
     + (errors ? ` · <b>${errors.toLocaleString()}</b> error${errors===1?'':'s'}` : '');
 }
 
@@ -263,6 +280,10 @@ async function run(){
     try {
       const m = await matchAffiliation(affiliation, opts);
       candidates.set(affiliation, m.items); rows = m.rows;
+      if (rows.length === 1 && (rows[0].match === 'No Match' || rows[0].match === 'No Result')){
+        const q = await queryFallback(affiliation).catch(() => null);
+        if (q) rows = [q];
+      }
     } catch (e){
       console.error(affiliation, e);
       rows = [emptyRow(affiliation, 'Error', '')];
