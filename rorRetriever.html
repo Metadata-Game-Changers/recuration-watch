@@ -278,12 +278,14 @@ async function run(){
   setStatus(stopRequested
     ? `Stopped after ${done.toLocaleString()} of ${input.length.toLocaleString()} affiliations — ${found.toLocaleString()} ROR${found===1?'':'s'} found.`
     : `Done — ${found.toLocaleString()} ROR${found===1?'':'s'} found for ${done.toLocaleString()} affiliation${done===1?'':'s'}.`);
+  // like RORRetriever.py, a single affiliation automatically shows the full candidate table
+  if (input.length === 1) openCandidates(input[0]);
 }
 
 /* ---------- candidate drill-down ---------- */
-$('res-body').addEventListener('click', e => {
-  const el = e.target.closest('.dup-doc-link[data-aff]'); if (!el) return;
-  const aff = el.dataset.aff, items = candidates.get(aff) || [];
+function openCandidates(aff){
+  const items = candidates.get(aff) || [];
+  if (!items.length) return;
   $('cand-title').textContent = aff;
   $('cand-sub').textContent = `${items.length} candidate${items.length===1?'':'s'} returned by the ROR affiliation API`;
   $('cand-body').innerHTML = '<table class="cd-table"><thead><tr><th>Matched substring</th><th class="num">Score</th><th>Match</th><th>Chosen</th><th>Organization</th><th>Country</th><th>ROR</th></tr></thead><tbody>'
@@ -293,6 +295,10 @@ $('res-body').addEventListener('click', e => {
       + `<td class="mono"><a href="${escAttr(x.organization.id)}" target="_blank" rel="noopener">${escHtml(x.organization.id.replace('https://ror.org/',''))}</a></td></tr>`).join('')
     + '</tbody></table>';
   $('cand-modal').style.display = 'flex';
+}
+$('res-body').addEventListener('click', e => {
+  const el = e.target.closest('.dup-doc-link[data-aff]'); if (!el) return;
+  openCandidates(el.dataset.aff);
 });
 function closeCand(){ $('cand-modal').style.display = 'none'; }
 
