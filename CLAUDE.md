@@ -18,8 +18,11 @@ self-contained HTML file with inline CSS + vanilla JS — no framework, no bundl
   can hand unidentified affiliations to the ROR Retriever.
 - `rorRetriever.html` — **ROR Retriever**: browser port of `RORRetriever.py`
   (Metadata-Game-Changers/RORRetriever) — matches affiliation strings via the ROR affiliation
-  API; keep the matching logic in sync with the Python. Accepts handoffs via localStorage
-  key `ror-retriever-input` (`?input=stored`) or `#affiliations=…`, with `auto=1` to run.
+  API. Keep the core affiliation-strategy logic (chosen/`--noacronyms`/`--max` semantics, TSV
+  columns and file naming) faithful to the Python; web-side enhancements (e.g. the QUERY
+  keyword-search fallback, source-dataset strip) are fine and candidates to port back.
+  Accepts handoffs via localStorage key `ror-retriever-input` (`?input=stored`) or
+  `#affiliations=…`, with `auto=1` to run.
 - `FAIR_spirals.json` — readable catalog of the use cases (also **embedded** inside
   `completeness.html`; keep the two in sync).
 - `COMPLETENESS_HANDOFF.md`, `REPO_ACTIVITY_HANDOFF.md` — design/handoff notes; read the
