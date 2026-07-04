@@ -142,7 +142,7 @@
         <button class="dl-btn" id="res-tsv" type="button" title="Download the results in the RORRetriever.py TSV layout">⬇ Results (TSV)</button>
       </div>
     </div>
-    <p class="res-intro">Rows are colored by outcome: green = a ROR was <b>chosen</b> by the matching algorithm, amber = a <b>best-score</b> match accepted without being chosen (only with the option above), red = <b>no match</b>. Click a result count to see every candidate the API returned. The TSV and CSV downloads match the <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">RORRetriever.py</code> output columns.</p>
+    <p class="res-intro">Rows are colored by outcome: green = a ROR was <b>chosen</b> by the matching algorithm, amber = a <b>best-score</b> match accepted without being chosen (only with the option above), red = <b>no match</b>. Click an affiliation or its result count to see every candidate the API returned. The TSV and CSV downloads match the <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">RORRetriever.py</code> output columns.</p>
     <div class="res-summary" id="res-summary"></div>
     <div style="overflow-x:auto">
     <table class="cd-table"><thead><tr>
@@ -230,7 +230,7 @@ function renderRow(r){
   const ri = results.length - 1;
   const cand = candidates.get(r.affiliation) || [];
   return `<tr class="${rowCls(r)}">`
-    + `<td class="val">${escHtml(r.affiliation)}${r.valid && r.chosen !== true ? ' <span class="best-tag">best score</span>' : ''}</td>`
+    + `<td class="val">${cand.length ? `<a class="dup-doc-link" data-aff="${escAttr(r.affiliation)}" title="Show every candidate the ROR API returned for this affiliation">${escHtml(r.affiliation)}</a>` : escHtml(r.affiliation)}${r.valid && r.chosen !== true ? ' <span class="best-tag">best score</span>' : ''}</td>`
     + `<td class="mono">${r.ror ? `<a href="${escAttr(r.ror)}" target="_blank" rel="noopener" title="Open this organization at ror.org">${escHtml(r.ror.replace('https://ror.org/',''))}</a>` : '—'}</td>`
     + `<td class="val">${escHtml(r.orgName || '—')}</td><td class="val">${escHtml(r.country || '—')}</td>`
     + `<td class="num">${r.score === '' ? '—' : Number(r.score).toFixed(2)}</td>`
