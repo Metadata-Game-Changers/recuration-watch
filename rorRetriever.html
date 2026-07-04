@@ -138,10 +138,11 @@
       <h2>ROR matches</h2>
       <div class="res-actions">
         <button class="dl-btn" id="res-copy" type="button" title="Copy the results table (TSV) to the clipboard">⧉ Copy</button>
+        <button class="dl-btn" id="res-csv" type="button" title="Download the results as CSV (same columns as the TSV)">⬇ Results (CSV)</button>
         <button class="dl-btn" id="res-tsv" type="button" title="Download the results in the RORRetriever.py TSV layout">⬇ Results (TSV)</button>
       </div>
     </div>
-    <p class="res-intro">Rows are colored by outcome: green = a ROR was <b>chosen</b> by the matching algorithm, amber = a <b>best-score</b> match accepted without being chosen (only with the option above), red = <b>no match</b>. Click a result count to see every candidate the API returned. The TSV download matches the <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">RORRetriever.py</code> output columns.</p>
+    <p class="res-intro">Rows are colored by outcome: green = a ROR was <b>chosen</b> by the matching algorithm, amber = a <b>best-score</b> match accepted without being chosen (only with the option above), red = <b>no match</b>. Click a result count to see every candidate the API returned. The TSV and CSV downloads match the <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">RORRetriever.py</code> output columns.</p>
     <div class="res-summary" id="res-summary"></div>
     <div style="overflow-x:auto">
     <table class="cd-table"><thead><tr>
@@ -309,11 +310,15 @@ function tsvValue(r, col){
   return String(v == null ? '' : v).replace(/[\t\n\r]/g, ' ');
 }
 function toTsv(){ return [TSV_COLS.join('\t'), ...results.map(r => TSV_COLS.map(c => tsvValue(r, c)).join('\t'))].join('\n') + '\n'; }
-function tsvFilename(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `AffiliationAPI_RORData__${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}.tsv`; }
-function downloadTsv(){
+function toCsv(){
+  const csv = s => /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  return [TSV_COLS.join(','), ...results.map(r => TSV_COLS.map(c => csv(tsvValue(r, c))).join(','))].join('\r\n') + '\r\n';
+}
+function resultsFilename(ext){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `AffiliationAPI_RORData__${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}.${ext}`; }
+function downloadResults(text, mime, ext){
   if (!results.length) return;
-  const url = URL.createObjectURL(new Blob([toTsv()], { type: 'text/tab-separated-values' }));
-  const a = document.createElement('a'); a.href = url; a.download = tsvFilename();
+  const url = URL.createObjectURL(new Blob([text], { type: mime }));
+  const a = document.createElement('a'); a.href = url; a.download = resultsFilename(ext);
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
@@ -328,7 +333,8 @@ async function copyTsv(){
 /* ---------- boot ---------- */
 $('go-btn').addEventListener('click', run);
 $('stop-btn').addEventListener('click', () => { stopRequested = true; });
-$('res-tsv').addEventListener('click', downloadTsv);
+$('res-tsv').addEventListener('click', () => downloadResults(toTsv(), 'text/tab-separated-values', 'tsv'));
+$('res-csv').addEventListener('click', () => downloadResults(toCsv(), 'text/csv', 'csv'));
 $('res-copy').addEventListener('click', copyTsv);
 $('cand-close').addEventListener('click', closeCand);
 $('cand-modal').addEventListener('click', e => { if (e.target.id === 'cand-modal') closeCand(); });
