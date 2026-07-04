@@ -399,7 +399,8 @@ $('aff-input').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.me
 // Add &auto=1 (or #…&auto=1) to start matching immediately.
 function showSource(s){
   if (!s.clientId && !s.repoName) return;
-  $('src-repo').innerHTML = `${escHtml(s.repoName || s.clientId)}${s.clientId ? `<span class="sel-id">${escHtml(s.clientId)}</span>` : ''}`;
+  const repoLabel = s.repoName || s.clientId;   // don't repeat the id when the name fell back to it
+  $('src-repo').innerHTML = `${escHtml(repoLabel)}${s.clientId && s.clientId !== repoLabel ? `<span class="sel-id">${escHtml(s.clientId)}</span>` : ''}`;
   $('src-context').textContent = s.context ? `affiliations identified < 100% in ${s.context}` : '';
   $('src-records').innerHTML = s.records != null ? `analyzed in <b>${Number(s.records).toLocaleString()}</b> ${s.random ? 'random-sample' : 'sequential-sample'} records` : '';
   const filtered = !!(s.resourceTypeId || s.query);
