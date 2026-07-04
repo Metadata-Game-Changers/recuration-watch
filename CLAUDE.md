@@ -13,6 +13,13 @@ self-contained HTML file with inline CSS + vanilla JS — no framework, no bundl
   MGC FAIR/DataCite/Project use cases. Runs MGC's `jq` queries **in the browser** via
   jq-web (jq compiled to WASM) and fetches live DOIs from `api.datacite.org`.
 - `repo-activity.html` — repository activity view.
+- `metadataConnectivity.html` — **Metadata Connectivity**: measures identifier connectivity
+  (ORCID/ROR/funder/publisher/rights identifiers) for a DataCite repository; bar drill-downs
+  can hand unidentified affiliations to the ROR Retriever.
+- `rorRetriever.html` — **ROR Retriever**: browser port of `RORRetriever.py`
+  (Metadata-Game-Changers/RORRetriever) — matches affiliation strings via the ROR affiliation
+  API; keep the matching logic in sync with the Python. Accepts handoffs via localStorage
+  key `ror-retriever-input` (`?input=stored`) or `#affiliations=…`, with `auto=1` to run.
 - `FAIR_spirals.json` — readable catalog of the use cases (also **embedded** inside
   `completeness.html`; keep the two in sync).
 - `COMPLETENESS_HANDOFF.md`, `REPO_ACTIVITY_HANDOFF.md` — design/handoff notes; read the
