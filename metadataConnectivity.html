@@ -62,6 +62,9 @@
   .hero-query::placeholder{color:#a99bbf}
   .hero-select:focus,.hero-num:focus,.hero-query:focus{border-color:#9167b0}
   .hero-chk{display:flex;align-items:center;gap:.3rem;font-size:.72rem;color:#5b3d7a;cursor:pointer}
+  /* keep each label with its control so they wrap as one unit */
+  .hero-field{display:flex;align-items:center;gap:.4rem}
+  .hero-field.grow{flex:1;min-width:180px}
   .repo-autocomplete{position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--ink);border-top:none;z-index:200;display:none;max-height:260px;overflow-y:auto}
   .repo-autocomplete.open{display:block}
   .repo-ac-item{padding:.55rem .75rem;cursor:pointer;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:.1rem}
@@ -194,6 +197,7 @@
       </div>
       <div class="repo-autocomplete" id="repo-autocomplete"></div>
       <div class="hero-secondary">
+        <span class="hero-field grow">
         <span class="hero-secondary-label">Type</span>
         <select class="hero-select" id="resource-type">
           <option value="">All resource types</option>
@@ -229,10 +233,15 @@
           <option value="text">Text</option>
           <option value="workflow">Workflow</option>
         </select>
+        </span>
+        <span class="hero-field grow">
         <span class="hero-secondary-label">Query</span>
         <input class="hero-query" id="query-input" type="text" placeholder="e.g. publicationYear:2024" spellcheck="false" autocomplete="off" />
+        </span>
+        <span class="hero-field">
         <span class="hero-secondary-label">Max</span>
         <input class="hero-num" id="cap" type="number" value="200" min="1" max="10000" />
+        </span>
         <label class="hero-chk"><input type="checkbox" id="random" checked /> Random sample</label>
       </div>
     </div>
