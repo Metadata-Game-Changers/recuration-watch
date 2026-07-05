@@ -15,7 +15,8 @@ self-contained HTML file with inline CSS + vanilla JS — no framework, no bundl
 - `repo-activity.html` — repository activity view.
 - `metadataConnectivity.html` — **Metadata Connectivity**: measures identifier connectivity
   (ORCID/ROR/funder/publisher/rights identifiers) for a DataCite repository; bar drill-downs
-  can hand unidentified affiliations to the ROR Retriever.
+  hand names identified < 100% to the retrievers (affiliations/funders/publishers → ROR
+  Retriever, people → ORCID Retriever).
 - `rorRetriever.html` — **ROR Retriever**: browser port of `RORRetriever.py`
   (Metadata-Game-Changers/RORRetriever) — matches affiliation strings via the ROR affiliation
   API. Keep the core affiliation-strategy logic (chosen/`--noacronyms`/`--max` semantics, TSV

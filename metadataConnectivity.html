@@ -173,6 +173,7 @@
       <a id="completeness-link" href="completeness.html" target="_blank" rel="noopener">Metadata Completeness ↗</a>
       <a id="activity-link" href="repo-activity.html" target="_blank" rel="noopener">Repository Activity ↗</a>
       <a href="rorRetriever.html" target="_blank" rel="noopener">ROR Retriever ↗</a>
+      <a href="orcidRetriever.html" target="_blank" rel="noopener">ORCID Retriever ↗</a>
       <a href="useCases.html" target="_blank" rel="noopener">Use Cases ↗</a>
       <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers ↗</a>
       <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
@@ -317,6 +318,7 @@
       </div>
       <div class="modal-head-actions">
         <button class="dl-btn" id="cd-ror" type="button" style="display:none" title="Send every name that is not identified in all of its occurrences (missing + quick wins) to the ROR Retriever, which looks each one up with the ROR affiliation-matching strategy">Find RORs ↗</button>
+        <button class="dl-btn" id="cd-orcid" type="button" style="display:none" title="Send every person that is not identified in all of their occurrences (missing + quick wins) to the ORCID Retriever, which searches the public ORCID registry and shows each candidate iD with its most recent employment and journal">Find ORCIDs ↗</button>
         <button class="dl-btn" id="cd-copy" type="button" title="Copy the full list to the clipboard">⧉ Copy</button>
         <button class="dl-btn" id="cd-download" type="button">⬇ CSV</button>
         <button class="modal-x" id="cd-close" type="button" aria-label="Close">✕</button>
@@ -588,12 +590,15 @@ function openConnDetail(idx){
   const ent = c.entity.toLowerCase();
   $('cd-title').textContent = `${c.group} · ${c.label.split(' (')[0]}`;
   $('cd-sub').textContent = `${entries.length.toLocaleString()} distinct ${ent}${entries.length===1?'':'s'} · ${partial.toLocaleString()} quick win${partial===1?'':'s'} (shown first) · ${missing.toLocaleString()} missing · ${complete.toLocaleString()} complete`;
-  // affiliation-, funder-, and publisher-identifier drill-downs can send every name
-  // identified < 100% (never identified + quick wins) to the ROR Retriever
-  const rorBtn = $('cd-ror'), incomplete = missing + partial;
+  // drill-downs can send every name identified < 100% (never identified + quick wins) to a
+  // retriever: affiliations/funders/publishers → ROR Retriever, people → ORCID Retriever
+  const rorBtn = $('cd-ror'), orcidBtn = $('cd-orcid'), incomplete = missing + partial;
   if ((c.kind === 'affId' || c.kind === 'funder' || c.kind === 'publisher') && incomplete > 0){
     rorBtn.style.display = ''; rorBtn.textContent = `Find RORs (${incomplete.toLocaleString()}) ↗`;
   } else rorBtn.style.display = 'none';
+  if (c.kind === 'nameId' && incomplete > 0){
+    orcidBtn.style.display = ''; orcidBtn.textContent = `Find ORCIDs (${incomplete.toLocaleString()}) ↗`;
+  } else orcidBtn.style.display = 'none';
   const cls = e => e.id === 0 ? 'pc-red' : (e.id >= e.occ ? 'pc-green' : 'pc-amber');
   const rowCls = e => isQw(e) ? 'row-qw' : (e.id === 0 ? 'row-missing' : 'row-complete');   // color-code rows to match the bars
   // Name-identifier rows link the name to an ORCID search; affiliation, funder, and publisher
@@ -1672,25 +1677,28 @@ $('cd-close').addEventListener('click', closeConnDetail);
 $('cd-copy').addEventListener('click', connDetailCopy);
 $('cd-download').addEventListener('click', connDetailDownloadCsv);
 // hand every affiliation identified < 100% to the ROR Retriever (localStorage, falling back to the URL hash)
-$('cd-ror').addEventListener('click', () => {
+// hand every name identified < 100% to a retriever tool, with the source run described so
+// the tool can show what dataset the names came from (localStorage, falling back to the URL hash)
+function retrieverHandoff(page, storageKey, listKey){
   if (!connDetailState) return;
-  const affs = connDetailState.entries.filter(e => e.id < e.occ).map(e => e.name);
-  if (!affs.length) return;
-  let url = 'rorRetriever.html?input=stored&auto=1';
+  const names = connDetailState.entries.filter(e => e.id < e.occ).map(e => e.name);
+  if (!names.length) return;
+  let url = `${page}?input=stored&auto=1`;
   try {
-    // describe the source run so the ROR Retriever can show what dataset the affiliations came from
-    localStorage.setItem('ror-retriever-input', JSON.stringify({
-      affiliations: affs, source: 'metadataConnectivity',
+    const payload = { source: 'metadataConnectivity',
       clientId: lastRun.clientId, repoName: lastRun.repoName,
       records: lastRun.records.length, repoTotal: lastRun.repoTotal, random: lastRun.random,
       resourceTypeId: lastRun.resourceTypeId, query: lastRun.query,
-      context: `${connDetailState.c.group} · ${connDetailState.c.label.split(' (')[0]}`
-    }));
+      context: `${connDetailState.c.group} · ${connDetailState.c.label.split(' (')[0]}` };
+    payload[listKey] = names;
+    localStorage.setItem(storageKey, JSON.stringify(payload));
   } catch (e){
-    url = 'rorRetriever.html#affiliations=' + encodeURIComponent(affs.join('\n')) + '&auto=1';
+    url = `${page}#${listKey}=` + encodeURIComponent(names.join('\n')) + '&auto=1';
   }
   window.open(url, '_blank', 'noopener');
-});
+}
+$('cd-ror').addEventListener('click', () => retrieverHandoff('rorRetriever.html', 'ror-retriever-input', 'affiliations'));
+$('cd-orcid').addEventListener('click', () => retrieverHandoff('orcidRetriever.html', 'orcid-retriever-input', 'names'));
 $('cd-modal').addEventListener('click', e => { if (e.target.id === 'cd-modal') closeConnDetail(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('cd-modal').style.display !== 'none' && $('dd-modal').style.display === 'none') closeConnDetail(); });
 $('dd-close').addEventListener('click', closeDupDocs);
