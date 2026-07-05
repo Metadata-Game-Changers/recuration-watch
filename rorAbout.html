@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>About ROR Matching — ROR Retriever</title>
+<link rel="icon" type="image/png" href="favicon_MGC.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{ --accent:#9167b0; --accent-dk:#673289; --tint:#f0eaf5; --ink:#1f2330; --muted:#6b7280; --line:#e6e3ec; --bg:#fbfafe; --green:#3a9d6e; --amber:#d4910b; --red:#c0392b; }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:0}
+  .topbar{border-bottom:2px solid var(--ink);padding:0 2rem}
+  .topbar-inner{max-width:1040px;margin:0 auto;display:flex;align-items:stretch;gap:0}
+  .topbar-brand{padding:.5rem 2rem .3rem 0;display:flex;flex-direction:row;align-items:flex-end;gap:1rem}
+  .brand-logo{height:64px;width:auto;display:block;flex-shrink:0}
+  .brand-title-wrap{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:.15rem}
+  .brand-tool-name{font-family:'Montserrat',sans-serif;font-size:2rem;font-weight:400;letter-spacing:.02em;color:#673289;line-height:1;white-space:nowrap;text-transform:uppercase}
+  .topbar-links{padding:0 0 0 1.5rem;display:flex;flex-direction:column;justify-content:center;gap:.25rem;margin-left:auto}
+  .topbar-links a{font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4}
+  .topbar-links a:hover{color:var(--accent-dk)}
+  @media(max-width:820px){.topbar{padding:0 1rem}.topbar-inner{flex-direction:column}.topbar-brand{padding-right:0}.brand-tool-name{font-size:1.5rem}.topbar-links{flex-direction:row;flex-wrap:wrap;gap:.75rem;padding:.25rem 0 .5rem}}
+  .wrap{max-width:1080px;margin:0 auto;padding:1.5rem 1.25rem 3rem}
+  .about-intro{font-size:.85rem;color:var(--ink);line-height:1.6;max-width:760px;margin:.6rem 0 1rem}
+  .about-intro h2{font-size:1.25rem;color:var(--accent-dk);margin:.4rem 0}
+  .about-intro p{margin:.6rem 0}
+  .about-intro a{color:var(--accent);text-decoration:none}
+  .about-intro a:hover{text-decoration:underline}
+  .about-intro ul{margin:.4rem 0 .6rem 1.1rem;padding:0}
+  .about-intro li{margin:.2rem 0}
+  .about-intro code{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.85em;background:#f3f1f8;border-radius:4px;padding:.05rem .3rem}
+  .about-h3{font-size:1.1rem;color:var(--accent-dk);margin:1.8rem 0 .25rem}
+  .about-sub{font-size:.78rem;color:var(--muted);margin:0 0 1rem;max-width:760px;line-height:1.55}
+  table.cmp-table{border-collapse:collapse;width:100%;font-size:.8rem;margin:.6rem 0 1rem;max-width:920px}
+  table.cmp-table th,table.cmp-table td{text-align:left;padding:.4rem .6rem;border-bottom:1px solid #f0eef5;vertical-align:top;line-height:1.5}
+  table.cmp-table th{font-size:.66rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:600}
+  table.cmp-table td.hd{white-space:nowrap;font-weight:600;color:var(--accent-dk)}
+  table.cmp-table code{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.85em;background:#f3f1f8;border-radius:4px;padding:.05rem .3rem;white-space:nowrap}
+  .swatch{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:.45rem;vertical-align:middle}
+  .sw-green{background:#ecf6f0;border:1px solid var(--green)} .sw-amber{background:#fbf1d6;border:1px solid var(--amber)} .sw-red{background:#fbecea;border:1px solid var(--red)}
+  .ex-card{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;background:#fff;padding:.8rem 1rem;margin:.8rem 0;max-width:760px;font-size:.82rem;line-height:1.6}
+  .ex-card b{color:var(--accent-dk)}
+  .ex-card code{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.85em;background:#f3f1f8;border-radius:4px;padding:.05rem .3rem}
+  footer{margin-top:2.5rem;font-size:.72rem;color:var(--muted);border-top:1px solid var(--line);padding-top:.9rem;line-height:1.5}
+  footer a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" onerror="this.style.display='none'" />
+      </a>
+      <div class="brand-title-wrap"><div class="brand-tool-name">About ROR Matching</div></div>
+    </div>
+    <div class="topbar-links">
+      <a href="rorRetriever.html">ROR Retriever ↗</a>
+      <a href="metadataConnectivity.html">Metadata Connectivity ↗</a>
+      <a href="https://ror.org" target="_blank" rel="noopener">ror.org ↗</a>
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers ↗</a>
+      <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="about-intro">
+    <h2>What ROR is</h2>
+    <p>The <a href="https://ror.org" target="_blank" rel="noopener">Research Organization Registry (ROR)</a> is an
+    open registry of persistent identifiers for research organizations. A ROR ID (like
+    <code>https://ror.org/05bp8ka05</code>) disambiguates an organization far better than free-text names —
+    &ldquo;Univ. of Colorado&rdquo;, &ldquo;CU Boulder&rdquo;, and &ldquo;University of Colorado Boulder&rdquo; are one organization, one ROR.</p>
+    <p>RORs are not just for author affiliations. ROR succeeded GRID and absorbed the Open Funder Registry, so in
+    DataCite metadata RORs can identify <b>affiliations</b> (<code>affiliationIdentifier</code>),
+    <b>funders</b> (<code>funderIdentifier</code>), and <b>publishers</b> (<code>publisherIdentifier</code>) —
+    the same connectors the <a href="metadataConnectivity.html">Metadata Connectivity</a> tool measures.</p>
+  </div>
+
+  <div class="about-h3">Two ways to search ROR</div>
+  <p class="about-sub">The ROR API offers two very different searches, and knowing which one you are looking at
+  explains most surprises.</p>
+  <table class="cmp-table">
+    <thead><tr><th></th><th>Affiliation strategy</th><th>Keyword query</th></tr></thead>
+    <tbody>
+      <tr><td class="hd">API</td>
+        <td><code>?affiliation=…</code></td>
+        <td><code>?query=…</code></td></tr>
+      <tr><td class="hd">Who uses it</td>
+        <td>The <a href="rorRetriever.html">ROR Retriever</a> (first), MGC&rsquo;s <code>RORRetriever.py</code>, DataCite &amp; Crossref matching pipelines</td>
+        <td>The search box on the <a href="https://ror.org" target="_blank" rel="noopener">ror.org</a> website; the ROR Retriever as a fallback</td></tr>
+      <tr><td class="hd">Designed for</td>
+        <td>Raw affiliation strings from metadata (&ldquo;Department of CSE, Dhaka University of Engineering and Technology, Gazipur&rdquo;) — it tries substrings of the input against registered names</td>
+        <td>A person typing a name they already know</td></tr>
+      <tr><td class="hd">Confidence</td>
+        <td>Scores each candidate 0&ndash;1 and <b>chooses</b> a match only when it is confident; refuses to choose otherwise</td>
+        <td>None — results are ranked by token overlap, and even nonsense input usually returns <i>something</i></td></tr>
+      <tr><td class="hd">Failure mode</td>
+        <td>Misses organizations whose registered name has extra tokens (see the example below) and no short alias</td>
+        <td>Confidently wrong top hits on messy strings (see the example below)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="about-h3">How the ROR Retriever combines them</div>
+  <div class="about-intro">
+    <p>Each affiliation is matched with the <b>affiliation strategy first</b>. Only when it returns nothing usable
+    is the string retried with the <b>keyword query</b>, and the top hit is reported with <code>QUERY</code> in the
+    Match column. Row colors carry the confidence:</p>
+    <ul>
+      <li><span class="swatch sw-green"></span><b>Green</b> — the affiliation strategy <b>chose</b> this ROR (score 1.00). Trustworthy.</li>
+      <li><span class="swatch sw-amber"></span><b>Amber</b> — a suggestion, not a decision: either a <b>best score</b> match accepted with the
+        &ldquo;accept best score&rdquo; option, or a <b>QUERY</b> keyword hit. Verify these by eye before using them.</li>
+      <li><span class="swatch sw-red"></span><b>Red</b> — neither search produced a usable result.</li>
+    </ul>
+    <p>The two checkboxes mirror <code>RORRetriever.py</code> options: <i>exclude acronym matches</i>
+    (<code>--noacronyms</code>) and <i>accept best score if none chosen</i> (<code>--max</code>). The TSV and CSV
+    downloads use the same columns and file naming as the Python tool, with <code>QUERY</code> appearing in
+    <code>match_Affiliation</code> for keyword-search results.</p>
+  </div>
+
+  <div class="about-h3">Why results can differ from the ror.org website</div>
+  <div class="ex-card">
+    <b>The website finds it, the matcher doesn&rsquo;t.</b> Searching ror.org for
+    <code>Metadata Game Changers</code> returns <code>05bp8ka05</code> as the top hit — but the affiliation strategy
+    returns no match. The record&rsquo;s only registered name is
+    &ldquo;Metadata Game Changers <b>(United States)</b>&rdquo;, and with no shorter alias registered the two unmatched
+    tokens push the score too low to choose. The ROR Retriever&rsquo;s QUERY fallback surfaces the website&rsquo;s answer
+    in amber. The durable fix is a <a href="https://curation-request.ror.org" target="_blank" rel="noopener">ROR curation
+    request</a> to add the short name as an alias.
+  </div>
+  <div class="ex-card">
+    <b>The website answers, but wrongly.</b> The keyword search for
+    <code>Department of Physics, MIT, Cambridge MA</code> returns the <i>Cambridge&ndash;MIT Institute</i> — a defunct
+    joint venture, not MIT. The affiliation strategy avoids the trap by refusing to choose. This is why the ROR
+    Retriever runs the careful search first and marks keyword hits for verification, rather than trusting the
+    website&rsquo;s top hit everywhere.
+  </div>
+
+  <footer>
+    ROR matching in the browser uses the public <a href="https://ror.org/docs" target="_blank" rel="noopener">ROR API</a>
+    (<code>api.ror.org/v2/organizations</code>); nothing is uploaded or stored. The matching logic is a port of
+    <a href="https://github.com/Metadata-Game-Changers/RORRetriever" target="_blank" rel="noopener">RORRetriever.py</a>.
+    A <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers</a> prototype.
+  </footer>
+</div>
+</body>
+</html>
