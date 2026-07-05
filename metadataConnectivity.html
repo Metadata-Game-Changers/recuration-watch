@@ -595,11 +595,12 @@ function openConnDetail(idx){
   else rorBtn.style.display = 'none';
   const cls = e => e.id === 0 ? 'pc-red' : (e.id >= e.occ ? 'pc-green' : 'pc-amber');
   const rowCls = e => isQw(e) ? 'row-qw' : (e.id === 0 ? 'row-missing' : 'row-complete');   // color-code rows to match the bars
-  // Name-identifier rows link the name to an ORCID search; affiliation-identifier rows link to a ROR search.
+  // Name-identifier rows link the name to an ORCID search; affiliation, funder, and publisher
+  // rows link to a ROR search (RORs identify organizations in all three roles).
   const searchLink = c.kind === 'nameId'
     ? { url: n => `https://orcid.org/orcid-search/search?searchQuery=${encodeURIComponent(n)}`, title: 'Search ORCID for this name' }
-    : c.kind === 'affId'
-    ? { url: n => `https://ror.org/search?query=${encodeURIComponent(n)}`, title: 'Search ROR for this affiliation' }
+    : (c.kind === 'affId' || c.kind === 'funder' || c.kind === 'publisher')
+    ? { url: n => `https://ror.org/search?query=${encodeURIComponent(n)}`, title: `Search ROR for this ${c.entity.toLowerCase()}` }
     : null;
   const nameCell = n => searchLink
     ? `<a href="${escAttr(searchLink.url(n))}" target="_blank" rel="noopener" title="${searchLink.title}">${escHtml(n)}</a>`
