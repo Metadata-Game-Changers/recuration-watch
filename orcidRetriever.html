@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ORCID Retriever — name matching (prototype)</title>
+<link rel="icon" type="image/png" href="favicon_MGC.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --accent:#9167b0; --accent-dk:#673289; --tint:#f0eaf5;
+    --ink:#1f2330; --muted:#6b7280; --line:#e6e3ec; --bg:#fbfafe;
+    --green:#3a9d6e; --amber:#d4910b; --red:#c0392b;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:0}
+
+  /* ── Brand top bar ── */
+  .topbar{border-bottom:2px solid var(--ink);padding:0 2rem}
+  .topbar-inner{max-width:1040px;margin:0 auto;display:flex;align-items:stretch;gap:0}
+  .topbar-brand{padding:.5rem 2rem .3rem 0;display:flex;flex-direction:row;align-items:flex-end;gap:1rem}
+  .brand-logo{height:64px;width:auto;display:block;flex-shrink:0}
+  .brand-title-wrap{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:.15rem}
+  .brand-tool-name{font-family:'Montserrat',sans-serif;font-size:2rem;font-weight:400;letter-spacing:.02em;color:#673289;line-height:1;white-space:nowrap;text-transform:uppercase}
+  .topbar-links{padding:0 0 0 1.5rem;display:flex;flex-direction:column;justify-content:center;gap:.25rem;margin-left:auto}
+  .topbar-links a{font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4}
+  .topbar-links a:hover{color:var(--accent-dk)}
+  @media(max-width:820px){.topbar{padding:0 1rem}.topbar-inner{flex-direction:column}.topbar-brand{padding-right:0}.brand-tool-name{font-size:1.5rem}.topbar-links{flex-direction:row;flex-wrap:wrap;gap:.75rem;padding:.25rem 0 .5rem}}
+  .wrap{max-width:1080px;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+  .proto-flag{display:inline-block;background:#fff;color:var(--accent-dk);font-size:.62rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:.12rem .45rem;border-radius:4px;margin-left:.5rem;vertical-align:middle;border:1px solid var(--accent)}
+
+  /* ── Hero bar ── */
+  .hero{background:#f0eaf5;border-bottom:2px solid #9167b0;padding:1.75rem 2rem}
+  .hero-inner{max-width:1040px;margin:0 auto;display:flex;align-items:flex-start;gap:2.5rem;flex-wrap:wrap}
+  .hero-text{flex:1;min-width:200px}
+  .hero-title{font-size:1.15rem;font-weight:600;color:#5b3d7a;line-height:1.2;margin:0 0 .3rem;letter-spacing:-.01em}
+  .hero-sub{font-size:.78rem;color:var(--muted);line-height:1.5;max-width:380px;margin:0}
+  .hero-search{flex:1.4;min-width:280px}
+  .hero-textarea{display:block;width:100%;border:2px solid #9167b0;background:#fff;padding:.6rem .85rem;font-size:.8rem;outline:none;font-family:Inter,sans-serif;color:var(--ink);resize:vertical;min-height:120px;line-height:1.5}
+  .hero-textarea::placeholder{color:#a99bbf}
+  .hero-secondary{display:flex;gap:.9rem;margin-top:.5rem;flex-wrap:wrap;align-items:center}
+  .hero-secondary-label{font-size:.65rem;font-weight:600;color:#5b3d7a;text-transform:uppercase;letter-spacing:.03em}
+  .hero-num{border:1px solid rgba(145,103,176,.4);background:rgba(255,255,255,.85);padding:.32rem .6rem;font-family:Inter,sans-serif;font-size:.75rem;color:var(--ink);outline:none;width:64px}
+  .hero-num:focus{border-color:#9167b0}
+  .hero-go{border:2px solid #9167b0;background:#9167b0;color:#fff;padding:.5rem 1.1rem;font-size:.82rem;font-weight:500;cursor:pointer;white-space:nowrap;font-family:Inter,sans-serif;margin-left:auto}
+  .hero-go:hover{background:#7a52a0}
+  .hero-go:disabled{opacity:.5;cursor:default}
+  .hero-stop{border:2px solid var(--red);background:#fff;color:var(--red);padding:.5rem 1.1rem;font-size:.82rem;font-weight:500;cursor:pointer;white-space:nowrap;font-family:Inter,sans-serif;display:none}
+  .hero-stop:hover{background:#fae3e0}
+  @media(max-width:820px){.hero{padding:1.25rem 1rem}.hero-inner{flex-direction:column;gap:1rem;align-items:stretch}.hero-text{min-width:0}.hero-search{min-width:0;width:100%}}
+
+  /* ── Source-dataset strip (shown when launched from another tool) ── */
+  .sel-summary{background:#fff;border-bottom:1px solid var(--line)}
+  .sel-inner{max-width:1040px;margin:0 auto;padding:.7rem 2rem;display:flex;align-items:baseline;gap:1.5rem;flex-wrap:wrap}
+  .sel-repo{font-size:.95rem;font-weight:600;color:var(--accent-dk)}
+  .sel-repo .sel-id{font-family:'IBM Plex Mono',monospace;font-size:.7rem;font-weight:400;color:var(--muted);margin-left:.5rem}
+  .sel-stats{display:flex;gap:1.4rem;flex-wrap:wrap;margin-left:auto}
+  .sel-stat{font-size:.78rem;color:var(--muted)}
+  .sel-stat b{color:var(--ink);font-weight:600}
+  @media(max-width:820px){.sel-inner{padding:.7rem 1rem}.sel-stats{margin-left:0}}
+
+  #status{font-size:.82rem;color:var(--muted);min-height:1.2em;margin:.2rem 0 .5rem}
+  #status.err{color:var(--red)}
+  #progress{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin:0 0 1rem;display:none}
+  #progress.on{display:block}
+  #progress>i{display:block;height:100%;width:0;background:var(--accent);border-radius:3px;transition:width .18s ease}
+
+  /* ── Results card ── */
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:1rem}
+  .card h2{font-size:1rem;margin:0 0 .4rem;color:var(--accent-dk)}
+  .res-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:.2rem}
+  .res-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+  .res-intro{font-size:.78rem;color:var(--muted);margin:0 0 .8rem;line-height:1.5;max-width:760px}
+  .res-summary{font-size:.78rem;color:var(--muted);margin:0 0 .8rem}
+  .res-summary b{color:var(--ink)}
+  .dl-btn{appearance:none;border:1px solid var(--accent);background:#fff;color:var(--accent-dk);font:inherit;font-size:.75rem;font-weight:600;padding:.42rem .85rem;border-radius:6px;cursor:pointer}
+  .dl-btn:hover{background:var(--tint)}
+  table.cd-table{border-collapse:collapse;width:100%;font-size:.8rem}
+  table.cd-table th,table.cd-table td{text-align:left;padding:.32rem .5rem;border-bottom:1px solid #f0eef5;vertical-align:top}
+  table.cd-table th{font-size:.66rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:600;position:sticky;top:0;background:#fff}
+  table.cd-table td.num,table.cd-table th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  table.cd-table td.val{word-break:break-word}
+  table.cd-table td.val a{color:var(--accent-dk);text-decoration:none}
+  table.cd-table td.val a:hover{text-decoration:underline}
+  table.cd-table td.mono a,td.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.72rem;white-space:nowrap}
+  table.cd-table tr.row-one td{background:#ecf6f0}      /* exactly one ORCID match — light green */
+  table.cd-table tr.row-multi td{background:#fbf1d6}    /* several matches, needs a human pick — light amber */
+  table.cd-table tr.row-none td{background:#fbecea}     /* no match — light red */
+  .multi-tag{display:inline-block;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#8a5a00;background:#f4e2b0;border-radius:4px;padding:.05rem .35rem;margin-left:.4rem;vertical-align:middle}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" onerror="this.style.display='none'" />
+      </a>
+      <div class="brand-title-wrap"><div class="brand-tool-name">ORCID Retriever</div></div>
+    </div>
+    <div class="topbar-links">
+      <a href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity ↗</a>
+      <a href="rorRetriever.html" target="_blank" rel="noopener">ROR Retriever ↗</a>
+      <a href="completeness.html" target="_blank" rel="noopener">Metadata Completeness ↗</a>
+      <a href="https://orcid.org" target="_blank" rel="noopener">About ORCID ↗</a>
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers ↗</a>
+      <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h2 class="hero-title">Find ORCID iDs for people<span class="proto-flag">prototype</span></h2>
+      <p class="hero-sub">Paste person names (one per line, &ldquo;First Last&rdquo; or &ldquo;Last, First&rdquo;). Each is searched in the public ORCID registry; every candidate iD is shown with its <b>most recent employment</b> and <b>most recent journal</b> to help pick the right person. Everything runs in your browser; nothing is uploaded or stored.</p>
+    </div>
+    <div class="hero-search">
+      <textarea class="hero-textarea" id="name-input" rows="6" spellcheck="false" placeholder="One name per line, e.g.&#10;Ted Habermann&#10;Lehnert, Kerstin"></textarea>
+      <div class="hero-secondary">
+        <span class="hero-secondary-label">Max matches / name</span>
+        <input class="hero-num" id="maxmatch" type="number" value="5" min="1" max="20" title="Fetch details for at most this many candidate ORCIDs per name (the match count always shows the true total)" />
+        <button class="hero-stop" id="stop-btn">Stop</button>
+        <button class="hero-go" id="go-btn">Find ORCIDs →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sel-summary" id="src-summary" style="display:none">
+  <div class="sel-inner">
+    <span class="sel-repo" id="src-repo">—</span>
+    <div class="sel-stats">
+      <span class="sel-stat" id="src-context"></span>
+      <span class="sel-stat" id="src-records"></span>
+      <span class="sel-stat" id="src-total"></span>
+      <span class="sel-stat" id="src-filter" style="display:none"></span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="status">Paste names (one per line) and click Find ORCIDs.</div>
+  <div id="progress"><i></i></div>
+
+  <div class="card" id="res-card" style="display:none">
+    <div class="res-head">
+      <h2>ORCID matches</h2>
+      <div class="res-actions">
+        <button class="dl-btn" id="res-copy" type="button" title="Copy the results table (TSV) to the clipboard">⧉ Copy</button>
+        <button class="dl-btn" id="res-csv" type="button" type="button" title="Download the results as CSV">⬇ Results (CSV)</button>
+      </div>
+    </div>
+    <p class="res-intro">Names are searched as <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">family-name AND given-names</code> in the public ORCID registry — the same search MGC&rsquo;s <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">getORCIDs.py</code> uses. Green = exactly <b>one</b> ORCID matches the name, amber = <b>several</b> match (one row per candidate — use the employment and journal columns to pick), red = <b>none</b>. ORCID profile data appears only if the person made it public. Each iD links to its orcid.org profile.</p>
+    <div class="res-summary" id="res-summary"></div>
+    <div style="overflow-x:auto">
+    <table class="cd-table"><thead><tr>
+      <th>Name</th><th>ORCID iD</th><th>Record name</th><th>Most recent employment</th>
+      <th>Most recent journal</th><th class="num">Matches</th>
+    </tr></thead><tbody id="res-body"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Browser port of the name→ORCID flow in getORCIDs.py (Metadata-Game-Changers/ORCID-Tools):
+   parse each name into given/family, search the public ORCID API
+   (pub.orcid.org/v3.0/search/?q=family-name:… AND given-names:…), then fetch each candidate's
+   record for the disambiguation columns — most recent employment and most recent journal
+   (the notebook matchNamesAndORCIDs.ipynb's selection display). Anonymous public API; no token. */
+const ORCID_API = 'https://pub.orcid.org/v3.0';
+const $ = id => document.getElementById(id);
+const statusEl = $('status');
+function setStatus(msg, isErr){ statusEl.textContent = msg; statusEl.className = isErr ? 'err' : ''; }
+function setProgress(frac){ const p=$('progress'); p.classList.add('on'); p.firstElementChild.style.width = Math.max(0,Math.min(1,frac))*100 + '%'; }
+function hideProgress(){ const p=$('progress'); p.classList.remove('on'); p.firstElementChild.style.width='0'; }
+const escHtml = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const escAttr = s => escHtml(s);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* multi_get port: walk a path, taking the first element whenever a list is encountered */
+function mg(obj, ...path){
+  let r = obj;
+  for (const k of path){
+    if (r == null || typeof r !== 'object' || !(k in r)) return null;
+    r = r[k];
+    if (Array.isArray(r)) r = r.length ? r[0] : null;
+    if (r == null) return null;
+  }
+  return r;
+}
+
+/* parse_name port: handles "First Last", "Last, First", suffixes (Jr, III, …), and
+   quoted/parenthesized nicknames; the search uses the first given token + family name. */
+function parseName(name){
+  const suffixes = new Set(['junior','jr','senior','sr','ii','iii','iv']);
+  name = name.trim();
+  const toks = name.split(/[\s,]+/).filter(Boolean);
+  const lastTok = toks[toks.length - 1] || '';
+  if (suffixes.has(lastTok.toLowerCase().replace(/\./g, ''))){
+    name = name.slice(0, name.length - lastTok.length).replace(/[,\s]+$/, '');
+  }
+  let family = '', rest = name;
+  if (name.includes(',')){
+    const parts = name.split(',');
+    family = parts[0].trim();
+    rest = parts.slice(1).join(' ').trim();
+  }
+  let parts = rest.split(/[ .]+/).filter(Boolean);
+  if (!family && parts.length){ family = parts[parts.length - 1]; parts = parts.slice(0, -1); }
+  const given = parts.filter(p => !/^["'([].*["')\]]$/.test(p))[0] || '';
+  return { given, family };
+}
+
+async function orcidFetch(url){
+  const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+  if (res.status === 429 || res.status === 503){ await sleep(10000); return orcidFetch(url); }   // rate-limited: wait and retry
+  if (!res.ok) throw new Error(`ORCID API error ${res.status}`);
+  return res.json();
+}
+async function searchName(name){
+  const { given, family } = parseName(name);
+  if (!family) return { given, family, ids: [], numFound: 0 };
+  const q = `family-name:"${family.replace(/"/g, '')}"` + (given ? ` AND given-names:"${given.replace(/"/g, '')}"` : '');
+  const json = await orcidFetch(`${ORCID_API}/search/?q=${encodeURIComponent(q)}`);
+  return { given, family, numFound: json['num-found'] || 0,
+    ids: (json.result || []).map(r => mg(r, 'orcid-identifier', 'path')).filter(Boolean) };
+}
+/* One candidate's disambiguation data: record name, most recent employment (the first
+   affiliation group — ORCID lists them most recent first), and the most recent work
+   that names a journal. */
+async function fetchCandidate(id){
+  const rec = await orcidFetch(`${ORCID_API}/${id}/record`);
+  const given = mg(rec, 'person', 'name', 'given-names', 'value') || '';
+  const family = mg(rec, 'person', 'name', 'family-name', 'value') || '';
+  const emp = mg(rec, 'activities-summary', 'employments', 'affiliation-group', 'summaries', 'employment-summary');
+  const employer = emp ? (mg(emp, 'organization', 'name') || '') : '';
+  const empStart = emp ? (mg(emp, 'start-date', 'year', 'value') || '') : '';
+  const empEnd = emp ? (mg(emp, 'end-date', 'year', 'value') || '') : '';
+  let journal = '';
+  for (const g of (mg(rec, 'activities-summary', 'works') || {}).group || []){
+    const j = mg(g, 'work-summary', 'journal-title', 'value');
+    if (j){ journal = j.replace(/\s+/g, ' ').trim(); break; }
+  }
+  return { orcid: id, given, family, employer, empStart, empEnd, journal };
+}
+
+/* ---------- run ---------- */
+let results = [];        // flat rows: {input, given, family, orcid, employer, empStart, empEnd, journal, numFound}
+let stopRequested = false;
+
+function rowCls(r){ return r.numFound === 0 ? 'row-none' : (r.numFound === 1 ? 'row-one' : 'row-multi'); }
+function empText(r){
+  if (!r.employer) return '—';
+  const yrs = (r.empStart || r.empEnd) ? ` (${r.empStart || ''}–${r.empEnd || ''})` : '';
+  return `${r.employer}${yrs}`;
+}
+function renderRow(r, note){
+  return `<tr class="${rowCls(r)}">`
+    + `<td class="val">${escHtml(r.input)}${r.numFound > 1 ? ' <span class="multi-tag">pick one</span>' : ''}</td>`
+    + `<td class="mono">${r.orcid ? `<a href="https://orcid.org/${escAttr(r.orcid)}" target="_blank" rel="noopener" title="Open this ORCID profile at orcid.org">${escHtml(r.orcid)}</a>` : '—'}</td>`
+    + `<td class="val">${escHtml([r.given, r.family].filter(Boolean).join(' ') || '—')}</td>`
+    + `<td class="val">${escHtml(empText(r))}</td>`
+    + `<td class="val">${escHtml(r.journal || '—')}</td>`
+    + `<td class="num">${note || r.numFound}</td></tr>`;
+}
+function renderSummary(done, total){
+  const names = new Map();
+  for (const r of results){ names.set(r.input, r.numFound); }
+  const one = [...names.values()].filter(n => n === 1).length;
+  const multi = [...names.values()].filter(n => n > 1).length;
+  const none = [...names.values()].filter(n => n === 0).length;
+  $('res-summary').innerHTML = `<b>${done.toLocaleString()}</b> of <b>${total.toLocaleString()}</b> names processed · `
+    + `<b>${one.toLocaleString()}</b> with one match · <b>${multi.toLocaleString()}</b> with several (pick one) · <b>${none.toLocaleString()}</b> not found`;
+}
+
+async function run(){
+  const input = $('name-input').value.split('\n').map(s => s.trim()).filter(Boolean);
+  if (!input.length){ setStatus('Enter at least one name (one per line).', true); return; }
+  const cap = Math.max(1, Math.min(20, parseInt($('maxmatch').value, 10) || 5));
+  results = []; stopRequested = false;
+  $('res-body').innerHTML = ''; $('res-card').style.display = '';
+  $('go-btn').disabled = true; $('stop-btn').style.display = '';
+  let done = 0;
+  for (const name of input){
+    if (stopRequested) break;
+    setStatus(`Searching ${done + 1} of ${input.length}: ${name}`);
+    setProgress(done / input.length);
+    try {
+      const s = await searchName(name);
+      if (s.numFound === 0 || !s.ids.length){
+        const r = { input: name, given: s.given, family: s.family, orcid: '', employer: '', empStart: '', empEnd: '', journal: '', numFound: 0 };
+        results.push(r); $('res-body').insertAdjacentHTML('beforeend', renderRow(r));
+      } else {
+        const ids = s.ids.slice(0, cap);
+        for (let k = 0; k < ids.length; k++){
+          if (stopRequested) break;
+          setStatus(`Searching ${done + 1} of ${input.length}: ${name} — candidate ${k + 1} of ${ids.length}`);
+          const c = await fetchCandidate(ids[k]);
+          const r = { input: name, ...c, numFound: s.numFound };
+          results.push(r);
+          const note = (s.numFound > ids.length && k === 0) ? `first ${ids.length} of ${s.numFound}` : '';
+          $('res-body').insertAdjacentHTML('beforeend', renderRow(r, note));
+          await sleep(120);   // stay well inside the public API rate limit
+        }
+      }
+    } catch (e){
+      console.error(name, e);
+      const r = { input: name, given: '', family: '', orcid: '', employer: '', empStart: '', empEnd: '', journal: '', numFound: 0 };
+      results.push(r); $('res-body').insertAdjacentHTML('beforeend', renderRow(r, 'error'));
+    }
+    done++;
+    renderSummary(done, input.length);
+    await sleep(120);
+  }
+  hideProgress();
+  $('go-btn').disabled = false; $('stop-btn').style.display = 'none';
+  const found = new Set(results.filter(r => r.orcid).map(r => r.input)).size;
+  setStatus(stopRequested
+    ? `Stopped after ${done.toLocaleString()} of ${input.length.toLocaleString()} names — ORCIDs found for ${found.toLocaleString()}.`
+    : `Done — ORCIDs found for ${found.toLocaleString()} of ${done.toLocaleString()} name${done===1?'':'s'}.`);
+}
+
+/* ---------- downloads ---------- */
+const COLS = ['input','given','family','orcid','employment','employmentStart','employmentEnd','journal','numberOfMatches'];
+function colValue(r, col){
+  const v = { input:r.input, given:r.given, family:r.family, orcid:r.orcid ? `https://orcid.org/${r.orcid}` : '',
+    employment:r.employer, employmentStart:r.empStart, employmentEnd:r.empEnd,
+    journal:r.journal, numberOfMatches:r.numFound }[col];
+  return String(v == null ? '' : v).replace(/[\t\n\r]/g, ' ');
+}
+function toTsv(){ return [COLS.join('\t'), ...results.map(r => COLS.map(c => colValue(r, c)).join('\t'))].join('\n') + '\n'; }
+function toCsv(){
+  const csv = s => /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  return [COLS.join(','), ...results.map(r => COLS.map(c => csv(colValue(r, c))).join(','))].join('\r\n') + '\r\n';
+}
+function resultsFilename(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `orcids__${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}.csv`; }
+function downloadCsv(){
+  if (!results.length) return;
+  const url = URL.createObjectURL(new Blob([toCsv()], { type: 'text/csv' }));
+  const a = document.createElement('a'); a.href = url; a.download = resultsFilename();
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+async function copyTsv(){
+  if (!results.length) return;
+  const btn = $('res-copy');
+  try { await navigator.clipboard.writeText(toTsv()); btn.textContent = '✓ Copied'; }
+  catch (e){ btn.textContent = 'Copy failed'; }
+  setTimeout(() => { btn.textContent = '⧉ Copy'; }, 1600);
+}
+
+/* ---------- boot ---------- */
+$('go-btn').addEventListener('click', run);
+$('stop-btn').addEventListener('click', () => { stopRequested = true; });
+$('res-csv').addEventListener('click', downloadCsv);
+$('res-copy').addEventListener('click', copyTsv);
+$('name-input').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) run(); });
+
+// Optional handoffs (lets other tools deep-link a list of names):
+//   #names=…       — URI-encoded, newline-separated list in the hash (never sent to the server)
+//   ?input=stored  — read a JSON {names:[…]} handoff from localStorage 'orcid-retriever-input',
+//                    which may also describe the source run ({clientId, repoName, records,
+//                    repoTotal, random, resourceTypeId, query, context}) — shown in a strip
+//                    under the hero so it's clear what dataset the names came from.
+// Add &auto=1 (or #…&auto=1) to start searching immediately.
+function showSource(s){
+  if (!s.clientId && !s.repoName) return;
+  const repoLabel = s.repoName || s.clientId;   // don't repeat the id when the name fell back to it
+  $('src-repo').innerHTML = `${escHtml(repoLabel)}${s.clientId && s.clientId !== repoLabel ? `<span class="sel-id">${escHtml(s.clientId)}</span>` : ''}`;
+  $('src-context').textContent = s.context ? `${s.context} — identified < 100%` : '';
+  $('src-records').innerHTML = s.records != null ? `analyzed in <b>${Number(s.records).toLocaleString()}</b> ${s.random ? 'random-sample' : 'sequential-sample'} records` : '';
+  const filtered = !!(s.resourceTypeId || s.query);
+  $('src-total').textContent = s.repoTotal != null ? `of ${Number(s.repoTotal).toLocaleString()} ${filtered ? 'matching' : 'in repository'}` : '';
+  const parts = [];
+  if (s.resourceTypeId) parts.push(`type: ${s.resourceTypeId}`);
+  if (s.query) parts.push(`query: ${s.query}`);
+  $('src-filter').textContent = parts.length ? `filter — ${parts.join(' · ')}` : '';
+  $('src-filter').style.display = parts.length ? '' : 'none';
+  $('src-summary').style.display = '';
+}
+(() => {
+  const params = new URLSearchParams(location.search);
+  let names = null, auto = params.get('auto') === '1';
+  if (location.hash.length > 1){
+    const h = new URLSearchParams(location.hash.slice(1));
+    if (h.get('names')) names = h.get('names').split('\n');
+    if (h.get('auto') === '1') auto = true;
+  }
+  if (!names && params.get('input') === 'stored'){
+    try {
+      const stored = JSON.parse(localStorage.getItem('orcid-retriever-input'));
+      if (stored && Array.isArray(stored.names)){ names = stored.names; showSource(stored); }
+    } catch (e) { /* ignore malformed handoffs */ }
+  }
+  if (names && names.length){
+    $('name-input').value = names.map(s => String(s).trim()).filter(Boolean).join('\n');
+    if (auto) run();
+  }
+})();
+</script>
+</body>
+</html>
