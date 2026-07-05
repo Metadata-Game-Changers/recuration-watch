@@ -18,7 +18,7 @@ Note: Re-Curation Watch queries the DataCite Public REST API, which is freely ac
 
 Type a repository name (e.g. "Zenodo", "Dryad", "Gump Station") or a DataCite client ID (e.g. `cern.zenodo`, `sjyq.oozvia`) into the search box in the purple hero bar. An autocomplete dropdown shows matching repositories with their DOI counts. Press Enter or click **Explore →** to load.
 
-Type a prefix in and the most recently updated 2000 records for a specific prefix will load. 
+Type a prefix in and the most recently updated 2000 records for a specific prefix will load.
 
 Type in a specific DOI and the history for that DOI will load. 
 
