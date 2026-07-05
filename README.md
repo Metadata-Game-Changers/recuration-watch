@@ -5,7 +5,7 @@
 
 A tool by [Metadata Game Changers](https://metadatagamechangers.com) for browsing any DataCite repository and inspecting the full curation history of each DOI — who changed what, when, and how.
 
-Live data is fetched directly from the [DataCite REST API](https://api.datacite.org) — no build step, no backend, no API key required. One HTML file, deploy anywhere.
+Live data is fetched directly from the [DataCite REST API](https://api.datacite.org) — no build step, no backend, no API key required. One HTML file, deploy anywhere. 
 
 ## What it does
 
