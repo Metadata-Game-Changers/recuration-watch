@@ -23,6 +23,11 @@ self-contained HTML file with inline CSS + vanilla JS — no framework, no bundl
   keyword-search fallback, source-dataset strip) are fine and candidates to port back.
   Accepts handoffs via localStorage key `ror-retriever-input` (`?input=stored`) or
   `#affiliations=…`, with `auto=1` to run.
+- `orcidRetriever.html` — **ORCID Retriever**: browser port of the name→ORCID flow in
+  `getORCIDs.py` (Metadata-Game-Changers/ORCID-Tools) — searches the public ORCID API by
+  parsed family/given name and shows each candidate iD with its most recent employment and
+  journal for disambiguation. Anonymous API (no token). Accepts handoffs via localStorage
+  key `orcid-retriever-input` (`?input=stored`) or `#names=…`, with `auto=1` to run.
 - `FAIR_spirals.json` — readable catalog of the use cases (also **embedded** inside
   `completeness.html`; keep the two in sync).
 - `COMPLETENESS_HANDOFF.md`, `REPO_ACTIVITY_HANDOFF.md` — design/handoff notes; read the
