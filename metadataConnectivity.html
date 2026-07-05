@@ -316,7 +316,7 @@
         <div class="modal-sub" id="cd-sub"></div>
       </div>
       <div class="modal-head-actions">
-        <button class="dl-btn" id="cd-ror" type="button" style="display:none" title="Send every affiliation that is not identified in all of its occurrences (missing + quick wins) to the ROR Retriever, which looks each one up with the ROR affiliation-matching strategy">Find RORs ↗</button>
+        <button class="dl-btn" id="cd-ror" type="button" style="display:none" title="Send every name that is not identified in all of its occurrences (missing + quick wins) to the ROR Retriever, which looks each one up with the ROR affiliation-matching strategy">Find RORs ↗</button>
         <button class="dl-btn" id="cd-copy" type="button" title="Copy the full list to the clipboard">⧉ Copy</button>
         <button class="dl-btn" id="cd-download" type="button">⬇ CSV</button>
         <button class="modal-x" id="cd-close" type="button" aria-label="Close">✕</button>
@@ -588,11 +588,12 @@ function openConnDetail(idx){
   const ent = c.entity.toLowerCase();
   $('cd-title').textContent = `${c.group} · ${c.label.split(' (')[0]}`;
   $('cd-sub').textContent = `${entries.length.toLocaleString()} distinct ${ent}${entries.length===1?'':'s'} · ${partial.toLocaleString()} quick win${partial===1?'':'s'} (shown first) · ${missing.toLocaleString()} missing · ${complete.toLocaleString()} complete`;
-  // affiliation-identifier drill-downs can send every affiliation identified < 100%
-  // (never identified + quick wins) to the ROR Retriever
+  // affiliation-, funder-, and publisher-identifier drill-downs can send every name
+  // identified < 100% (never identified + quick wins) to the ROR Retriever
   const rorBtn = $('cd-ror'), incomplete = missing + partial;
-  if (c.kind === 'affId' && incomplete > 0){ rorBtn.style.display = ''; rorBtn.textContent = `Find RORs (${incomplete.toLocaleString()}) ↗`; }
-  else rorBtn.style.display = 'none';
+  if ((c.kind === 'affId' || c.kind === 'funder' || c.kind === 'publisher') && incomplete > 0){
+    rorBtn.style.display = ''; rorBtn.textContent = `Find RORs (${incomplete.toLocaleString()}) ↗`;
+  } else rorBtn.style.display = 'none';
   const cls = e => e.id === 0 ? 'pc-red' : (e.id >= e.occ ? 'pc-green' : 'pc-amber');
   const rowCls = e => isQw(e) ? 'row-qw' : (e.id === 0 ? 'row-missing' : 'row-complete');   // color-code rows to match the bars
   // Name-identifier rows link the name to an ORCID search; affiliation, funder, and publisher

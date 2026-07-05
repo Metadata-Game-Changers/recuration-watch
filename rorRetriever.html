@@ -160,11 +160,10 @@
       <h2>ROR matches</h2>
       <div class="res-actions">
         <button class="dl-btn" id="res-copy" type="button" title="Copy the results table (TSV) to the clipboard">⧉ Copy</button>
-        <button class="dl-btn" id="res-csv" type="button" title="Download the results as CSV (same columns as the TSV)">⬇ Results (CSV)</button>
-        <button class="dl-btn" id="res-tsv" type="button" title="Download the results in the RORRetriever.py TSV layout">⬇ Results (TSV)</button>
+        <button class="dl-btn" id="res-csv" type="button" title="Download the results as CSV in the RORRetriever.py column layout">⬇ Results (CSV)</button>
       </div>
     </div>
-    <p class="res-intro">Rows are colored by outcome: green = a ROR was <b>chosen</b> by the matching algorithm, amber = a <b>best-score</b> match accepted without being chosen (only with the option above), red = <b>no match</b>. Affiliations the matcher can&rsquo;t place are automatically retried with ror.org&rsquo;s keyword search (the website&rsquo;s more forgiving query); its top hit appears in amber with <b>QUERY</b> in the Match column — verify those by eye. Click an affiliation or its result count to see every candidate the API returned. The TSV and CSV downloads match the <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">RORRetriever.py</code> output columns.</p>
+    <p class="res-intro">Rows are colored by outcome: green = a ROR was <b>chosen</b> by the matching algorithm, amber = a <b>best-score</b> match accepted without being chosen (only with the option above), red = <b>no match</b>. Affiliations the matcher can&rsquo;t place are automatically retried with ror.org&rsquo;s keyword search (the website&rsquo;s more forgiving query); its top hit appears in amber with <b>QUERY</b> in the Match column — verify those by eye. Click an affiliation or its result count to see every candidate the API returned. The CSV download matches the <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">RORRetriever.py</code> output columns.</p>
     <div class="res-summary" id="res-summary"></div>
     <div style="overflow-x:auto">
     <table class="cd-table"><thead><tr>
@@ -382,7 +381,6 @@ async function copyTsv(){
 /* ---------- boot ---------- */
 $('go-btn').addEventListener('click', run);
 $('stop-btn').addEventListener('click', () => { stopRequested = true; });
-$('res-tsv').addEventListener('click', () => downloadResults(toTsv(), 'text/tab-separated-values', 'tsv'));
 $('res-csv').addEventListener('click', () => downloadResults(toCsv(), 'text/csv', 'csv'));
 $('res-copy').addEventListener('click', copyTsv);
 $('cand-close').addEventListener('click', closeCand);
@@ -401,7 +399,7 @@ function showSource(s){
   if (!s.clientId && !s.repoName) return;
   const repoLabel = s.repoName || s.clientId;   // don't repeat the id when the name fell back to it
   $('src-repo').innerHTML = `${escHtml(repoLabel)}${s.clientId && s.clientId !== repoLabel ? `<span class="sel-id">${escHtml(s.clientId)}</span>` : ''}`;
-  $('src-context').textContent = s.context ? `affiliations identified < 100% in ${s.context}` : '';
+  $('src-context').textContent = s.context ? `${s.context} — identified < 100%` : '';
   $('src-records').innerHTML = s.records != null ? `analyzed in <b>${Number(s.records).toLocaleString()}</b> ${s.random ? 'random-sample' : 'sequential-sample'} records` : '';
   const filtered = !!(s.resourceTypeId || s.query);
   $('src-total').textContent = s.repoTotal != null ? `of ${Number(s.repoTotal).toLocaleString()} ${filtered ? 'matching' : 'in repository'}` : '';
