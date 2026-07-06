@@ -222,11 +222,24 @@ function parseName(name){
   return { given, family };
 }
 
+/* fetch JSON with retries: rate limiting (429/503) waits and retries; network-level
+   failures (rate-limit responses without CORS headers surface as fetch rejections, plus
+   ordinary hiccups) back off and retry a few times before giving up */
 async function orcidFetch(url){
-  const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
-  if (res.status === 429 || res.status === 503){ await sleep(10000); return orcidFetch(url); }   // rate-limited: wait and retry
-  if (!res.ok) throw new Error(`ORCID API error ${res.status}`);
-  return res.json();
+  for (let attempt = 0; ; attempt++){
+    try {
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (res.status === 429 || res.status === 503){
+        if (attempt >= 3) throw Object.assign(new Error(`API error ${res.status}`), { noRetry: true });
+        await sleep(10000); continue;
+      }
+      if (!res.ok) throw Object.assign(new Error(`API error ${res.status}`), { noRetry: true });
+      return res.json();
+    } catch (e){
+      if (e.noRetry || attempt >= 3) throw e;
+      await sleep(3000 * (attempt + 1));
+    }
+  }
 }
 async function searchName(name){
   const { given, family } = parseName(name);
