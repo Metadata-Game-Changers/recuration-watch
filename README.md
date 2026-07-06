@@ -7,7 +7,7 @@ A tool by [Metadata Game Changers](https://metadatagamechangers.com) for browsin
 
 Live data is fetched directly from the [DataCite REST API](https://api.datacite.org) — no build step, no backend, no API key required. One HTML file, deploy anywhere. 
 
-## What it does
+## What it does 
 
 Re-Curation Watch surfaces the metadata provenance that DataCite records for every DOI since March 2019. For each update event you can see exactly which fields changed, with before and after values shown side by side. This makes it possible to assess the curation quality of any DataCite repository — not just what the metadata says now, but how it got there.
 
