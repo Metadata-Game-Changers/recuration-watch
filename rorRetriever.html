@@ -233,11 +233,28 @@ function emptyRow(affiliation, match, numberOfResults){
    results with the acronym filter on → "No Result"; otherwise take the chosen item(s) —
    or, with matchMax, the item(s) carrying the overall max score (acronyms excluded from
    the output when the filter is on) — else "No Match". */
+/* fetch JSON with retries: rate limiting (429/503) waits and retries; network-level
+   failures (rate-limit responses without CORS headers surface as fetch rejections, plus
+   ordinary hiccups) back off and retry a few times before giving up */
+async function fetchJson(url, opts){
+  for (let attempt = 0; ; attempt++){
+    try {
+      const res = await fetch(url, opts);
+      if (res.status === 429 || res.status === 503){
+        if (attempt >= 3) throw Object.assign(new Error(`API error ${res.status}`), { noRetry: true });
+        await sleep(10000); continue;
+      }
+      if (!res.ok) throw Object.assign(new Error(`API error ${res.status}`), { noRetry: true });
+      return res.json();
+    } catch (e){
+      if (e.noRetry || attempt >= 3) throw e;
+      await sleep(3000 * (attempt + 1));
+    }
+  }
+}
+
 async function matchAffiliation(affiliation, opts){
-  const res = await fetch(`${ROR_API}?affiliation=${encodeURIComponent(affiliation)}`);
-  if (res.status === 429){ await sleep(10000); return matchAffiliation(affiliation, opts); }   // rate-limited: wait and retry
-  if (!res.ok) throw new Error(`ROR API error ${res.status}`);
-  const json = await res.json();
+  const json = await fetchJson(`${ROR_API}?affiliation=${encodeURIComponent(affiliation)}`);
   const items = json.items || [], n = json.number_of_results || 0;
   if (n === 0) return { rows: [emptyRow(affiliation, 'No Result', 0)], items };
   const acronyms = items.filter(x => x.matching_type === 'ACRONYM').length;
@@ -253,10 +270,7 @@ async function matchAffiliation(affiliation, opts){
    ?query= the website's search box uses — more forgiving, e.g. when the registered name
    carries a "(Country)" suffix). Its top hit is reported with matching type QUERY. */
 async function queryFallback(affiliation){
-  const res = await fetch(`${ROR_API}?query=${encodeURIComponent(affiliation)}`);
-  if (res.status === 429){ await sleep(10000); return queryFallback(affiliation); }
-  if (!res.ok) throw new Error(`ROR API error ${res.status}`);
-  const json = await res.json();
+  const json = await fetchJson(`${ROR_API}?query=${encodeURIComponent(affiliation)}`);
   const org = (json.items || [])[0];   // items are organizations, ranked — take the top hit
   if (!org) return null;
   const d = rorDisplay(org);
