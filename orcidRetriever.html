@@ -66,6 +66,13 @@
   #progress{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin:0 0 1rem;display:none}
   #progress.on{display:block}
   #progress>i{display:block;height:100%;width:0;background:var(--accent);border-radius:3px;transition:width .18s ease}
+  .tips{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;background:#fff;padding:.7rem .9rem;margin:0 0 1rem;max-width:560px}
+  .tips .tips-head{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.35rem}
+  .tips .tips-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-dk);font-weight:600;margin-bottom:.2rem}
+  .tips .tips-text{font-size:.82rem;color:var(--ink);line-height:1.5}
+  .tips .tips-text strong{color:var(--accent-dk)}
+  .tips .tips-link{display:inline-block;margin-top:.4rem;font-size:.68rem;color:var(--accent);text-decoration:none}
+  .tips .tips-link:hover{text-decoration:underline}
 
   /* ── Results card ── */
   .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:1rem}
@@ -144,6 +151,7 @@
 <div class="wrap">
   <div id="status">Paste names (one per line) and click Find ORCIDs.</div>
   <div id="progress"><i></i></div>
+  <div id="tips" class="tips" style="display:none"></div>
 
   <div class="card" id="res-card" style="display:none">
     <div class="res-head">
@@ -247,6 +255,38 @@ async function fetchCandidate(id){
   return { orcid: id, given, family, employer, empStart, empEnd, journal };
 }
 
+const TIPS = [
+  { label:'The search', text:'Each name is parsed into <strong>family and given names</strong> and searched in the public ORCID registry \u2014 the same search MGC\u2019s getORCIDs.py uses.', link:'https://orcid.org' },
+  { label:'Why the pace?', text:'Every candidate iD is a separate <strong>record fetch</strong> (that\u2019s where employment and journal come from), paced to respect ORCID\u2019s public API \u2014 results appear as they arrive.', link:'https://info.orcid.org/documentation/features/public-api/' },
+  { label:'Pick one', text:'<strong>Amber rows</strong> mean several people share the name \u2014 one row per candidate. Use the <strong>employment</strong> and <strong>journal</strong> columns to pick the right person.', link:'https://orcid.org' },
+  { label:'Empty columns?', text:'ORCID profile data appears only if the researcher made it <strong>public</strong> \u2014 an empty employment column doesn\u2019t mean unemployed, just private or unfilled.', link:'https://support.orcid.org/hc/en-us/articles/360006897614' },
+  { label:'Common names', text:'<strong>Max matches / name</strong> caps how many candidates are fetched \u2014 the Matches column still shows the true total, e.g. \u201cfirst 5 of 137\u201d.', link:'https://orcid.org' },
+  { label:'Name forms', text:'\u201cFirst Last\u201d and \u201cLast, First\u201d both work \u2014 suffixes (Jr, III) and nicknames are handled by the parser ported from getORCIDs.py.', link:'https://github.com/Metadata-Game-Changers/ORCID-Tools' },
+  { label:'Why ORCIDs?', text:'An <strong>ORCID</strong> on a creator or contributor links every one of their outputs across repositories \u2014 the single highest-leverage identifier to add.', link:'https://orcid.org' },
+  { label:'In your browser', text:'Everything runs <strong>in your browser</strong> against the anonymous public ORCID API \u2014 no token, nothing uploaded or stored.', link:'https://metadatagamechangers.com' },
+];
+/* ---------- loading tips (shown while the batch retrieves) ---------- */
+let tipTimer = null, tipDelay = null, tipIndex = 0;
+function renderTip(){
+  const t = TIPS[tipIndex];
+  $('tips').innerHTML =
+    '<div class="tips-head">While you wait…</div>' +
+    '<div class="tips-label">' + t.label + '</div>' +
+    '<div class="tips-text">' + t.text + '</div>' +
+    (t.link ? '<a class="tips-link" href="' + t.link + '" target="_blank" rel="noopener">Learn more ↗</a>' : '');
+}
+function startTips(){
+  stopTips();
+  // small delay so quick runs don't flash a tip
+  tipDelay = setTimeout(() => {
+    tipIndex = Math.floor(Math.random() * TIPS.length);
+    renderTip();
+    $('tips').style.display = '';
+    tipTimer = setInterval(() => { tipIndex = (tipIndex + 1) % TIPS.length; renderTip(); }, 4500);
+  }, 1200);
+}
+function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay = tipTimer = null; $('tips').style.display = 'none'; }
+
 /* ---------- run ---------- */
 let results = [];        // flat rows: {input, given, family, orcid, employer, empStart, empEnd, journal, numFound}
 let stopRequested = false;
@@ -283,6 +323,7 @@ async function run(){
   results = []; stopRequested = false;
   $('res-body').innerHTML = ''; $('res-card').style.display = '';
   $('go-btn').disabled = true; $('stop-btn').style.display = '';
+  startTips();
   let done = 0;
   for (const name of input){
     if (stopRequested) break;
@@ -316,6 +357,7 @@ async function run(){
     await sleep(120);
   }
   hideProgress();
+  stopTips();
   $('go-btn').disabled = false; $('stop-btn').style.display = 'none';
   const found = new Set(results.filter(r => r.orcid).map(r => r.input)).size;
   setStatus(stopRequested
