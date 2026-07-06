@@ -1445,6 +1445,10 @@ async function analyze(clientId, records, repoTotal, usedRandom, resourceTypeId,
   renderTotal();
   showDetail();
   hideProgress();
+  // from here on, the Connectivity link hands over these exact records — say so
+  const cl = $('connectivity-link');
+  cl.textContent = 'Share with Metadata Connectivity ↗';
+  cl.title = 'Open Metadata Connectivity on these exact records, so both tools measure the same sample';
   setStatus(`Done — ${sampleNote} record${records.length===1?'':'s'}${sharedFrom ? `, shared from ${sharedFrom}` : ''}, total FAIR index ${fmtPct(total)}.`);
 }
 async function run(){

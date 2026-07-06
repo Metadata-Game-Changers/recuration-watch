@@ -1608,6 +1608,10 @@ async function analyze(clientId, records, repoTotal, usedRandom, resourceTypeId,
   renderConnectivity(results);
   renderDuplicates();
   hideProgress();
+  // from here on, the Completeness link hands over these exact records — say so
+  const cl = $('completeness-link');
+  cl.textContent = 'Share with Metadata Completeness ↗';
+  cl.title = 'Open Metadata Completeness on these exact records, so both tools measure the same sample';
   const sampleNote = usedRandom ? `random sample of ${records.length}` : `${records.length} sequential`;
   setStatus(`Done — connectivity over ${sampleNote} record${records.length===1?'':'s'}${sharedFrom ? `, shared from ${sharedFrom}` : ''}.`);
 }
