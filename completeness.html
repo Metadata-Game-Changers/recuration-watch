@@ -59,6 +59,9 @@
   /* keep each label with its control so they wrap as one unit */
   .hero-field{display:flex;align-items:center;gap:.4rem}
   .hero-field.grow{flex:1;min-width:180px}
+  .hero-help{margin-top:.35rem;text-align:right}
+  .hero-help a{font-size:.68rem;color:#5b3d7a;text-decoration:none}
+  .hero-help a:hover{color:var(--accent-dk);text-decoration:underline}
   .hero-select,.hero-num{border:1px solid rgba(145,103,176,.4);background:rgba(255,255,255,.85);padding:.32rem .6rem;font-family:Inter,sans-serif;font-size:.75rem;color:var(--ink);outline:none}
   .hero-select{cursor:pointer;flex:1;min-width:150px}
   .hero-num{width:74px}
@@ -264,6 +267,7 @@
         </span>
         <label class="hero-chk"><input type="checkbox" id="random" checked /> Random sample</label>
       </div>
+      <div class="hero-help"><a href="https://support.datacite.org/docs/queries" target="_blank" rel="noopener" title="How to write DataCite query expressions">Using DataCite Queries ↗</a></div>
     </div>
   </div>
 </div>
@@ -1524,6 +1528,28 @@ document.addEventListener('click', e => { if (!e.target.closest('.hero-search'))
 /* ---------- boot ---------- */
 $('repo-go').addEventListener('click', run);
 $('spiral').addEventListener('change', showDetail);
+// Share the analyzed sample with Metadata Connectivity so both tools measure the SAME
+// records — the point of random samples and queries. On click, store the records under
+// localStorage 'metadata-connectivity-input' and point the link at ?input=stored; if the
+// sample is too large for storage, fall back to a parameter deep link that re-fetches an
+// equivalent selection. (Records already carry affiliation=true&publisher=true.)
+$('connectivity-link').addEventListener('click', () => {
+  if (!lastRun || !lastRun.records || !lastRun.records.length) return;   // no run yet — plain ?client link
+  const l = lastRun;
+  try {
+    localStorage.setItem('metadata-connectivity-input', JSON.stringify({
+      source: 'completeness', records: l.records,
+      clientId: l.clientId, repoName: l.repoName, repoTotal: l.repoTotal,
+      random: l.random, resourceTypeId: l.resourceTypeId, query: l.query }));
+    $('connectivity-link').href = 'metadataConnectivity.html?input=stored';
+  } catch (e){   // quota exceeded — deep-link the selection instead
+    localStorage.removeItem('metadata-connectivity-input');
+    $('connectivity-link').href = 'metadataConnectivity.html?client=' + encodeURIComponent(l.clientId)
+      + (l.resourceTypeId ? '&resource-type=' + encodeURIComponent(l.resourceTypeId) : '')
+      + (l.query ? '&query=' + encodeURIComponent(l.query) : '')
+      + '&max=' + l.records.length + (l.random ? '' : '&random=0');
+  }
+});
 /* ---------- loading tips (shown while the engine loads / records fetch / scoring runs) ---------- */
 const COMPLETENESS_TIPS = [
   { label: 'Completeness', text: '<strong>Completeness</strong> here measures <em>presence</em> — the share of records that contain each concept — not whether the value is correct or rich.', link: 'https://metadatagamechangers.com' },
