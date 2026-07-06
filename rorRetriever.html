@@ -64,6 +64,13 @@
   #progress{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin:0 0 1rem;display:none}
   #progress.on{display:block}
   #progress>i{display:block;height:100%;width:0;background:var(--accent);border-radius:3px;transition:width .18s ease}
+  .tips{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;background:#fff;padding:.7rem .9rem;margin:0 0 1rem;max-width:560px}
+  .tips .tips-head{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.35rem}
+  .tips .tips-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-dk);font-weight:600;margin-bottom:.2rem}
+  .tips .tips-text{font-size:.82rem;color:var(--ink);line-height:1.5}
+  .tips .tips-text strong{color:var(--accent-dk)}
+  .tips .tips-link{display:inline-block;margin-top:.4rem;font-size:.68rem;color:var(--accent);text-decoration:none}
+  .tips .tips-link:hover{text-decoration:underline}
 
   /* ── Results card ── */
   .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:1rem}
@@ -154,6 +161,7 @@
 <div class="wrap">
   <div id="status">Paste affiliations (one per line) and click Find RORs.</div>
   <div id="progress"><i></i></div>
+  <div id="tips" class="tips" style="display:none"></div>
 
   <div class="card" id="res-card" style="display:none">
     <div class="res-head">
@@ -257,6 +265,38 @@ async function queryFallback(affiliation){
     numberOfResults: json.number_of_results, valid: true };
 }
 
+const TIPS = [
+  { label:'Affiliation strategy', text:'Each name is matched with ROR\u2019s <strong>affiliation strategy</strong> \u2014 it tries substrings of your string against registered names and <em>chooses</em> a match only when it is confident.', link:'rorAbout.html' },
+  { label:'Why the pace?', text:'Each affiliation is a separate API request, paced to stay well inside ROR\u2019s rate limit \u2014 results appear <strong>as they arrive</strong>, and you can Stop anytime and keep what\u2019s done.', link:'https://ror.readme.io/docs/rest-api' },
+  { label:'Colors', text:'<strong>Green</strong> = chosen by the algorithm (trustworthy). <strong>Amber</strong> = a suggestion \u2014 best-score or keyword-search \u2014 verify by eye. <strong>Red</strong> = nothing usable.', link:'rorAbout.html' },
+  { label:'QUERY fallback', text:'Names the matcher can\u2019t place are retried with ror.org\u2019s <strong>keyword search</strong>; its top hit appears in amber with <strong>QUERY</strong> in the Match column.', link:'rorAbout.html' },
+  { label:'“(Country)” names', text:'Some registered names carry a suffix like \u201cMetadata Game Changers <strong>(United States)</strong>\u201d with no short alias \u2014 a <strong>ROR curation request</strong> fixes that for everyone.', link:'https://curation-request.ror.org' },
+  { label:'Beyond affiliations', text:'ROR absorbed the Open Funder Registry, so RORs identify <strong>funders</strong> and <strong>publishers</strong> too \u2014 not just author affiliations.', link:'https://ror.org' },
+  { label:'Candidates', text:'Click an <strong>affiliation or its result count</strong> to see every candidate the API returned \u2014 scores, matching types, and which one was chosen.', link:'rorAbout.html' },
+  { label:'In your browser', text:'Matching runs <strong>in your browser</strong> against the public ROR API \u2014 nothing is uploaded or stored, and the CSV matches RORRetriever.py.', link:'https://metadatagamechangers.com' },
+];
+/* ---------- loading tips (shown while the batch retrieves) ---------- */
+let tipTimer = null, tipDelay = null, tipIndex = 0;
+function renderTip(){
+  const t = TIPS[tipIndex];
+  $('tips').innerHTML =
+    '<div class="tips-head">While you wait…</div>' +
+    '<div class="tips-label">' + t.label + '</div>' +
+    '<div class="tips-text">' + t.text + '</div>' +
+    (t.link ? '<a class="tips-link" href="' + t.link + '" target="_blank" rel="noopener">Learn more ↗</a>' : '');
+}
+function startTips(){
+  stopTips();
+  // small delay so quick runs don't flash a tip
+  tipDelay = setTimeout(() => {
+    tipIndex = Math.floor(Math.random() * TIPS.length);
+    renderTip();
+    $('tips').style.display = '';
+    tipTimer = setInterval(() => { tipIndex = (tipIndex + 1) % TIPS.length; renderTip(); }, 4500);
+  }, 1200);
+}
+function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay = tipTimer = null; $('tips').style.display = 'none'; }
+
 /* ---------- run ---------- */
 let results = [];          // flat output rows, RORRetriever.py TSV order
 let candidates = new Map(); // affiliation -> raw API items (for the drill-down)
@@ -292,6 +332,7 @@ async function run(){
   results = []; candidates = new Map(); stopRequested = false;
   $('res-body').innerHTML = ''; $('res-card').style.display = '';
   $('go-btn').disabled = true; $('stop-btn').style.display = '';
+  startTips();
   let done = 0;
   for (const affiliation of input){
     if (stopRequested) break;
@@ -315,6 +356,7 @@ async function run(){
     await sleep(120);   // stay well inside the ROR rate limit (2000 requests / 5 min)
   }
   hideProgress();
+  stopTips();
   $('go-btn').disabled = false; $('stop-btn').style.display = 'none';
   const found = results.filter(r => r.valid).length;
   setStatus(stopRequested
