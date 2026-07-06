@@ -32,6 +32,7 @@
   .sel-summary{background:#fff;border-bottom:1px solid var(--line)}
   .sel-inner{max-width:1040px;margin:0 auto;padding:.7rem 2rem;display:flex;align-items:baseline;gap:1.5rem;flex-wrap:wrap}
   .sel-repo{font-size:.95rem;font-weight:600;color:var(--accent-dk)}
+  .sel-shared{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--accent-dk);background:var(--tint);border:1px solid var(--accent);border-radius:4px;padding:.15rem .5rem;white-space:nowrap;align-self:center}
   .sel-repo .sel-id{font-family:'IBM Plex Mono',monospace;font-size:.7rem;font-weight:400;color:var(--muted);margin-left:.5rem}
   .sel-stats{display:flex;gap:1.4rem;flex-wrap:wrap;margin-left:auto}
   .sel-stat{font-size:.78rem;color:var(--muted)}
@@ -255,6 +256,7 @@
 <div class="sel-summary" id="sel-summary" style="display:none">
   <div class="sel-inner">
     <span class="sel-repo" id="sel-repo">—</span>
+    <span class="sel-shared" id="sel-shared" style="display:none" title="Another tool retrieved these records; both tools are measuring exactly the same sample">—</span>
     <div class="sel-stats">
       <span class="sel-stat"><b id="sel-records">—</b> records analyzed</span>
       <span class="sel-stat" id="sel-mode">—</span>
@@ -446,7 +448,10 @@ function renderSelection(clientId, meta, recordCount, random, repoTotal, resourc
   const name = (meta && meta.name) ? meta.name : clientId;
   $('sel-repo').innerHTML = `${escHtml(name)}<span class="sel-id">${escHtml(clientId)}</span>`;
   $('sel-records').textContent = recordCount.toLocaleString();
-  $('sel-mode').textContent = (random ? 'random sample' : 'sequential sample') + (sharedFrom ? ` · shared from ${sharedFrom}` : '');
+  $('sel-mode').textContent = random ? 'random sample' : 'sequential sample';
+  const sh = $('sel-shared');
+  if (sharedFrom){ sh.textContent = `Shared sample · from ${sharedFrom}`; sh.style.display = ''; }
+  else sh.style.display = 'none';
   const filtered = !!(resourceTypeId || query);
   const repo = (repoTotal != null) ? repoTotal : (filtered ? null : (meta && meta.doiCount != null ? meta.doiCount : null));
   $('sel-total').textContent = repo != null ? `of ${repo.toLocaleString()} ${filtered ? 'matching' : 'in repository'}` : '';
