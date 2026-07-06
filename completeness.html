@@ -1395,12 +1395,12 @@ async function fetchClientMeta(clientId){
   } catch { return null; }
 }
 
-function renderSelection(clientId, meta, recordCount, random, repoTotal, resourceTypeId, query){
+function renderSelection(clientId, meta, recordCount, random, repoTotal, resourceTypeId, query, sharedFrom){
   $('sel-summary').style.display = '';
   const name = (meta && meta.name) ? meta.name : clientId;
   $('sel-repo').innerHTML = `${escHtml(name)}<span class="sel-id">${escHtml(clientId)}</span>`;
   $('sel-records').textContent = recordCount.toLocaleString();
-  $('sel-mode').textContent = random ? 'random sample' : 'sequential sample';
+  $('sel-mode').textContent = (random ? 'random sample' : 'sequential sample') + (sharedFrom ? ` · shared from ${sharedFrom}` : '');
   const filtered = !!(resourceTypeId || query);
   // with a type/query filter, meta.total is the count of matching DOIs, not the whole repo
   const repo = (repoTotal != null) ? repoTotal : (filtered ? null : (meta && meta.doiCount != null ? meta.doiCount : null));
@@ -1424,6 +1424,24 @@ function syncUrl(clientId, resourceTypeId, query){
     history.replaceState({}, '', url);
   } catch (e) { /* non-fatal */ }
 }
+// score a set of records — shared by run() (which fetches them) and the shared-sample
+// boot path (which receives them from Metadata Connectivity)
+async function analyze(clientId, records, repoTotal, usedRandom, resourceTypeId, query, sharedFrom){
+  const meta = await fetchClientMeta(clientId);
+  renderSelection(clientId, meta, records.length, usedRandom, repoTotal, resourceTypeId, query, sharedFrom);
+  const sampleNote = usedRandom ? `random sample of ${records.length}` : `${records.length} sequential`;
+
+  setStatus(`Scoring ${SPIRALS.length} use cases over ${records.length} records…`);
+  setProgress(0);
+  const byCode = await scoreAllSpirals(records, frac => setProgress(frac));
+  const total = computeTotal(byCode);
+  lastRun = { byCode, total, records, clientId, resourceTypeId, query, random: usedRandom,
+              repoName: (meta && meta.name) ? meta.name : clientId, repoTotal };
+  renderTotal();
+  showDetail();
+  hideProgress();
+  setStatus(`Done — ${sampleNote} record${records.length===1?'':'s'}${sharedFrom ? `, shared from ${sharedFrom}` : ''}, total FAIR index ${fmtPct(total)}.`);
+}
 async function run(){
   const clientId = $('repo-input').value.trim();
   const cap = Math.max(1, Math.min(10000, parseInt($('cap').value,10) || 200));
@@ -1440,20 +1458,7 @@ async function run(){
   try {
     const { records, repoTotal, random: usedRandom } = await fetchRepo(clientId, cap, random, resourceTypeId, query);
     if (!records.length){ hideProgress(); setStatus('No records returned for that selection.', true); return; }
-    const meta = await fetchClientMeta(clientId);
-    renderSelection(clientId, meta, records.length, usedRandom, repoTotal, resourceTypeId, query);
-    const sampleNote = usedRandom ? `random sample of ${records.length}` : `${records.length} sequential`;
-
-    setStatus(`Scoring ${SPIRALS.length} use cases over ${records.length} records…`);
-    setProgress(0);
-    const byCode = await scoreAllSpirals(records, frac => setProgress(frac));
-    const total = computeTotal(byCode);
-    lastRun = { byCode, total, records, clientId, resourceTypeId, query, random: usedRandom,
-                repoName: (meta && meta.name) ? meta.name : clientId, repoTotal };
-    renderTotal();
-    showDetail();
-    hideProgress();
-    setStatus(`Done — ${sampleNote} record${records.length===1?'':'s'}, total FAIR index ${fmtPct(total)}.`);
+    await analyze(clientId, records, repoTotal, usedRandom, resourceTypeId, query);
   } catch (e){
     console.error(e);
     hideProgress();
@@ -1607,15 +1612,48 @@ whenJqReady().then(()=>{
     setStatus('Engine ready — but this page is open as a local file (file://). DataCite requests will be blocked. Serve it over http (e.g. "python3 -m http.server" → http://localhost:8000/completeness.html).', true);
   } else {
     setStatus('Engine ready. Search for a repository (or enter a client ID) and click Explore.');
-    // optional URL parameters (lets other apps deep-link a repository): ?client=…&resource-type=…&query=…
+    // optional URL parameters (lets other apps deep-link a repository):
+    //   ?client=…&resource-type=…&query=…&max=…&random=0
+    //   ?input=stored — score the exact records Metadata Connectivity analyzed (stored under
+    //   localStorage 'metadata-completeness-input', consumed on read), so both tools measure
+    //   the same sample; a reload re-fetches an equivalent selection via the URL parameters.
     const params = new URLSearchParams(location.search);
-    const clientFromUrl = params.get('client');
-    if (clientFromUrl){
-      $('repo-input').value = clientFromUrl;
-      const rt = params.get('resource-type') || params.get('resourceType');
-      if (rt && [...$('resource-type').options].some(o => o.value === rt)) $('resource-type').value = rt;
-      const q = params.get('query'); if (q) $('query-input').value = q;
-      run();
+    let shared = null;
+    if (params.get('input') === 'stored'){
+      try { shared = JSON.parse(localStorage.getItem('metadata-completeness-input')); } catch (e) { /* malformed */ }
+      localStorage.removeItem('metadata-completeness-input');   // consume once — samples can be large
+      if (!(shared && Array.isArray(shared.records) && shared.records.length && shared.clientId)) shared = null;
+    }
+    if (shared){
+      const s = shared;
+      $('repo-input').value = s.clientId;
+      if (s.resourceTypeId && [...$('resource-type').options].some(o => o.value === s.resourceTypeId)) $('resource-type').value = s.resourceTypeId;
+      if (s.query) $('query-input').value = s.query;
+      $('cap').value = Math.min(10000, s.records.length);
+      $('random').checked = !!s.random;
+      $('activity-link').href = 'repo-activity.html?client=' + encodeURIComponent(s.clientId);
+      $('connectivity-link').href = 'metadataConnectivity.html?client=' + encodeURIComponent(s.clientId);
+      syncUrl(s.clientId, s.resourceTypeId || '', s.query || '');
+      (async () => {
+        $('repo-go').disabled = true;
+        startTips();
+        try { await analyze(s.clientId, s.records, s.repoTotal, !!s.random, s.resourceTypeId || '', s.query || '', 'Metadata Connectivity'); }
+        catch (e){ console.error(e); hideProgress(); setStatus(e.message || String(e), true); }
+        finally { stopTips(); $('repo-go').disabled = false; }
+      })();
+    } else {
+      const clientFromUrl = params.get('client');
+      if (clientFromUrl){
+        $('repo-input').value = clientFromUrl;
+        const rt = params.get('resource-type') || params.get('resourceType');
+        if (rt && [...$('resource-type').options].some(o => o.value === rt)) $('resource-type').value = rt;
+        const q = params.get('query'); if (q) $('query-input').value = q;
+        const max = parseInt(params.get('max'), 10);
+        if (max > 0) $('cap').value = Math.min(10000, max);
+        const rand = params.get('random');
+        if (rand != null) $('random').checked = !/^(0|false|no)$/i.test(rand);
+        run();
+      }
     }
   }
 }).catch(e=>{

@@ -1681,6 +1681,27 @@ document.addEventListener('click', e => { if (!e.target.closest('.hero-search'))
 
 /* ---------- boot ---------- */
 $('repo-go').addEventListener('click', run);
+// Share the analyzed sample with Metadata Completeness (the reverse of the
+// Completeness → Connectivity handoff), so both tools measure the SAME records. On click,
+// store the records under localStorage 'metadata-completeness-input' and point the link at
+// ?input=stored; if the sample is too large for storage, fall back to a parameter deep link.
+$('completeness-link').addEventListener('click', () => {
+  if (!lastRun || !lastRun.records || !lastRun.records.length) return;   // no run yet — plain ?client link
+  const l = lastRun;
+  try {
+    localStorage.setItem('metadata-completeness-input', JSON.stringify({
+      source: 'metadataConnectivity', records: l.records,
+      clientId: l.clientId, repoName: l.repoName, repoTotal: l.repoTotal,
+      random: l.random, resourceTypeId: l.resourceTypeId, query: l.query }));
+    $('completeness-link').href = 'completeness.html?input=stored';
+  } catch (e){   // quota exceeded — deep-link the selection instead
+    localStorage.removeItem('metadata-completeness-input');
+    $('completeness-link').href = 'completeness.html?client=' + encodeURIComponent(l.clientId)
+      + (l.resourceTypeId ? '&resource-type=' + encodeURIComponent(l.resourceTypeId) : '')
+      + (l.query ? '&query=' + encodeURIComponent(l.query) : '')
+      + '&max=' + l.records.length + (l.random ? '' : '&random=0');
+  }
+});
 $('dl-json').addEventListener('click', downloadConnReport);
 $('dl-html').addEventListener('click', downloadConnReportHtml);
 $('dl-pdf').addEventListener('click', downloadConnPdf);
