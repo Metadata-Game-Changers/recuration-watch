@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Metadata Tips — Metadata Game Changers</title>
+<meta name="description" content="All the while-you-wait tips from the Metadata Game Changers tools in one place — completeness, connectivity, re-curation, and ROR / ORCID identifier matching." />
+<link rel="icon" type="image/png" href="favicon_MGC.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{ --accent:#9167b0; --accent-dk:#673289; --tint:#f0eaf5; --ink:#1f2330; --muted:#6b7280; --line:#e6e3ec; --bg:#fbfafe; --green:#3a9d6e; --amber:#d4910b; --red:#c0392b; }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:0}
+  .topbar{border-bottom:2px solid var(--ink);padding:0 2rem}
+  .topbar-inner{max-width:1040px;margin:0 auto;display:flex;align-items:stretch;gap:0}
+  .topbar-brand{padding:.5rem 2rem .3rem 0;display:flex;flex-direction:row;align-items:flex-end;gap:1rem}
+  .brand-logo{height:64px;width:auto;display:block;flex-shrink:0}
+  .brand-title-wrap{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:.15rem}
+  .brand-tool-name{font-family:'Montserrat',sans-serif;font-size:2rem;font-weight:400;letter-spacing:.02em;color:#673289;line-height:1;white-space:nowrap;text-transform:uppercase}
+  .topbar-links{padding:0 0 0 1.5rem;display:flex;flex-direction:column;justify-content:center;gap:.25rem;margin-left:auto}
+  .topbar-links a{font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4}
+  .topbar-links a:hover{color:var(--accent-dk)}
+  @media(max-width:820px){.topbar{padding:0 1rem}.topbar-inner{flex-direction:column}.topbar-brand{padding-right:0}.brand-tool-name{font-size:1.5rem}.topbar-links{flex-direction:row;flex-wrap:wrap;gap:.75rem;padding:.25rem 0 .5rem}}
+  .wrap{max-width:1080px;margin:0 auto;padding:1.5rem 1.25rem 3rem}
+  .intro{font-size:.85rem;color:var(--ink);line-height:1.6;max-width:760px;margin:.4rem 0 1.2rem}
+  .intro a{color:var(--accent);text-decoration:none}
+  .intro a:hover{text-decoration:underline}
+  .tool-group{font-size:.95rem;font-weight:600;color:var(--accent-dk);margin:1.6rem 0 .6rem;border-bottom:1px solid var(--line);padding-bottom:.35rem;display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap}
+  .tool-group a.open-tool{font-size:.7rem;font-weight:600;color:var(--accent);text-decoration:none}
+  .tool-group a.open-tool:hover{color:var(--accent-dk)}
+  .tool-group .count{margin-left:auto;font-size:.68rem;color:var(--muted);font-weight:400}
+  .tips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.7rem}
+  .tip{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;background:#fff;padding:.7rem .9rem}
+  .tip .tips-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-dk);font-weight:600;margin-bottom:.2rem}
+  .tip .tips-text{font-size:.82rem;color:var(--ink);line-height:1.5}
+  .tip .tips-text strong{color:var(--accent-dk)}
+  .tip .tips-link{display:inline-block;margin-top:.4rem;font-size:.68rem;color:var(--accent);text-decoration:none}
+  .tip .tips-link:hover{text-decoration:underline}
+  footer{margin-top:2.5rem;font-size:.72rem;color:var(--muted);border-top:1px solid var(--line);padding-top:.9rem;line-height:1.5}
+  footer a{color:var(--accent);text-decoration:none}
+  @media print{.topbar-links{display:none} .tip{break-inside:avoid}}
+</style>
+</head>
+<body>
+<!-- Collected from the tips arrays in the tool pages (RCW_TIPS, COMPLETENESS_TIPS,
+     CONNECTIVITY_TIPS, and the retrievers' TIPS) - when a tool's tips change, update
+     this page to match. -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" onerror="this.style.display='none'" />
+      </a>
+      <div class="brand-title-wrap"><div class="brand-tool-name">Metadata Tips</div></div>
+    </div>
+    <div class="topbar-links">
+      <a href="tools.html">All Tools ↗</a>
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers ↗</a>
+      <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <p class="intro">Every <a href="tools.html">MGC metadata tool</a> shows rotating tips while it works — small pieces of
+  metadata wisdom about completeness, connectivity, identifiers, and re-curation. This page collects all of them in one
+  place, grouped by the tool they appear in.</p>
+  <div class="tool-group">Re-Curation Watch <a class="open-tool" href="index.html">Open the tool →</a><span class="count">6 tips</span></div>
+  <div class="tips-grid">
+    <div class="tip">
+      <div class="tips-label">Re-Curation</div>
+      <div class="tips-text"><strong>Re-curation</strong> means going back to published records to improve connectivity — adding ORCIDs, RORs, and related identifiers.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com/blog" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">FAIR Principles</div>
+      <div class="tips-text"><strong>FAIR metadata</strong> is a continuum, not a checklist. The activity history here shows how repositories move along it over time.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com/blog" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Funder Metadata</div>
+      <div class="tips-text"><strong>Funder acronyms are not enough.</strong> Persistent identifiers like ROR make it possible to trace research outputs back to the agencies that funded them.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com/blog" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">DataCite Provenance</div>
+      <div class="tips-text"><strong>Every DOI update</strong> since March 2019 is recorded by DataCite as a provenance event — this is what Re-Curation Watch visualizes.</div>
+      <a class="tips-link" href="https://support.datacite.org/docs/tracking-provenance" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">MGC Mission</div>
+      <div class="tips-text"><strong>Better documentation</strong> leads to better data discovery, reuse, and research integrity.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Connectivity</div>
+      <div class="tips-text"><strong>Identifiers connect research.</strong> ORCIDs for people, RORs for organizations, DOIs for outputs — together they make the global research graph possible.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com/blog" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+  </div>
+  <div class="tool-group">Metadata Completeness <a class="open-tool" href="completeness.html">Open the tool →</a><span class="count">8 tips</span></div>
+  <div class="tips-grid">
+    <div class="tip">
+      <div class="tips-label">Completeness</div>
+      <div class="tips-text"><strong>Completeness</strong> here measures <em>presence</em> — the share of records that contain each concept — not whether the value is correct or rich.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">FAIR use cases</div>
+      <div class="tips-text">The four <strong>FAIR use cases</strong> group concepts by purpose: <strong>Text</strong> for discovery, <strong>Identifiers</strong>, <strong>Connections</strong>, and <strong>Contacts</strong>.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com/blog" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Mandatory fields</div>
+      <div class="tips-text">DataCite requires a handful of fields (title, creator, publisher, type, year), so a few concepts sit near <strong>100% by design</strong> — the interesting signal is everything else.</div>
+      <a class="tips-link" href="https://support.datacite.org/docs/datacite-metadata-schema-v44-mandatory-properties" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Total index</div>
+      <div class="tips-text">The <strong>FAIR Total</strong> is a concept-weighted average across the four FAIR use cases. Projects and Extras are scored separately and don’t affect it.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com/blog" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Sampling</div>
+      <div class="tips-text">For large repositories, a <strong>random sample</strong> of a few hundred records gives a representative completeness score in seconds.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com/blog" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Connectivity</div>
+      <div class="tips-text">Structured <strong>affiliations (ROR)</strong> and <strong>identifiers (ORCID, DOI)</strong> connect the research graph far better than plain names and titles.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com/blog" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Relations</div>
+      <div class="tips-text"><strong>relatedIdentifiers</strong> — Cites, IsPartOf, IsSupplementTo … — turn isolated records into a connected network. See the DataCite Relations use case.</div>
+      <a class="tips-link" href="https://support.datacite.org/docs/connecting-to-works" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">In your browser</div>
+      <div class="tips-text">Every score is computed <strong>in your browser</strong> with the same jq queries Metadata Game Changers uses — nothing is uploaded or stored.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+  </div>
+  <div class="tool-group">Metadata Connectivity <a class="open-tool" href="metadataConnectivity.html">Open the tool →</a><span class="count">8 tips</span></div>
+  <div class="tips-grid">
+    <div class="tip">
+      <div class="tips-label">Connectivity</div>
+      <div class="tips-text"><strong>Connectivity</strong> measures whether the things in your metadata carry the identifiers that <em>connect</em> them — ORCIDs on people, RORs on organizations.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Distinct entities</div>
+      <div class="tips-text">The bars count <strong>distinct entities</strong>, not occurrences — a creator who appears in 50 records is one person to identify once.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com/blog" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Quick wins</div>
+      <div class="tips-text"><strong>Yellow</strong> segments are quick wins: an identifier already known for an entity that just needs to be <em>propagated</em> to its other occurrences — no lookup required.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com/blog" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">ORCID</div>
+      <div class="tips-text">An <strong>ORCID</strong> on a creator or contributor links every one of their outputs across repositories — the single highest-leverage identifier to add.</div>
+      <a class="tips-link" href="https://orcid.org" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">ROR</div>
+      <div class="tips-text"><strong>ROR</strong> identifiers on affiliations disambiguate organizations far better than free-text names like “Univ. of Colorado”.</div>
+      <a class="tips-link" href="https://ror.org" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Duplicates</div>
+      <div class="tips-text">The same person or org shows up under many spellings. The <strong>potential-duplicates</strong> panel groups likely matches — even across creators and contributors.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com/blog" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Click a bar</div>
+      <div class="tips-text"><strong>Click any bar</strong> to list its distinct entities — quick wins first (a known identifier to propagate), then the ones still missing an identifier.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">In your browser</div>
+      <div class="tips-text">Everything is computed <strong>in your browser</strong> against live DataCite data — nothing is uploaded or stored.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+  </div>
+  <div class="tool-group">ROR Retriever <a class="open-tool" href="rorRetriever.html">Open the tool →</a><span class="count">8 tips</span></div>
+  <div class="tips-grid">
+    <div class="tip">
+      <div class="tips-label">Affiliation strategy</div>
+      <div class="tips-text">Each name is matched with ROR’s <strong>affiliation strategy</strong> — it tries substrings of your string against registered names and <em>chooses</em> a match only when it is confident.</div>
+      <a class="tips-link" href="rorAbout.html">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Why the pace?</div>
+      <div class="tips-text">Each affiliation is a separate API request, paced to stay well inside ROR’s rate limit — results appear <strong>as they arrive</strong>, and you can Stop anytime and keep what’s done.</div>
+      <a class="tips-link" href="https://ror.readme.io/docs/rest-api" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Colors</div>
+      <div class="tips-text"><strong>Green</strong> = chosen by the algorithm (trustworthy). <strong>Amber</strong> = a suggestion — best-score or keyword-search — verify by eye. <strong>Red</strong> = nothing usable.</div>
+      <a class="tips-link" href="rorAbout.html">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">QUERY fallback</div>
+      <div class="tips-text">Names the matcher can’t place are retried with ror.org’s <strong>keyword search</strong>; its top hit appears in amber with <strong>QUERY</strong> in the Match column.</div>
+      <a class="tips-link" href="rorAbout.html">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">“(Country)” names</div>
+      <div class="tips-text">Some registered names carry a suffix like “Metadata Game Changers <strong>(United States)</strong>” with no short alias — a <strong>ROR curation request</strong> fixes that for everyone.</div>
+      <a class="tips-link" href="https://curation-request.ror.org" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Beyond affiliations</div>
+      <div class="tips-text">ROR absorbed the Open Funder Registry, so RORs identify <strong>funders</strong> and <strong>publishers</strong> too — not just author affiliations.</div>
+      <a class="tips-link" href="https://ror.org" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Candidates</div>
+      <div class="tips-text">Click an <strong>affiliation or its result count</strong> to see every candidate the API returned — scores, matching types, and which one was chosen.</div>
+      <a class="tips-link" href="rorAbout.html">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">In your browser</div>
+      <div class="tips-text">Matching runs <strong>in your browser</strong> against the public ROR API — nothing is uploaded or stored, and the CSV matches RORRetriever.py.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+  </div>
+  <div class="tool-group">ORCID Retriever <a class="open-tool" href="orcidRetriever.html">Open the tool →</a><span class="count">8 tips</span></div>
+  <div class="tips-grid">
+    <div class="tip">
+      <div class="tips-label">The search</div>
+      <div class="tips-text">Each name is parsed into <strong>family and given names</strong> and searched in the public ORCID registry — the same search MGC’s getORCIDs.py uses.</div>
+      <a class="tips-link" href="https://orcid.org" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Why the pace?</div>
+      <div class="tips-text">Every candidate iD is a separate <strong>record fetch</strong> (that’s where employment and journal come from), paced to respect ORCID’s public API — results appear as they arrive.</div>
+      <a class="tips-link" href="https://info.orcid.org/documentation/features/public-api/" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Pick one</div>
+      <div class="tips-text"><strong>Amber rows</strong> mean several people share the name — one row per candidate. Use the <strong>employment</strong> and <strong>journal</strong> columns to pick the right person.</div>
+      <a class="tips-link" href="https://orcid.org" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Empty columns?</div>
+      <div class="tips-text">ORCID profile data appears only if the researcher made it <strong>public</strong> — an empty employment column doesn’t mean unemployed, just private or unfilled.</div>
+      <a class="tips-link" href="https://support.orcid.org/hc/en-us/articles/360006897614" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Common names</div>
+      <div class="tips-text"><strong>Max matches / name</strong> caps how many candidates are fetched — the Matches column still shows the true total, e.g. “first 5 of 137”.</div>
+      <a class="tips-link" href="https://orcid.org" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Name forms</div>
+      <div class="tips-text">“First Last” and “Last, First” both work — suffixes (Jr, III) and nicknames are handled by the parser ported from getORCIDs.py.</div>
+      <a class="tips-link" href="https://github.com/Metadata-Game-Changers/ORCID-Tools" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">Why ORCIDs?</div>
+      <div class="tips-text">An <strong>ORCID</strong> on a creator or contributor links every one of their outputs across repositories — the single highest-leverage identifier to add.</div>
+      <a class="tips-link" href="https://orcid.org" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+    <div class="tip">
+      <div class="tips-label">In your browser</div>
+      <div class="tips-text">Everything runs <strong>in your browser</strong> against the anonymous public ORCID API — no token, nothing uploaded or stored.</div>
+      <a class="tips-link" href="https://metadatagamechangers.com" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
+  </div>
+  <footer>
+    These tips rotate inside the tools while data loads; here they are all at once. Collected from
+    <a href="index.html">Re-Curation Watch</a>, <a href="completeness.html">Metadata Completeness</a>,
+    <a href="metadataConnectivity.html">Metadata Connectivity</a>, <a href="rorRetriever.html">ROR Retriever</a>,
+    and <a href="orcidRetriever.html">ORCID Retriever</a>.
+    A <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers</a> prototype
+    &copy; Metadata Game Changers, licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a> · DOI: pending.
+  </footer>
+</div>
+</body>
+</html>
