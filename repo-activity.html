@@ -28,7 +28,8 @@
   .brand-logo{height:64px;width:auto;display:block;flex-shrink:0}
   .brand-title-wrap{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:.15rem}
   .brand-tool-name{font-family:'Montserrat',sans-serif;font-size:2rem;font-weight:400;letter-spacing:.02em;color:#673289;line-height:1;white-space:nowrap;text-transform:uppercase}
-  .topbar-links{padding:0 0 0 1.5rem;display:flex;flex-direction:column;justify-content:center;gap:.25rem;margin-left:auto}
+  .topbar-links{padding:0 0 0 1.5rem;display:flex;gap:1.6rem;margin-left:auto}
+  .topbar-col{display:flex;flex-direction:column;justify-content:center;gap:.25rem}
   .topbar-links a{font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4}
   .topbar-links a:hover{color:var(--accent-dk)}
 
@@ -160,7 +161,7 @@
 
   @media(max-width:820px){
     .topbar{padding:0 1rem}.topbar-inner{flex-direction:column}.topbar-brand{padding-right:0}.brand-tool-name{font-size:1.5rem}
-    .topbar-links{flex-direction:row;flex-wrap:wrap;gap:.75rem;padding:.25rem 0 .5rem}
+    .topbar-links{flex-wrap:wrap;gap:.75rem;padding:.25rem 0 .5rem}.topbar-col{flex-direction:row;flex-wrap:wrap;gap:.75rem}
     .hero{padding:1.25rem 1rem}.hero-inner{flex-direction:column;gap:1rem;align-items:stretch}.hero-text{min-width:0}.hero-search{min-width:0;width:100%}
     .sel-inner{padding:.7rem 1rem}.sel-stats{margin-left:0}.wrap{padding:1.25rem 1rem 4rem}
     .pd-label{flex-basis:130px}.diff-row{grid-template-columns:80px 1fr}
@@ -177,12 +178,16 @@
       <div class="brand-title-wrap"><div class="brand-tool-name">Repository Activity</div></div>
     </div>
     <div class="topbar-links">
+      <div class="topbar-col">
       <a href="https://metadata-game-changers.github.io/recuration-watch/" target="_blank" rel="noopener">Re-Curation Watch ↗</a>
       <a id="completeness-link" href="completeness.html" target="_blank" rel="noopener">Metadata Completeness ↗</a>
       <a id="connectivity-link" href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity ↗</a>
+      </div>
+      <div class="topbar-col">
       <a href="tips.html">Metadata Tips ↗</a>
       <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers ↗</a>
       <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
+      </div>
     </div>
   </div>
 </div>
