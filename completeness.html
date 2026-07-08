@@ -1579,6 +1579,7 @@ const COMPLETENESS_TIPS = [
   { label: 'Connectivity', text: 'Structured <strong>affiliations (ROR)</strong> and <strong>identifiers (ORCID, DOI)</strong> connect the research graph far better than plain names and titles.', link: 'https://metadatagamechangers.com/blog' },
   { label: 'Relations', text: '<strong>relatedIdentifiers</strong> — Cites, IsPartOf, IsSupplementTo … — turn isolated records into a connected network. See the DataCite Relations use case.', link: 'https://support.datacite.org/docs/connecting-to-works' },
   { label: 'In your browser', text: 'Every score is computed <strong>in your browser</strong> with the same jq queries Metadata Game Changers uses — nothing is uploaded or stored.', link: 'https://metadatagamechangers.com' },
+  { label: 'Retrieve ROR subset', text: 'To Retrieve records <strong>associated with an organization</strong> from a repository put quotes around the "ROR" in the query.', link: 'https://support.datacite.org/docs/queries' },
 ];
 let tipTimer = null, tipDelay = null, tipIndex = 0;
 function renderTip(){
