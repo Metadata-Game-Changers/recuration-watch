@@ -31,6 +31,9 @@ self-contained HTML file with inline CSS + vanilla JS — no framework, no bundl
   key `orcid-retriever-input` (`?input=stored`) or `#names=…`, with `auto=1` to run.
 - `FAIR_spirals.json` — readable catalog of the use cases (also **embedded** inside
   `completeness.html`; keep the two in sync).
+- `tips.html` — **generated** collection of every tool's while-you-wait tips. Never edit by
+  hand: edit the tips array in the tool page, then `python3 makeTipsPage.py` (use `--check`
+  to detect drift).
 - `COMPLETENESS_HANDOFF.md`, `REPO_ACTIVITY_HANDOFF.md` — design/handoff notes; read the
   relevant one before deep work on that tool.
 
