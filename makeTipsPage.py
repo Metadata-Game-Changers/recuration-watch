@@ -114,7 +114,6 @@ HEAD = '''<!DOCTYPE html>
     </div>
     <div class="topbar-links">
       <a href="tools.html">All Tools ↗</a>
-      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers ↗</a>
       <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
     </div>
   </div>
