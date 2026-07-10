@@ -107,6 +107,18 @@
   .modal-x{appearance:none;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:.85rem;line-height:1;flex-shrink:0}
   .modal-x:hover{border-color:var(--accent);color:var(--accent-dk)}
   .modal-body{padding:.4rem 1.1rem 1.1rem;overflow:auto}
+  /* cite-this-tool popover */
+  .cite-link{background:none;border:none;cursor:pointer;font:inherit;font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4;padding:0;text-align:left}
+  .cite-link:hover{color:var(--accent-dk)}
+  .cite-pop{display:none;position:fixed;inset:0;z-index:300;background:rgba(31,35,48,.35);align-items:flex-start;justify-content:flex-end;padding:4rem 1.5rem 0 0}
+  .cite-pop.open{display:flex}
+  .cite-card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.25);max-width:480px;width:100%;padding:1.3rem}
+  .cite-card .cite-head{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:.5rem}
+  .cite-card .cite-text{font-size:.82rem;color:var(--ink);line-height:1.6;margin-bottom:1rem}
+  .cite-card .cite-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+  .cite-card .cite-copy{font-size:.72rem;font-weight:600;background:var(--accent);color:#fff;border:none;padding:.4rem .8rem;border-radius:6px;cursor:pointer}
+  .cite-card .cite-doi{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.68rem;color:var(--accent);text-decoration:none}
+  .cite-card .cite-close{margin-left:auto;background:none;border:1px solid var(--line);border-radius:6px;padding:.3rem .6rem;cursor:pointer;font-size:.7rem;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -126,6 +138,7 @@
       <a href="repo-activity.html" target="_blank" rel="noopener">Repository Activity ↗</a>
       </div>
       <div class="topbar-col">
+      <button class="cite-link" id="cite-btn" type="button">Cite this Tool ↗</button>
       <a href="rorAbout.html" target="_blank" rel="noopener">About ROR Matching ↗</a>
       <a href="tips.html">Metadata Tips ↗</a>
       <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
@@ -501,8 +514,34 @@ function showSource(s){
       </a>
       <span style="font-size:0.72rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">ROR Retriever</a> · Created by <a href="https://metadatagamechangers.com" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Metadata Game Changers</a> · Better Documentation | Better Data | Better Science</span>
     </div>
-    <span style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:0.65rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Report an issue ↗</a> &nbsp;·&nbsp; <span title="A DOI for this tool has not been minted yet">DOI: pending</span> &nbsp;·&nbsp; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none;">CC BY-NC 4.0</a> &nbsp;·&nbsp; Live data from <a href="https://api.ror.org" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">api.ror.org</a></span>
+    <span style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:0.65rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Report an issue ↗</a> &nbsp;·&nbsp; <a href="https://doi.org/10.60872/rorRetriever" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none;" title="Cite as: doi.org/10.60872/rorRetriever">DOI: 10.60872/rorRetriever</a> &nbsp;·&nbsp; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none;">CC BY-NC 4.0</a> &nbsp;·&nbsp; Live data from <a href="https://api.ror.org" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">api.ror.org</a></span>
   </div>
 </footer>
+<div class="cite-pop" id="cite-pop" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="cite-card">
+    <div class="cite-head">Cite this tool</div>
+    <div class="cite-text" id="cite-text">Loading citation…</div>
+    <div class="cite-row">
+      <button class="cite-copy" id="cite-copy" type="button">Copy citation</button>
+      <a class="cite-doi" href="https://doi.org/10.60872/rorRetriever" target="_blank" rel="noopener">doi.org/10.60872/rorRetriever ↗</a>
+      <button class="cite-close" type="button" onclick="document.getElementById('cite-pop').classList.remove('open')">Close</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var citeDoi='10.60872/rorRetriever', loaded=false;
+  var pop=document.getElementById('cite-pop'), txt=document.getElementById('cite-text');
+  function load(){
+    fetch('https://doi.org/'+citeDoi, {headers:{'Accept':'text/x-bibliography; style=apa'}})
+      .then(function(r){ if(!r.ok) throw 0; return r.text(); })
+      .then(function(t){ txt.textContent=(new DOMParser().parseFromString(t.trim(),'text/html')).body.textContent; })
+      .catch(function(){ txt.textContent='Metadata Game Changers. (2026). ROR Retriever (Version 1) [Computer software]. https://doi.org/'+citeDoi; });
+  }
+  document.getElementById('cite-btn').addEventListener('click', function(){ pop.classList.add('open'); if(!loaded){loaded=true;load();} });
+  document.getElementById('cite-copy').addEventListener('click', function(){ navigator.clipboard.writeText(txt.textContent).then(function(){ var b=document.getElementById('cite-copy'); b.textContent='Copied!'; setTimeout(function(){b.textContent='Copy citation';},1600); }).catch(function(){}); });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape') pop.classList.remove('open'); });
+})();
+</script>
 </body>
 </html>
