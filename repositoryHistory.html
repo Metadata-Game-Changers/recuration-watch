@@ -283,6 +283,8 @@
           </select>
         </label>
         <button class="dl-btn" id="dl-png" type="button">⬇ Plot (PNG)</button>
+        <button class="dl-btn" id="dl-grid-copy" type="button" style="display:none" title="Copy the radar grid to the clipboard as an image">⧉ Copy grid</button>
+        <button class="dl-btn" id="dl-grid-png" type="button" style="display:none" title="Download the radar grid as a PNG image">⬇ Grid (PNG)</button>
         <button class="dl-btn" id="dl-json" type="button">⬇ Data (JSON)</button>
         <button class="dl-btn" id="dl-csv" type="button">⬇ Data (CSV)</button>
       </div>
@@ -576,7 +578,9 @@ const SPIRAL_COLORS = {
 };
 // a small, label-free radar of a use case's concepts (small-multiples cell); shape comparison
 // across a row is the point — the row label names the use case, axes are consistent within a row
-function miniRadar(items, color, size){
+// inner geometry of a small radar (no outer <svg>) so it can be embedded both as a standalone
+// SVG (miniRadar) and as a nested cell in the composite grid SVG (gridSvgMarkup)
+function radarInner(items, color, size){
   const W = size, cx = W/2, cy = W/2, R = W/2 * 0.82, N = items.length || 1;
   const ang = i => (i/N) * 2 * Math.PI - Math.PI/2;
   const pt  = (i,r) => [ +(cx + Math.cos(ang(i))*R*r).toFixed(1), +(cy + Math.sin(ang(i))*R*r).toFixed(1) ];
@@ -585,7 +589,10 @@ function miniRadar(items, color, size){
   for (let i=0;i<N;i++){ const [x,y]=pt(i,1); g += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#f0eef5" stroke-width="1"/>`; }
   const pts = items.map((it,i) => pt(i, Math.min(it.comp,1)).join(',')).join(' ');
   g += `<polygon points="${pts}" fill="${color}" fill-opacity="0.30" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>`;
-  return `<svg viewBox="0 0 ${W} ${W}" width="${W}" height="${W}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
+  return g;
+}
+function miniRadar(items, color, size){
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">${radarInner(items, color, size)}</svg>`;
 }
 // a larger, labeled radar for the movie view (perimeter concept labels fit at this size;
 // omitted for very busy use cases to avoid a tangle). Ported from completeness.html.
@@ -830,6 +837,85 @@ function drawGrid(){
   grid.innerHTML = `<table class="grid-tbl"><thead>${head}</thead><tbody>${rows}</tbody></table>`;
 }
 
+/* ---------- grid export: one composite SVG of the whole grid, rasterized to PNG ---------- */
+const GRID_GROUP_LABEL = { FAIR:'FAIR use cases', Projects:'Project use cases', Extras:'Additional DataCite use cases', All:'All nine use cases' };
+function gridSvgMarkup(){
+  const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
+  const years = history.years.filter(e => e.n > 0 && e.byCode);
+  const totalKey = plotGroup === 'Projects' ? 'projects' : 'fair';
+  const totalName = plotGroup === 'Projects' ? 'Projects' : 'FAIR';
+  const PAD = 14, TITLE_H = 42, LABEL_W = 96, HEADER_H = 46, RAD = 132, AVG_H = 18;
+  const COL_W = RAD + 16, ROW_H = RAD + AVG_H + 8;
+  const gridLeft = PAD + LABEL_W, gridTop = PAD + TITLE_H + HEADER_H;
+  const W = gridLeft + years.length * COL_W + PAD;
+  const H = gridTop + codes.length * ROW_H + PAD;
+  const FONT = "font-family='Inter, system-ui, sans-serif'";
+  let s = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
+  s += `<text x="${PAD}" y="18" ${FONT} font-size="15" font-weight="600" fill="#673289">${escHtml(history.repoName)} (${escHtml(history.clientId)}) — completeness by registered year</text>`;
+  s += `<text x="${PAD}" y="34" ${FONT} font-size="11" fill="#6b7280">${escHtml(GRID_GROUP_LABEL[plotGroup] || plotGroup)} · up to ${history.cap} records/year · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. re-curation)</text>`;
+  // column headers: year / n / total
+  years.forEach((e, j) => {
+    const cxp = gridLeft + j*COL_W + COL_W/2;
+    const top = PAD + TITLE_H;
+    const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
+    s += `<text x="${cxp}" y="${top+13}" ${FONT} font-size="13" font-weight="600" text-anchor="middle" fill="#1f2330">${e.year}</text>`;
+    s += `<text x="${cxp}" y="${top+27}" ${FONT} font-size="10" text-anchor="middle" fill="#6b7280">n=${e.n.toLocaleString()}${e.n < THIN ? ' *' : ''}</text>`;
+    s += `<text x="${cxp}" y="${top+41}" ${FONT} font-size="11" font-weight="600" text-anchor="middle" fill="#673289">${tot}</text>`;
+  });
+  // rows: label + radar cells with avg below
+  codes.forEach((code, i) => {
+    const color = SPIRAL_COLORS[code] || '#9167b0';
+    const label = CODE_STYLE[code] ? CODE_STYLE[code].label : code;
+    const y0 = gridTop + i*ROW_H;
+    s += `<text x="${gridLeft-8}" y="${y0 + RAD/2}" ${FONT} font-size="12" font-weight="600" text-anchor="end" dominant-baseline="middle" fill="#673289">${escHtml(label)}</text>`;
+    years.forEach((e, j) => {
+      const uc = e.byCode[code]; if (!uc) return;
+      const x0 = gridLeft + j*COL_W + (COL_W - RAD)/2;
+      s += `<svg x="${x0}" y="${y0}" width="${RAD}" height="${RAD}" viewBox="0 0 ${RAD} ${RAD}">${radarInner(uc.res.items, color, RAD)}</svg>`;
+      const avg = (uc.res.average * 100).toFixed(0) + '%';
+      s += `<text x="${gridLeft + j*COL_W + COL_W/2}" y="${y0 + RAD + 12}" ${FONT} font-size="11" font-weight="600" text-anchor="middle" fill="#1f2330">${avg}</text>`;
+    });
+  });
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${s}</svg>`, w: W, h: H };
+}
+function svgToPngBlob(svgString, scale){
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' }));
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.width * scale; c.height = img.height * scale;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
+      ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null')), 'image/png');
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('SVG failed to load for rasterization')); };
+    img.src = url;
+  });
+}
+async function downloadGridPng(){
+  if (!history || !history.years.some(e => e.n > 0 && e.byCode)) return;
+  try {
+    const { svg } = gridSvgMarkup();
+    const blob = await svgToPngBlob(svg, 2);
+    triggerDownload(blob, `${safeRepoId()}_historyGrid_${plotGroup}__${nowStamp()}.png`);
+  } catch (e){ console.error(e); setStatus('Could not render the grid to PNG: ' + (e.message || e), true); }
+}
+async function copyGrid(){
+  if (!history || !history.years.some(e => e.n > 0 && e.byCode)) return;
+  const btn = $('dl-grid-copy'); const label = btn.textContent;
+  try {
+    const { svg } = gridSvgMarkup();
+    const blob = await svgToPngBlob(svg, 2);
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    btn.textContent = '✓ Copied';
+  } catch (e){ console.error(e); btn.textContent = 'Copy failed'; }
+  setTimeout(() => { btn.textContent = label; }, 1600);
+}
+
 // switch between the line chart and the radar grid, keeping the download buttons sensible
 function renderView(){
   $('chart').style.display   = viewMode === 'lines' ? '' : 'none';
@@ -837,6 +923,8 @@ function renderView(){
   $('grid').style.display    = viewMode === 'grid'  ? '' : 'none';
   $('movie').style.display   = viewMode === 'movie' ? '' : 'none';
   $('dl-png').style.display  = viewMode === 'lines' ? '' : 'none';   // PNG export is the line chart
+  $('dl-grid-copy').style.display = viewMode === 'grid' ? '' : 'none';
+  $('dl-grid-png').style.display  = viewMode === 'grid' ? '' : 'none';
   if (viewMode !== 'movie') movieStop();
   if (viewMode === 'grid') drawGrid();
   else if (viewMode === 'movie') drawMovie();
@@ -1064,6 +1152,8 @@ function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay =
 $('repo-go').addEventListener('click', run);
 $('stop-btn').addEventListener('click', () => { stopRequested = true; });
 $('dl-png').addEventListener('click', downloadPng);
+$('dl-grid-png').addEventListener('click', downloadGridPng);
+$('dl-grid-copy').addEventListener('click', copyGrid);
 $('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; renderLegend(); if (viewMode === 'grid') drawGrid(); else if (viewMode === 'movie') drawMovie(); else drawChart(); });
 $('view-mode').addEventListener('change', () => { viewMode = $('view-mode').value; renderView(); });
 $('movie-play').addEventListener('click', moviePlay);
