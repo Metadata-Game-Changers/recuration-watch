@@ -296,7 +296,9 @@
     <div id="grid" style="display:none"></div>
     <div id="movie" style="display:none">
       <div class="movie-bar">
+        <button class="dl-btn" id="movie-prev" type="button" title="Previous year (←)">◀ Prev</button>
         <button class="dl-btn" id="movie-play" type="button">▶ Play</button>
+        <button class="dl-btn" id="movie-next" type="button" title="Next year (→)">Next ▶</button>
         <input type="range" id="movie-slider" min="0" max="0" value="0" step="1" aria-label="Registered year" />
         <span class="movie-caption" id="movie-caption"></span>
       </div>
@@ -937,12 +939,14 @@ let movieIdx = 0, movieTimer = null;
 function scoredYears(){ return history ? history.years.filter(e => e.n > 0 && e.byCode) : []; }
 function drawMovie(){
   const years = scoredYears();
-  if (!years.length){ $('movie-radars').innerHTML = ''; $('movie-caption').textContent = ''; $('movie-play').disabled = true; return; }
+  if (!years.length){ $('movie-radars').innerHTML = ''; $('movie-caption').textContent = ''; $('movie-play').disabled = $('movie-prev').disabled = $('movie-next').disabled = true; return; }
   if (movieIdx >= years.length) movieIdx = years.length - 1;
   if (movieIdx < 0) movieIdx = 0;
   const e = years[movieIdx];
   const slider = $('movie-slider'); slider.max = years.length - 1; slider.value = movieIdx;
   $('movie-play').disabled = years.length < 2;
+  $('movie-prev').disabled = movieIdx <= 0;
+  $('movie-next').disabled = movieIdx >= years.length - 1;
   const totalKey = plotGroup === 'Projects' ? 'projects' : 'fair';
   const totalName = plotGroup === 'Projects' ? 'Projects' : 'FAIR';
   const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
@@ -966,6 +970,13 @@ function moviePlay(){
     if (movieIdx >= scoredYears().length - 1){ movieStop(); drawMovie(); return; }   // stop on the last year
     movieIdx++; drawMovie();
   }, 1100);
+}
+// step one year without playing (buttons and arrow keys); clamped to the scored-year range
+function movieStep(delta){
+  movieStop();
+  const years = scoredYears(); if (!years.length) return;
+  movieIdx = Math.max(0, Math.min(years.length - 1, movieIdx + delta));
+  drawMovie();
 }
 
 /* ---------- downloads ---------- */
@@ -1177,7 +1188,16 @@ $('dl-grid-copy').addEventListener('click', copyGrid);
 $('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; renderLegend(); if (viewMode === 'grid') drawGrid(); else if (viewMode === 'movie') drawMovie(); else drawChart(); });
 $('view-mode').addEventListener('change', () => { viewMode = $('view-mode').value; renderView(); });
 $('movie-play').addEventListener('click', moviePlay);
+$('movie-prev').addEventListener('click', () => movieStep(-1));
+$('movie-next').addEventListener('click', () => movieStep(1));
 $('movie-slider').addEventListener('input', () => { movieStop(); movieIdx = +$('movie-slider').value; drawMovie(); });
+// arrow keys step through the years while the Movie view is active (ignore when typing in a field)
+document.addEventListener('keydown', e => {
+  if (viewMode !== 'movie' || $('movie').style.display === 'none') return;
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || ''))) return;
+  if (e.key === 'ArrowLeft'){ e.preventDefault(); movieStep(-1); }
+  else if (e.key === 'ArrowRight'){ e.preventDefault(); movieStep(1); }
+});
 $('dl-json').addEventListener('click', downloadJson);
 $('dl-summary').addEventListener('click', downloadSummary);
 $('dl-csv').addEventListener('click', downloadCsv);
