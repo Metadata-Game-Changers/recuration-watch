@@ -286,7 +286,8 @@
         <button class="dl-btn" id="dl-grid-copy" type="button" style="display:none" title="Copy the radar grid to the clipboard as an image">⧉ Copy grid</button>
         <button class="dl-btn" id="dl-grid-png" type="button" style="display:none" title="Download the radar grid as a PNG image">⬇ Grid (PNG)</button>
         <button class="dl-btn" id="dl-json" type="button">⬇ Data (JSON)</button>
-        <button class="dl-btn" id="dl-csv" type="button">⬇ Data (CSV)</button>
+        <button class="dl-btn" id="dl-summary" type="button" title="One row per year matching the table: records, FAIR total, the four FAIR use cases, and Projects total">⬇ Data Summary (CSV)</button>
+        <button class="dl-btn" id="dl-csv" type="button" title="Long form: one row per year × concept (analysis-ready)">⬇ Data (CSV)</button>
       </div>
     </div>
     <p class="card-intro">Each point scores a sample of the records <b>registered</b> in that year, as those records are <b>today</b> — so a strong early year can mean good metadata then <i>or</i> re-curation since (compare with Re-Curation Watch). Thin years (fewer than 10 records) — hollow points in <b>Lines</b>, dimmed cells in <b>Grid</b> — have noisy percentages. Results appear as each year finishes; switch <b>View</b> to a radar-plot <b>Grid</b> to watch each use case&rsquo;s concept profile change year to year.</p>
@@ -1015,6 +1016,25 @@ function downloadCsv(){
   const body = rows.map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
   triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_history__${nowStamp()}.csv`);
 }
+// wide summary: one row per year matching the year-by-year table's columns (values as
+// fractions 0–1, rounded like the suite's other summary CSVs). Empty years get blank scores.
+function downloadSummary(){
+  if (!history || !history.years.length) return;
+  const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const round = x => x == null ? '' : Math.round(x * 10000) / 10000;
+  const headers = ['Repository_ID','Registered','Records_Scored','Matching','FAIR_Total','Text','Identifiers','Connections','Contacts','Projects_Total'];
+  const rows = [headers];
+  for (const e of history.years){
+    const t = e.totals;
+    rows.push([
+      history.clientId, e.year, e.n, e.matching ?? '',
+      t ? round(t.fair) : '', t ? round(t.FAIR_Text) : '', t ? round(t.FAIR_Identifiers) : '',
+      t ? round(t.FAIR_Connections) : '', t ? round(t.FAIR_Contacts) : '', t ? round(t.projects) : ''
+    ]);
+  }
+  const body = rows.map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
+  triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_historySummary__${nowStamp()}.csv`);
+}
 
 function downloadPng(){
   if (!history || !history.years.length) return;
@@ -1159,6 +1179,7 @@ $('view-mode').addEventListener('change', () => { viewMode = $('view-mode').valu
 $('movie-play').addEventListener('click', moviePlay);
 $('movie-slider').addEventListener('input', () => { movieStop(); movieIdx = +$('movie-slider').value; drawMovie(); });
 $('dl-json').addEventListener('click', downloadJson);
+$('dl-summary').addEventListener('click', downloadSummary);
 $('dl-csv').addEventListener('click', downloadCsv);
 // per-year handoff: open a year's exact sample in Completeness or Connectivity (same
 // localStorage mailbox those tools read via ?input=stored), so both measure the same records
