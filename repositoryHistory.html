@@ -119,6 +119,17 @@
   table.hist td.year-open{text-align:left;white-space:nowrap}
   table.hist td.year-open a{color:var(--accent);text-decoration:none;cursor:pointer;font-size:.72rem;font-weight:600;margin-right:.5rem}
   table.hist td.year-open a:hover{color:var(--accent-dk);text-decoration:underline}
+  /* radar grid (small multiples: use cases × years) */
+  #grid{overflow-x:auto;margin-top:.4rem}
+  table.grid-tbl{border-collapse:collapse}
+  table.grid-tbl th.corner{background:#fff}
+  table.grid-tbl th.yr{font-size:.74rem;font-weight:600;color:var(--ink);padding:.2rem .3rem;text-align:center;white-space:nowrap}
+  table.grid-tbl th.yr small{display:block;font-weight:400;color:var(--muted);font-size:.62rem}
+  table.grid-tbl th.rowlab{font-size:.72rem;font-weight:600;color:var(--accent-dk);text-align:right;padding:0 .6rem 0 .2rem;white-space:nowrap;vertical-align:middle}
+  table.grid-tbl td.cell{padding:.15rem;text-align:center;vertical-align:top}
+  table.grid-tbl td.cell .cell-avg{font-size:.64rem;color:var(--muted);font-variant-numeric:tabular-nums;margin-bottom:-.1rem}
+  table.grid-tbl td.cell.thin{opacity:.5}
+  table.grid-tbl td.cell svg{display:block;margin:0 auto}
 </style>
 </head>
 <body>
@@ -243,7 +254,14 @@
     <div class="card-head">
       <h2>Completeness by registered year</h2>
       <div class="card-actions">
-        <label class="hero-chk" style="gap:.4rem" title="Which use cases to plot: the four FAIR use cases, the three Project use cases, the two additional DataCite use cases, or all nine">
+        <label class="hero-chk" style="gap:.4rem" title="Lines: one trend line per use case over the years. Grid: a radar plot per use case per year (small multiples) — watch each use case's concept profile change.">
+          <span class="hero-secondary-label">View</span>
+          <select class="hero-select" id="view-mode" style="flex:none;min-width:0">
+            <option value="lines" selected>Lines</option>
+            <option value="grid">Grid</option>
+          </select>
+        </label>
+        <label class="hero-chk" style="gap:.4rem" title="Which use cases to show: the four FAIR use cases, the three Project use cases, the two additional DataCite use cases, or all nine">
           <span class="hero-secondary-label">Plot</span>
           <select class="hero-select" id="plot-group" style="flex:none;min-width:0">
             <option value="FAIR" selected>FAIR (4 + total)</option>
@@ -257,9 +275,10 @@
         <button class="dl-btn" id="dl-csv" type="button">⬇ Data (CSV)</button>
       </div>
     </div>
-    <p class="card-intro">Each point scores a sample of the records <b>registered</b> in that year, as those records are <b>today</b> — so a strong early year can mean good metadata then <i>or</i> re-curation since (compare with Re-Curation Watch). Hollow points mark thin years (fewer than 10 records) where percentages are noisy. Lines appear as each year finishes.</p>
+    <p class="card-intro">Each point scores a sample of the records <b>registered</b> in that year, as those records are <b>today</b> — so a strong early year can mean good metadata then <i>or</i> re-curation since (compare with Re-Curation Watch). Thin years (fewer than 10 records) — hollow points in <b>Lines</b>, dimmed cells in <b>Grid</b> — have noisy percentages. Results appear as each year finishes; switch <b>View</b> to a radar-plot <b>Grid</b> to watch each use case&rsquo;s concept profile change year to year.</p>
     <canvas id="chart" width="960" height="360"></canvas>
     <div class="legend" id="legend"></div>
+    <div id="grid" style="display:none"></div>
   </div>
 
   <div class="card" id="table-card" style="display:none">
@@ -528,6 +547,26 @@ function seriesFor(group){
   return [...g.totals, ...codeSeries];
 }
 let plotGroup = 'FAIR';
+let viewMode = 'lines';
+// use-case colours for the radar grid cells (ported from completeness.html SPIRAL_COLORS)
+const SPIRAL_COLORS = {
+  FAIR_Text:'#E97131', FAIR_Identifiers:'#0070C0', FAIR_Connections:'#A02C93', FAIR_Contacts:'#4EA62E',
+  DataCite_Relations:'#C0392B', DataCite_ContributorTypes:'#0E8A8A',
+  Project_Team:'#7A5195', Project_Items:'#EF9B20', Project_Relations:'#BC5090',
+};
+// a small, label-free radar of a use case's concepts (small-multiples cell); shape comparison
+// across a row is the point — the row label names the use case, axes are consistent within a row
+function miniRadar(items, color, size){
+  const W = size, cx = W/2, cy = W/2, R = W/2 * 0.82, N = items.length || 1;
+  const ang = i => (i/N) * 2 * Math.PI - Math.PI/2;
+  const pt  = (i,r) => [ +(cx + Math.cos(ang(i))*R*r).toFixed(1), +(cy + Math.sin(ang(i))*R*r).toFixed(1) ];
+  let g = '';
+  [0.5, 1].forEach(r => { g += `<circle cx="${cx}" cy="${cy}" r="${(R*r).toFixed(1)}" fill="none" stroke="#ece9f3" stroke-width="1"/>`; });
+  for (let i=0;i<N;i++){ const [x,y]=pt(i,1); g += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#f0eef5" stroke-width="1"/>`; }
+  const pts = items.map((it,i) => pt(i, Math.min(it.comp,1)).join(',')).join(' ');
+  g += `<polygon points="${pts}" fill="${color}" fill-opacity="0.30" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>`;
+  return `<svg viewBox="0 0 ${W} ${W}" width="${W}" height="${W}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
+}
 const THIN = 10;   // years with fewer records than this are drawn hollow / italic
 let history = null;   // { clientId, repoName, resourceTypeId, query, cap, random, years:[{year, n, matching, totals, byCode}] }
 let stopRequested = false;
@@ -569,7 +608,7 @@ async function run(){
     $('chart-card').style.display = ''; $('table-card').style.display = '';
     $('hist-body').innerHTML = '';
     renderLegend();
-    drawChart();
+    renderView();
 
     const yearList = [];
     for (let y = minY; y <= maxY; y++) yearList.push(y);
@@ -594,7 +633,7 @@ async function run(){
       }
       history.years.push(entry);
       addTableRow(entry);
-      drawChart();
+      if (viewMode === 'grid') drawGrid(); else drawChart();
       updateSelStats(scoredRecords);
       done++;
     }
@@ -697,7 +736,44 @@ function drawChart(){
     }
   }
 }
-window.addEventListener('resize', () => drawChart());
+window.addEventListener('resize', () => { if (viewMode === 'lines') drawChart(); });
+
+/* radar-grid view: rows = the plot-group's use cases, columns = scored years, each cell a
+   small radar of that use case's concepts that year (ported concept from dataCiteRepositories.py's
+   makeRadarPlotGrid). Reuses the retained per-year byCode scoring — no re-fetch. */
+const CELL = 132;
+function drawGrid(){
+  const grid = $('grid');
+  if (!history){ grid.innerHTML = ''; return; }
+  const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
+  const years = history.years.filter(e => e.n > 0 && e.byCode);
+  if (!years.length){ grid.innerHTML = '<p class="card-intro">No scored years to show yet.</p>'; return; }
+  const head = '<tr><th class="corner"></th>' + years.map(e =>
+    `<th class="yr">${e.year}<small>n=${e.n.toLocaleString()}${e.n < THIN ? ' *' : ''}</small></th>`).join('') + '</tr>';
+  const rows = codes.map(code => {
+    const color = SPIRAL_COLORS[code] || '#9167b0';
+    const label = CODE_STYLE[code] ? CODE_STYLE[code].label : code;
+    const cells = years.map(e => {
+      const uc = e.byCode[code];
+      if (!uc){ return '<td class="cell">—</td>'; }
+      const avg = (uc.res.average * 100).toFixed(0) + '%';
+      return `<td class="cell${e.n < THIN ? ' thin' : ''}" title="${escHtml(label)} · ${e.year} · ${avg} (${e.n} records)">`
+        + `<div class="cell-avg">${avg}</div>${miniRadar(uc.res.items, color, CELL)}</td>`;
+    }).join('');
+    return `<tr><th class="rowlab">${escHtml(label)}</th>${cells}</tr>`;
+  }).join('');
+  grid.innerHTML = `<table class="grid-tbl"><thead>${head}</thead><tbody>${rows}</tbody></table>`;
+}
+
+// switch between the line chart and the radar grid, keeping the download buttons sensible
+function renderView(){
+  const grid = viewMode === 'grid';
+  $('chart').style.display = grid ? 'none' : '';
+  $('legend').style.display = grid ? 'none' : '';
+  $('grid').style.display = grid ? '' : 'none';
+  $('dl-png').style.display = grid ? 'none' : '';   // PNG export is the line chart; grid export is a future add
+  if (grid) drawGrid(); else drawChart();
+}
 
 /* ---------- downloads ---------- */
 function nowStamp(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}`; }
@@ -884,7 +960,8 @@ function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay =
 $('repo-go').addEventListener('click', run);
 $('stop-btn').addEventListener('click', () => { stopRequested = true; });
 $('dl-png').addEventListener('click', downloadPng);
-$('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; renderLegend(); drawChart(); });
+$('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; renderLegend(); if (viewMode === 'grid') drawGrid(); else drawChart(); });
+$('view-mode').addEventListener('change', () => { viewMode = $('view-mode').value; renderView(); });
 $('dl-json').addEventListener('click', downloadJson);
 $('dl-csv').addEventListener('click', downloadCsv);
 // per-year handoff: open a year's exact sample in Completeness or Connectivity (same
