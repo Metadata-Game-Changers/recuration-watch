@@ -536,7 +536,7 @@ function renderConnectivity(results){
 // appears in (deduped by DOI), so the drill-down can link each entity to its DOIs. (noteDoc is defined below.)
 function personDetail(records, source, kind){
   const map = new Map();   // name -> {occ, id, docs}
-  const bump = (name, has, r) => { if (name == null || name === '') return; let e = map.get(name); if (!e){ e = { occ:0, id:0, docs:new Map() }; map.set(name, e); } e.occ++; if (has) e.id++; noteDoc(e, r); };
+  const bump = (name, has, r) => { if (name == null || name === '') return; let e = map.get(name); if (!e){ e = { occ:0, id:0, docs:new Map() }; map.set(name, e); } e.occ++; if (has) e.id++; else noteFixDoc(e, r); noteDoc(e, r); };
   for (const r of records){
     const arr = (r.attributes && Array.isArray(r.attributes[source])) ? r.attributes[source] : [];
     for (const p of arr){
@@ -559,7 +559,7 @@ function funderDetail(records){
     for (const f of ((r.attributes && Array.isArray(r.attributes.fundingReferences)) ? r.attributes.fundingReferences : [])){
       if (!f || !f.funderName) continue;
       let e = map.get(f.funderName); if (!e){ e = { occ:0, id:0, docs:new Map() }; map.set(f.funderName, e); }
-      e.occ++; if (f.funderIdentifier) e.id++; noteDoc(e, r);
+      e.occ++; if (f.funderIdentifier) e.id++; else noteFixDoc(e, r); noteDoc(e, r);
     }
   }
   return map;
@@ -570,7 +570,7 @@ function publisherDetail(records){
     const p = r.attributes && r.attributes.publisher; if (!p) continue;
     const name = typeof p === 'string' ? p : p.name; if (!name) continue;
     let e = map.get(name); if (!e){ e = { occ:0, id:0, docs:new Map() }; map.set(name, e); }
-    e.occ++; if (typeof p === 'object' && p.publisherIdentifier) e.id++; noteDoc(e, r);
+    e.occ++; if (typeof p === 'object' && p.publisherIdentifier) e.id++; else noteFixDoc(e, r); noteDoc(e, r);
   }
   return map;
 }
@@ -583,7 +583,7 @@ function rightsDetail(records, kind){
       if (!x || typeof x !== 'object') continue;
       const name = x.rights || x.rightsUri || x.rightsIdentifier; if (!name) continue;
       let e = map.get(name); if (!e){ e = { occ:0, id:0, docs:new Map() }; map.set(name, e); }
-      e.occ++; if (kind === 'rightsUri' ? !!x.rightsUri : !!x.rightsIdentifier) e.id++; noteDoc(e, r);
+      e.occ++; if (kind === 'rightsUri' ? !!x.rightsUri : !!x.rightsIdentifier) e.id++; else noteFixDoc(e, r); noteDoc(e, r);
     }
   }
   return map;
@@ -602,7 +602,9 @@ function openConnDetail(idx){
   const isQw = e => e.id > 0 && e.id < e.occ;               // a known identifier that can be propagated
   const rank = e => (isQw(e) ? 0 : (e.id === 0 ? 1 : 2));   // quick wins first, then missing, then complete
   const entries = [...map.entries()]
-    .map(([name, e]) => ({ name, occ: e.occ, id: e.id, pct: e.occ ? e.id / e.occ : 0, docs: [...(e.docs || [])].map(([doi, title]) => ({ doi, title })) }))
+    .map(([name, e]) => ({ name, occ: e.occ, id: e.id, pct: e.occ ? e.id / e.occ : 0,
+      docs: [...(e.docs || [])].map(([doi, title]) => ({ doi, title })),
+      fix: [...(e.fixDocs || [])].map(([doi, title]) => ({ doi, title })) }))
     .sort((a, b) => rank(a) - rank(b)
       || (isQw(a) ? (b.occ - b.id) - (a.occ - a.id) : 0)    // within quick wins, biggest propagatable gap first
       || b.occ - a.occ || a.name.localeCompare(b.name));
@@ -636,14 +638,20 @@ function openConnDetail(idx){
     : escHtml(n);
   $('cd-body').innerHTML = entries.length === 0
     ? '<div style="padding:1rem;color:#6b7280;font-size:.8rem">No items found in the analyzed sample.</div>'
-    : `<table class="cd-table"><thead><tr><th>${escHtml(c.entity)}</th><th class="num">Occurrences</th><th class="num">Identified</th><th class="num">%</th></tr></thead><tbody>`
+    : `<table class="cd-table"><thead><tr><th>${escHtml(c.entity)}</th><th class="num">Occurrences</th><th class="num">Identified</th><th class="num" title="Records where this ${escAttr(ent)} occurs WITHOUT its identifier — the records to find and fix">To fix</th><th class="num">%</th></tr></thead><tbody>`
       + entries.map((e, ei) => `<tr class="${rowCls(e)}"><td class="val">${nameCell(e.name)}${isQw(e) ? ' <span class="qw-tag">quick win</span>' : ''}</td>`
         + `<td class="num">${e.docs.length ? `<a class="dup-doc-link" data-ei="${ei}" title="List the DOIs where this ${escAttr(ent)} occurs">${e.occ.toLocaleString()}</a>` : e.occ.toLocaleString()}</td>`
-        + `<td class="num">${e.id.toLocaleString()}</td><td class="num ${cls(e)}">${(e.pct*100).toFixed(0)}%</td></tr>`).join('')
+        + `<td class="num">${e.id.toLocaleString()}</td>`
+        + `<td class="num">${e.fix.length ? `<a class="dup-doc-link" data-fix="${ei}" title="List the records where this ${escAttr(ent)} occurs without its identifier — the ones to fix">${e.fix.length.toLocaleString()}</a>` : '—'}</td>`
+        + `<td class="num ${cls(e)}">${(e.pct*100).toFixed(0)}%</td></tr>`).join('')
       + '</tbody></table>';
   $('cd-body').querySelectorAll('.dup-doc-link[data-ei]').forEach(el => el.addEventListener('click', () => {
     const e = connDetailState.entries[+el.dataset.ei];
     openDocsModal(e.name, e.docs, `${c.group} · ${c.label.split(' (')[0]}`);
+  }));
+  $('cd-body').querySelectorAll('.dup-doc-link[data-fix]').forEach(el => el.addEventListener('click', () => {
+    const e = connDetailState.entries[+el.dataset.fix];
+    openDocsModal(e.name, e.fix, `${c.group} · ${c.label.split(' (')[0]} · records to fix (no identifier)`);
   }));
   $('cd-modal').style.display = 'flex';
 }
@@ -656,8 +664,8 @@ function connDetailFilename(ext){
 function connDetailDownloadCsv(){
   if (!connDetailState) return;
   const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
-  const head = [connDetailState.c.entity, 'Occurrences', 'Identified', 'Percent'];
-  const body = [head, ...connDetailState.entries.map(e => [csv(e.name), e.occ, e.id, (e.pct*100).toFixed(0)])].map(r => r.join(',')).join('\r\n') + '\r\n';
+  const head = [connDetailState.c.entity, 'Occurrences', 'Identified', 'RecordsToFix', 'Percent'];
+  const body = [head, ...connDetailState.entries.map(e => [csv(e.name), e.occ, e.id, e.fix.length, (e.pct*100).toFixed(0)])].map(r => r.join(',')).join('\r\n') + '\r\n';
   const url = URL.createObjectURL(new Blob([body], { type: 'text/csv' }));
   const a = document.createElement('a'); a.href = url; a.download = connDetailFilename('csv');
   document.body.appendChild(a); a.click(); a.remove();
@@ -665,8 +673,8 @@ function connDetailDownloadCsv(){
 }
 async function connDetailCopy(){
   if (!connDetailState) return;
-  const tsv = [`${connDetailState.c.entity}\tOccurrences\tIdentified\tPercent`,
-    ...connDetailState.entries.map(e => `${String(e.name).replace(/[\t\n\r]/g, ' ')}\t${e.occ}\t${e.id}\t${(e.pct*100).toFixed(0)}`)].join('\n');
+  const tsv = [`${connDetailState.c.entity}\tOccurrences\tIdentified\tRecordsToFix\tPercent`,
+    ...connDetailState.entries.map(e => `${String(e.name).replace(/[\t\n\r]/g, ' ')}\t${e.occ}\t${e.id}\t${e.fix.length}\t${(e.pct*100).toFixed(0)}`)].join('\n');
   const btn = $('cd-copy');
   try { await navigator.clipboard.writeText(tsv); btn.textContent = '✓ Copied'; }
   catch (e){ btn.textContent = 'Copy failed'; }
@@ -1255,6 +1263,8 @@ function makeUF(n){
 function recDoi(r){ return (r && r.id) || (r && r.attributes && r.attributes.doi) || null; }
 function recTitle(r){ const t = r && r.attributes && Array.isArray(r.attributes.titles) && r.attributes.titles[0]; return (t && t.title) || '(untitled)'; }
 function noteDoc(e, r){ const doi = recDoi(r); if (doi && !e.docs.has(doi)) e.docs.set(doi, recTitle(r)); }
+// Records where the entity occurs WITHOUT its identifier — the ones to find and fix.
+function noteFixDoc(e, r){ if (!e.fixDocs) e.fixDocs = new Map(); const doi = recDoi(r); if (doi && !e.fixDocs.has(doi)) e.fixDocs.set(doi, recTitle(r)); }
 
 function collectPeople(records){
   const map = new Map();
