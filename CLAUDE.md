@@ -29,6 +29,13 @@ self-contained HTML file with inline CSS + vanilla JS — no framework, no bundl
   parsed family/given name and shows each candidate iD with its most recent employment and
   journal for disambiguation. Anonymous API (no token). Accepts handoffs via localStorage
   key `orcid-retriever-input` (`?input=stored`) or `#names=…`, with `auto=1` to run.
+- `repositoryHistory.html` — **Repository History** (prototype): samples each **registered
+  year** (min–max, auto-detected via two `sort=created` requests — the API ignores
+  `sort=registered` and returns no facets), scores every year with the completeness engine,
+  and plots use-case lines over time. Scores are **cohort** views (records as they are
+  *today*, incl. re-curation) — keep that caveat in any copy. Unlike completeness.html it
+  **fetches** `FAIR_spirals.json` at boot instead of embedding it; its scoring functions
+  are ports from completeness.html — keep them in sync.
 - `FAIR_spirals.json` — readable catalog of the use cases (also **embedded** inside
   `completeness.html`; keep the two in sync).
 - `tips.html` — **generated** collection of every tool's while-you-wait tips. Never edit by

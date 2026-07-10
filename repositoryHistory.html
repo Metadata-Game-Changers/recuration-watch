@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Repository History — completeness by registered year (prototype)</title>
+<link rel="icon" type="image/png" href="favicon_MGC.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --accent:#9167b0; --accent-dk:#673289; --tint:#f0eaf5;
+    --ink:#1f2330; --muted:#6b7280; --line:#e6e3ec; --bg:#fbfafe;
+    --green:#3a9d6e; --amber:#d4910b; --red:#c0392b;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:0}
+
+  /* ── Brand top bar ── */
+  .topbar{border-bottom:2px solid var(--ink);padding:0 2rem}
+  .topbar-inner{max-width:1040px;margin:0 auto;display:flex;align-items:stretch;gap:0}
+  .topbar-brand{padding:.5rem 2rem .3rem 0;display:flex;flex-direction:row;align-items:flex-end;gap:1rem}
+  .brand-logo{height:64px;width:auto;display:block;flex-shrink:0}
+  .brand-title-wrap{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:.15rem}
+  .brand-tool-name{font-family:'Montserrat',sans-serif;font-size:2rem;font-weight:400;letter-spacing:.02em;color:#673289;line-height:1;white-space:nowrap;text-transform:uppercase}
+  .topbar-links{padding:0 0 0 1.5rem;display:flex;gap:1.6rem;margin-left:auto}
+  .topbar-col{display:flex;flex-direction:column;justify-content:center;gap:.25rem}
+  .topbar-links a{font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4}
+  .topbar-links a:hover{color:var(--accent-dk)}
+  @media(max-width:820px){.topbar{padding:0 1rem}.topbar-inner{flex-direction:column}.topbar-brand{padding-right:0}.brand-tool-name{font-size:1.5rem}.topbar-links{flex-wrap:wrap;gap:.75rem;padding:.25rem 0 .5rem}.topbar-col{flex-direction:row;flex-wrap:wrap;gap:.75rem}}
+  .wrap{max-width:1080px;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+  .proto-flag{display:inline-block;background:#fff;color:var(--accent-dk);font-size:.62rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:.12rem .45rem;border-radius:4px;margin-left:.5rem;vertical-align:middle;border:1px solid var(--accent)}
+
+  /* ── Hero bar ── */
+  .hero{background:#f0eaf5;border-bottom:2px solid #9167b0;padding:1.75rem 2rem}
+  .hero-inner{max-width:1040px;margin:0 auto;display:flex;align-items:center;gap:2.5rem;flex-wrap:wrap}
+  .hero-text{flex:1;min-width:200px}
+  .hero-title{font-size:1.15rem;font-weight:600;color:#5b3d7a;line-height:1.2;margin:0 0 .3rem;letter-spacing:-.01em}
+  .hero-sub{font-size:.78rem;color:var(--muted);line-height:1.5;max-width:380px;margin:0}
+  .hero-search{flex:1;min-width:280px;position:relative}
+  .hero-form{display:flex;border:2px solid #9167b0;background:#fff}
+  .hero-input{flex:1;border:none;padding:.6rem .85rem;font-size:.85rem;outline:none;font-family:Inter,sans-serif;color:var(--ink);background:transparent}
+  .hero-input::placeholder{color:#a99bbf}
+  .hero-go{border:none;border-left:2px solid #9167b0;background:#9167b0;color:#fff;padding:.6rem 1.1rem;font-size:.82rem;font-weight:500;cursor:pointer;white-space:nowrap;font-family:Inter,sans-serif}
+  .hero-go:hover{background:#7a52a0}
+  .hero-go:disabled{opacity:.5;cursor:default}
+  .hero-stop{border:none;border-left:2px solid var(--red);background:#fff;color:var(--red);padding:.6rem 1.1rem;font-size:.82rem;font-weight:500;cursor:pointer;white-space:nowrap;font-family:Inter,sans-serif;display:none}
+  .hero-secondary{display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap;align-items:center}
+  .hero-secondary-label{font-size:.65rem;font-weight:600;color:#5b3d7a;text-transform:uppercase;letter-spacing:.03em}
+  .hero-select,.hero-num{border:1px solid rgba(145,103,176,.4);background:rgba(255,255,255,.85);padding:.32rem .6rem;font-family:Inter,sans-serif;font-size:.75rem;color:var(--ink);outline:none}
+  .hero-select{cursor:pointer;flex:1;min-width:150px}
+  .hero-num{width:74px}
+  .hero-query{border:1px solid rgba(145,103,176,.4);background:rgba(255,255,255,.85);padding:.32rem .6rem;font-family:Inter,sans-serif;font-size:.75rem;color:var(--ink);outline:none;flex:1;min-width:160px}
+  .hero-query::placeholder{color:#a99bbf}
+  .hero-select:focus,.hero-num:focus,.hero-query:focus{border-color:#9167b0}
+  .hero-chk{display:flex;align-items:center;gap:.3rem;font-size:.72rem;color:#5b3d7a;cursor:pointer}
+  .hero-field{display:flex;align-items:center;gap:.4rem}
+  .hero-field.grow{flex:1;min-width:180px}
+  .hero-help{margin-top:.35rem;text-align:right}
+  .hero-help a{font-size:.68rem;color:#5b3d7a;text-decoration:none}
+  .hero-help a:hover{color:var(--accent-dk);text-decoration:underline}
+  .repo-autocomplete{position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--ink);border-top:none;z-index:200;display:none;max-height:260px;overflow-y:auto}
+  .repo-autocomplete.open{display:block}
+  .repo-ac-item{padding:.55rem .75rem;cursor:pointer;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:.1rem}
+  .repo-ac-item:last-child{border-bottom:none}
+  .repo-ac-item:hover,.repo-ac-item.highlighted{background:var(--bg)}
+  .repo-ac-name{font-size:.78rem;font-weight:500;color:var(--ink)}
+  .repo-ac-id{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted)}
+  .repo-ac-count{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:#0070C0}
+  .repo-ac-loading{padding:.6rem .75rem;font-size:.75rem;color:var(--muted);font-style:italic}
+  @media(max-width:820px){.hero{padding:1.25rem 1rem}.hero-inner{flex-direction:column;gap:1rem;align-items:stretch}.hero-text{min-width:0}.hero-search{min-width:0;width:100%}}
+
+  /* ── Selection summary strip ── */
+  .sel-summary{background:#fff;border-bottom:1px solid var(--line)}
+  .sel-inner{max-width:1040px;margin:0 auto;padding:.7rem 2rem;display:flex;align-items:baseline;gap:1.5rem;flex-wrap:wrap}
+  .sel-repo{font-size:.95rem;font-weight:600;color:var(--accent-dk)}
+  .sel-repo .sel-id{font-family:'IBM Plex Mono',monospace;font-size:.7rem;font-weight:400;color:var(--muted);margin-left:.5rem}
+  .sel-stats{display:flex;gap:1.4rem;flex-wrap:wrap;margin-left:auto}
+  .sel-stat{font-size:.78rem;color:var(--muted)}
+  .sel-stat b{color:var(--ink);font-weight:600}
+  @media(max-width:820px){.sel-inner{padding:.7rem 1rem}.sel-stats{margin-left:0}}
+
+  #status{font-size:.82rem;color:var(--muted);min-height:1.2em;margin:.2rem 0 .5rem}
+  #status.err{color:var(--red)}
+  #progress{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin:0 0 1rem;display:none}
+  #progress.on{display:block}
+  #progress>i{display:block;height:100%;width:0;background:var(--accent);border-radius:3px;transition:width .18s ease}
+  #progress.indet>i{width:40%;animation:indet 1.1s ease-in-out infinite}
+  @keyframes indet{0%{margin-left:-40%}100%{margin-left:100%}}
+  #apiurl{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;color:var(--muted);background:#f3f1f8;border-radius:6px;padding:.45rem .6rem;margin:0 0 1rem;word-break:break-all;line-height:1.5;display:none}
+  #apiurl b{color:var(--ink);font-weight:600}
+  .tips{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;background:#fff;padding:.7rem .9rem;margin:0 0 1rem;max-width:560px}
+  .tips .tips-head{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.35rem}
+  .tips .tips-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-dk);font-weight:600;margin-bottom:.2rem}
+  .tips .tips-text{font-size:.82rem;color:var(--ink);line-height:1.5}
+  .tips .tips-text strong{color:var(--accent-dk)}
+  .tips .tips-link{display:inline-block;margin-top:.4rem;font-size:.68rem;color:var(--accent);text-decoration:none}
+  .tips .tips-link:hover{text-decoration:underline}
+
+  /* ── Cards ── */
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:1rem}
+  .card h2{font-size:1rem;margin:0 0 .4rem;color:var(--accent-dk)}
+  .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:.2rem}
+  .card-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+  .card-intro{font-size:.78rem;color:var(--muted);margin:0 0 1rem;line-height:1.5;max-width:760px}
+  .dl-btn{appearance:none;border:1px solid var(--accent);background:#fff;color:var(--accent-dk);font:inherit;font-size:.75rem;font-weight:600;padding:.42rem .85rem;border-radius:6px;cursor:pointer}
+  .dl-btn:hover{background:var(--tint)}
+  #chart{width:100%;height:auto;display:block}
+  .legend{display:flex;gap:1.1rem;flex-wrap:wrap;font-size:.72rem;color:var(--muted);margin:.6rem 0 .2rem}
+  .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:.4rem;vertical-align:middle}
+  .legend .thin-note{color:var(--muted);font-style:italic}
+  table.hist{border-collapse:collapse;width:100%;font-size:.8rem}
+  table.hist th,table.hist td{text-align:right;padding:.32rem .55rem;border-bottom:1px solid #f0eef5;white-space:nowrap}
+  table.hist th{font-size:.66rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:600}
+  table.hist th:first-child,table.hist td:first-child{text-align:left}
+  table.hist td.thin{color:var(--muted);font-style:italic}
+  table.hist td.num{font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" onerror="this.style.display='none'" />
+      </a>
+      <div class="brand-title-wrap"><div class="brand-tool-name">Repository History</div></div>
+    </div>
+    <div class="topbar-links">
+      <div class="topbar-col">
+      <a href="completeness.html" target="_blank" rel="noopener">Metadata Completeness ↗</a>
+      <a href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity ↗</a>
+      <a href="repo-activity.html" target="_blank" rel="noopener">Repository Activity ↗</a>
+      </div>
+      <div class="topbar-col">
+      <a href="useCases.html" target="_blank" rel="noopener">Use Cases ↗</a>
+      <a href="tips.html">Metadata Tips ↗</a>
+      <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h2 class="hero-title">Completeness, year by year<span class="proto-flag">prototype</span></h2>
+      <p class="hero-sub">Samples a repository&rsquo;s records for each <b>registered year</b>, scores every year against the MGC FAIR use cases, and plots how completeness evolves. Each year&rsquo;s score reflects those records <b>as they are today</b> — including any re-curation since.</p>
+    </div>
+    <div class="hero-search">
+      <div class="hero-form">
+        <input class="hero-input" id="repo-input" type="text" placeholder="Repository name or client ID…" spellcheck="false" autocomplete="off" value="cdl.ucsb" />
+        <button class="hero-stop" id="stop-btn">Stop</button>
+        <button class="hero-go" id="repo-go" disabled>Explore →</button>
+      </div>
+      <div class="repo-autocomplete" id="repo-autocomplete"></div>
+      <div class="hero-secondary">
+        <span class="hero-field grow">
+        <span class="hero-secondary-label">Type</span>
+        <select class="hero-select" id="resource-type">
+          <option value="">All resource types</option>
+          <option value="audiovisual">Audiovisual</option>
+          <option value="book">Book</option>
+          <option value="book-chapter">Book Chapter</option>
+          <option value="collection">Collection</option>
+          <option value="computational-notebook">Computational Notebook</option>
+          <option value="conference-paper">Conference Paper</option>
+          <option value="conference-proceeding">Conference Proceeding</option>
+          <option value="data-paper">Data Paper</option>
+          <option value="dataset">Dataset</option>
+          <option value="dissertation">Dissertation</option>
+          <option value="event">Event</option>
+          <option value="image">Image</option>
+          <option value="instrument">Instrument</option>
+          <option value="interactive-resource">Interactive Resource</option>
+          <option value="journal">Journal</option>
+          <option value="journal-article">Journal Article</option>
+          <option value="model">Model</option>
+          <option value="other">Other</option>
+          <option value="output-management-plan">Output Management Plan</option>
+          <option value="peer-review">Peer Review</option>
+          <option value="physical-object">Physical Object</option>
+          <option value="preprint">Preprint</option>
+          <option value="project">Project</option>
+          <option value="report">Report</option>
+          <option value="service">Service</option>
+          <option value="software">Software</option>
+          <option value="sound">Sound</option>
+          <option value="standard">Standard</option>
+          <option value="study-registration">Study Registration</option>
+          <option value="text">Text</option>
+          <option value="workflow">Workflow</option>
+        </select>
+        </span>
+        <span class="hero-field grow">
+        <span class="hero-secondary-label">Query</span>
+        <input class="hero-query" id="query-input" type="text" placeholder="e.g. types.resourceTypeGeneral:Dataset" spellcheck="false" autocomplete="off" />
+        </span>
+      </div>
+      <div class="hero-secondary">
+        <span class="hero-field">
+        <span class="hero-secondary-label">From</span>
+        <input class="hero-num" id="year-min" type="number" min="2011" max="2100" placeholder="auto" title="First registered year to sample — left blank, the repository's earliest year is detected automatically" />
+        </span>
+        <span class="hero-field">
+        <span class="hero-secondary-label">To</span>
+        <input class="hero-num" id="year-max" type="number" min="2011" max="2100" placeholder="auto" title="Last registered year to sample — left blank, the repository's latest year is detected automatically" />
+        </span>
+        <span class="hero-field">
+        <span class="hero-secondary-label">Max / year</span>
+        <input class="hero-num" id="cap" type="number" value="100" min="1" max="1000" />
+        </span>
+        <label class="hero-chk"><input type="checkbox" id="random" checked /> Random sample</label>
+      </div>
+      <div class="hero-help"><a href="https://support.datacite.org/docs/queries" target="_blank" rel="noopener" title="How to write DataCite query expressions">Using DataCite Queries ↗</a></div>
+    </div>
+  </div>
+</div>
+
+<div class="sel-summary" id="sel-summary" style="display:none">
+  <div class="sel-inner">
+    <span class="sel-repo" id="sel-repo">—</span>
+    <div class="sel-stats">
+      <span class="sel-stat"><b id="sel-years">—</b> years</span>
+      <span class="sel-stat"><b id="sel-records">—</b> records scored</span>
+      <span class="sel-stat" id="sel-mode">—</span>
+      <span class="sel-stat" id="sel-filter" style="display:none"></span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="status">Loading engine…</div>
+  <div id="progress"><i></i></div>
+  <div id="apiurl"></div>
+  <div id="tips" class="tips" style="display:none"></div>
+
+  <div class="card" id="chart-card" style="display:none">
+    <div class="card-head">
+      <h2>FAIR completeness by registered year</h2>
+      <div class="card-actions">
+        <button class="dl-btn" id="dl-json" type="button">⬇ Data (JSON)</button>
+        <button class="dl-btn" id="dl-csv" type="button">⬇ Data (CSV)</button>
+      </div>
+    </div>
+    <p class="card-intro">Each point scores a sample of the records <b>registered</b> in that year, as those records are <b>today</b> — so a strong early year can mean good metadata then <i>or</i> re-curation since (compare with Re-Curation Watch). Hollow points mark thin years (fewer than 10 records) where percentages are noisy. Lines appear as each year finishes.</p>
+    <canvas id="chart" width="960" height="360"></canvas>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <div class="card" id="table-card" style="display:none">
+    <h2>Year by year</h2>
+    <div style="overflow-x:auto">
+    <table class="hist"><thead><tr>
+      <th>Registered</th><th>Records scored</th><th>Matching</th><th>FAIR Total</th>
+      <th>Text</th><th>Identifiers</th><th>Connections</th><th>Contacts</th><th>Projects</th>
+    </tr></thead><tbody id="hist-body"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- jq-web (jq compiled to WASM/asm.js), same loader as completeness.html -->
+<script>
+(function(){
+  var sources = [
+    'https://cdn.jsdelivr.net/npm/jq-web@0.5.1/jq.asm.bundle.js',
+    'https://unpkg.com/jq-web@0.5.1/jq.asm.bundle.js'
+  ];
+  var i = 0;
+  (function load(){
+    if (i >= sources.length){ window.__jqLoadFailed = true; return; }
+    var s = document.createElement('script');
+    s.src = sources[i++];
+    s.onerror = load;
+    document.head.appendChild(s);
+  })();
+})();
+</script>
+
+<script>
+/* Repository History: samples each registered year, scores every year with the same jq
+   use-case queries as completeness.html, and plots completeness over time. The scoring
+   engine (whenJqReady / countExpr / scoreAllSpirals / weightedTotal) is ported from
+   completeness.html; the use-case catalog is FETCHED from FAIR_spirals.json at boot
+   (deliberately not embedded — a third catalog copy would drift; see CLAUDE.md). */
+const API_BASE = 'https://api.datacite.org';
+let SPIRALS = null;   // loaded from FAIR_spirals.json
+
+const $ = id => document.getElementById(id);
+const statusEl = $('status');
+function setStatus(msg, isErr){ statusEl.textContent = msg; statusEl.className = isErr ? 'err' : ''; }
+function setProgress(frac){ const p=$('progress'); p.classList.add('on'); p.classList.remove('indet'); p.firstElementChild.style.width = Math.max(0,Math.min(1,frac))*100 + '%'; }
+function setProgressIndeterminate(){ const p=$('progress'); p.classList.add('on','indet'); p.firstElementChild.style.width=''; }
+function hideProgress(){ const p=$('progress'); p.classList.remove('on','indet'); p.firstElementChild.style.width='0'; }
+const escHtml = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const escAttr = s => escHtml(s);
+function fmtPct(x){ return (x*100).toFixed(0) + '%'; }
+
+/* ---------- jq readiness (ported from completeness.html) ---------- */
+function whenJqReady(){
+  return new Promise((resolve, reject) => {
+    let tries = 0;
+    (function poll(){
+      if (window.__jqLoadFailed) return reject(new Error('Could not load the jq engine from any CDN — network/CDN appears blocked.'));
+      if (typeof jq !== 'undefined' && jq && jq.promised && typeof jq.promised.raw === 'function') {
+        jq.promised.raw('{"a":1}', '.a', ['-c'])
+          .then(out => (out && out.trim() === '1') ? resolve() : reject(new Error('jq loaded but self-test failed (got "'+out+'").')))
+          .catch(err => reject(new Error('jq self-test threw: ' + (err && err.message || err))));
+        return;
+      }
+      if (++tries > 300) return reject(new Error('jq engine did not initialize within 30s.'));
+      setTimeout(poll, 100);
+    })();
+  });
+}
+
+function countExpr(query){
+  const i = query.indexOf('{');
+  if (i < 0) return query;
+  return query.slice(0, i).replace(/\|\s*$/, '').trim();
+}
+
+/* ---------- scoring (ported from completeness.html scoreAllSpirals) ---------- */
+async function scoreAllSpirals(records, onProgress){
+  const total = records.length;
+  const BATCH = 500;
+  const batches = [];
+  for (let i = 0; i < records.length; i += BATCH) batches.push(records.slice(i, i + BATCH));
+  if (!batches.length) batches.push([]);
+
+  const flat = [];
+  SPIRALS.forEach(s => s.items.forEach(it => { if (it.jq_query) flat.push({ code: s.code, concept: it.concept, jq: it.jq_query }); }));
+
+  const exprList = [];
+  const exprIndex = new Map();
+  const flatExpr = flat.map(it => {
+    const e = countExpr(it.jq);
+    if (!exprIndex.has(e)){ exprIndex.set(e, exprList.length); exprList.push(e); }
+    return exprIndex.get(e);
+  });
+  const matched = exprList.map(() => 0);
+  const errored = exprList.map(() => false);
+  const program = '{' + exprList.map((e, i) => `"c${i}":([ ${e} ]|length)`).join(',') + '}';
+
+  for (let b = 0; b < batches.length; b++){
+    const inputStr = JSON.stringify({ data: batches[b] });
+    let obj = null;
+    try {
+      const out = await jq.promised.raw(inputStr, program, ['-c']);
+      obj = JSON.parse(out);
+    } catch (e){
+      console.warn('combined scoring failed for a batch, falling back to per-query:', (e && e.message) || e);
+    }
+    if (obj){
+      exprList.forEach((e, i) => { const v = obj['c' + i]; if (typeof v === 'number') matched[i] += v; else errored[i] = true; });
+    } else {
+      for (let i = 0; i < exprList.length; i++){
+        try { const o = await jq.promised.raw(inputStr, `[ ${exprList[i]} ] | length`, ['-c']); const n = parseInt((o||'').trim(),10); matched[i] += Number.isNaN(n)?0:n; }
+        catch (e){ errored[i] = true; }
+      }
+    }
+    if (onProgress) onProgress((b + 1) / batches.length);
+    await new Promise(r => setTimeout(r));
+  }
+
+  const byCode = {};
+  SPIRALS.forEach(s => {
+    const items = flat
+      .map((it, i) => ({ it, u: flatExpr[i] }))
+      .filter(x => x.it.code === s.code)
+      .map(({ it, u }) => {
+        let comp = errored[u] ? 0 : (total > 0 ? matched[u] / total : 0);
+        if (comp > 1) comp = 1;
+        return { concept: it.concept, matched: matched[u], comp, errored: errored[u] };
+      })
+      .sort((a, b) => a.concept.localeCompare(b.concept));
+    const n = items.length || 1;
+    const average  = items.reduce((a, b) => a + Math.min(b.comp, 1), 0) / n;
+    const exist    = items.filter(i => i.comp > 0).length;
+    const complete = items.filter(i => i.comp >= 1).length;
+    byCode[s.code] = { spiral: s, res: { items, average, exist, complete, total } };
+  });
+  return byCode;
+}
+
+const TOTAL_CODES = ['FAIR_Text','FAIR_Identifiers','FAIR_Connections','FAIR_Contacts'];
+const PROJECT_CODES = ['Project_Team','Project_Items','Project_Relations'];
+function weightedTotal(byCode, codes){
+  let totalScore = 0, totalCount = 0;
+  for (const code of codes){
+    const e = byCode[code];
+    if (!e) continue;
+    const n = e.spiral.items.length;
+    totalScore += e.res.average * n;
+    totalCount += n;
+  }
+  return totalCount > 0 ? totalScore / totalCount : 0;
+}
+
+/* ---------- fetch one registered year (adapted from completeness fetchRepo) ---------- */
+async function fetchYear(clientId, year, cap, random, resourceTypeId, userQuery){
+  const yearClause = `registered:[${year}-01-01 TO ${year}-12-31]`;
+  const query = userQuery ? `(${userQuery}) AND ${yearClause}` : yearClause;
+  const filter = (resourceTypeId ? `&resource-type-id=${encodeURIComponent(resourceTypeId)}` : '')
+               + `&query=${encodeURIComponent(query)}`;
+  const records = [];
+  const seen = new Set();
+  const pageSize = Math.min(1000, cap);
+  let page = 1, requests = 0, firstUrl = '', matching = null;
+  let effectiveRandom = random;
+  // peek at the matching total: skip empty years fast, and fall back to a deterministic
+  // fetch when the whole year fits within the cap
+  try {
+    const peek = await fetch(`${API_BASE}/dois?client-id=${encodeURIComponent(clientId)}&page[size]=1&disable-facets=true${filter}`);
+    if (peek.ok){
+      const pj = await peek.json();
+      const t = pj.meta && typeof pj.meta.total === 'number' ? pj.meta.total : null;
+      if (t != null){ matching = t; if (t <= cap) effectiveRandom = false; }
+      if (t === 0) return { records: [], matching: 0, random: false, firstUrl: '' };
+    }
+  } catch { /* best-effort */ }
+  while (records.length < cap) {
+    requests++;
+    const base = `${API_BASE}/dois?client-id=${encodeURIComponent(clientId)}&page[size]=${pageSize}&affiliation=true&publisher=true${filter}`;
+    const url = effectiveRandom
+      ? `${base}&random=true&disable-facets=true`
+      : `${base}&page[number]=${page}`;
+    if (!firstUrl) firstUrl = url;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`DataCite returned ${res.status} for client "${clientId}" (${year})`);
+    const json = await res.json();
+    const batch = json.data || [];
+    let added = 0;
+    for (const r of batch){ if (!seen.has(r.id)){ seen.add(r.id); records.push(r); added++; } }
+    const total = json.meta && typeof json.meta.total === 'number' ? json.meta.total : null;
+    if (total != null) matching = total;
+    if (effectiveRandom){
+      if (records.length >= cap) break;
+      if (total != null && records.length >= total) break;
+      if (added === 0) break;
+      if (requests >= 30) break;
+    } else {
+      const totalPages = json.meta && json.meta.totalPages ? json.meta.totalPages : page;
+      if (batch.length === 0 || page >= totalPages || page >= 10) break;
+      page++;
+    }
+  }
+  return { records: records.slice(0, cap), matching, random: effectiveRandom, firstUrl };
+}
+
+async function fetchClientMeta(clientId){
+  try {
+    const res = await fetch(`${API_BASE}/clients/${encodeURIComponent(clientId)}`);
+    if (!res.ok) return null;
+    const j = await res.json();
+    return { name: j.data?.attributes?.name ?? clientId, doiCount: j.data?.attributes?.doiCount ?? null };
+  } catch { return null; }
+}
+
+/* detect the selection's first and last registered years: two one-record requests sorted by
+   created (a supported sort that registered tracks; the API ignores sort=registered) */
+async function detectYearBounds(clientId, resourceTypeId, userQuery){
+  const filter = (resourceTypeId ? `&resource-type-id=${encodeURIComponent(resourceTypeId)}` : '')
+               + (userQuery ? `&query=${encodeURIComponent(userQuery)}` : '');
+  const yearOf = async sort => {
+    const res = await fetch(`${API_BASE}/dois?client-id=${encodeURIComponent(clientId)}&page[size]=1&sort=${sort}&disable-facets=true${filter}`);
+    if (!res.ok) return NaN;
+    const json = await res.json();
+    const a = json.data && json.data[0] && json.data[0].attributes;
+    const d = a && (a.registered || a.created);
+    return d ? new Date(d).getUTCFullYear() : NaN;
+  };
+  const [minY, maxY] = await Promise.all([yearOf('created'), yearOf('-created')]);
+  return (Number.isNaN(minY) || Number.isNaN(maxY)) ? null : { minY, maxY };
+}
+
+/* ---------- run: harvest year by year ---------- */
+const SERIES = [
+  { key: 'fair',              label: 'FAIR Total',  color: '#673289', width: 3 },
+  { key: 'FAIR_Text',         label: 'Text',        color: '#e2725b', width: 1.5 },
+  { key: 'FAIR_Identifiers',  label: 'Identifiers', color: '#0070C0', width: 1.5 },
+  { key: 'FAIR_Connections',  label: 'Connections', color: '#9167b0', width: 1.5 },
+  { key: 'FAIR_Contacts',     label: 'Contacts',    color: '#3a9d6e', width: 1.5 },
+  { key: 'projects',          label: 'Projects Total', color: '#d4910b', width: 1.5, dash: [5,3] },
+];
+const THIN = 10;   // years with fewer records than this are drawn hollow / italic
+let history = null;   // { clientId, repoName, resourceTypeId, query, cap, random, years:[{year, n, matching, totals, byCode}] }
+let stopRequested = false;
+
+function yearTotals(byCode){
+  const t = { fair: weightedTotal(byCode, TOTAL_CODES), projects: weightedTotal(byCode, PROJECT_CODES) };
+  for (const code of TOTAL_CODES) t[code] = byCode[code] ? byCode[code].res.average : null;
+  return t;
+}
+
+async function run(){
+  const clientId = $('repo-input').value.trim();
+  const cap = Math.max(1, Math.min(1000, parseInt($('cap').value,10) || 100));
+  const random = $('random').checked;
+  const resourceTypeId = $('resource-type').value;
+  const query = $('query-input').value.trim();
+  if (!clientId) return;
+  syncUrl(clientId, resourceTypeId, query, cap, random);
+  closeAutocomplete();
+  $('repo-go').disabled = true; $('stop-btn').style.display = '';
+  stopRequested = false;
+  startTips();
+  try {
+    setStatus('Detecting registered years…');
+    setProgressIndeterminate();
+    const [meta, bounds] = await Promise.all([fetchClientMeta(clientId), detectYearBounds(clientId, resourceTypeId, query)]);
+    let minY = parseInt($('year-min').value, 10);
+    let maxY = parseInt($('year-max').value, 10);
+    if (Number.isNaN(minY)) minY = bounds ? bounds.minY : NaN;
+    if (Number.isNaN(maxY)) maxY = bounds ? bounds.maxY : NaN;
+    if (Number.isNaN(minY) || Number.isNaN(maxY)){ hideProgress(); setStatus('Could not detect registered years — enter From and To years and try again.', true); return; }
+    if (minY > maxY){ const t = minY; minY = maxY; maxY = t; }
+    if (maxY - minY + 1 > 30){ hideProgress(); setStatus(`That is ${maxY - minY + 1} years — please narrow the range to 30 or fewer.`, true); return; }
+    $('year-min').value = minY; $('year-max').value = maxY;
+
+    history = { clientId, repoName: (meta && meta.name) ? meta.name : clientId,
+                resourceTypeId, query, cap, random, years: [] };
+    renderSelection(meta, clientId, minY, maxY, resourceTypeId, query);
+    $('chart-card').style.display = ''; $('table-card').style.display = '';
+    $('hist-body').innerHTML = '';
+    renderLegend();
+    drawChart();
+
+    const yearList = [];
+    for (let y = minY; y <= maxY; y++) yearList.push(y);
+    let done = 0, scoredRecords = 0, shownUrl = false;
+    for (const y of yearList){
+      if (stopRequested) break;
+      setStatus(`${y} — fetching records (year ${done + 1} of ${yearList.length})…`);
+      setProgress(done / yearList.length);
+      const { records, matching, random: usedRandom, firstUrl } = await fetchYear(clientId, y, cap, random, resourceTypeId, query);
+      if (!shownUrl && firstUrl){ $('apiurl').style.display=''; $('apiurl').innerHTML = `<b>API call (per year):</b> ${escHtml(firstUrl)}`; shownUrl = true; }
+      if (stopRequested) break;
+      let entry;
+      if (!records.length){
+        entry = { year: y, n: 0, matching: matching || 0, totals: null, byCode: null };
+      } else {
+        setStatus(`${y} — scoring ${records.length} record${records.length===1?'':'s'} (year ${done + 1} of ${yearList.length})…`);
+        const byCode = await scoreAllSpirals(records, f => setProgress((done + f) / yearList.length));
+        entry = { year: y, n: records.length, matching, random: usedRandom, totals: yearTotals(byCode), byCode };
+        scoredRecords += records.length;
+      }
+      history.years.push(entry);
+      addTableRow(entry);
+      drawChart();
+      updateSelStats(scoredRecords);
+      done++;
+    }
+    hideProgress();
+    const scoredYears = history.years.filter(e => e.n > 0).length;
+    setStatus(stopRequested
+      ? `Stopped — ${scoredYears} year${scoredYears===1?'':'s'} scored (${scoredRecords.toLocaleString()} records).`
+      : `Done — ${scoredYears} year${scoredYears===1?'':'s'} scored, ${scoredRecords.toLocaleString()} records, registered ${minY}–${maxY}.`);
+  } catch (e){
+    console.error(e); hideProgress(); setStatus(e.message || String(e), true);
+  } finally {
+    stopTips();
+    $('repo-go').disabled = false; $('stop-btn').style.display = 'none';
+  }
+}
+
+/* ---------- rendering ---------- */
+function renderSelection(meta, clientId, minY, maxY, resourceTypeId, query){
+  $('sel-summary').style.display = '';
+  const name = (meta && meta.name) ? meta.name : clientId;
+  $('sel-repo').innerHTML = `${escHtml(name)}<span class="sel-id">${escHtml(clientId)}</span>`;
+  $('sel-years').textContent = `${minY}–${maxY}`;
+  $('sel-records').textContent = '0';
+  $('sel-mode').textContent = `${$('random').checked ? 'random sample' : 'sequential sample'} · up to ${$('cap').value}/year`;
+  const parts = [];
+  if (resourceTypeId) parts.push(`type: ${resourceTypeId}`);
+  if (query) parts.push(`query: ${query}`);
+  $('sel-filter').textContent = parts.length ? `filter — ${parts.join(' · ')}` : '';
+  $('sel-filter').style.display = parts.length ? '' : 'none';
+}
+function updateSelStats(scoredRecords){ $('sel-records').textContent = scoredRecords.toLocaleString(); }
+
+function renderLegend(){
+  $('legend').innerHTML = SERIES.map(s =>
+    `<span><i style="background:${s.color};height:${s.width>2?'4px':'3px'}"></i>${s.label}</span>`).join('')
+    + '<span class="thin-note">hollow point = fewer than 10 records</span>';
+}
+
+function addTableRow(e){
+  const thin = e.n > 0 && e.n < THIN;
+  const cell = v => v == null ? '—' : fmtPct(v);
+  const row = e.n === 0
+    ? `<tr><td>${e.year}</td><td class="num">0</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td><td colspan="6" style="text-align:left;color:var(--muted);font-style:italic">no records registered</td></tr>`
+    : `<tr><td>${e.year}${thin ? ' *' : ''}</td><td class="num${thin?' thin':''}">${e.n.toLocaleString()}</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td>`
+      + `<td class="num"><b>${cell(e.totals.fair)}</b></td>`
+      + TOTAL_CODES.map(c => `<td class="num">${cell(e.totals[c])}</td>`).join('')
+      + `<td class="num">${cell(e.totals.projects)}</td></tr>`;
+  $('hist-body').insertAdjacentHTML('beforeend', row);
+}
+
+function drawChart(){
+  const canvas = $('chart');
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.clientWidth || 960, cssH = 360;
+  canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, cssW, cssH);
+  if (!history || !history.years.length) return;
+  const years = history.years.map(e => e.year);
+  const minY = Math.min(...years), maxY = Math.max(...years);
+  const padL = 44, padR = 16, padT = 12, padB = 40;
+  const W = cssW - padL - padR, H = cssH - padT - padB;
+  const x = y => padL + (maxY === minY ? W/2 : (y - minY) / (maxY - minY) * W);
+  const yy = v => padT + (1 - v) * H;
+  // grid + axes
+  ctx.font = '11px Inter, sans-serif';
+  ctx.fillStyle = '#6b7280'; ctx.strokeStyle = '#e6e3ec'; ctx.lineWidth = 1;
+  for (let g = 0; g <= 100; g += 25){
+    const gy = yy(g/100);
+    ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(cssW - padR, gy); ctx.stroke();
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText(g + '%', padL - 6, gy);
+  }
+  const span = Math.max(1, maxY - minY);
+  const step = span > 18 ? 4 : (span > 9 ? 2 : 1);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let y = minY; y <= maxY; y++){
+    if ((y - minY) % step !== 0 && y !== maxY) continue;
+    ctx.fillStyle = '#6b7280'; ctx.fillText(String(y), x(y), cssH - padB + 8);
+    const e = history.years.find(h => h.year === y);
+    if (e){ ctx.fillStyle = '#a99bbf'; ctx.font = '9px Inter, sans-serif'; ctx.fillText(e.n ? 'n=' + e.n : '·', x(y), cssH - padB + 22); ctx.font = '11px Inter, sans-serif'; }
+  }
+  // series
+  for (const s of SERIES){
+    const pts = history.years
+      .filter(e => e.n > 0 && e.totals && e.totals[s.key] != null)
+      .map(e => ({ px: x(e.year), py: yy(Math.min(1, e.totals[s.key])), thin: e.n < THIN }));
+    if (!pts.length) continue;
+    ctx.strokeStyle = s.color; ctx.lineWidth = s.width || 1.5;
+    ctx.setLineDash(s.dash || []);
+    ctx.beginPath();
+    pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.px, p.py) : ctx.lineTo(p.px, p.py));
+    ctx.stroke();
+    ctx.setLineDash([]);
+    for (const p of pts){
+      ctx.beginPath(); ctx.arc(p.px, p.py, s.width > 2 ? 4 : 3, 0, Math.PI * 2);
+      if (p.thin){ ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = s.color; ctx.lineWidth = 1.5; ctx.stroke(); }
+      else { ctx.fillStyle = s.color; ctx.fill(); }
+    }
+  }
+}
+window.addEventListener('resize', () => drawChart());
+
+/* ---------- downloads ---------- */
+function nowStamp(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}`; }
+function safeRepoId(){ return (history.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_'); }
+function triggerDownload(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function downloadJson(){
+  if (!history) return;
+  const out = {
+    repository: { id: history.clientId, name: history.repoName },
+    generated: new Date().toISOString(),
+    selection: { resourceTypeId: history.resourceTypeId || '', query: history.query || '',
+                 maxPerYear: history.cap, random: history.random, dateField: 'registered' },
+    note: 'Each year scores a sample of the records REGISTERED in that year, as those records are at the generated time (current state, including any re-curation since).',
+    years: history.years.map(e => ({
+      year: e.year, recordsScored: e.n, matchingTotal: e.matching,
+      totals: e.totals ? { fairTotal: e.totals.fair, projectsTotal: e.totals.projects,
+        text: e.totals.FAIR_Text, identifiers: e.totals.FAIR_Identifiers,
+        connections: e.totals.FAIR_Connections, contacts: e.totals.FAIR_Contacts } : null,
+      useCases: e.byCode ? Object.fromEntries(Object.entries(e.byCode).map(([code, v]) => [code, {
+        average: v.res.average,
+        concepts: v.res.items.map(i => ({ concept: i.concept, matched: i.matched, completeness: i.comp }))
+      }])) : null
+    }))
+  };
+  triggerDownload(new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }),
+    `${safeRepoId()}_historyReport__${nowStamp()}.json`);
+}
+function downloadCsv(){
+  if (!history) return;
+  const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  // one row per year × concept, plus per-year use-case averages — long form, analysis-ready
+  const rows = [['year','recordsScored','matchingTotal','useCase','concept','completeness']];
+  for (const e of history.years){
+    if (!e.byCode) continue;
+    for (const [code, v] of Object.entries(e.byCode)){
+      rows.push([e.year, e.n, e.matching ?? '', code, '(average)', v.res.average.toFixed(4)]);
+      for (const i of v.res.items) rows.push([e.year, e.n, e.matching ?? '', code, i.concept, i.comp.toFixed(4)]);
+    }
+    rows.push([e.year, e.n, e.matching ?? '', '(FAIR total)', '', e.totals.fair.toFixed(4)]);
+    rows.push([e.year, e.n, e.matching ?? '', '(Projects total)', '', e.totals.projects.toFixed(4)]);
+  }
+  const body = rows.map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
+  triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_history__${nowStamp()}.csv`);
+}
+
+/* ---------- URL sync + deep links ---------- */
+function syncUrl(clientId, resourceTypeId, query, cap, random){
+  try {
+    const url = new URL(location.href);
+    url.searchParams.set('client', clientId);
+    if (resourceTypeId) url.searchParams.set('resource-type', resourceTypeId); else url.searchParams.delete('resource-type');
+    if (query) url.searchParams.set('query', query); else url.searchParams.delete('query');
+    if (cap && cap !== 100) url.searchParams.set('max', cap); else url.searchParams.delete('max');
+    if (random === false) url.searchParams.set('random', '0'); else url.searchParams.delete('random');
+    const ymin = $('year-min').value, ymax = $('year-max').value;
+    if (ymin) url.searchParams.set('from', ymin); else url.searchParams.delete('from');
+    if (ymax) url.searchParams.set('to', ymax); else url.searchParams.delete('to');
+    history_replaceState(url);
+  } catch (e) { /* non-fatal */ }
+}
+function history_replaceState(url){ try { window.history.replaceState({}, '', url); } catch(e){} }
+
+/* ---------- repository autocomplete (ported from completeness.html) ---------- */
+let acTimer, acHighlight = -1, acItems = [];
+async function searchClients(q){
+  try {
+    const res = await fetch(`${API_BASE}/clients?query=${encodeURIComponent(q)}&page[size]=8`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return (json.data ?? []).map(d => ({ id: d.id, name: d.attributes?.name ?? d.id, count: d.attributes?.doiCount ?? null }));
+  } catch { return []; }
+}
+function showAutocomplete(items){
+  const box = $('repo-autocomplete');
+  acItems = items; acHighlight = -1;
+  if (!items.length){ box.classList.remove('open'); return; }
+  box.innerHTML = items.map((it,i) =>
+    `<div class="repo-ac-item" data-id="${escAttr(it.id)}" data-idx="${i}">
+      <span class="repo-ac-name">${escHtml(it.name)}</span>
+      <span class="repo-ac-id">${escHtml(it.id)}</span>
+      ${it.count != null ? `<span class="repo-ac-count">${it.count.toLocaleString()} DOIs</span>` : ''}
+    </div>`).join('');
+  box.classList.add('open');
+  box.querySelectorAll('.repo-ac-item').forEach(el => {
+    el.addEventListener('mousedown', e => { e.preventDefault(); $('repo-input').value = el.dataset.id; box.classList.remove('open'); run(); });
+  });
+}
+function closeAutocomplete(){ $('repo-autocomplete').classList.remove('open'); acHighlight = -1; }
+$('repo-input').addEventListener('input', () => {
+  const q = $('repo-input').value.trim();
+  clearTimeout(acTimer);
+  if (q.length < 2){ closeAutocomplete(); return; }
+  $('repo-autocomplete').innerHTML = '<div class="repo-ac-loading">Searching…</div>';
+  $('repo-autocomplete').classList.add('open');
+  acTimer = setTimeout(async () => showAutocomplete(await searchClients(q)), 300);
+});
+$('repo-input').addEventListener('keydown', e => {
+  const box = $('repo-autocomplete');
+  const open = box.classList.contains('open');
+  if (e.key === 'ArrowDown'){ e.preventDefault();
+    if (open && acHighlight < acItems.length - 1){ acHighlight++; box.querySelectorAll('.repo-ac-item').forEach((el,i)=>el.classList.toggle('highlighted', i===acHighlight)); }
+  } else if (e.key === 'ArrowUp'){ e.preventDefault();
+    if (open && acHighlight > 0){ acHighlight--; box.querySelectorAll('.repo-ac-item').forEach((el,i)=>el.classList.toggle('highlighted', i===acHighlight)); }
+  } else if (e.key === 'Enter'){ e.preventDefault();
+    if (open && acHighlight >= 0 && acItems[acHighlight]){ $('repo-input').value = acItems[acHighlight].id; closeAutocomplete(); run(); }
+    else { closeAutocomplete(); run(); }
+  } else if (e.key === 'Escape'){ closeAutocomplete(); }
+});
+document.addEventListener('click', e => { if (!e.target.closest('.hero-search')) closeAutocomplete(); });
+
+/* ---------- loading tips ---------- */
+const HISTORY_TIPS = [
+  { label:'Cohorts, not a time machine', text:'Each year scores the records <strong>registered</strong> that year <em>as they are today</em> — a strong early year can mean good metadata then, or <strong>re-curation</strong> since. Compare with Re-Curation Watch to tell them apart.', link:'index.html' },
+  { label:'Registered year', text:'<strong>Registered</strong> is when DataCite first saw the DOI — assigned by the system, unlike <strong>publicationYear</strong>, which authors can backfill arbitrarily.', link:'https://support.datacite.org/docs/queries' },
+  { label:'Thin years', text:'Early years often have only a handful of records, so their percentages swing wildly — <strong>hollow points</strong> mark years with fewer than 10 records. Read trends from the solid ones.', link:'https://metadatagamechangers.com' },
+  { label:'Rising lines', text:'A rising line means newer records are <strong>better documented</strong> — or older cohorts were never revisited. Falling lines are rarer and worth investigating: did a workflow change?', link:'https://metadatagamechangers.com/blog' },
+  { label:'Focus with a query', text:'The <strong>Query</strong> filter composes with each year — e.g. <strong>types.resourceTypeGeneral:Dataset</strong> tracks dataset metadata only, excluding text or software records.', link:'https://support.datacite.org/docs/queries' },
+  { label:'In your browser', text:'Every year is fetched from DataCite and scored <strong>in your browser</strong> with the same jq use-case queries as Metadata Completeness — nothing is uploaded or stored.', link:'https://metadatagamechangers.com' },
+];
+const TIPS = HISTORY_TIPS;
+let tipTimer = null, tipDelay = null, tipIndex = 0;
+function renderTip(){
+  const t = TIPS[tipIndex];
+  $('tips').innerHTML =
+    '<div class="tips-head">While you wait…</div>' +
+    '<div class="tips-label">' + t.label + '</div>' +
+    '<div class="tips-text">' + t.text + '</div>' +
+    (t.link ? '<a class="tips-link" href="' + t.link + '" target="_blank" rel="noopener">Learn more ↗</a>' : '');
+}
+function startTips(){
+  stopTips();
+  tipDelay = setTimeout(() => {
+    tipIndex = Math.floor(Math.random() * TIPS.length);
+    renderTip();
+    $('tips').style.display = '';
+    tipTimer = setInterval(() => { tipIndex = (tipIndex + 1) % TIPS.length; renderTip(); }, 4500);
+  }, 1200);
+}
+function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay = tipTimer = null; $('tips').style.display = 'none'; }
+
+/* ---------- boot ---------- */
+$('repo-go').addEventListener('click', run);
+$('stop-btn').addEventListener('click', () => { stopRequested = true; });
+$('dl-json').addEventListener('click', downloadJson);
+$('dl-csv').addEventListener('click', downloadCsv);
+if (location.protocol === 'file:') {
+  setStatus('This page is open as a local file (file://). DataCite requests will be blocked — serve it over http (e.g. "python3 -m http.server" → http://localhost:8000/repositoryHistory.html).', true);
+}
+(async () => {
+  try {
+    // the use-case catalog is fetched, not embedded — keep FAIR_spirals.json in sync with spirals.py
+    const [catalog] = await Promise.all([
+      fetch('FAIR_spirals.json').then(r => { if (!r.ok) throw new Error('Could not load FAIR_spirals.json (' + r.status + ')'); return r.json(); }),
+      whenJqReady()
+    ]);
+    SPIRALS = catalog;
+    $('repo-go').disabled = false;
+    setStatus('Engine ready. Search for a repository (or enter a client ID) and click Explore.');
+    // deep links: ?client=…&resource-type=…&query=…&max=…&random=0&from=YYYY&to=YYYY
+    const params = new URLSearchParams(location.search);
+    const clientFromUrl = params.get('client');
+    if (clientFromUrl){
+      $('repo-input').value = clientFromUrl;
+      const rt = params.get('resource-type');
+      if (rt && [...$('resource-type').options].some(o => o.value === rt)) $('resource-type').value = rt;
+      const q = params.get('query'); if (q) $('query-input').value = q;
+      const max = parseInt(params.get('max'), 10); if (max > 0) $('cap').value = Math.min(1000, max);
+      const rand = params.get('random'); if (rand != null) $('random').checked = !/^(0|false|no)$/i.test(rand);
+      const from = parseInt(params.get('from'), 10); if (!Number.isNaN(from)) $('year-min').value = from;
+      const to = parseInt(params.get('to'), 10); if (!Number.isNaN(to)) $('year-max').value = to;
+      run();
+    }
+  } catch (e){
+    console.error(e); hideProgress(); setStatus(e.message || String(e), true);
+  }
+})();
+</script>
+
+<footer style="border-top:1px solid var(--line);background:#fff;padding:1rem 2rem;margin-top:2rem;">
+  <div style="max-width:1040px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" style="height:22px;width:auto;display:block;" onerror="this.style.display='none'" />
+      </a>
+      <span style="font-size:0.72rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Repository History</a> · Created by <a href="https://metadatagamechangers.com" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Metadata Game Changers</a> · Better Documentation | Better Data | Better Science</span>
+    </div>
+    <span style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:0.65rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Report an issue ↗</a> &nbsp;·&nbsp; <span title="A DOI for this tool has not been minted yet">DOI: pending</span> &nbsp;·&nbsp; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none;">CC BY-NC 4.0</a> &nbsp;·&nbsp; Live data from <a href="https://api.datacite.org" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">api.datacite.org</a></span>
+  </div>
+</footer>
+</body>
+</html>
