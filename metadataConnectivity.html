@@ -1618,7 +1618,7 @@ async function analyze(clientId, records, repoTotal, usedRandom, resourceTypeId,
   renderSelection(clientId, meta, records.length, usedRandom, repoTotal, resourceTypeId, query, sharedFrom);
   setStatus('Computing connectivity…');
   const results = computeConnectivity(records);
-  lastRun = { records, clientId, resourceTypeId, query, repoName: (meta && meta.name) ? meta.name : clientId, results, repoTotal, random: usedRandom };
+  lastRun = { records, clientId, resourceTypeId, query, repoName: (meta && meta.name) ? meta.name : clientId, results, repoTotal, random: usedRandom, sharedFrom };
   $('conn-card').style.display = '';
   renderConnectivity(results);
   renderDuplicates();
@@ -1714,7 +1714,8 @@ $('completeness-link').addEventListener('click', () => {
   const l = lastRun;
   try {
     localStorage.setItem('metadata-completeness-input', JSON.stringify({
-      source: 'metadataConnectivity', records: l.records,
+      source: 'metadataConnectivity', sharedFrom: l.sharedFrom,   // carry the original provenance (e.g. Repository History · registered 2019) through the chain
+      records: l.records,
       clientId: l.clientId, repoName: l.repoName, repoTotal: l.repoTotal,
       random: l.random, resourceTypeId: l.resourceTypeId, query: l.query }));
     $('completeness-link').href = 'completeness.html?input=stored';
