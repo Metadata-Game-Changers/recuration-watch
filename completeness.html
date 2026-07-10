@@ -1652,7 +1652,7 @@ whenJqReady().then(()=>{
       (async () => {
         $('repo-go').disabled = true;
         startTips();
-        try { await analyze(s.clientId, s.records, s.repoTotal, !!s.random, s.resourceTypeId || '', s.query || '', 'Metadata Connectivity'); }
+        try { await analyze(s.clientId, s.records, s.repoTotal, !!s.random, s.resourceTypeId || '', s.query || '', s.sharedFrom || 'Metadata Connectivity'); }
         catch (e){ console.error(e); hideProgress(); setStatus(e.message || String(e), true); }
         finally { stopTips(); $('repo-go').disabled = false; }
       })();

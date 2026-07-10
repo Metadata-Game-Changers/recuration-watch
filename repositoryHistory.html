@@ -116,6 +116,9 @@
   table.hist th:first-child,table.hist td:first-child{text-align:left}
   table.hist td.thin{color:var(--muted);font-style:italic}
   table.hist td.num{font-variant-numeric:tabular-nums}
+  table.hist td.year-open{text-align:left;white-space:nowrap}
+  table.hist td.year-open a{color:var(--accent);text-decoration:none;cursor:pointer;font-size:.72rem;font-weight:600;margin-right:.5rem}
+  table.hist td.year-open a:hover{color:var(--accent-dk);text-decoration:underline}
 </style>
 </head>
 <body>
@@ -265,6 +268,7 @@
     <table class="hist"><thead><tr>
       <th>Registered</th><th>Records scored</th><th>Matching</th><th>FAIR Total</th>
       <th>Text</th><th>Identifiers</th><th>Connections</th><th>Contacts</th><th>Projects</th>
+      <th title="Open this year's exact sample in another tool — both then measure the same records">Open this year</th>
     </tr></thead><tbody id="hist-body"></tbody></table>
     </div>
   </div>
@@ -408,10 +412,15 @@ function weightedTotal(byCode, codes){
   return totalCount > 0 ? totalScore / totalCount : 0;
 }
 
+// the DataCite query that scopes a selection to one registered year (shared by the fetch
+// and the per-year handoff, so a shared sample reloads to the same year)
+function yearQuery(year, userQuery){
+  const yearClause = `registered:[${year}-01-01 TO ${year}-12-31]`;
+  return userQuery ? `(${userQuery}) AND ${yearClause}` : yearClause;
+}
 /* ---------- fetch one registered year (adapted from completeness fetchRepo) ---------- */
 async function fetchYear(clientId, year, cap, random, resourceTypeId, userQuery){
-  const yearClause = `registered:[${year}-01-01 TO ${year}-12-31]`;
-  const query = userQuery ? `(${userQuery}) AND ${yearClause}` : yearClause;
+  const query = yearQuery(year, userQuery);
   const filter = (resourceTypeId ? `&resource-type-id=${encodeURIComponent(resourceTypeId)}` : '')
                + `&query=${encodeURIComponent(query)}`;
   const records = [];
@@ -578,7 +587,9 @@ async function run(){
       } else {
         setStatus(`${y} — scoring ${records.length} record${records.length===1?'':'s'} (year ${done + 1} of ${yearList.length})…`);
         const byCode = await scoreAllSpirals(records, f => setProgress((done + f) / yearList.length));
-        entry = { year: y, n: records.length, matching, random: usedRandom, totals: yearTotals(byCode), byCode };
+        // retain the year's records so a row can be handed to Completeness/Connectivity without
+        // re-fetching (bounded: ≤ cap per year, and only one year is ever put in the mailbox)
+        entry = { year: y, n: records.length, matching, random: usedRandom, totals: yearTotals(byCode), byCode, records };
         scoredRecords += records.length;
       }
       history.years.push(entry);
@@ -626,11 +637,12 @@ function addTableRow(e){
   const thin = e.n > 0 && e.n < THIN;
   const cell = v => v == null ? '—' : fmtPct(v);
   const row = e.n === 0
-    ? `<tr><td>${e.year}</td><td class="num">0</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td><td colspan="6" style="text-align:left;color:var(--muted);font-style:italic">no records registered</td></tr>`
+    ? `<tr><td>${e.year}</td><td class="num">0</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td><td colspan="7" style="text-align:left;color:var(--muted);font-style:italic">no records registered</td></tr>`
     : `<tr><td>${e.year}${thin ? ' *' : ''}</td><td class="num${thin?' thin':''}">${e.n.toLocaleString()}</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td>`
       + `<td class="num"><b>${cell(e.totals.fair)}</b></td>`
       + TOTAL_CODES.map(c => `<td class="num">${cell(e.totals[c])}</td>`).join('')
-      + `<td class="num">${cell(e.totals.projects)}</td></tr>`;
+      + `<td class="num">${cell(e.totals.projects)}</td>`
+      + `<td class="year-open"><a data-hy="${e.year}" data-target="completeness" title="Open ${e.n.toLocaleString()} record${e.n===1?'':'s'} from ${e.year} in Metadata Completeness">Completeness ↗</a> <a data-hy="${e.year}" data-target="connectivity" title="Open ${e.n.toLocaleString()} record${e.n===1?'':'s'} from ${e.year} in Metadata Connectivity">Connectivity ↗</a></td></tr>`;
   $('hist-body').insertAdjacentHTML('beforeend', row);
 }
 
@@ -875,6 +887,33 @@ $('dl-png').addEventListener('click', downloadPng);
 $('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; renderLegend(); drawChart(); });
 $('dl-json').addEventListener('click', downloadJson);
 $('dl-csv').addEventListener('click', downloadCsv);
+// per-year handoff: open a year's exact sample in Completeness or Connectivity (same
+// localStorage mailbox those tools read via ?input=stored), so both measure the same records
+$('hist-body').addEventListener('click', e => {
+  const a = e.target.closest('a[data-hy]'); if (!a) return;
+  e.preventDefault();
+  const entry = history && history.years.find(y => String(y.year) === a.dataset.hy);
+  if (!entry || !entry.records || !entry.records.length) return;
+  const target = a.dataset.target;
+  const page = target === 'connectivity' ? 'metadataConnectivity.html' : 'completeness.html';
+  const key  = target === 'connectivity' ? 'metadata-connectivity-input' : 'metadata-completeness-input';
+  const payload = {
+    source: 'repositoryHistory', sharedFrom: `Repository History · registered ${entry.year}`,
+    records: entry.records, clientId: history.clientId, repoName: history.repoName,
+    repoTotal: entry.matching, random: !!entry.random,
+    resourceTypeId: history.resourceTypeId || '',
+    query: yearQuery(entry.year, history.query)   // year-scoped so a reload reproduces this year
+  };
+  let url = `${page}?input=stored`;
+  try { localStorage.setItem(key, JSON.stringify(payload)); }
+  catch (err){   // quota exceeded — deep-link the year selection instead
+    localStorage.removeItem(key);
+    url = `${page}?client=${encodeURIComponent(history.clientId)}`
+      + (history.resourceTypeId ? `&resource-type=${encodeURIComponent(history.resourceTypeId)}` : '')
+      + `&query=${encodeURIComponent(payload.query)}&max=${entry.records.length}${entry.random ? '' : '&random=0'}`;
+  }
+  window.open(url, '_blank', 'noopener');
+});
 if (location.protocol === 'file:') {
   setStatus('This page is open as a local file (file://). DataCite requests will be blocked — serve it over http (e.g. "python3 -m http.server" → http://localhost:8000/repositoryHistory.html).', true);
 }
