@@ -125,9 +125,10 @@
   table.grid-tbl th.corner{background:#fff}
   table.grid-tbl th.yr{font-size:.74rem;font-weight:600;color:var(--ink);padding:.2rem .3rem;text-align:center;white-space:nowrap}
   table.grid-tbl th.yr small{display:block;font-weight:400;color:var(--muted);font-size:.62rem}
+  table.grid-tbl th.yr small.tot{color:var(--accent-dk);font-weight:600;font-size:.68rem}
   table.grid-tbl th.rowlab{font-size:.72rem;font-weight:600;color:var(--accent-dk);text-align:right;padding:0 .6rem 0 .2rem;white-space:nowrap;vertical-align:middle}
   table.grid-tbl td.cell{padding:.15rem;text-align:center;vertical-align:top}
-  table.grid-tbl td.cell .cell-avg{font-size:.64rem;color:var(--muted);font-variant-numeric:tabular-nums;margin-bottom:-.1rem}
+  table.grid-tbl td.cell .cell-avg{font-size:.68rem;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:-.15rem}
   table.grid-tbl td.cell.thin{opacity:.5}
   table.grid-tbl td.cell svg{display:block;margin:0 auto}
 </style>
@@ -748,8 +749,15 @@ function drawGrid(){
   const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
   const years = history.years.filter(e => e.n > 0 && e.byCode);
   if (!years.length){ grid.innerHTML = '<p class="card-intro">No scored years to show yet.</p>'; return; }
-  const head = '<tr><th class="corner"></th>' + years.map(e =>
-    `<th class="yr">${e.year}<small>n=${e.n.toLocaleString()}${e.n < THIN ? ' *' : ''}</small></th>`).join('') + '</tr>';
+  // the total shown atop each year column: the group's own total (Projects → Projects total,
+  // otherwise the FAIR headline total)
+  const totalKey = plotGroup === 'Projects' ? 'projects' : 'fair';
+  const totalName = plotGroup === 'Projects' ? 'Projects' : 'FAIR';
+  const head = '<tr><th class="corner"></th>' + years.map(e => {
+    const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
+    return `<th class="yr" title="${e.year}: ${e.n.toLocaleString()} records scored · ${totalName} total ${tot}">`
+      + `${e.year}<small>n=${e.n.toLocaleString()}${e.n < THIN ? ' *' : ''}</small><small class="tot">${tot}</small></th>`;
+  }).join('') + '</tr>';
   const rows = codes.map(code => {
     const color = SPIRAL_COLORS[code] || '#9167b0';
     const label = CODE_STYLE[code] ? CODE_STYLE[code].label : code;
@@ -758,7 +766,7 @@ function drawGrid(){
       if (!uc){ return '<td class="cell">—</td>'; }
       const avg = (uc.res.average * 100).toFixed(0) + '%';
       return `<td class="cell${e.n < THIN ? ' thin' : ''}" title="${escHtml(label)} · ${e.year} · ${avg} (${e.n} records)">`
-        + `<div class="cell-avg">${avg}</div>${miniRadar(uc.res.items, color, CELL)}</td>`;
+        + `${miniRadar(uc.res.items, color, CELL)}<div class="cell-avg">${avg}</div></td>`;
     }).join('');
     return `<tr><th class="rowlab">${escHtml(label)}</th>${cells}</tr>`;
   }).join('');
