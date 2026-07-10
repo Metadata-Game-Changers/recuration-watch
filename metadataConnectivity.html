@@ -1794,9 +1794,9 @@ if (location.protocol === 'file:') {
       setLink('completeness-link', 'completeness.html', s.clientId);
       setLink('activity-link', 'repo-activity.html', s.clientId);
       syncUrl(s.clientId, s.resourceTypeId || '', s.query || '', s.records.length, !!s.random);
-      setStatus('Analyzing the sample shared by Metadata Completeness…');
+      setStatus(`Analyzing the sample shared by ${s.sharedFrom || 'Metadata Completeness'}…`);
       setProgressIndeterminate();
-      try { await analyze(s.clientId, s.records, s.repoTotal, !!s.random, s.resourceTypeId || '', s.query || '', 'Metadata Completeness'); }
+      try { await analyze(s.clientId, s.records, s.repoTotal, !!s.random, s.resourceTypeId || '', s.query || '', s.sharedFrom || 'Metadata Completeness'); }
       catch (e){ console.error(e); hideProgress(); setStatus(e.message || String(e), true); }
       return;
     }
