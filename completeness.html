@@ -1446,7 +1446,7 @@ async function analyze(clientId, records, repoTotal, usedRandom, resourceTypeId,
   const byCode = await scoreAllSpirals(records, frac => setProgress(frac));
   const total = computeTotal(byCode);
   lastRun = { byCode, total, records, clientId, resourceTypeId, query, random: usedRandom,
-              repoName: (meta && meta.name) ? meta.name : clientId, repoTotal };
+              repoName: (meta && meta.name) ? meta.name : clientId, repoTotal, sharedFrom };
   renderTotal();
   showDetail();
   hideProgress();
@@ -1557,7 +1557,8 @@ $('connectivity-link').addEventListener('click', () => {
   const l = lastRun;
   try {
     localStorage.setItem('metadata-connectivity-input', JSON.stringify({
-      source: 'completeness', records: l.records,
+      source: 'completeness', sharedFrom: l.sharedFrom,   // carry the original provenance (e.g. Repository History · registered 2019) through the chain
+      records: l.records,
       clientId: l.clientId, repoName: l.repoName, repoTotal: l.repoTotal,
       random: l.random, resourceTypeId: l.resourceTypeId, query: l.query }));
     $('connectivity-link').href = 'metadataConnectivity.html?input=stored';
