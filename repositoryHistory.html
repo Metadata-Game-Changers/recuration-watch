@@ -238,8 +238,18 @@
 
   <div class="card" id="chart-card" style="display:none">
     <div class="card-head">
-      <h2>FAIR completeness by registered year</h2>
+      <h2>Completeness by registered year</h2>
       <div class="card-actions">
+        <label class="hero-chk" style="gap:.4rem" title="Which use cases to plot: the four FAIR use cases, the three Project use cases, the two additional DataCite use cases, or all nine">
+          <span class="hero-secondary-label">Plot</span>
+          <select class="hero-select" id="plot-group" style="flex:none;min-width:0">
+            <option value="FAIR" selected>FAIR (4 + total)</option>
+            <option value="Projects">Projects (3 + total)</option>
+            <option value="Extras">Extras (2)</option>
+            <option value="All">All (9)</option>
+          </select>
+        </label>
+        <button class="dl-btn" id="dl-png" type="button">⬇ Plot (PNG)</button>
         <button class="dl-btn" id="dl-json" type="button">⬇ Data (JSON)</button>
         <button class="dl-btn" id="dl-csv" type="button">⬇ Data (CSV)</button>
       </div>
@@ -476,21 +486,46 @@ async function detectYearBounds(clientId, resourceTypeId, userQuery){
 }
 
 /* ---------- run: harvest year by year ---------- */
-const SERIES = [
-  { key: 'fair',              label: 'FAIR Total',  color: '#673289', width: 3 },
-  { key: 'FAIR_Text',         label: 'Text',        color: '#e2725b', width: 1.5 },
-  { key: 'FAIR_Identifiers',  label: 'Identifiers', color: '#0070C0', width: 1.5 },
-  { key: 'FAIR_Connections',  label: 'Connections', color: '#9167b0', width: 1.5 },
-  { key: 'FAIR_Contacts',     label: 'Contacts',    color: '#3a9d6e', width: 1.5 },
-  { key: 'projects',          label: 'Projects Total', color: '#d4910b', width: 1.5, dash: [5,3] },
-];
+/* plot groups: which lines to draw (Extras has no combined total, matching completeness) */
+const CODE_STYLE = {
+  FAIR_Text:                 { label: 'Text',         color: '#e2725b' },
+  FAIR_Identifiers:          { label: 'Identifiers',  color: '#0070C0' },
+  FAIR_Connections:          { label: 'Connections',  color: '#9167b0' },
+  FAIR_Contacts:             { label: 'Contacts',     color: '#3a9d6e' },
+  Project_Team:              { label: 'Team',         color: '#b3005e' },
+  Project_Items:             { label: 'Items',        color: '#0070C0' },
+  Project_Relations:         { label: 'Relations',    color: '#3a9d6e' },
+  DataCite_Relations:        { label: 'Relations',    color: '#0070C0' },
+  DataCite_ContributorTypes: { label: 'Contributors', color: '#e2725b' },
+};
+const PLOT_GROUPS = {
+  FAIR:     { totals: [{ key: 'fair',     label: 'FAIR Total',     color: '#673289', width: 3 }],
+              codes: ['FAIR_Text','FAIR_Identifiers','FAIR_Connections','FAIR_Contacts'] },
+  Projects: { totals: [{ key: 'projects', label: 'Projects Total', color: '#673289', width: 3 }],
+              codes: ['Project_Team','Project_Items','Project_Relations'] },
+  Extras:   { totals: [], codes: ['DataCite_Relations','DataCite_ContributorTypes'] },
+  All:      { totals: [], codes: ['FAIR_Text','FAIR_Identifiers','FAIR_Connections','FAIR_Contacts',
+                                  'Project_Team','Project_Items','Project_Relations',
+                                  'DataCite_Relations','DataCite_ContributorTypes'] },
+};
+const ALL_PALETTE = ['#e2725b','#0070C0','#9167b0','#3a9d6e','#b3005e','#d4910b','#2f6fb0','#c0392b','#5b3d7a'];
+function seriesFor(group){
+  const g = PLOT_GROUPS[group] || PLOT_GROUPS.FAIR;
+  const codeSeries = g.codes.map((code, i) => ({
+    key: code, width: 1.5,
+    label: group === 'All' ? code.replace('_', ' · ').replace(/_/g, ' ') : (CODE_STYLE[code] ? CODE_STYLE[code].label : code),
+    color: group === 'All' ? ALL_PALETTE[i % ALL_PALETTE.length] : (CODE_STYLE[code] ? CODE_STYLE[code].color : '#6b7280'),
+  }));
+  return [...g.totals, ...codeSeries];
+}
+let plotGroup = 'FAIR';
 const THIN = 10;   // years with fewer records than this are drawn hollow / italic
 let history = null;   // { clientId, repoName, resourceTypeId, query, cap, random, years:[{year, n, matching, totals, byCode}] }
 let stopRequested = false;
 
 function yearTotals(byCode){
   const t = { fair: weightedTotal(byCode, TOTAL_CODES), projects: weightedTotal(byCode, PROJECT_CODES) };
-  for (const code of TOTAL_CODES) t[code] = byCode[code] ? byCode[code].res.average : null;
+  for (const code of Object.keys(byCode)) t[code] = byCode[code] ? byCode[code].res.average : null;
   return t;
 }
 
@@ -582,7 +617,7 @@ function renderSelection(meta, clientId, minY, maxY, resourceTypeId, query){
 function updateSelStats(scoredRecords){ $('sel-records').textContent = scoredRecords.toLocaleString(); }
 
 function renderLegend(){
-  $('legend').innerHTML = SERIES.map(s =>
+  $('legend').innerHTML = seriesFor(plotGroup).map(s =>
     `<span><i style="background:${s.color};height:${s.width>2?'4px':'3px'}"></i>${s.label}</span>`).join('')
     + '<span class="thin-note">hollow point = fewer than 10 records</span>';
 }
@@ -632,7 +667,7 @@ function drawChart(){
     if (e){ ctx.fillStyle = '#a99bbf'; ctx.font = '9px Inter, sans-serif'; ctx.fillText(e.n ? 'n=' + e.n : '·', x(y), cssH - padB + 22); ctx.font = '11px Inter, sans-serif'; }
   }
   // series
-  for (const s of SERIES){
+  for (const s of seriesFor(plotGroup)){
     const pts = history.years
       .filter(e => e.n > 0 && e.totals && e.totals[s.key] != null)
       .map(e => ({ px: x(e.year), py: yy(Math.min(1, e.totals[s.key])), thin: e.n < THIN }));
@@ -699,6 +734,43 @@ function downloadCsv(){
   }
   const body = rows.map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
   triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_history__${nowStamp()}.csv`);
+}
+
+function downloadPng(){
+  if (!history || !history.years.length) return;
+  const chart = $('chart');
+  const scale = 2;
+  const W = chart.clientWidth || 960, chartH = 360;
+  const items = seriesFor(plotGroup);
+  const out = document.createElement('canvas');
+  const meas = out.getContext('2d');
+  const legendFont = '12px Inter, sans-serif';
+  meas.font = legendFont;
+  const pad = 16, sw = 18, gapIn = 6, gapBetween = 18, lineH = 20;
+  let x = pad, lines = 1;
+  const pos = items.map(s => {
+    const w = sw + gapIn + meas.measureText(s.label).width;
+    if (x + w > W - pad){ lines++; x = pad; }
+    const p = { x, line: lines }; x += w + gapBetween; return p;
+  });
+  const titleH = 52, legendH = lines * lineH + 10;
+  const H = titleH + chartH + legendH + pad;
+  out.width = W * scale; out.height = H * scale;
+  const ctx = out.getContext('2d'); ctx.scale(scale, scale);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#673289'; ctx.font = '600 15px Inter, sans-serif'; ctx.textBaseline = 'top';
+  ctx.fillText(`${history.repoName} (${history.clientId}) — completeness by registered year`, pad, 12);
+  const groupLabel = { FAIR: 'FAIR use cases', Projects: 'Project use cases', Extras: 'Additional DataCite use cases', All: 'All nine use cases' }[plotGroup] || plotGroup;
+  ctx.fillStyle = '#6b7280'; ctx.font = '11px Inter, sans-serif';
+  ctx.fillText(`${groupLabel} · up to ${history.cap} records/year · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. re-curation)`, pad, 33);
+  ctx.drawImage(chart, 0, titleH, W, chartH);
+  ctx.font = legendFont; ctx.textBaseline = 'middle';
+  items.forEach((s, i) => {
+    const y = titleH + chartH + (pos[i].line - 0.5) * lineH + 4;
+    ctx.fillStyle = s.color; ctx.fillRect(pos[i].x, y - 2, sw, s.width > 2 ? 4 : 3);
+    ctx.fillStyle = '#374151'; ctx.fillText(s.label, pos[i].x + sw + gapIn, y);
+  });
+  out.toBlob(b => { if (b) triggerDownload(b, `${safeRepoId()}_history_${plotGroup}__${nowStamp()}.png`); }, 'image/png');
 }
 
 /* ---------- URL sync + deep links ---------- */
@@ -799,6 +871,8 @@ function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay =
 /* ---------- boot ---------- */
 $('repo-go').addEventListener('click', run);
 $('stop-btn').addEventListener('click', () => { stopRequested = true; });
+$('dl-png').addEventListener('click', downloadPng);
+$('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; renderLegend(); drawChart(); });
 $('dl-json').addEventListener('click', downloadJson);
 $('dl-csv').addEventListener('click', downloadCsv);
 if (location.protocol === 'file:') {
