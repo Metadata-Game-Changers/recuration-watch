@@ -249,6 +249,7 @@
             <option value="All">All (9)</option>
           </select>
         </label>
+        <button class="dl-btn" id="dl-png" type="button">⬇ Plot (PNG)</button>
         <button class="dl-btn" id="dl-json" type="button">⬇ Data (JSON)</button>
         <button class="dl-btn" id="dl-csv" type="button">⬇ Data (CSV)</button>
       </div>
@@ -735,6 +736,43 @@ function downloadCsv(){
   triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_history__${nowStamp()}.csv`);
 }
 
+function downloadPng(){
+  if (!history || !history.years.length) return;
+  const chart = $('chart');
+  const scale = 2;
+  const W = chart.clientWidth || 960, chartH = 360;
+  const items = seriesFor(plotGroup);
+  const out = document.createElement('canvas');
+  const meas = out.getContext('2d');
+  const legendFont = '12px Inter, sans-serif';
+  meas.font = legendFont;
+  const pad = 16, sw = 18, gapIn = 6, gapBetween = 18, lineH = 20;
+  let x = pad, lines = 1;
+  const pos = items.map(s => {
+    const w = sw + gapIn + meas.measureText(s.label).width;
+    if (x + w > W - pad){ lines++; x = pad; }
+    const p = { x, line: lines }; x += w + gapBetween; return p;
+  });
+  const titleH = 52, legendH = lines * lineH + 10;
+  const H = titleH + chartH + legendH + pad;
+  out.width = W * scale; out.height = H * scale;
+  const ctx = out.getContext('2d'); ctx.scale(scale, scale);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#673289'; ctx.font = '600 15px Inter, sans-serif'; ctx.textBaseline = 'top';
+  ctx.fillText(`${history.repoName} (${history.clientId}) — completeness by registered year`, pad, 12);
+  const groupLabel = { FAIR: 'FAIR use cases', Projects: 'Project use cases', Extras: 'Additional DataCite use cases', All: 'All nine use cases' }[plotGroup] || plotGroup;
+  ctx.fillStyle = '#6b7280'; ctx.font = '11px Inter, sans-serif';
+  ctx.fillText(`${groupLabel} · up to ${history.cap} records/year · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. re-curation)`, pad, 33);
+  ctx.drawImage(chart, 0, titleH, W, chartH);
+  ctx.font = legendFont; ctx.textBaseline = 'middle';
+  items.forEach((s, i) => {
+    const y = titleH + chartH + (pos[i].line - 0.5) * lineH + 4;
+    ctx.fillStyle = s.color; ctx.fillRect(pos[i].x, y - 2, sw, s.width > 2 ? 4 : 3);
+    ctx.fillStyle = '#374151'; ctx.fillText(s.label, pos[i].x + sw + gapIn, y);
+  });
+  out.toBlob(b => { if (b) triggerDownload(b, `${safeRepoId()}_history_${plotGroup}__${nowStamp()}.png`); }, 'image/png');
+}
+
 /* ---------- URL sync + deep links ---------- */
 function syncUrl(clientId, resourceTypeId, query, cap, random){
   try {
@@ -833,6 +871,7 @@ function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay =
 /* ---------- boot ---------- */
 $('repo-go').addEventListener('click', run);
 $('stop-btn').addEventListener('click', () => { stopRequested = true; });
+$('dl-png').addEventListener('click', downloadPng);
 $('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; renderLegend(); drawChart(); });
 $('dl-json').addEventListener('click', downloadJson);
 $('dl-csv').addEventListener('click', downloadCsv);
