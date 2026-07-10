@@ -131,6 +131,16 @@
   table.grid-tbl td.cell .cell-avg{font-size:.68rem;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:-.15rem}
   table.grid-tbl td.cell.thin{opacity:.5}
   table.grid-tbl td.cell svg{display:block;margin:0 auto}
+  /* movie: one year at a time, enlarged, with a play/scrub control */
+  .movie-bar{display:flex;align-items:center;gap:1rem;margin:.4rem 0 1rem;flex-wrap:wrap}
+  .movie-bar input[type=range]{flex:1;min-width:180px;accent-color:var(--accent);cursor:pointer}
+  .movie-caption{font-size:.95rem;font-weight:600;color:var(--accent-dk);white-space:nowrap}
+  .movie-caption b{color:var(--ink);font-size:1.15rem}
+  .movie-radars{display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;justify-content:center;align-items:flex-start}
+  .movie-cell{text-align:center;width:240px}
+  .movie-cell .mc-title{font-size:.78rem;font-weight:600;color:var(--accent-dk)}
+  .movie-cell .mc-avg{font-size:.74rem;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:-.4rem}
+  .movie-cell svg{display:block;margin:0 auto}
 </style>
 </head>
 <body>
@@ -255,11 +265,12 @@
     <div class="card-head">
       <h2>Completeness by registered year</h2>
       <div class="card-actions">
-        <label class="hero-chk" style="gap:.4rem" title="Lines: one trend line per use case over the years. Grid: a radar plot per use case per year (small multiples) — watch each use case's concept profile change.">
+        <label class="hero-chk" style="gap:.4rem" title="Lines: one trend line per use case over the years. Grid: a radar plot per use case per year. Movie: one year at a time, enlarged — press Play to animate across the years.">
           <span class="hero-secondary-label">View</span>
           <select class="hero-select" id="view-mode" style="flex:none;min-width:0">
             <option value="lines" selected>Lines</option>
             <option value="grid">Grid</option>
+            <option value="movie">Movie</option>
           </select>
         </label>
         <label class="hero-chk" style="gap:.4rem" title="Which use cases to show: the four FAIR use cases, the three Project use cases, the two additional DataCite use cases, or all nine">
@@ -280,6 +291,14 @@
     <canvas id="chart" width="960" height="360"></canvas>
     <div class="legend" id="legend"></div>
     <div id="grid" style="display:none"></div>
+    <div id="movie" style="display:none">
+      <div class="movie-bar">
+        <button class="dl-btn" id="movie-play" type="button">▶ Play</button>
+        <input type="range" id="movie-slider" min="0" max="0" value="0" step="1" aria-label="Registered year" />
+        <span class="movie-caption" id="movie-caption"></span>
+      </div>
+      <div class="movie-radars" id="movie-radars"></div>
+    </div>
   </div>
 
   <div class="card" id="table-card" style="display:none">
@@ -568,6 +587,43 @@ function miniRadar(items, color, size){
   g += `<polygon points="${pts}" fill="${color}" fill-opacity="0.30" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>`;
   return `<svg viewBox="0 0 ${W} ${W}" width="${W}" height="${W}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
 }
+// a larger, labeled radar for the movie view (perimeter concept labels fit at this size;
+// omitted for very busy use cases to avoid a tangle). Ported from completeness.html.
+const displayConcept = c => String(c).replace(/Identifier/g, 'ID');
+function wrapLabel(text, width){
+  const lines = []; let line = '';
+  for (const w of String(text).split(/\s+/)){
+    if (!line) line = w;
+    else if ((line + ' ' + w).length <= width) line += ' ' + w;
+    else { lines.push(line); line = w; }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+function movieRadar(items, color){
+  const S = 240, cx = S/2, cy = S/2, N = items.length || 1;
+  const withLabels = N <= 18;
+  const R = (S/2) * (withLabels ? 0.60 : 0.82);
+  const ang = i => (i/N) * 2 * Math.PI - Math.PI/2;
+  const pt  = (i,r) => [ +(cx + Math.cos(ang(i))*R*r).toFixed(1), +(cy + Math.sin(ang(i))*R*r).toFixed(1) ];
+  let g = '';
+  [0.25,0.5,0.75,1].forEach(r => { g += `<circle cx="${cx}" cy="${cy}" r="${(R*r).toFixed(1)}" fill="none" stroke="#ece9f3" stroke-width="1"/>`; });
+  for (let i=0;i<N;i++){ const [x,y]=pt(i,1); g += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#f0eef5" stroke-width="1"/>`; }
+  const pts = items.map((it,i) => pt(i, Math.min(it.comp,1)).join(',')).join(' ');
+  g += `<polygon points="${pts}" fill="${color}" fill-opacity="0.30" stroke="${color}" stroke-width="1.75" stroke-linejoin="round"/>`;
+  if (withLabels){
+    const LH = 9;
+    items.forEach((it,i) => {
+      const [x,y] = pt(i, 1.12); const a = ang(i);
+      const anchor = Math.abs(Math.cos(a)) < 0.3 ? 'middle' : (Math.cos(a) > 0 ? 'start' : 'end');
+      const lines = wrapLabel(displayConcept(it.concept), 13);
+      const tspans = lines.map((ln,k) =>
+        `<tspan x="${x}" dy="${k===0 ? (-(lines.length-1)/2*LH).toFixed(1) : LH}">${escHtml(ln)}</tspan>`).join('');
+      g += `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle" font-size="7.5" fill="#6b7280">${tspans}</text>`;
+    });
+  }
+  return `<svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
+}
 const THIN = 10;   // years with fewer records than this are drawn hollow / italic
 let history = null;   // { clientId, repoName, resourceTypeId, query, cap, random, years:[{year, n, matching, totals, byCode}] }
 let stopRequested = false;
@@ -605,6 +661,7 @@ async function run(){
 
     history = { clientId, repoName: (meta && meta.name) ? meta.name : clientId,
                 resourceTypeId, query, cap, random, years: [] };
+    movieStop(); movieIdx = 0;   // fresh run resets the movie to the first year
     renderSelection(meta, clientId, minY, maxY, resourceTypeId, query);
     $('chart-card').style.display = ''; $('table-card').style.display = '';
     $('hist-body').innerHTML = '';
@@ -634,7 +691,7 @@ async function run(){
       }
       history.years.push(entry);
       addTableRow(entry);
-      if (viewMode === 'grid') drawGrid(); else drawChart();
+      if (viewMode === 'grid') drawGrid(); else if (viewMode === 'movie') drawMovie(); else drawChart();
       updateSelStats(scoredRecords);
       done++;
     }
@@ -775,12 +832,51 @@ function drawGrid(){
 
 // switch between the line chart and the radar grid, keeping the download buttons sensible
 function renderView(){
-  const grid = viewMode === 'grid';
-  $('chart').style.display = grid ? 'none' : '';
-  $('legend').style.display = grid ? 'none' : '';
-  $('grid').style.display = grid ? '' : 'none';
-  $('dl-png').style.display = grid ? 'none' : '';   // PNG export is the line chart; grid export is a future add
-  if (grid) drawGrid(); else drawChart();
+  $('chart').style.display   = viewMode === 'lines' ? '' : 'none';
+  $('legend').style.display  = viewMode === 'lines' ? '' : 'none';
+  $('grid').style.display    = viewMode === 'grid'  ? '' : 'none';
+  $('movie').style.display   = viewMode === 'movie' ? '' : 'none';
+  $('dl-png').style.display  = viewMode === 'lines' ? '' : 'none';   // PNG export is the line chart
+  if (viewMode !== 'movie') movieStop();
+  if (viewMode === 'grid') drawGrid();
+  else if (viewMode === 'movie') drawMovie();
+  else drawChart();
+}
+
+/* ---------- movie: one year at a time, enlarged, scrub + play across the years ---------- */
+let movieIdx = 0, movieTimer = null;
+function scoredYears(){ return history ? history.years.filter(e => e.n > 0 && e.byCode) : []; }
+function drawMovie(){
+  const years = scoredYears();
+  if (!years.length){ $('movie-radars').innerHTML = ''; $('movie-caption').textContent = ''; $('movie-play').disabled = true; return; }
+  if (movieIdx >= years.length) movieIdx = years.length - 1;
+  if (movieIdx < 0) movieIdx = 0;
+  const e = years[movieIdx];
+  const slider = $('movie-slider'); slider.max = years.length - 1; slider.value = movieIdx;
+  $('movie-play').disabled = years.length < 2;
+  const totalKey = plotGroup === 'Projects' ? 'projects' : 'fair';
+  const totalName = plotGroup === 'Projects' ? 'Projects' : 'FAIR';
+  const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
+  $('movie-caption').innerHTML = `<b>${e.year}</b> · ${e.n.toLocaleString()} record${e.n===1?'':'s'}${e.n < THIN ? ' *' : ''} · ${totalName} total ${tot}`;
+  const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
+  $('movie-radars').innerHTML = codes.map(code => {
+    const uc = e.byCode[code]; if (!uc) return '';
+    const color = SPIRAL_COLORS[code] || '#9167b0';
+    const label = CODE_STYLE[code] ? CODE_STYLE[code].label : code;
+    const avg = (uc.res.average * 100).toFixed(0) + '%';
+    return `<div class="movie-cell"><div class="mc-title">${escHtml(label)}</div>${movieRadar(uc.res.items, color)}<div class="mc-avg">${avg}</div></div>`;
+  }).join('');
+}
+function movieStop(){ if (movieTimer){ clearInterval(movieTimer); movieTimer = null; } const b = $('movie-play'); if (b) b.textContent = '▶ Play'; }
+function moviePlay(){
+  if (movieTimer){ movieStop(); return; }
+  const years = scoredYears(); if (years.length < 2) return;
+  if (movieIdx >= years.length - 1) movieIdx = 0;   // at the end → restart from the first year
+  $('movie-play').textContent = '⏸ Pause';
+  movieTimer = setInterval(() => {
+    if (movieIdx >= scoredYears().length - 1){ movieStop(); drawMovie(); return; }   // stop on the last year
+    movieIdx++; drawMovie();
+  }, 1100);
 }
 
 /* ---------- downloads ---------- */
@@ -968,8 +1064,10 @@ function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay =
 $('repo-go').addEventListener('click', run);
 $('stop-btn').addEventListener('click', () => { stopRequested = true; });
 $('dl-png').addEventListener('click', downloadPng);
-$('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; renderLegend(); if (viewMode === 'grid') drawGrid(); else drawChart(); });
+$('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; renderLegend(); if (viewMode === 'grid') drawGrid(); else if (viewMode === 'movie') drawMovie(); else drawChart(); });
 $('view-mode').addEventListener('change', () => { viewMode = $('view-mode').value; renderView(); });
+$('movie-play').addEventListener('click', moviePlay);
+$('movie-slider').addEventListener('input', () => { movieStop(); movieIdx = +$('movie-slider').value; drawMovie(); });
 $('dl-json').addEventListener('click', downloadJson);
 $('dl-csv').addEventListener('click', downloadCsv);
 // per-year handoff: open a year's exact sample in Completeness or Connectivity (same
