@@ -289,7 +289,7 @@
         <button class="dl-btn" id="dl-metadata" type="button">⬇ Metadata (JSON)</button>
       </div>
     </div>
-    <p class="conn-intro">Connectivity is the share of things that carry the identifier that could connect them — e.g. of the creators in a repository, how many have a name identifier (ORCID). The <b>%</b> is occurrence-based (identified occurrences ÷ all occurrences). The bar counts <b>distinct</b> entities (a person or affiliation that appears in many records is one entity): green = identified in <b>every</b> occurrence, yellow = identified in <b>some</b> (these are the quick wins — a known identifier to propagate), red = <b>never</b> identified. <b>Click any bar</b> to list them, color-coded to match the bars — <b>quick wins first</b> (a known identifier to propagate), then the ones still missing an identifier.</p>
+    <p class="conn-intro">Connectivity is the share of things that carry the identifier that could connect them — e.g. of the creators in a repository, how many have a name identifier (ORCID). The <b>%</b> is occurrence-based (identified occurrences ÷ all occurrences). The bar counts <b>distinct</b> entities (a person or affiliation that appears in many records is one entity): green = identified in <b>every</b> occurrence, yellow = identified in <b>some</b> (these are the quick wins — a known identifier to copy to the records that are missing it), red = <b>never</b> identified. <b>Click any bar</b> to list them, color-coded to match the bars — <b>quick wins first</b> (a known identifier to copy to the records that are missing it), then the ones still missing an identifier.</p>
     <div class="conn-legend">
       <span><i style="background:var(--green)"></i>Complete — identified in every occurrence</span>
       <span><i style="background:var(--amber)"></i>Some — identified in some occurrences</span>
@@ -310,7 +310,7 @@
           </select>
         </label>
         <label class="dup-th">Sort
-          <select id="dup-sort" title="A–Z sorts by name (to find an entity). Impact sorts by ‘can propagate’ — occurrences that could inherit an identifier already present on another spelling — then how widespread the entity is.">
+          <select id="dup-sort" title="A–Z sorts by name (to find an entity). Impact sorts by ‘can copy’ — occurrences that could take an identifier already present on another spelling — then how widespread the entity is.">
             <option value="name" selected>A–Z</option>
             <option value="impact">impact</option>
           </select>
@@ -319,7 +319,7 @@
         <button class="dl-btn" id="dup-csv" type="button">⬇ Duplicates (CSV)</button>
       </div>
     </div>
-    <p class="conn-intro">Likely-same people, organizations, and rights statements that appear under more than one spelling — to review and reconcile. This <b>does not change the bars above</b>. <b>High confidence</b> clusters share an identifier (the same ORCID/ROR under different names); <b>review</b> clusters are fuzzy string matches. “Can propagate” counts occurrences that could inherit a known identifier already present on another spelling. Acronyms vs full names (e.g. “MIT” vs the spelled-out name) only match when they share an identifier.</p>
+    <p class="conn-intro">Likely-same people, organizations, and rights statements that appear under more than one spelling — to review and reconcile. This <b>does not change the bars above</b>. <b>High confidence</b> clusters share an identifier (the same ORCID/ROR under different names); <b>review</b> clusters are fuzzy string matches. “Can copy” counts occurrences that could take a known identifier already present on another spelling. Acronyms vs full names (e.g. “MIT” vs the spelled-out name) only match when they share an identifier.</p>
     <div id="dup-body"></div>
   </div>
 
@@ -519,7 +519,7 @@ function renderConnectivity(results){
             m = res.missing  / res.total * 100;
       return `<div class="conn-row">
         <div class="conn-label">${escHtml(res.label)}
-          <span class="conn-meta">${res.identified.toLocaleString()} of ${res.items.toLocaleString()} occurrences identified · <b class="conn-pct">${(res.overall*100).toFixed(0)}%</b> · ${res.total.toLocaleString()} distinct ${escHtml(ent)}${res.total===1?'':'s'}${res.quickWins>0 ? ` · <b class="conn-qw" title="Known identifiers that could be propagated to the same entity's other occurrences — no lookup needed">${res.quickWins.toLocaleString()} quick win${res.quickWins===1?'':'s'}</b>` : ''}</span>
+          <span class="conn-meta">${res.identified.toLocaleString()} of ${res.items.toLocaleString()} occurrences identified · <b class="conn-pct">${(res.overall*100).toFixed(0)}%</b> · ${res.total.toLocaleString()} distinct ${escHtml(ent)}${res.total===1?'':'s'}${res.quickWins>0 ? ` · <b class="conn-qw" title="Known identifiers that could be copied to the records that are missing them — no lookup needed">${res.quickWins.toLocaleString()} quick win${res.quickWins===1?'':'s'}</b>` : ''}</span>
         </div>
         <div class="conn-bar clickable" data-idx="${res.idx}" title="${res.complete} complete · ${res.partial} partial · ${res.missing} missing ${escHtml(ent)}s — click for the list">${seg('green',c)}${seg('yellow',p)}${seg('red',m)}</div>
       </div>`;
@@ -864,7 +864,7 @@ function buildConnReportHtml(){
   ${groups.map(groupBlock).join('')}
   ${dupReportSection()}
   <footer>
-    <p>Connectivity = the share of things that carry the identifier that could connect them. The bar counts distinct entities (complete / some / none identified); the percentage is occurrence-based (identified occurrences ÷ all occurrences). "Quick wins" are known identifiers that could be propagated to the same entity's other occurrences.</p>
+    <p>Connectivity = the share of things that carry the identifier that could connect them. The bar counts distinct entities (complete / some / none identified); the percentage is occurrence-based (identified occurrences ÷ all occurrences). "Quick wins" are known identifiers that could be copied to the records that are missing them.</p>
     <p>Generated by the Metadata Game Changers Connectivity tool against live DataCite data (api.datacite.org). Report created ${created} © by Metadata Game Changers is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></p>
   </footer>
 </body></html>`;
@@ -881,7 +881,7 @@ function dupReportSection(){
     if (!clusters.length) return `<h3>${escHtml(title)} <span class="dups-sub">${sub}</span></h3><p class="dups-empty">None found at the “${escHtml(dup.threshold)}” match level.</p>`;
     const rows = clusters.map(c => `<tr><td>${escHtml(c.canonical)}</td><td class="num">${c.variants.length}</td><td>${confLabel(c)}</td><td class="num">${c.totalOcc.toLocaleString()}</td><td class="num">${c.propagatable ? c.propagatable.toLocaleString() : '—'}</td></tr>`).join('');
     return `<h3>${escHtml(title)} <span class="dups-sub">${sub}</span></h3>
-      <table class="stats"><thead><tr><th>Canonical</th><th class="num">Spellings</th><th>Confidence</th><th class="num">Occurrences</th><th class="num">Can propagate</th></tr></thead><tbody>${rows}</tbody></table>`;
+      <table class="stats"><thead><tr><th>Canonical</th><th class="num">Spellings</th><th>Confidence</th><th class="num">Occurrences</th><th class="num">Can copy</th></tr></thead><tbody>${rows}</tbody></table>`;
   };
   return `<section class="dups">
     <h2>Potential duplicates <span class="dups-note">advisory — does not affect the bars above</span></h2>
@@ -1163,7 +1163,7 @@ function downloadConnPdf(){
       }
       for (const c of clusters){
         ensure(13);
-        const meta = `${c.variants.length} spellings · ${confLabel(c)}${c.propagatable>0?` · ${c.propagatable.toLocaleString()} can propagate`:''}`;
+        const meta = `${c.variants.length} spellings · ${confLabel(c)}${c.propagatable>0?` · ${c.propagatable.toLocaleString()} can copy`:''}`;
         doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
         const metaW = doc.getTextWidth(T(meta));
         ink(C.ink); doc.text(ellip(c.canonical, contentW - metaW - 12), x0, y + 7);
@@ -1439,7 +1439,7 @@ function dupBadges(cl){
     : cl.confidence === 'high'
       ? '<span class="dup-badge hi">high · identifier match</span>'
       : '<span class="dup-badge med">review · fuzzy match</span>';
-  const prop = cl.propagatable > 0 ? `<span class="dup-badge prop" title="Occurrences that could inherit an identifier already present on another spelling in this cluster — the propagatable count used by the Impact sort">${cl.propagatable.toLocaleString()} can propagate</span>` : '';
+  const prop = cl.propagatable > 0 ? `<span class="dup-badge prop" title="Occurrences that could take an identifier already present on another spelling in this cluster — the count used by the Impact sort">${cl.propagatable.toLocaleString()} can copy</span>` : '';
   return conf + prop;
 }
 // Render an identifier value as a link to its home page when recognizable (ORCID, ROR, a URL, or an SPDX id).
@@ -1566,11 +1566,11 @@ async function dupCopy(){
 const CONNECTIVITY_TIPS = [
   { label:'Connectivity', text:'<strong>Connectivity</strong> measures whether the things in your metadata carry the identifiers that <em>connect</em> them — ORCIDs on people, RORs on organizations.', link:'https://metadatagamechangers.com' },
   { label:'Distinct entities', text:'The bars count <strong>distinct entities</strong>, not occurrences — a creator who appears in 50 records is one person to identify once.', link:'https://metadatagamechangers.com/blog' },
-  { label:'Quick wins', text:'<strong>Yellow</strong> segments are quick wins: an identifier already known for an entity that just needs to be <em>propagated</em> to its other occurrences — no lookup required.', link:'https://metadatagamechangers.com/blog' },
+  { label:'Quick wins', text:'<strong>Yellow</strong> segments are quick wins: an identifier already known for an entity that just needs to be <em>copied</em> to the records that are missing it — no lookup required.', link:'https://metadatagamechangers.com/blog' },
   { label:'ORCID', text:'An <strong>ORCID</strong> on a creator or contributor links every one of their outputs across repositories — the single highest-leverage identifier to add.', link:'https://orcid.org' },
   { label:'ROR', text:'<strong>ROR</strong> identifiers on affiliations disambiguate organizations far better than free-text names like “Univ. of Colorado”.', link:'https://ror.org' },
   { label:'Duplicates', text:'The same person or org shows up under many spellings. The <strong>potential-duplicates</strong> panel groups likely matches — even across creators and contributors.', link:'https://metadatagamechangers.com/blog' },
-  { label:'Click a bar', text:'<strong>Click any bar</strong> to list its distinct entities — quick wins first (a known identifier to propagate), then the ones still missing an identifier.', link:'https://metadatagamechangers.com' },
+  { label:'Click a bar', text:'<strong>Click any bar</strong> to list its distinct entities — quick wins first (a known identifier to copy to the records that are missing it), then the ones still missing an identifier.', link:'https://metadatagamechangers.com' },
   { label:'In your browser', text:'Everything is computed <strong>in your browser</strong> against live DataCite data — nothing is uploaded or stored.', link:'https://metadatagamechangers.com' },
 ];
 let tipTimer = null, tipDelay = null, tipIndex = 0;
