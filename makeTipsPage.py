@@ -28,6 +28,7 @@ TOOLS = [
     ("metadataConnectivity.html", "CONNECTIVITY_TIPS", "Metadata Connectivity"),
     ("rorRetriever.html", "TIPS", "ROR Retriever"),
     ("orcidRetriever.html", "TIPS", "ORCID Retriever"),
+    ("repositoryHistory.html", "HISTORY_TIPS", "Repository History"),
 ]
 
 TIP_RE = re.compile(
@@ -130,7 +131,7 @@ FOOT = '''
     These tips rotate inside the tools while data loads; here they are all at once. Collected from
     <a href="index.html">Re-Curation Watch</a>, <a href="completeness.html">Metadata Completeness</a>,
     <a href="metadataConnectivity.html">Metadata Connectivity</a>, <a href="rorRetriever.html">ROR Retriever</a>,
-    and <a href="orcidRetriever.html">ORCID Retriever</a>.
+    <a href="orcidRetriever.html">ORCID Retriever</a>, and <a href="repositoryHistory.html">Repository History</a>.
     A <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers</a> prototype
     &copy; Metadata Game Changers, licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a> · DOI: pending.
   </footer>
