@@ -99,6 +99,14 @@ HEAD = '''<!DOCTYPE html>
   footer{margin-top:2.5rem;font-size:.72rem;color:var(--muted);border-top:1px solid var(--line);padding-top:.9rem;line-height:1.5}
   footer a{color:var(--accent);text-decoration:none}
   @media print{.topbar-links{display:none} .tip{break-inside:avoid}}
+  /* analytics consent banner */
+  #analytics-banner{position:fixed;bottom:0;left:0;right:0;background:var(--ink);color:#fff;padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;z-index:500;font-size:.75rem;border-top:2px solid #444}
+  #analytics-banner a{color:#93c5fd}
+  #analytics-banner-btns{display:flex;gap:.5rem}
+  .ab-btn{padding:.35rem .85rem;font-size:.72rem;cursor:pointer;border:1px solid #666;font-family:inherit;background:none;color:#fff;border-radius:6px}
+  .ab-btn-ok{background:#fff;color:var(--ink);border-color:#fff}
+  .ab-btn-ok:hover{background:var(--tint)}
+  .ab-btn-no:hover{background:rgba(255,255,255,.1)}
 </style>
 </head>
 <body>
@@ -136,6 +144,35 @@ FOOT = '''
     &copy; Metadata Game Changers, licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a> · DOI: pending.
   </footer>
 </div>
+<!-- Google Analytics (shared consent with the rest of the suite via localStorage 'rcw-ga') -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9JQRWY72HW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  try{ if(localStorage.getItem('rcw-ga')==='declined') window['ga-disable-G-9JQRWY72HW']=true; }catch(e){}
+  gtag('js', new Date());
+  gtag('config', 'G-9JQRWY72HW');
+</script>
+<!-- Analytics consent banner -->
+<div id="analytics-banner">
+  <span>This site uses Google Analytics for anonymous usage statistics. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy ↗</a></span>
+  <div id="analytics-banner-btns">
+    <button class="ab-btn ab-btn-ok" type="button" onclick="hideBanner('accepted')">OK</button>
+    <button class="ab-btn ab-btn-no" type="button" onclick="hideBanner('declined')">Decline</button>
+  </div>
+</div>
+<script>
+  function hideBanner(choice){
+    try{ localStorage.setItem('rcw-ga', choice); }catch(e){}
+    document.getElementById('analytics-banner').style.display='none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  }
+  (function(){
+    var choice=null; try{ choice=localStorage.getItem('rcw-ga'); }catch(e){}
+    if (choice) document.getElementById('analytics-banner').style.display='none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  })();
+</script>
 </body>
 </html>
 '''
