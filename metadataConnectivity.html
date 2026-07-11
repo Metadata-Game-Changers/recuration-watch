@@ -557,20 +557,32 @@ function renderConnectivity(results){
 // appearing 8 times with 4 affiliationIdentifiers → 4/8 = 50%. Surfaces the items to go fix.
 // Detail maps track {occ, id, docs} per distinct entity — docs is a Map(doi -> title) of the records it
 // appears in (deduped by DOI), so the drill-down can link each entity to its DOIs. (noteDoc is defined below.)
+// Route each creator/contributor to the right registry: organizations → ROR, people → ORCID.
+// DataCite's nameType is authoritative when set ("Organizational"/"Personal"), but many records
+// leave it null — so fall back to an organization-name heuristic for those. A repository can carry
+// both types (personal + organizational authors), so this is decided per entity, not per repo.
+const ORG_NAME_RE = /(\buniversit|université|\binstitut|\bcollege\b|\bschool\b|\bacademy\b|\blaborator|\bmuseum\b|\bobservatory\b|\bsurvey\b|\bministry\b|\bdepartment\b|\bagency\b|\bfoundation\b|\bsociety\b|\bassociation\b|\bcouncil\b|\bcommittee\b|\bcommission\b|\bcent(er|re)\b|\bhospital\b|\blibrary\b|\bbureau\b|\bconsortium\b|\bnetwork\b|\badministration\b|\bcorporation\b|\bcompany\b|\b(inc|ltd|llc|gmbh)\b|\bnational\b|\binternational\b|\borgani[sz]ation)/i;
+function looksOrgName(name){ return typeof name === 'string' && ORG_NAME_RE.test(name); }
+function isOrgEntity(nameType, name){
+  if (nameType === 'Organizational') return true;
+  if (nameType === 'Personal') return false;
+  return looksOrgName(name);   // nameType unset → guess from the name
+}
 function personDetail(records, source, kind){
-  const map = new Map();   // name -> {occ, id, docs}
-  const bump = (name, has, r) => { if (name == null || name === '') return; let e = map.get(name); if (!e){ e = { occ:0, id:0, docs:new Map() }; map.set(name, e); } e.occ++; if (has) e.id++; else noteFixDoc(e, r); noteDoc(e, r); };
+  const map = new Map();   // name -> {occ, id, docs, orgN}
+  const bump = (name, has, r, org) => { if (name == null || name === '') return; let e = map.get(name); if (!e){ e = { occ:0, id:0, docs:new Map(), orgN:0 }; map.set(name, e); } e.occ++; if (has) e.id++; else noteFixDoc(e, r); if (org) e.orgN++; noteDoc(e, r); };
   for (const r of records){
     const arr = (r.attributes && Array.isArray(r.attributes[source])) ? r.attributes[source] : [];
     for (const p of arr){
       if (!p || typeof p !== 'object') continue;
       if (kind === 'affId'){
-        for (const a of (Array.isArray(p.affiliation) ? p.affiliation : [])){ if (a && a.name) bump(a.name, !!a.affiliationIdentifier, r); }
+        for (const a of (Array.isArray(p.affiliation) ? p.affiliation : [])){ if (a && a.name) bump(a.name, !!a.affiliationIdentifier, r, true); }   // affiliations are always organizations
       } else {
         const name = p.name || [p.givenName, p.familyName].filter(Boolean).join(' ');
         if (!name) continue;
-        if (kind === 'nameId') bump(name, Array.isArray(p.nameIdentifiers) && p.nameIdentifiers.some(n => n && n.nameIdentifier), r);
-        else bump(name, Array.isArray(p.affiliation) && p.affiliation.some(a => a && a.name), r);
+        const org = isOrgEntity(p.nameType, name);
+        if (kind === 'nameId') bump(name, Array.isArray(p.nameIdentifiers) && p.nameIdentifiers.some(n => n && n.nameIdentifier), r, org);
+        else bump(name, Array.isArray(p.affiliation) && p.affiliation.some(a => a && a.name), r, org);
       }
     }
   }
@@ -626,6 +638,7 @@ function openConnDetail(idx){
   const rank = e => (isQw(e) ? 0 : (e.id === 0 ? 1 : 2));   // quick wins first, then missing, then complete
   const entries = [...map.entries()]
     .map(([name, e]) => ({ name, occ: e.occ, id: e.id, pct: e.occ ? e.id / e.occ : 0,
+      org: (e.orgN || 0) * 2 > e.occ,   // majority of occurrences look organizational → ROR, else person → ORCID
       docs: [...(e.docs || [])].map(([doi, title]) => ({ doi, title })),
       fix: [...(e.fixDocs || [])].map(([doi, title]) => ({ doi, title })) }))
     .sort((a, b) => rank(a) - rank(b)
@@ -641,28 +654,40 @@ function openConnDetail(idx){
   // drill-downs can send every name identified < 100% (never identified + quick wins) to a
   // retriever: affiliations/funders/publishers → ROR Retriever, people → ORCID Retriever
   const rorBtn = $('cd-ror'), orcidBtn = $('cd-orcid'), incomplete = missing + partial;
-  if ((c.kind === 'affId' || c.kind === 'funder' || c.kind === 'publisher') && incomplete > 0){
-    rorBtn.style.display = ''; rorBtn.textContent = `Find RORs (${incomplete.toLocaleString()}) ↗`;
-  } else rorBtn.style.display = 'none';
-  if (c.kind === 'nameId' && incomplete > 0){
-    orcidBtn.style.display = ''; orcidBtn.textContent = `Find ORCIDs (${incomplete.toLocaleString()}) ↗`;
-  } else orcidBtn.style.display = 'none';
+  const incOrgs = entries.filter(e => e.id < e.occ && e.org).length;      // organizations → ROR
+  const incPeople = entries.filter(e => e.id < e.occ && !e.org).length;   // people → ORCID
+  if (c.kind === 'nameId'){
+    // a name-identifier list can mix people and organizations — send each to its own registry
+    if (incOrgs > 0){ rorBtn.style.display = ''; rorBtn.textContent = `Find RORs (${incOrgs.toLocaleString()}) ↗`; } else rorBtn.style.display = 'none';
+    if (incPeople > 0){ orcidBtn.style.display = ''; orcidBtn.textContent = `Find ORCIDs (${incPeople.toLocaleString()}) ↗`; } else orcidBtn.style.display = 'none';
+  } else {
+    if ((c.kind === 'affId' || c.kind === 'funder' || c.kind === 'publisher') && incomplete > 0){
+      rorBtn.style.display = ''; rorBtn.textContent = `Find RORs (${incomplete.toLocaleString()}) ↗`;
+    } else rorBtn.style.display = 'none';
+    orcidBtn.style.display = 'none';
+  }
   const cls = e => e.id === 0 ? 'pc-red' : (e.id >= e.occ ? 'pc-green' : 'pc-amber');
   const rowCls = e => isQw(e) ? 'row-qw' : (e.id === 0 ? 'row-missing' : 'row-complete');   // color-code rows to match the bars
-  // Name-identifier rows link the name to an ORCID search; affiliation, funder, and publisher
-  // rows link to a ROR search (RORs identify organizations in all three roles).
-  const searchLink = c.kind === 'nameId'
-    ? { url: n => `https://orcid.org/orcid-search/search?searchQuery=${encodeURIComponent(n)}`, title: 'Search ORCID for this name' }
-    : (c.kind === 'affId' || c.kind === 'funder' || c.kind === 'publisher')
-    ? { url: n => `https://ror.org/search?query=${encodeURIComponent(n)}`, title: `Search ROR for this ${c.entity.toLowerCase()}` }
-    : null;
-  const nameCell = n => searchLink
-    ? `<a href="${escAttr(searchLink.url(n))}" target="_blank" rel="noopener" title="${searchLink.title}">${escHtml(n)}</a>`
-    : escHtml(n);
+  // Name-identifier rows link people to an ORCID search and organizations to a ROR search (the
+  // list can mix both); affiliation, funder, and publisher rows always link to a ROR search
+  // (RORs identify organizations in all three roles).
+  const orcidUrl = n => `https://orcid.org/orcid-search/search?searchQuery=${encodeURIComponent(n)}`;
+  const rorUrl = n => `https://ror.org/search?query=${encodeURIComponent(n)}`;
+  const linkFor = e => {
+    if (c.kind === 'nameId') return e.org
+      ? { url: rorUrl(e.name), title: 'Search ROR for this organization' }
+      : { url: orcidUrl(e.name), title: 'Search ORCID for this name' };
+    if (c.kind === 'affId' || c.kind === 'funder' || c.kind === 'publisher')
+      return { url: rorUrl(e.name), title: `Search ROR for this ${c.entity.toLowerCase()}` };
+    return null;
+  };
+  const nameCell = e => { const l = linkFor(e); return l
+    ? `<a href="${escAttr(l.url)}" target="_blank" rel="noopener" title="${l.title}">${escHtml(e.name)}</a>`
+    : escHtml(e.name); };
   $('cd-body').innerHTML = entries.length === 0
     ? '<div style="padding:1rem;color:#6b7280;font-size:.8rem">No items found in the analyzed sample.</div>'
     : `<table class="cd-table"><thead><tr><th>${escHtml(c.entity)}</th><th class="num">Occurrences</th><th class="num">Identified</th><th class="num" title="Records where this ${escAttr(ent)} occurs WITHOUT its identifier — the records to find and fix">To fix</th><th class="num">%</th></tr></thead><tbody>`
-      + entries.map((e, ei) => `<tr class="${rowCls(e)}"><td class="val">${nameCell(e.name)}${isQw(e) ? ' <span class="qw-tag">quick win</span>' : ''}</td>`
+      + entries.map((e, ei) => `<tr class="${rowCls(e)}"><td class="val">${nameCell(e)}${isQw(e) ? ' <span class="qw-tag">quick win</span>' : ''}</td>`
         + `<td class="num">${e.docs.length ? `<a class="dup-doc-link" data-ei="${ei}" title="List the DOIs where this ${escAttr(ent)} occurs">${e.occ.toLocaleString()}</a>` : e.occ.toLocaleString()}</td>`
         + `<td class="num">${e.id.toLocaleString()}</td>`
         + `<td class="num">${e.fix.length ? `<a class="dup-doc-link" data-fix="${ei}" title="List the records where this ${escAttr(ent)} occurs without its identifier — the ones to fix">${e.fix.length.toLocaleString()}</a>` : '—'}</td>`
@@ -1766,9 +1791,9 @@ $('cd-download').addEventListener('click', connDetailDownloadCsv);
 // hand every affiliation identified < 100% to the ROR Retriever (localStorage, falling back to the URL hash)
 // hand every name identified < 100% to a retriever tool, with the source run described so
 // the tool can show what dataset the names came from (localStorage, falling back to the URL hash)
-function retrieverHandoff(page, storageKey, listKey){
+function retrieverHandoff(page, storageKey, listKey, filter){
   if (!connDetailState) return;
-  const names = connDetailState.entries.filter(e => e.id < e.occ).map(e => e.name);
+  const names = connDetailState.entries.filter(e => e.id < e.occ && (!filter || filter(e))).map(e => e.name);
   if (!names.length) return;
   let url = `${page}?input=stored&auto=1`;
   try {
@@ -1784,8 +1809,10 @@ function retrieverHandoff(page, storageKey, listKey){
   }
   window.open(url, '_blank', 'noopener');
 }
-$('cd-ror').addEventListener('click', () => retrieverHandoff('rorRetriever.html', 'ror-retriever-input', 'affiliations'));
-$('cd-orcid').addEventListener('click', () => retrieverHandoff('orcidRetriever.html', 'orcid-retriever-input', 'names'));
+// On a name-identifier list the ROR button carries only the organizations and the ORCID button
+// only the people; on affiliation/funder/publisher lists every entity is an organization → ROR.
+$('cd-ror').addEventListener('click', () => retrieverHandoff('rorRetriever.html', 'ror-retriever-input', 'affiliations', connDetailState && connDetailState.c.kind === 'nameId' ? (e => e.org) : null));
+$('cd-orcid').addEventListener('click', () => retrieverHandoff('orcidRetriever.html', 'orcid-retriever-input', 'names', e => !e.org));
 $('cd-modal').addEventListener('click', e => { if (e.target.id === 'cd-modal') closeConnDetail(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('cd-modal').style.display !== 'none' && $('dd-modal').style.display === 'none') closeConnDetail(); });
 $('dd-close').addEventListener('click', closeDupDocs);
