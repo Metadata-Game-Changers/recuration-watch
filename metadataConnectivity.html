@@ -201,7 +201,7 @@
       <a href="index.html" target="_blank" rel="noopener">Re-Curation Watch ↗</a>
       <a id="completeness-link" href="completeness.html" target="_blank" rel="noopener">Metadata Completeness ↗</a>
       <a id="activity-link" href="repo-activity.html" target="_blank" rel="noopener">Repository Activity ↗</a>
-      <a href="repositoryHistory.html" target="_blank" rel="noopener">Repository History ↗</a>
+      <a id="history-link" href="repositoryHistory.html" target="_blank" rel="noopener">Repository History ↗</a>
       <a href="rorRetriever.html" target="_blank" rel="noopener">ROR Retriever ↗</a>
       <a href="orcidRetriever.html" target="_blank" rel="noopener">ORCID Retriever ↗</a>
       </div>
@@ -1661,6 +1661,15 @@ function syncUrl(clientId, resourceTypeId, query, cap, random){
 /* ---------- run ---------- */
 let lastRun = null;
 function setLink(id, base, clientId){ const el = $(id); if (el) el.href = base + '?client=' + encodeURIComponent(clientId); }
+// Deep-link to Repository History, carrying the repo and the active resource-type/query filters
+// (repositoryHistory.html reads these on boot and auto-runs; it re-samples each year itself, so a
+// snapshot of records isn't passed).
+function setHistoryLink(clientId, resourceTypeId, query){
+  const el = $('history-link'); if (!el) return;
+  el.href = 'repositoryHistory.html?client=' + encodeURIComponent(clientId)
+    + (resourceTypeId ? '&resource-type=' + encodeURIComponent(resourceTypeId) : '')
+    + (query ? '&query=' + encodeURIComponent(query) : '');
+}
 // analyze a set of records — shared by run() (which fetches them) and the
 // shared-sample boot path (which receives them from Metadata Completeness)
 async function analyze(clientId, records, repoTotal, usedRandom, resourceTypeId, query, sharedFrom){
@@ -1689,6 +1698,7 @@ async function run(){
   if (!clientId) return;
   setLink('completeness-link', 'completeness.html', clientId);
   setLink('activity-link', 'repo-activity.html', clientId);
+  setHistoryLink(clientId, resourceTypeId, query);   // carry repo + filters to Repository History
   syncUrl(clientId, resourceTypeId, query, cap, random);
   closeAutocomplete();
   $('repo-go').disabled = true;
@@ -1846,6 +1856,7 @@ if (location.protocol === 'file:') {
       $('random').checked = !!s.random;
       setLink('completeness-link', 'completeness.html', s.clientId);
       setLink('activity-link', 'repo-activity.html', s.clientId);
+      setHistoryLink(s.clientId, s.resourceTypeId || '', s.query || '');
       syncUrl(s.clientId, s.resourceTypeId || '', s.query || '', s.records.length, !!s.random);
       setStatus(`Analyzing the sample shared by ${s.sharedFrom || 'Metadata Completeness'}…`);
       setProgressIndeterminate();
