@@ -132,8 +132,33 @@
   .act-filter-btn.active{background:var(--ink);color:var(--white);border-color:var(--ink);z-index:1}
   .act-header a{font-family:var(--mono);color:var(--blue);text-decoration:none;text-transform:none;letter-spacing:0;font-size:.65rem}
   .act-header a:hover{text-decoration:underline}
-  .pulse-bar{display:flex;align-items:flex-end;gap:1px;height:32px;margin-bottom:1.1rem;width:100%;overflow:hidden}
-  .pulse-seg{flex:1;min-width:0;max-width:10px;opacity:.85}
+  /* Section change timeline — one bar per metadata section, hue shifts on each change */
+  .sec-tl{margin:0 0 1.15rem}
+  .stl-top{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:.6rem}
+  .stl-cap{flex:1;font-size:.68rem;color:var(--faint);line-height:1.45;margin:0}
+  .stl-toggle{flex:0 0 auto;display:inline-flex}
+  .stl-tg{font-family:var(--mono);font-size:.58rem;background:none;border:1px solid var(--rule);color:var(--faint);padding:.16rem .5rem;cursor:pointer}
+  .stl-tg+.stl-tg{margin-left:-1px}
+  .stl-tg:hover{color:var(--sub);border-color:var(--rule-dk)}
+  .stl-tg.active{background:var(--ink);color:var(--white);border-color:var(--ink)}
+  .stl-grid{display:flex;flex-direction:column;gap:2px}
+  .stl-row{display:flex;align-items:center;gap:.5rem}
+  .stl-label{flex:0 0 118px;width:118px;font-family:var(--mono);font-size:.62rem;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;justify-content:flex-end;align-items:center;gap:.3rem}
+  .stl-headlabel{color:var(--faint);font-size:.56rem;text-transform:uppercase;letter-spacing:.05em}
+  .stl-track{flex:1;display:flex;gap:1px;min-width:0}
+  .stl-seg{flex:var(--g,1) 1 0;min-width:5px;height:15px;border-radius:1px}
+  .sec-tl.by-events .stl-seg{flex:1 1 0}
+  .stl-headrow .stl-seg{height:9px;border-radius:2px;opacity:.92}
+  .stl-seg.absent{background:repeating-linear-gradient(45deg,#f0eeec,#f0eeec 3px,#e5e2df 3px,#e5e2df 6px)}
+  .stl-seg.chg{box-shadow:inset 2.5px 0 0 rgba(255,255,255,.9)}
+  .stl-seg.born{box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.65)}
+  .stl-badge{font-family:var(--mono);font-size:.54rem;color:var(--faint);background:var(--tint);border-radius:3px;padding:0 .22rem}
+  .stl-dates{display:flex;gap:.5rem;margin-top:.3rem}
+  .stl-datestrack{flex:1;display:flex;justify-content:space-between;font-family:var(--mono);font-size:.56rem;color:var(--faint)}
+  .stl-legend{display:flex;flex-wrap:wrap;gap:.3rem .9rem;margin-top:.6rem;font-size:.6rem;color:var(--faint)}
+  .stl-lg{display:inline-flex;align-items:center;gap:.3rem}
+  .stl-sw{width:11px;height:11px;border-radius:2px;display:inline-block}
+  .stl-sw.absent{background:repeating-linear-gradient(45deg,#f0eeec,#f0eeec 3px,#e5e2df 3px,#e5e2df 6px)}
   .tl-table{width:100%;border-collapse:collapse}
   .tl-table td{padding:.45rem .75rem .45rem 0;vertical-align:top;border-top:1px solid var(--rule);font-size:.75rem}
   .tl-table tr:first-child td{border-top:none}
@@ -850,18 +875,100 @@ function renderChangesDiff(changes, action){
   if (!rows.length) return '';
   return `<div class="diff-block">${rows.join('')}</div>`;
 }
+// ── Section change timeline ───────────────────────────
+// One horizontal bar per major metadata section across the DOI's recorded events (create + each
+// update, oldest → newest). A section keeps its colour until it changes, when the hue rotates; a
+// section that never changes stays solid, and one that appears mid-history is blank before it does.
+const SECTION_ORDER = ['titles','creators','contributors','publisher','publication_year','subjects',
+  'descriptions','dates','types','rights_list','related_identifiers','related_items',
+  'funding_references','geo_locations','identifiers','url','sizes','formats','language',
+  'version_info','schema_version','doi'];
+const SECTION_HUE = { titles:210, creators:145, contributors:172, publisher:35, publication_year:50,
+  subjects:275, descriptions:255, dates:15, types:320, rights_list:2, related_identifiers:190,
+  related_items:205, funding_references:92, geo_locations:110, identifiers:230, url:245,
+  sizes:60, formats:68, language:295, version_info:340, schema_version:355, doi:240 };
+const sectionOf = k => String(k||'').split('.')[0];                 // creators.affiliation → creators
+function stlShade(hue, changeCount){                               // changeCount 1 = introduced (base)
+  const h = ((hue ?? 220) + (changeCount-1)*34) % 360;            // rotate hue on every change
+  const l = Math.max(38, 66 - (changeCount-1)*6);                 // and deepen slightly
+  return `hsl(${h} 55% ${l}%)`;
+}
+// Top-level sections touched by one activity: create → every field it sets; update → the fields
+// changedProps() reports (no-ops already pruned, creators/contributors refined) collapsed to top level.
+function activitySections(attrs){
+  const action = (attrs.action || 'update').toLowerCase();
+  const changes = attrs.changes || {};
+  if (action.includes('create'))
+    return new Set(Object.keys(changes).filter(k => !CHANGE_SKIP.has(k)).map(sectionOf));
+  return new Set(changedProps(changes, action).map(sectionOf));
+}
+function buildSectionTimeline(activities){
+  const evs = [...activities].reverse().map(a => {                 // API is newest-first
+    const at = a.attributes || {};
+    return { action: (at.action || 'update').toLowerCase(),
+             ts: at['prov:generatedAtTime'] || at.createdAt || '',
+             secs: activitySections(at) };
+  });
+  const present = new Set(); evs.forEach(e => e.secs.forEach(s => present.add(s)));
+  if (!present.size) return '';
+  const birth = {}, changeCount = {};                             // first event index; # of changes after birth
+  present.forEach(s => { birth[s] = -1; changeCount[s] = 0; });
+  evs.forEach((e, i) => e.secs.forEach(s => { if (birth[s] < 0) birth[s] = i; else changeCount[s]++; }));
+  const ord = s => { const i = SECTION_ORDER.indexOf(s); return i < 0 ? 999 : i; };
+  const rows = [...present].sort((a, b) =>
+    (changeCount[b] > 0) - (changeCount[a] > 0) || ord(a) - ord(b) || a.localeCompare(b));  // changed first
+  const n = evs.length;
+  // x-axis is real time: each event's cell spans from its date until the next event; the most
+  // recent state runs to today. (A min-width keeps same-day bursts visible.) Falls back to equal
+  // widths only if timestamps are missing.
+  const tms = evs.map(e => { const d = new Date(e.ts).getTime(); return isNaN(d) ? null : d; });
+  const haveTime = n > 1 && tms.every(x => x != null) && tms[n-1] > tms[0];
+  const tEnd = haveTime ? Math.max(Date.now(), tms[n-1]) : null;
+  const fx = i => haveTime ? `--g:${Math.max(1, (i < n-1 ? tms[i+1] : tEnd) - tms[i])};` : '';
+  const heads = evs.map((e, i) => `<div class="stl-seg" style="background:${histActionColor(e.action)};${fx(i)}" title="${escAttr(capitalise(e.action) + (e.ts ? ' · ' + fmtDate(e.ts) : ''))}"></div>`).join('');
+  const rowHtml = rows.map(s => {
+    let cc = 0;
+    const segs = evs.map((e, i) => {
+      const hit = e.secs.has(s);
+      if (hit) cc++;
+      if (cc === 0) return `<div class="stl-seg absent" style="${fx(i)}" title="${escAttr(fieldLabel(s) + ' — not yet present')}"></div>`;
+      const born = hit && i === birth[s], changed = hit && i > birth[s];
+      const tip = `${fieldLabel(s)} · ${capitalise(e.action)}${e.ts ? ' · ' + fmtDate(e.ts) : ''}${born ? ' · added' : changed ? ' · changed' : ''}`;
+      return `<div class="stl-seg${changed ? ' chg' : ''}${born && i > 0 ? ' born' : ''}" style="background:${stlShade(SECTION_HUE[s], cc)};${fx(i)}" title="${escAttr(tip)}"></div>`;
+    }).join('');
+    const badge = changeCount[s] > 0 ? `<span class="stl-badge" title="changed ${changeCount[s]} time${changeCount[s] !== 1 ? 's' : ''} after creation">${changeCount[s]}×</span>` : '';
+    return `<div class="stl-row"><div class="stl-label" title="${escAttr(fieldLabel(s))}">${escHtml(fieldLabel(s))}${badge}</div><div class="stl-track">${segs}</div></div>`;
+  }).join('');
+  const first = evs[0]?.ts ? fmtDate(evs[0].ts) : '';
+  const last = haveTime ? fmtDate(new Date(tEnd).toISOString()) : (evs[n-1]?.ts ? fmtDate(evs[n-1].ts) : '');
+  const sw = (c, extra='') => `<i class="stl-sw${extra}" style="${c ? 'background:' + c : ''}"></i>`;
+  const toggle = haveTime ? `<div class="stl-toggle">
+      <button type="button" class="stl-tg active" data-mode="time" title="Space cells by elapsed time between events">Time</button>
+      <button type="button" class="stl-tg" data-mode="events" title="Give every event equal width">Events</button>
+    </div>` : '';
+  return `<div class="sec-tl">
+    <div class="stl-top">
+      <div class="stl-cap">Section change timeline — each bar is a metadata section across its ${n} recorded event${n!==1?'s':''}; the hue shifts each time that section changed and stays solid when it didn't. Sections that changed are listed first.${haveTime ? ' Cells are spaced by date; switch to Events for equal widths.' : ''}</div>
+      ${toggle}
+    </div>
+    <div class="stl-grid">
+      <div class="stl-row stl-headrow"><div class="stl-label stl-headlabel">Event →</div><div class="stl-track">${heads}</div></div>
+      ${rowHtml}
+    </div>
+    <div class="stl-dates"><span class="stl-label"></span><span class="stl-datestrack"><span>${first}</span><span>${last}</span></span></div>
+    <div class="stl-legend">
+      <span class="stl-lg">${sw('hsl(210 55% 60%)')}section state (hue shifts on change)</span>
+      <span class="stl-lg">${sw(null,' absent')}not yet present</span>
+      <span class="stl-lg">${sw(histActionColor('create'))}create</span>
+      <span class="stl-lg">${sw(histActionColor('update'))}update</span>
+      <span class="stl-lg">${sw(histActionColor('publish'))}publish</span>
+    </div>
+  </div>`;
+}
 function renderHistory(panel, doiId, activities){
   if (activities===null){ panel.innerHTML = `<div class="pd-hint">Could not load activities for this DOI.</div>`; return; }
   if (!activities.length){ panel.innerHTML = `<div class="pd-hint">No activity records.</div>`; return; }
   const n = activities.length;
-  const chrono = [...activities].reverse();
-  const pulse = chrono.map((a,i)=>{
-    const action = (a.attributes?.action??'').toLowerCase();
-    const color  = histActionColor(action);
-    const h = Math.max(6, Math.round(32*(i+1)/n));
-    const ts = a.attributes?.['prov:generatedAtTime'] ?? '';
-    return `<div class="pulse-seg" style="height:${h}px;background:${color}" title="${escAttr(action+(ts?' · '+fmtDate(ts):''))}"></div>`;
-  }).join('');
   const rows = activities.map((a,i)=>{
     const attrs = a.attributes ?? {};
     const action = attrs.action ?? 'update';
@@ -889,8 +996,13 @@ function renderHistory(panel, doiId, activities){
       </div>
       <a href="${API_BASE}/dois/${encodeURIComponent(doiId)}/activities" target="_blank" rel="noopener">raw JSON ↗</a>
     </div>
-    <div class="pulse-bar">${pulse}</div>
+    ${buildSectionTimeline(activities)}
     <div class="act-table-wrap"><table class="tl-table"><tbody>${rows}</tbody></table></div>`;
+  panel.querySelectorAll('.stl-tg').forEach(btn => btn.addEventListener('click', () => {
+    const tl = panel.querySelector('.sec-tl'); if (!tl) return;
+    tl.classList.toggle('by-events', btn.dataset.mode === 'events');
+    panel.querySelectorAll('.stl-tg').forEach(b => b.classList.toggle('active', b === btn));
+  }));
   panel.querySelectorAll('.act-toggle').forEach(btn => btn.addEventListener('click', () => {
     const d = document.getElementById(btn.dataset.target); if (!d) return;
     btn.textContent = d.classList.toggle('open') ? 'Hide details ▾' : 'Show details ▸';
