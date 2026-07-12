@@ -560,11 +560,9 @@
       color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       display: flex; justify-content: flex-end; align-items: center; gap: 0.3rem;
     }
-    .stl-headlabel { color: var(--faint); font-size: 0.56rem; text-transform: uppercase; letter-spacing: 0.05em; }
     .stl-track { flex: 1; display: flex; gap: 0; min-width: 0; }   /* no inter-cell gap → no vertical gridlines; changes shown by the white tick only */
     .stl-seg { flex: var(--g, 1) 1 0; min-width: 5px; height: 15px; border-radius: 1px; }
     .sec-tl.by-events .stl-seg { flex: 1 1 0; }   /* Events mode: equal width per event */
-    .stl-headrow .stl-seg { height: 9px; border-radius: 2px; opacity: 0.92; }
     .stl-seg.absent { background: repeating-linear-gradient(45deg,#f0eeec,#f0eeec 3px,#e5e2df 3px,#e5e2df 6px); }
     .stl-seg.chg { box-shadow: inset 2.5px 0 0 rgba(255,255,255,0.9); }       /* white tick marks the change point */
     .stl-seg.born { box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.65); }   /* section first appears mid-history */
@@ -1636,7 +1634,10 @@ function buildSectionTimeline(activities){
   present.forEach(s => { birth[s] = -1; changeCount[s] = 0; });
   evs.forEach((e, i) => e.secs.forEach(s => { if (birth[s] < 0) birth[s] = i; else changeCount[s]++; }));
   const ord = s => { const i = SECTION_ORDER.indexOf(s); return i < 0 ? 999 : i; };
-  const rows = [...present].sort((a, b) => ord(a) - ord(b) || a.localeCompare(b));  // stable canonical field order
+  // Focus on change: only sections that changed after creation, or were added later, earn a row.
+  const rows = [...present].filter(s => changeCount[s] > 0 || birth[s] > 0)
+    .sort((a, b) => ord(a) - ord(b) || a.localeCompare(b));  // stable canonical field order
+  if (!rows.length) return '';   // nothing changed after creation
   const n = evs.length;
   // x-axis is real time: each event's cell spans from its date until the next event; the most
   // recent state runs to today. (A min-width keeps same-day bursts visible.) Falls back to equal
@@ -1645,7 +1646,6 @@ function buildSectionTimeline(activities){
   const haveTime = n > 1 && tms.every(x => x != null) && tms[n-1] > tms[0];
   const tEnd = haveTime ? Math.max(Date.now(), tms[n-1]) : null;
   const fx = i => haveTime ? `--g:${Math.max(1, (i < n-1 ? tms[i+1] : tEnd) - tms[i])};` : '';
-  const heads = evs.map((e, i) => `<div class="stl-seg" style="background:${actionColor(e.action)};${fx(i)}" title="${escAttr(capitalise(e.action) + (e.ts ? ' · ' + fmtDate(e.ts) : ''))}"></div>`).join('');
   const rowHtml = rows.map(s => {
     let cc = 0;
     const segs = evs.map((e, i) => {
@@ -1668,20 +1668,16 @@ function buildSectionTimeline(activities){
     </div>` : '';
   return `<div class="sec-tl">
     <div class="stl-top">
-      <div class="stl-cap">Section change timeline — each bar is a metadata section across its ${n} recorded event${n!==1?'s':''}; the hue shifts each time that section changed and stays solid when it didn't.${haveTime ? ' Cells are spaced by date; switch to Events for equal widths.' : ''}</div>
+      <div class="stl-cap">Section change timeline — one bar per metadata section that changed after the DOI was created; the hue shifts each time that section changed and stays solid between changes. Sections that never changed are omitted.${haveTime ? ' Cells are spaced by date; switch to Events for equal widths.' : ''}</div>
       ${toggle}
     </div>
     <div class="stl-grid">
-      <div class="stl-row stl-headrow"><div class="stl-label stl-headlabel">Event →</div><div class="stl-track">${heads}</div></div>
       ${rowHtml}
     </div>
     <div class="stl-dates"><span class="stl-label"></span><span class="stl-datestrack"><span>${first}</span><span>${last}</span></span></div>
     <div class="stl-legend">
       <span class="stl-lg">${sw('hsl(210 55% 60%)')}section state (hue shifts on change)</span>
       <span class="stl-lg">${sw(null,' absent')}not yet present</span>
-      <span class="stl-lg">${sw(actionColor('create'))}create</span>
-      <span class="stl-lg">${sw(actionColor('update'))}update</span>
-      <span class="stl-lg">${sw(actionColor('publish'))}publish</span>
     </div>
   </div>`;
 }
