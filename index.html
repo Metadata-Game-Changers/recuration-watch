@@ -561,7 +561,7 @@
       display: flex; justify-content: flex-end; align-items: center; gap: 0.3rem;
     }
     .stl-headlabel { color: var(--faint); font-size: 0.56rem; text-transform: uppercase; letter-spacing: 0.05em; }
-    .stl-track { flex: 1; display: flex; gap: 1px; min-width: 0; }
+    .stl-track { flex: 1; display: flex; gap: 0; min-width: 0; }   /* no inter-cell gap → no vertical gridlines; changes shown by the white tick only */
     .stl-seg { flex: var(--g, 1) 1 0; min-width: 5px; height: 15px; border-radius: 1px; }
     .sec-tl.by-events .stl-seg { flex: 1 1 0; }   /* Events mode: equal width per event */
     .stl-headrow .stl-seg { height: 9px; border-radius: 2px; opacity: 0.92; }
@@ -1636,8 +1636,7 @@ function buildSectionTimeline(activities){
   present.forEach(s => { birth[s] = -1; changeCount[s] = 0; });
   evs.forEach((e, i) => e.secs.forEach(s => { if (birth[s] < 0) birth[s] = i; else changeCount[s]++; }));
   const ord = s => { const i = SECTION_ORDER.indexOf(s); return i < 0 ? 999 : i; };
-  const rows = [...present].sort((a, b) =>
-    (changeCount[b] > 0) - (changeCount[a] > 0) || ord(a) - ord(b) || a.localeCompare(b));  // changed first
+  const rows = [...present].sort((a, b) => ord(a) - ord(b) || a.localeCompare(b));  // stable canonical field order
   const n = evs.length;
   // x-axis is real time: each event's cell spans from its date until the next event; the most
   // recent state runs to today. (A min-width keeps same-day bursts visible.) Falls back to equal
@@ -1669,7 +1668,7 @@ function buildSectionTimeline(activities){
     </div>` : '';
   return `<div class="sec-tl">
     <div class="stl-top">
-      <div class="stl-cap">Section change timeline — each bar is a metadata section across its ${n} recorded event${n!==1?'s':''}; the hue shifts each time that section changed and stays solid when it didn't. Sections that changed are listed first.${haveTime ? ' Cells are spaced by date; switch to Events for equal widths.' : ''}</div>
+      <div class="stl-cap">Section change timeline — each bar is a metadata section across its ${n} recorded event${n!==1?'s':''}; the hue shifts each time that section changed and stays solid when it didn't.${haveTime ? ' Cells are spaced by date; switch to Events for equal widths.' : ''}</div>
       ${toggle}
     </div>
     <div class="stl-grid">
