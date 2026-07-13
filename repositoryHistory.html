@@ -1245,8 +1245,36 @@ document.addEventListener('keydown', e => {
 $('dl-json').addEventListener('click', downloadJson);
 $('dl-summary').addEventListener('click', downloadSummary);
 $('dl-csv').addEventListener('click', downloadCsv);
-// per-year handoff: open a year's exact sample in Completeness or Connectivity (same
-// localStorage mailbox those tools read via ?input=stored), so both measure the same records
+/* ---------- cross-tool sample mailbox ----------
+   Hands a year's exact sample to Completeness/Connectivity so both measure the SAME records. Small
+   samples ride in localStorage; large ones (past its ~5 MB quota) go through IndexedDB (hundreds of
+   MB). The receiver consumes the mailbox via ?input=stored; if no storage works it degrades to a
+   re-fetch of that year's selection. */
+const MAILBOX_DB = 'mgc-handoff', MAILBOX_STORE = 'samples';
+function mailboxIdb(){
+  return new Promise((resolve, reject) => {
+    let rq; try { rq = indexedDB.open(MAILBOX_DB, 1); } catch (e){ return reject(e); }
+    rq.onupgradeneeded = () => { try { rq.result.createObjectStore(MAILBOX_STORE); } catch (e){} };
+    rq.onsuccess = () => resolve(rq.result);
+    rq.onerror = () => reject(rq.error);
+  });
+}
+async function mailboxPutIdb(key, value){
+  try {
+    const db = await mailboxIdb();
+    await new Promise((res, rej) => { const tx = db.transaction(MAILBOX_STORE, 'readwrite'); tx.objectStore(MAILBOX_STORE).put(value, key); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+    return true;
+  } catch (e){ return false; }
+}
+function shareSampleOpen(page, key, payload, fallbackUrl){
+  try { localStorage.removeItem(key); localStorage.setItem(key, JSON.stringify(payload)); window.open(page + '?input=stored', '_blank', 'noopener'); return; }
+  catch (e){ /* too big for localStorage — IndexedDB */ }
+  const w = window.open(page + '?input=stored', '_blank');
+  mailboxPutIdb(key, payload).then(ok => { if (!ok && w){ try { w.location = fallbackUrl; } catch (e){} } })
+    .catch(() => { if (w){ try { w.location = fallbackUrl; } catch (e){} } });
+}
+// per-year handoff: open a year's exact sample in Completeness or Connectivity (same mailbox those
+// tools read via ?input=stored), so both measure the same records
 $('hist-body').addEventListener('click', e => {
   const a = e.target.closest('a[data-hy]'); if (!a) return;
   e.preventDefault();
@@ -1262,15 +1290,10 @@ $('hist-body').addEventListener('click', e => {
     resourceTypeId: history.resourceTypeId || '',
     query: yearQuery(entry.year, history.query)   // year-scoped so a reload reproduces this year
   };
-  let url = `${page}?input=stored`;
-  try { localStorage.setItem(key, JSON.stringify(payload)); }
-  catch (err){   // quota exceeded — deep-link the year selection instead
-    localStorage.removeItem(key);
-    url = `${page}?client=${encodeURIComponent(history.clientId)}`
-      + (history.resourceTypeId ? `&resource-type=${encodeURIComponent(history.resourceTypeId)}` : '')
-      + `&query=${encodeURIComponent(payload.query)}&max=${entry.records.length}${entry.random ? '' : '&random=0'}`;
-  }
-  window.open(url, '_blank', 'noopener');
+  const fallback = `${page}?client=${encodeURIComponent(history.clientId)}`
+    + (history.resourceTypeId ? `&resource-type=${encodeURIComponent(history.resourceTypeId)}` : '')
+    + `&query=${encodeURIComponent(payload.query)}&max=${entry.records.length}${entry.random ? '' : '&random=0'}`;
+  shareSampleOpen(page, key, payload, fallback);
 });
 if (location.protocol === 'file:') {
   setStatus('This page is open as a local file (file://). DataCite requests will be blocked — serve it over http (e.g. "python3 -m http.server" → http://localhost:8000/repositoryHistory.html).', true);

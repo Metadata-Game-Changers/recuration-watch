@@ -1765,27 +1765,63 @@ document.addEventListener('click', e => { if (!e.target.closest('.hero-search'))
 
 /* ---------- boot ---------- */
 $('repo-go').addEventListener('click', run);
-// Share the analyzed sample with Metadata Completeness (the reverse of the
-// Completeness → Connectivity handoff), so both tools measure the SAME records. On click,
-// store the records under localStorage 'metadata-completeness-input' and point the link at
-// ?input=stored; if the sample is too large for storage, fall back to a parameter deep link.
-$('completeness-link').addEventListener('click', () => {
-  if (!lastRun || !lastRun.records || !lastRun.records.length) return;   // no run yet — plain ?client link
-  const l = lastRun;
+/* ---------- cross-tool sample mailbox ----------
+   Hands the exact analyzed sample to a sibling tool so both measure the SAME records — the point of
+   random samples and queries. Small samples ride in localStorage; large ones (a 4000-record sample
+   is ~16 MB, far past the ~5 MB localStorage quota) go through IndexedDB, which holds hundreds of MB.
+   The receiver consumes the mailbox via ?input=stored; if storage is unavailable it degrades to a
+   re-fetch deep link (which, for a random sample, necessarily draws a different set). */
+const MAILBOX_DB = 'mgc-handoff', MAILBOX_STORE = 'samples';
+function mailboxIdb(){
+  return new Promise((resolve, reject) => {
+    let rq; try { rq = indexedDB.open(MAILBOX_DB, 1); } catch (e){ return reject(e); }
+    rq.onupgradeneeded = () => { try { rq.result.createObjectStore(MAILBOX_STORE); } catch (e){} };
+    rq.onsuccess = () => resolve(rq.result);
+    rq.onerror = () => reject(rq.error);
+  });
+}
+async function mailboxPutIdb(key, value){
   try {
-    localStorage.setItem('metadata-completeness-input', JSON.stringify({
-      source: 'metadataConnectivity', sharedFrom: l.sharedFrom,   // carry the original provenance (e.g. Repository History · registered 2019) through the chain
-      records: l.records,
-      clientId: l.clientId, repoName: l.repoName, repoTotal: l.repoTotal,
-      random: l.random, resourceTypeId: l.resourceTypeId, query: l.query }));
-    $('completeness-link').href = 'completeness.html?input=stored';
-  } catch (e){   // quota exceeded — deep-link the selection instead
-    localStorage.removeItem('metadata-completeness-input');
-    $('completeness-link').href = 'completeness.html?client=' + encodeURIComponent(l.clientId)
+    const db = await mailboxIdb();
+    await new Promise((res, rej) => { const tx = db.transaction(MAILBOX_STORE, 'readwrite'); tx.objectStore(MAILBOX_STORE).put(value, key); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+    return true;
+  } catch (e){ return false; }
+}
+async function mailboxTake(key){
+  try { const raw = localStorage.getItem(key); if (raw){ localStorage.removeItem(key); return JSON.parse(raw); } } catch (e){ /* fall through to IndexedDB */ }
+  for (let i = 0; i < 10; i++){
+    let v = null, failed = false;
+    try { const db = await mailboxIdb(); v = await new Promise((res, rej) => { const tx = db.transaction(MAILBOX_STORE, 'readonly'); const r = tx.objectStore(MAILBOX_STORE).get(key); r.onsuccess = () => res(r.result ?? null); r.onerror = () => rej(r.error); }); }
+    catch (e){ failed = true; }
+    if (failed) return null;
+    if (v){
+      try { const db = await mailboxIdb(); await new Promise(res => { const tx = db.transaction(MAILBOX_STORE, 'readwrite'); tx.objectStore(MAILBOX_STORE).delete(key); tx.oncomplete = res; tx.onerror = res; }); } catch (e){}
+      return v;
+    }
+    await new Promise(r => setTimeout(r, 150));
+  }
+  return null;
+}
+function shareSampleOpen(page, key, payload, fallbackUrl){
+  try { localStorage.removeItem(key); localStorage.setItem(key, JSON.stringify(payload)); window.open(page + '?input=stored', '_blank', 'noopener'); return; }
+  catch (e){ /* too big for localStorage — IndexedDB */ }
+  const w = window.open(page + '?input=stored', '_blank');
+  mailboxPutIdb(key, payload).then(ok => { if (!ok && w){ try { w.location = fallbackUrl; } catch (e){} } })
+    .catch(() => { if (w){ try { w.location = fallbackUrl; } catch (e){} } });
+}
+// Share the analyzed sample with Metadata Completeness (the reverse of Completeness → Connectivity).
+$('completeness-link').addEventListener('click', ev => {
+  if (!lastRun || !lastRun.records || !lastRun.records.length) return;   // no run yet — let the plain ?client link navigate
+  ev.preventDefault();
+  const l = lastRun;
+  shareSampleOpen('completeness.html', 'metadata-completeness-input',
+    { source: 'metadataConnectivity', sharedFrom: l.sharedFrom,   // carry the original provenance through the chain
+      records: l.records, clientId: l.clientId, repoName: l.repoName, repoTotal: l.repoTotal,
+      random: l.random, resourceTypeId: l.resourceTypeId, query: l.query },
+    'completeness.html?client=' + encodeURIComponent(l.clientId)
       + (l.resourceTypeId ? '&resource-type=' + encodeURIComponent(l.resourceTypeId) : '')
       + (l.query ? '&query=' + encodeURIComponent(l.query) : '')
-      + '&max=' + l.records.length + (l.random ? '' : '&random=0');
-  }
+      + '&max=' + l.records.length + (l.random ? '' : '&random=0'));
 });
 $('dl-json').addEventListener('click', downloadConnReport);
 $('dl-html').addEventListener('click', downloadConnReportHtml);
@@ -1845,9 +1881,7 @@ if (location.protocol === 'file:') {
 (async () => {
   const params = new URLSearchParams(location.search);
   if (params.get('input') === 'stored'){
-    let s = null;
-    try { s = JSON.parse(localStorage.getItem('metadata-connectivity-input')); } catch (e) { /* malformed */ }
-    localStorage.removeItem('metadata-connectivity-input');   // consume once — samples can be large
+    const s = await mailboxTake('metadata-connectivity-input');   // localStorage or IndexedDB, consumed on read
     if (s && Array.isArray(s.records) && s.records.length && s.clientId){
       $('repo-input').value = s.clientId;
       if (s.resourceTypeId && [...$('resource-type').options].some(o => o.value === s.resourceTypeId)) $('resource-type').value = s.resourceTypeId;
