@@ -697,12 +697,14 @@ async function computeValueFreq(item){
   if (!lastRun._inputStr) lastRun._inputStr = JSON.stringify({ data: lastRun.records });
   const prog = `[ ${item.jq_query} | {id: .id, vals: (.values | (if type == "array" then . else [.] end) | map(select(. != null))) } ] as $recs`
     + ` | ( [ $recs[] | .vals[] ] | group_by(.) | map({v: .[0], n: length}) ) as $occ`                        // occurrences per value
-    + ` | ( [ $recs[] | .id as $id | (.vals | unique[]) | {k: (.|tostring), id: $id} ] | group_by(.k) | map({(.[0].k): length}) | add // {} ) as $docs`   // distinct DOIs per value
-    + ` | $occ | map(. + { d: ($docs[(.v|tostring)] // 0) }) | sort_by([-.n, -.d, (.v|tostring)])`;
+    + ` | ( [ $recs[] | (.vals | unique[]) | (.|tostring) ] | group_by(.) | map({(.[0]): length}) | add // {} ) as $docs`   // distinct DOIs per value
+    + ` | { rows: ($occ | map(. + { d: ($docs[(.v|tostring)] // 0) }) | sort_by([-.n, -.d, (.v|tostring)])),`
+    + `     dois: ([ $recs[] | select((.vals | length) > 0) ] | length) }`;                                    // distinct DOIs carrying ANY value (the union)
   const out = await jq.promised.raw(lastRun._inputStr, prog, ['-c']);
-  const freq = (out && out.trim()) ? JSON.parse(out.trim()) : [];
+  const res = (out && out.trim()) ? JSON.parse(out.trim()) : { rows: [], dois: 0 };
+  const freq = res.rows || [];
   const total = freq.reduce((s, e) => s + e.n, 0);
-  return { freq, total, unique: freq.length };
+  return { freq, total, unique: freq.length, dois: res.dois || 0 };
 }
 const valDisplay = v => (v !== null && typeof v === 'object') ? JSON.stringify(v) : String(v);
 
@@ -717,11 +719,11 @@ async function openValues(spiral, conceptRaw){
   $('values-body').innerHTML = '<div style="padding:1rem;color:#6b7280;font-size:.8rem">Computing value frequencies…</div>';
   $('values-modal').style.display = 'flex';
   try {
-    const { freq, total, unique } = await computeValueFreq(item);
+    const { freq, total, unique, dois } = await computeValueFreq(item);
     valuesState = { conceptRaw, freq, spiralTitle: spiral.title };
     $('values-sub').textContent = unique === 0
       ? `${spiral.title} · no values in this sample`
-      : `${spiral.title} · ${unique.toLocaleString()} unique value${unique===1?'':'s'} · ${total.toLocaleString()} occurrence${total===1?'':'s'}${unique>VALUES_TOP_N ? ` · showing top ${VALUES_TOP_N}` : ''}`;
+      : `${spiral.title} · ${unique.toLocaleString()} unique value${unique===1?'':'s'} · ${total.toLocaleString()} occurrence${total===1?'':'s'} · in ${dois.toLocaleString()} DOI${dois===1?'':'s'}${unique>VALUES_TOP_N ? ` · showing top ${VALUES_TOP_N}` : ''}`;
     if (!freq.length){
       $('values-body').innerHTML = '<div style="padding:1rem;color:#6b7280;font-size:.8rem">No values found for this concept in the analyzed sample.</div>';
       return;
