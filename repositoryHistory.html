@@ -865,6 +865,10 @@ function drawGrid(){
 
 /* ---------- grid export: one composite SVG of the whole grid, rasterized to PNG ---------- */
 const GRID_GROUP_LABEL = { FAIR:'FAIR use cases', Projects:'Project use cases', Extras:'Additional DataCite use cases', All:'All nine use cases' };
+// "type: … · query: …" for the current run's filters (empty when none) — mirrors the on-screen selection
+function selectionFilterText(){
+  return [history.resourceTypeId ? `type: ${history.resourceTypeId}` : '', history.query ? `query: ${history.query}` : ''].filter(Boolean).join(' · ');
+}
 function gridSvgMarkup(){
   const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
   const years = history.years.filter(e => e.n > 0 && e.byCode);
@@ -878,7 +882,8 @@ function gridSvgMarkup(){
   const FONT = "font-family='Inter, system-ui, sans-serif'";
   let s = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
   s += `<text x="${PAD}" y="18" ${FONT} font-size="15" font-weight="600" fill="#673289">${escHtml(history.repoName)} (${escHtml(history.clientId)}) — completeness by registered year</text>`;
-  s += `<text x="${PAD}" y="34" ${FONT} font-size="11" fill="#6b7280">${escHtml(GRID_GROUP_LABEL[plotGroup] || plotGroup)} · up to ${history.cap} records/year · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. re-curation)</text>`;
+  const gridFilt = selectionFilterText();
+  s += `<text x="${PAD}" y="34" ${FONT} font-size="11" fill="#6b7280">${escHtml(GRID_GROUP_LABEL[plotGroup] || plotGroup)} · up to ${history.cap} records/year${gridFilt ? ' · ' + escHtml(gridFilt) : ''} · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. re-curation)</text>`;
   // column headers: year / n / total
   years.forEach((e, j) => {
     const cxp = gridLeft + j*COL_W + COL_W/2;
@@ -1096,7 +1101,8 @@ function downloadPng(){
   ctx.fillText(`${history.repoName} (${history.clientId}) — completeness by registered year`, pad, 12);
   const groupLabel = { FAIR: 'FAIR use cases', Projects: 'Project use cases', Extras: 'Additional DataCite use cases', All: 'All nine use cases' }[plotGroup] || plotGroup;
   ctx.fillStyle = '#6b7280'; ctx.font = '11px Inter, sans-serif';
-  ctx.fillText(`${groupLabel} · up to ${history.cap} records/year · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. re-curation)`, pad, 33);
+  const filt = selectionFilterText();
+  ctx.fillText(`${groupLabel} · up to ${history.cap} records/year${filt ? ' · ' + filt : ''} · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. re-curation)`, pad, 33);
   ctx.drawImage(chart, 0, titleH, W, chartH);
   ctx.font = legendFont; ctx.textBaseline = 'middle';
   items.forEach((s, i) => {
