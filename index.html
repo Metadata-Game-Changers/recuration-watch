@@ -548,10 +548,11 @@
     .sec-tl { margin: 0 0 1.15rem; }
     .stl-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.6rem; }
     .stl-cap { flex: 1; font-size: 0.68rem; color: var(--faint); line-height: 1.45; margin: 0; }
-    .stl-toggle { flex: 0 0 auto; display: inline-flex; }
-    .stl-tg { font-family: var(--mono); font-size: 0.58rem; background: none; border: 1px solid var(--rule); color: var(--faint); padding: 0.16rem 0.5rem; cursor: pointer; }
+    .stl-ctrl { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 0.4rem; }
+    .stl-toggle { display: inline-flex; }
+    .stl-tg, .stl-xbtn { font-family: var(--mono); font-size: 0.58rem; background: none; border: 1px solid var(--rule); color: var(--faint); padding: 0.16rem 0.5rem; cursor: pointer; }
     .stl-tg + .stl-tg { margin-left: -1px; }
-    .stl-tg:hover { color: var(--sub); border-color: var(--rule-dk); }
+    .stl-tg:hover, .stl-xbtn:hover { color: var(--sub); border-color: var(--rule-dk); }
     .stl-tg.active { background: var(--ink); color: var(--white); border-color: var(--ink); }
     .stl-grid { display: flex; flex-direction: column; gap: 2px; }
     .stl-row { display: flex; align-items: center; gap: 0.5rem; }
@@ -1469,6 +1470,7 @@ function renderActivities(panel, doiId, activities) {
 
   // Get distinct action types
   const actionTypes = [...new Set(activities.map(a => a.attributes?.action ?? 'update'))].sort();
+  const tlModel = computeTimelineModel(activities);
 
   panel.innerHTML = `
     <div class="act-header">
@@ -1479,17 +1481,23 @@ function renderActivities(panel, doiId, activities) {
       </div>
       <a href="https://api.datacite.org/dois/${encodeURIComponent(doiId)}/activities" target="_blank">raw JSON ↗</a>
     </div>
-    ${buildSectionTimeline(activities)}
+    ${tlModel ? renderTimelineHtml(tlModel) : ''}
     <div class="act-table-wrap"><table class="tl-table"><tbody>${rows}</tbody></table></div>`;
 
-  // Wire up the section-timeline Time / Events axis toggle
-  panel.querySelectorAll('.stl-tg').forEach(btn => {
+  // Wire up the section-timeline Time / Events axis toggle + PNG save / copy
+  panel.querySelectorAll('.stl-tg[data-mode]').forEach(btn => {
     btn.addEventListener('click', () => {
       const tl = panel.querySelector('.sec-tl'); if (!tl) return;
       tl.classList.toggle('by-events', btn.dataset.mode === 'events');
-      panel.querySelectorAll('.stl-tg').forEach(b => b.classList.toggle('active', b === btn));
+      panel.querySelectorAll('.stl-tg[data-mode]').forEach(b => b.classList.toggle('active', b === btn));
     });
   });
+  if (tlModel){
+    const byEvents = () => panel.querySelector('.sec-tl')?.classList.contains('by-events');
+    const saveBtn = panel.querySelector('.stl-save'), copyBtn = panel.querySelector('.stl-copy');
+    saveBtn?.addEventListener('click', () => saveTimelinePng(tlModel, doiId, byEvents(), saveBtn));
+    copyBtn?.addEventListener('click', () => copyTimelinePng(tlModel, doiId, byEvents(), copyBtn));
+  }
 
   // Wire up detail toggles
   panel.querySelectorAll('.act-toggle').forEach(btn => {
@@ -1621,7 +1629,8 @@ function activitySections(attrs){
   }
   return secs;
 }
-function buildSectionTimeline(activities){
+// Crunch a DOI's activities into a timeline model (or null when nothing changed after creation).
+function computeTimelineModel(activities){
   const evs = [...activities].reverse().map(a => {                 // API is newest-first
     const at = a.attributes || {};
     return { action: (at.action || 'update').toLowerCase(),
@@ -1629,57 +1638,147 @@ function buildSectionTimeline(activities){
              secs: activitySections(at) };
   });
   const present = new Set(); evs.forEach(e => e.secs.forEach(s => present.add(s)));
-  if (!present.size) return '';
+  if (!present.size) return null;
   const birth = {}, changeCount = {};                             // first event index; # of changes after birth
   present.forEach(s => { birth[s] = -1; changeCount[s] = 0; });
   evs.forEach((e, i) => e.secs.forEach(s => { if (birth[s] < 0) birth[s] = i; else changeCount[s]++; }));
   const ord = s => { const i = SECTION_ORDER.indexOf(s); return i < 0 ? 999 : i; };
   // Focus on change: only sections that changed after creation, or were added later, earn a row.
-  const rows = [...present].filter(s => changeCount[s] > 0 || birth[s] > 0)
+  const secs = [...present].filter(s => changeCount[s] > 0 || birth[s] > 0)
     .sort((a, b) => ord(a) - ord(b) || a.localeCompare(b));  // stable canonical field order
-  if (!rows.length) return '';   // nothing changed after creation
+  if (!secs.length) return null;   // nothing changed after creation
   const n = evs.length;
   // x-axis is real time: each event's cell spans from its date until the next event; the most
-  // recent state runs to today. (A min-width keeps same-day bursts visible.) Falls back to equal
-  // widths only if timestamps are missing.
+  // recent state runs to today. Falls back to equal widths only if timestamps are missing.
   const tms = evs.map(e => { const d = new Date(e.ts).getTime(); return isNaN(d) ? null : d; });
   const haveTime = n > 1 && tms.every(x => x != null) && tms[n-1] > tms[0];
   const tEnd = haveTime ? Math.max(Date.now(), tms[n-1]) : null;
-  const fx = i => haveTime ? `--g:${Math.max(1, (i < n-1 ? tms[i+1] : tEnd) - tms[i])};` : '';
-  const rowHtml = rows.map(s => {
+  const grows = evs.map((e, i) => haveTime ? Math.max(1, (i < n-1 ? tms[i+1] : tEnd) - tms[i]) : 1);
+  const rows = secs.map(s => {
     let cc = 0;
     const segs = evs.map((e, i) => {
       const hit = e.secs.has(s);
       if (hit) cc++;
-      if (cc === 0) return `<div class="stl-seg absent" style="${fx(i)}" title="${escAttr(fieldLabel(s) + ' — not yet present')}"></div>`;
-      const born = hit && i === birth[s], changed = hit && i > birth[s];
-      const tip = `${fieldLabel(s)} · ${capitalise(e.action)}${e.ts ? ' · ' + fmtDate(e.ts) : ''}${born ? ' · added' : changed ? ' · changed' : ''}`;
-      return `<div class="stl-seg${changed ? ' chg' : ''}${born && i > 0 ? ' born' : ''}" style="background:${stlShade(SECTION_HUE[s], cc)};${fx(i)}" title="${escAttr(tip)}"></div>`;
+      if (cc === 0) return { absent: true, tip: fieldLabel(s) + ' — not yet present' };
+      const born = hit && i === birth[s] && i > 0, changed = hit && i > birth[s];
+      return { absent: false, color: stlShade(SECTION_HUE[s], cc), born, changed,
+               tip: `${fieldLabel(s)} · ${capitalise(e.action)}${e.ts ? ' · ' + fmtDate(e.ts) : ''}${born ? ' · added' : changed ? ' · changed' : ''}` };
+    });
+    return { section: s, label: fieldLabel(s), changeCount: changeCount[s], segs };
+  });
+  return { n, grows, haveTime, rows,
+           first: evs[0]?.ts ? fmtDate(evs[0].ts) : '',
+           last: haveTime ? fmtDate(new Date(tEnd).toISOString()) : (evs[n-1]?.ts ? fmtDate(evs[n-1].ts) : '') };
+}
+function timelineRowsHtml(model){
+  return model.rows.map(r => {
+    const segs = r.segs.map((sg, i) => {
+      const g = model.haveTime ? `--g:${model.grows[i]};` : '';
+      if (sg.absent) return `<div class="stl-seg absent" style="${g}" title="${escAttr(sg.tip)}"></div>`;
+      return `<div class="stl-seg${sg.changed ? ' chg' : ''}${sg.born ? ' born' : ''}" style="background:${sg.color};${g}" title="${escAttr(sg.tip)}"></div>`;
     }).join('');
-    const badge = changeCount[s] > 0 ? `<span class="stl-badge" title="changed ${changeCount[s]} time${changeCount[s] !== 1 ? 's' : ''} after creation">${changeCount[s]}×</span>` : '';
-    return `<div class="stl-row"><div class="stl-label" title="${escAttr(fieldLabel(s))}">${escHtml(fieldLabel(s))}${badge}</div><div class="stl-track">${segs}</div></div>`;
+    const badge = r.changeCount > 0 ? `<span class="stl-badge" title="changed ${r.changeCount} time${r.changeCount !== 1 ? 's' : ''} after creation">${r.changeCount}×</span>` : '';
+    return `<div class="stl-row"><div class="stl-label" title="${escAttr(r.label)}">${escHtml(r.label)}${badge}</div><div class="stl-track">${segs}</div></div>`;
   }).join('');
-  const first = evs[0]?.ts ? fmtDate(evs[0].ts) : '';
-  const last = haveTime ? fmtDate(new Date(tEnd).toISOString()) : (evs[n-1]?.ts ? fmtDate(evs[n-1].ts) : '');
+}
+function renderTimelineHtml(model){
   const sw = (c, extra='') => `<i class="stl-sw${extra}" style="${c ? 'background:' + c : ''}"></i>`;
-  const toggle = haveTime ? `<div class="stl-toggle">
+  const toggle = model.haveTime ? `<div class="stl-toggle">
       <button type="button" class="stl-tg active" data-mode="time" title="Space cells by elapsed time between events">Time</button>
       <button type="button" class="stl-tg" data-mode="events" title="Give every event equal width">Events</button>
     </div>` : '';
   return `<div class="sec-tl">
     <div class="stl-top">
-      <div class="stl-cap">Section change timeline — one bar per metadata section that changed after the DOI was created; the hue shifts each time that section changed and stays solid between changes. Sections that never changed are omitted.${haveTime ? ' Cells are spaced by date; switch to Events for equal widths.' : ''}</div>
-      ${toggle}
+      <div class="stl-cap">Section change timeline — one bar per metadata section that changed after the DOI was created; the hue shifts each time that section changed and stays solid between changes. Sections that never changed are omitted.${model.haveTime ? ' Cells are spaced by date; switch to Events for equal widths.' : ''}</div>
+      <div class="stl-ctrl">${toggle}<button type="button" class="stl-xbtn stl-save" title="Save this timeline as a PNG image">Save</button><button type="button" class="stl-xbtn stl-copy" title="Copy this timeline to the clipboard as an image">Copy</button></div>
     </div>
     <div class="stl-grid">
-      ${rowHtml}
+      ${timelineRowsHtml(model)}
     </div>
-    <div class="stl-dates"><span class="stl-label"></span><span class="stl-datestrack"><span>${first}</span><span>${last}</span></span></div>
+    <div class="stl-dates"><span class="stl-label"></span><span class="stl-datestrack"><span>${model.first}</span><span>${model.last}</span></span></div>
     <div class="stl-legend">
       <span class="stl-lg">${sw('hsl(210 55% 60%)')}section state (hue shifts on change)</span>
       <span class="stl-lg">${sw(null,' absent')}not yet present</span>
     </div>
   </div>`;
+}
+// ── Timeline image export (SVG → PNG, self-contained) ──
+function timelineSvg(model, doiId, byEvents){
+  const padX = 16, Lw = 150, Tw = 640, rowH = 15, rowGap = 4, rowPitch = rowH + rowGap;
+  const titleH = 50, datesH = 20, legendH = 22, padB = 12;
+  const trackX = padX + Lw, W = trackX + Tw + padX;
+  const gridY = titleH, H = gridY + model.rows.length * rowPitch + datesH + legendH + padB;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const n = model.n, MIN = 3;
+  let widths;
+  if (byEvents || !model.haveTime) widths = model.grows.map(() => Tw / n);
+  else { const sum = model.grows.reduce((a, b) => a + b, 0) || 1, free = Math.max(0, Tw - n * MIN); widths = model.grows.map(g => MIN + free * g / sum); }
+  const xs = []; { let x = 0; for (let i = 0; i < n; i++){ xs.push(x); x += widths[i]; } }
+  const modeLabel = (byEvents || !model.haveTime) ? 'by event' : 'by date';
+  let body = `<text x="${padX}" y="22" font-size="15" font-weight="700" fill="#1c1917">${esc(doiId || 'DOI')} — section change timeline</text>`
+    + `<text x="${padX}" y="39" font-size="10.5" fill="#78716c">Metadata sections that changed after creation · hue shifts on each change · ${esc(model.first)} – ${esc(model.last)} · spaced ${esc(modeLabel)}</text>`;
+  model.rows.forEach((r, ri) => {
+    const y = gridY + ri * rowPitch;
+    const badge = r.changeCount > 0 ? ` <tspan fill="#9a8fb0">${r.changeCount}×</tspan>` : '';
+    body += `<text x="${trackX - 8}" y="${y + rowH - 4}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#57534e">${esc(r.label)}${badge}</text>`;
+    r.segs.forEach((sg, i) => {
+      const x = (trackX + xs[i]).toFixed(2), w = widths[i].toFixed(2);
+      if (sg.absent){ body += `<rect x="${x}" y="${y}" width="${w}" height="${rowH}" fill="#ececea"/>`; return; }
+      body += `<rect x="${x}" y="${y}" width="${w}" height="${rowH}" fill="${sg.color}"/>`;
+      if (sg.changed || sg.born) body += `<rect x="${x}" y="${y}" width="2" height="${rowH}" fill="#ffffff" opacity="0.9"/>`;
+    });
+  });
+  const dy = gridY + model.rows.length * rowPitch + 13;
+  body += `<text x="${trackX}" y="${dy}" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#78716c">${esc(model.first)}</text>`
+    + `<text x="${trackX + Tw}" y="${dy}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#78716c">${esc(model.last)}</text>`;
+  const ly = dy + legendH - 6;
+  body += `<rect x="${trackX}" y="${ly - 9}" width="11" height="11" rx="2" fill="hsl(210 55% 60%)"/><text x="${trackX + 16}" y="${ly}" font-size="9.5" fill="#78716c">section state (hue shifts on change)</text>`
+    + `<rect x="${trackX + 232}" y="${ly - 9}" width="11" height="11" rx="2" fill="#ececea"/><text x="${trackX + 248}" y="${ly}" font-size="9.5" fill="#78716c">not yet present</text>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="Inter,system-ui,sans-serif"><rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>${body}</svg>`;
+}
+function stlSvgToPngBlob(svgString, scale){
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' }));
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.width * scale; c.height = img.height * scale;
+      const ctx = c.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
+      ctx.setTransform(scale, 0, 0, scale, 0, 0); ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null')), 'image/png');
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('SVG rasterization failed')); };
+    img.src = url;
+  });
+}
+function tlPngName(doiId){
+  const d = new Date(), p = x => String(x).padStart(2, '0');
+  return `${sanitizeId(doiId || 'doi')}_section-timeline__${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}.png`;
+}
+function tlDownloadBlob(blob, doiId){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = tlPngName(doiId);
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+async function saveTimelinePng(model, doiId, byEvents, btn){
+  const orig = btn ? btn.textContent : '';
+  try { tlDownloadBlob(await stlSvgToPngBlob(timelineSvg(model, doiId, byEvents), 2), doiId); if (btn) btn.textContent = '✓ Saved'; }
+  catch (e){ console.error(e); if (btn) btn.textContent = 'Save failed'; }
+  if (btn) setTimeout(() => { btn.textContent = orig; }, 1700);
+}
+async function copyTimelinePng(model, doiId, byEvents, btn){
+  const orig = btn ? btn.textContent : '';
+  let blob;
+  try { blob = await stlSvgToPngBlob(timelineSvg(model, doiId, byEvents), 2); }
+  catch (e){ console.error(e); if (btn){ btn.textContent = 'Render failed'; setTimeout(() => { btn.textContent = orig; }, 1700); } return; }
+  try {
+    if (!(navigator.clipboard && window.ClipboardItem)) throw new Error('clipboard images unsupported');
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    if (btn) btn.textContent = '✓ Copied';
+  } catch (e){ tlDownloadBlob(blob, doiId); if (btn) btn.textContent = '↓ Saved PNG'; }   // fallback: download
+  if (btn) setTimeout(() => { btn.textContent = orig; }, 1700);
 }
 
 // ── Helpers ───────────────────────────────────────────
