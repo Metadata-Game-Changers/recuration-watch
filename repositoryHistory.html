@@ -1124,12 +1124,18 @@ function syncUrl(clientId, resourceTypeId, query, cap, random){
 }
 // Carry the current repository to the sibling tools' top-bar links. Not a data handoff — each tool
 // re-fetches — but it keeps the selected client id (from ?client=, shared across the tool suite).
+// Metadata Completeness and Connectivity also read resource-type / query, so their links carry the
+// active filters too; Re-Curation Watch and Repository Activity take only the client.
 function setTopbarLinks(clientId){
   const id = (clientId ?? $('repo-input').value).trim();
-  const q = id ? '?client=' + encodeURIComponent(id) : '';
-  [['rcw-link','index.html'], ['completeness-link','completeness.html'],
-   ['connectivity-link','metadataConnectivity.html'], ['activity-link','repo-activity.html']]
-    .forEach(([elId, base]) => { const el = $(elId); if (el) el.href = base + q; });
+  const client = id ? '?client=' + encodeURIComponent(id) : '';
+  const rt = $('resource-type').value, uq = $('query-input').value.trim();
+  const filters = id ? client + (rt ? '&resource-type=' + encodeURIComponent(rt) : '') + (uq ? '&query=' + encodeURIComponent(uq) : '') : '';
+  const set = (elId, href) => { const el = $(elId); if (el) el.href = href; };
+  set('rcw-link', 'index.html' + client);
+  set('completeness-link', 'completeness.html' + filters);
+  set('connectivity-link', 'metadataConnectivity.html' + filters);
+  set('activity-link', 'repo-activity.html' + client);
 }
 function history_replaceState(url){ try { window.history.replaceState({}, '', url); } catch(e){} }
 
@@ -1288,7 +1294,8 @@ if (location.protocol === 'file:') {
       run();
     }
     setTopbarLinks();                                              // carry the repo (default or ?client=) to the sibling links
-    $('repo-input').addEventListener('input', () => setTopbarLinks());   // keep them in sync as the box changes
+    ['repo-input','query-input'].forEach(id => $(id).addEventListener('input', () => setTopbarLinks()));   // keep in sync as the box/filter change
+    $('resource-type').addEventListener('change', () => setTopbarLinks());
   } catch (e){
     console.error(e); hideProgress(); setStatus(e.message || String(e), true);
   }
