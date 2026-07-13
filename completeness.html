@@ -691,10 +691,14 @@ const VALUES_TOP_N = 50;
 let valuesState = null;   // { conceptRaw, freq:[{v,n}], spiralTitle }
 
 // Run ONE concept's FULL query (the values projection we strip for scoring is still in the catalog)
-// and let jq tally unique value → occurrence count in the same pass, so only the small result returns.
+// and let jq tally, per unique value, both its occurrence count (n) and the number of distinct DOIs
+// it appears in (d) — a value can occur many times yet in only a few records. One pass, small result.
 async function computeValueFreq(item){
   if (!lastRun._inputStr) lastRun._inputStr = JSON.stringify({ data: lastRun.records });
-  const prog = `[ ${item.jq_query} | .values ] | flatten | map(select(. != null)) | group_by(.) | map({v: .[0], n: length}) | sort_by([-.n, (.v|tostring)])`;
+  const prog = `[ ${item.jq_query} | {id: .id, vals: (.values // [] | map(select(. != null))) } ] as $recs`
+    + ` | ( [ $recs[] | .vals[] ] | group_by(.) | map({v: .[0], n: length}) ) as $occ`                        // occurrences per value
+    + ` | ( [ $recs[] | .id as $id | (.vals | unique[]) | {k: (.|tostring), id: $id} ] | group_by(.k) | map({(.[0].k): length}) | add // {} ) as $docs`   // distinct DOIs per value
+    + ` | $occ | map(. + { d: ($docs[(.v|tostring)] // 0) }) | sort_by([-.n, -.d, (.v|tostring)])`;
   const out = await jq.promised.raw(lastRun._inputStr, prog, ['-c']);
   const freq = (out && out.trim()) ? JSON.parse(out.trim()) : [];
   const total = freq.reduce((s, e) => s + e.n, 0);
@@ -723,8 +727,8 @@ async function openValues(spiral, conceptRaw){
       return;
     }
     const shown = freq.slice(0, VALUES_TOP_N);
-    $('values-body').innerHTML = '<table class="values-table"><thead><tr><th>Value</th><th class="num">Count</th><th class="num">%</th></tr></thead><tbody>'
-      + shown.map(e => `<tr><td class="val">${escHtml(valDisplay(e.v))}</td><td class="num">${e.n.toLocaleString()}</td><td class="num">${(e.n/total*100).toFixed(1)}%</td></tr>`).join('')
+    $('values-body').innerHTML = '<table class="values-table"><thead><tr><th>Value</th><th class="num" title="total occurrences of this value across the sample">Occurrences</th><th class="num" title="distinct DOIs (records) this value appears in">DOIs</th><th class="num">%</th></tr></thead><tbody>'
+      + shown.map(e => `<tr><td class="val">${escHtml(valDisplay(e.v))}</td><td class="num">${e.n.toLocaleString()}</td><td class="num">${(e.d ?? 0).toLocaleString()}</td><td class="num">${(e.n/total*100).toFixed(1)}%</td></tr>`).join('')
       + '</tbody></table>';
     $('values-download').style.display = '';
     $('values-copy').style.display = '';
@@ -738,7 +742,7 @@ function closeValues(){ $('values-modal').style.display = 'none'; valuesState = 
 function downloadValuesCsv(){
   if (!valuesState || !valuesState.freq.length) return;
   const csv = v => { const s = valDisplay(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
-  const body = [['Value','Count'], ...valuesState.freq.map(e => [csv(e.v), e.n])].map(r => r.join(',')).join('\r\n') + '\r\n';
+  const body = [['Value','Occurrences','DOIs'], ...valuesState.freq.map(e => [csv(e.v), e.n, e.d ?? 0])].map(r => r.join(',')).join('\r\n') + '\r\n';
   const url = URL.createObjectURL(new Blob([body], { type: 'text/csv' }));
   const safeId = (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_');
   const safeConcept = valuesState.conceptRaw.replace(/[^A-Za-z0-9._-]+/g, '_');
@@ -750,7 +754,7 @@ function downloadValuesCsv(){
 async function copyValues(){
   if (!valuesState || !valuesState.freq.length) return;
   // tab-separated so it pastes straight into a spreadsheet; full (uncapped) list, like the CSV
-  const tsv = ['Value\tCount', ...valuesState.freq.map(e => `${valDisplay(e.v).replace(/[\t\n\r]/g, ' ')}\t${e.n}`)].join('\n');
+  const tsv = ['Value\tOccurrences\tDOIs', ...valuesState.freq.map(e => `${valDisplay(e.v).replace(/[\t\n\r]/g, ' ')}\t${e.n}\t${e.d ?? 0}`)].join('\n');
   const btn = $('values-copy');
   try {
     await navigator.clipboard.writeText(tsv);
