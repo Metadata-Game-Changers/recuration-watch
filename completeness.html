@@ -695,7 +695,7 @@ let valuesState = null;   // { conceptRaw, freq:[{v,n}], spiralTitle }
 // it appears in (d) — a value can occur many times yet in only a few records. One pass, small result.
 async function computeValueFreq(item){
   if (!lastRun._inputStr) lastRun._inputStr = JSON.stringify({ data: lastRun.records });
-  const prog = `[ ${item.jq_query} | {id: .id, vals: (.values // [] | map(select(. != null))) } ] as $recs`
+  const prog = `[ ${item.jq_query} | {id: .id, vals: (.values | (if type == "array" then . else [.] end) | map(select(. != null))) } ] as $recs`
     + ` | ( [ $recs[] | .vals[] ] | group_by(.) | map({v: .[0], n: length}) ) as $occ`                        // occurrences per value
     + ` | ( [ $recs[] | .id as $id | (.vals | unique[]) | {k: (.|tostring), id: $id} ] | group_by(.k) | map({(.[0].k): length}) | add // {} ) as $docs`   // distinct DOIs per value
     + ` | $occ | map(. + { d: ($docs[(.v|tostring)] // 0) }) | sort_by([-.n, -.d, (.v|tostring)])`;
