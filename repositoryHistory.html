@@ -174,10 +174,10 @@
     </div>
     <div class="topbar-links">
       <div class="topbar-col">
-      <a href="index.html" target="_blank" rel="noopener">Re-Curation Watch ↗</a>
-      <a href="completeness.html" target="_blank" rel="noopener">Metadata Completeness ↗</a>
-      <a href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity ↗</a>
-      <a href="repo-activity.html" target="_blank" rel="noopener">Repository Activity ↗</a>
+      <a id="rcw-link" href="index.html" target="_blank" rel="noopener">Re-Curation Watch ↗</a>
+      <a id="completeness-link" href="completeness.html" target="_blank" rel="noopener">Metadata Completeness ↗</a>
+      <a id="connectivity-link" href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity ↗</a>
+      <a id="activity-link" href="repo-activity.html" target="_blank" rel="noopener">Repository Activity ↗</a>
       </div>
       <div class="topbar-col">
       <button class="cite-link" id="cite-btn" type="button">Cite this Tool ↗</button>
@@ -674,6 +674,7 @@ async function run(){
   const query = $('query-input').value.trim();
   if (!clientId) return;
   syncUrl(clientId, resourceTypeId, query, cap, random);
+  setTopbarLinks(clientId);
   closeAutocomplete();
   $('repo-go').disabled = true; $('stop-btn').style.display = '';
   stopRequested = false;
@@ -1121,6 +1122,21 @@ function syncUrl(clientId, resourceTypeId, query, cap, random){
     history_replaceState(url);
   } catch (e) { /* non-fatal */ }
 }
+// Carry the current repository to the sibling tools' top-bar links. Not a data handoff — each tool
+// re-fetches — but it keeps the selected client id (from ?client=, shared across the tool suite).
+// Metadata Completeness and Connectivity also read resource-type / query, so their links carry the
+// active filters too; Re-Curation Watch and Repository Activity take only the client.
+function setTopbarLinks(clientId){
+  const id = (clientId ?? $('repo-input').value).trim();
+  const client = id ? '?client=' + encodeURIComponent(id) : '';
+  const rt = $('resource-type').value, uq = $('query-input').value.trim();
+  const filters = id ? client + (rt ? '&resource-type=' + encodeURIComponent(rt) : '') + (uq ? '&query=' + encodeURIComponent(uq) : '') : '';
+  const set = (elId, href) => { const el = $(elId); if (el) el.href = href; };
+  set('rcw-link', 'index.html' + client);
+  set('completeness-link', 'completeness.html' + filters);
+  set('connectivity-link', 'metadataConnectivity.html' + filters);
+  set('activity-link', 'repo-activity.html' + client);
+}
 function history_replaceState(url){ try { window.history.replaceState({}, '', url); } catch(e){} }
 
 /* ---------- repository autocomplete (ported from completeness.html) ---------- */
@@ -1277,6 +1293,9 @@ if (location.protocol === 'file:') {
       const to = parseInt(params.get('to'), 10); if (!Number.isNaN(to)) $('year-max').value = to;
       run();
     }
+    setTopbarLinks();                                              // carry the repo (default or ?client=) to the sibling links
+    ['repo-input','query-input'].forEach(id => $(id).addEventListener('input', () => setTopbarLinks()));   // keep in sync as the box/filter change
+    $('resource-type').addEventListener('change', () => setTopbarLinks());
   } catch (e){
     console.error(e); hideProgress(); setStatus(e.message || String(e), true);
   }
