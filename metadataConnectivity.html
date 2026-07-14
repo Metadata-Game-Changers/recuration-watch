@@ -312,7 +312,7 @@
         <button class="dl-btn" id="dl-metadata" type="button">⬇ Metadata (JSON)</button>
       </div>
     </div>
-    <p class="conn-intro">Connectivity is the share of things that carry the identifier that could connect them — e.g. of the creators in a repository, how many have a name identifier (ORCID). The <b>%</b> is occurrence-based (identified occurrences ÷ all occurrences). The bar counts <b>distinct</b> entities (a person or affiliation that appears in many records is one entity): green = identified in <b>every</b> occurrence, yellow = identified in <b>some</b> (these are the quick wins — a known identifier to copy to the records that are missing it), red = <b>never</b> identified. <b>Click any bar</b> to list them, color-coded to match the bars — <b>quick wins first</b> (a known identifier to copy to the records that are missing it), then the ones still missing an identifier.</p>
+    <p class="conn-intro">Connectivity is the share of entities that carry the identifier that could connect them — e.g. of the creators in a repository, how many have a name identifier (ORCID). The <b>%</b> is occurrence-based (identified occurrences ÷ all occurrences). The bar counts <b>distinct</b> entities (a person or affiliation that appears in many records is one entity): green = identified in <b>every</b> occurrence, yellow = identified in <b>some</b> (these are the quick wins — a known identifier to copy to the records that are missing it), red = <b>never</b> identified. <b>Click any bar</b> to list them, color-coded to match the bars — <b>quick wins first</b> (a known identifier to copy to the records that are missing it), then the ones still missing an identifier.</p>
     <div class="conn-legend">
       <span><i style="background:var(--green)"></i>Complete — identified in every occurrence</span>
       <span><i style="background:var(--amber)"></i>Some — identified in some occurrences</span>
@@ -497,16 +497,16 @@ function renderSelection(clientId, meta, recordCount, random, repoTotal, resourc
    is occurrence-based (total identified / total occurrences). Quick wins = the propagatable gap
    (occ − id) summed over partial entities. */
 const CONNECTORS = [
-  { group:'Creators',     label:'Name identifiers (ORCID, etc.)',       source:'creators',          kind:'nameId',    entity:'Creator' },
-  { group:'Creators',     label:'Affiliations',                          source:'creators',          kind:'aff',       entity:'Creator' },
-  { group:'Creators',     label:'Affiliation identifiers (ROR, etc.)',   source:'creators',          kind:'affId',     entity:'Affiliation' },
-  { group:'Contributors', label:'Name identifiers (ORCID, etc.)',        source:'contributors',      kind:'nameId',    entity:'Contributor' },
-  { group:'Contributors', label:'Affiliations',                          source:'contributors',      kind:'aff',       entity:'Contributor' },
-  { group:'Contributors', label:'Affiliation identifiers (ROR, etc.)',   source:'contributors',      kind:'affId',     entity:'Affiliation' },
-  { group:'Funders',      label:'Funder identifiers',                    source:'fundingReferences', kind:'funder',    entity:'Funder' },
-  { group:'Publisher',    label:'Publisher identifier',                  source:'publisher',         kind:'publisher', entity:'Publisher' },
-  { group:'Rights',       label:'Rights URIs',                           source:'rightsList',        kind:'rightsUri', entity:'Rights statement' },
-  { group:'Rights',       label:'Rights identifiers (SPDX, etc.)',       source:'rightsList',        kind:'rightsId',  entity:'Rights statement' },
+  { group:'Creators',     label:'How many identifiers do creators have? (ORCID, etc.)',             source:'creators',          kind:'nameId',    entity:'Creator' },
+  { group:'Creators',     label:'How many affiliations do creators have?',                          source:'creators',          kind:'aff',       entity:'Creator' },
+  { group:'Creators',     label:'How many identifiers do creator affiliations have? (ROR, etc.)',   source:'creators',          kind:'affId',     entity:'Affiliation' },
+  { group:'Contributors', label:'How many identifiers do contributors have? (ORCID, etc.)',         source:'contributors',      kind:'nameId',    entity:'Contributor' },
+  { group:'Contributors', label:'How many affiliations do contributors have?',                      source:'contributors',      kind:'aff',       entity:'Contributor' },
+  { group:'Contributors', label:'How many identifiers do contributor affiliations have? (ROR, etc.)', source:'contributors',    kind:'affId',     entity:'Affiliation' },
+  { group:'Funders',      label:'How many identifiers do funders have? (ROR, etc.)',                source:'fundingReferences', kind:'funder',    entity:'Funder' },
+  { group:'Publishers',   label:'How many identifiers do publishers have? (ROR, etc.)',             source:'publisher',         kind:'publisher', entity:'Publisher' },
+  { group:'Rights',       label:'How many URIs do rights have?',                                    source:'rightsList',        kind:'rightsUri', entity:'Rights statement' },
+  { group:'Rights',       label:'How many identifiers do rights have? (SPDX, etc.)',                source:'rightsList',        kind:'rightsId',  entity:'Rights statement' },
 ];
 function computeConnectivity(records){
   return CONNECTORS.map((c, idx) => {
@@ -914,7 +914,7 @@ function buildConnReportHtml(){
   ${groups.map(groupBlock).join('')}
   ${dupReportSection()}
   <footer>
-    <p>Connectivity = the share of things that carry the identifier that could connect them. The bar counts distinct entities (complete / some / none identified); the percentage is occurrence-based (identified occurrences ÷ all occurrences). "Quick wins" are known identifiers that could be copied to the records that are missing them.</p>
+    <p>Connectivity = the share of entities that carry the identifier that could connect them. The bar counts distinct entities (complete / some / none identified); the percentage is occurrence-based (identified occurrences ÷ all occurrences). "Quick wins" are known identifiers that could be copied to the records that are missing them.</p>
     <p>Generated by the Metadata Game Changers Connectivity tool against live DataCite data (api.datacite.org). Report created ${created} © by Metadata Game Changers is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></p>
   </footer>
 </body></html>`;
