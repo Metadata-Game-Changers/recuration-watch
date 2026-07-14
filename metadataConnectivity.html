@@ -570,7 +570,7 @@ function isOrgEntity(nameType, name){
 }
 function personDetail(records, source, kind){
   const map = new Map();   // name -> {occ, id, docs, orgN}
-  const bump = (name, has, r, org) => { if (name == null || name === '') return; let e = map.get(name); if (!e){ e = { occ:0, id:0, docs:new Map(), orgN:0 }; map.set(name, e); } e.occ++; if (has) e.id++; else noteFixDoc(e, r); if (org) e.orgN++; noteDoc(e, r); };
+  const bump = (name, has, r, org) => { if (name == null || name === '') return; let e = map.get(name); if (!e){ e = { occ:0, id:0, docs:new Map(), orgN:0 }; map.set(name, e); } e.occ++; if (has){ e.id++; noteIdDoc(e, r); } else noteFixDoc(e, r); if (org) e.orgN++; noteDoc(e, r); };
   for (const r of records){
     const arr = (r.attributes && Array.isArray(r.attributes[source])) ? r.attributes[source] : [];
     for (const p of arr){
@@ -594,7 +594,7 @@ function funderDetail(records){
     for (const f of ((r.attributes && Array.isArray(r.attributes.fundingReferences)) ? r.attributes.fundingReferences : [])){
       if (!f || !f.funderName) continue;
       let e = map.get(f.funderName); if (!e){ e = { occ:0, id:0, docs:new Map() }; map.set(f.funderName, e); }
-      e.occ++; if (f.funderIdentifier) e.id++; else noteFixDoc(e, r); noteDoc(e, r);
+      e.occ++; if (f.funderIdentifier){ e.id++; noteIdDoc(e, r); } else noteFixDoc(e, r); noteDoc(e, r);
     }
   }
   return map;
@@ -605,7 +605,7 @@ function publisherDetail(records){
     const p = r.attributes && r.attributes.publisher; if (!p) continue;
     const name = typeof p === 'string' ? p : p.name; if (!name) continue;
     let e = map.get(name); if (!e){ e = { occ:0, id:0, docs:new Map() }; map.set(name, e); }
-    e.occ++; if (typeof p === 'object' && p.publisherIdentifier) e.id++; else noteFixDoc(e, r); noteDoc(e, r);
+    e.occ++; if (typeof p === 'object' && p.publisherIdentifier){ e.id++; noteIdDoc(e, r); } else noteFixDoc(e, r); noteDoc(e, r);
   }
   return map;
 }
@@ -618,7 +618,7 @@ function rightsDetail(records, kind){
       if (!x || typeof x !== 'object') continue;
       const name = x.rights || x.rightsUri || x.rightsIdentifier; if (!name) continue;
       let e = map.get(name); if (!e){ e = { occ:0, id:0, docs:new Map() }; map.set(name, e); }
-      e.occ++; if (kind === 'rightsUri' ? !!x.rightsUri : !!x.rightsIdentifier) e.id++; else noteFixDoc(e, r); noteDoc(e, r);
+      e.occ++; if (kind === 'rightsUri' ? !!x.rightsUri : !!x.rightsIdentifier){ e.id++; noteIdDoc(e, r); } else noteFixDoc(e, r); noteDoc(e, r);
     }
   }
   return map;
@@ -640,6 +640,7 @@ function openConnDetail(idx){
     .map(([name, e]) => ({ name, occ: e.occ, id: e.id, pct: e.occ ? e.id / e.occ : 0,
       org: (e.orgN || 0) * 2 > e.occ,   // majority of occurrences look organizational → ROR, else person → ORCID
       docs: [...(e.docs || [])].map(([doi, title]) => ({ doi, title })),
+      idd: [...(e.idDocs || [])].map(([doi, title]) => ({ doi, title })),
       fix: [...(e.fixDocs || [])].map(([doi, title]) => ({ doi, title })) }))
     .sort((a, b) => rank(a) - rank(b)
       || (isQw(a) ? (b.occ - b.id) - (a.occ - a.id) : 0)    // within quick wins, biggest propagatable gap first
@@ -691,13 +692,17 @@ function openConnDetail(idx){
     : `<table class="cd-table"><thead><tr><th>${escHtml(c.entity)}</th><th class="num">Occurrences</th><th class="num">Identified</th><th class="num" title="Records where this ${escAttr(ent)} occurs WITHOUT its identifier — the records to find and fix">To fix</th><th class="num">%</th></tr></thead><tbody>`
       + entries.map((e, ei) => `<tr class="${rowCls(e)}"><td class="val">${nameCell(e)}${isQw(e) ? ' <span class="qw-tag">quick win</span>' : ''}</td>`
         + `<td class="num">${e.docs.length ? `<a class="dup-doc-link" data-ei="${ei}" title="List the DOIs where this ${escAttr(ent)} occurs">${e.occ.toLocaleString()}</a>` : e.occ.toLocaleString()}</td>`
-        + `<td class="num">${e.id.toLocaleString()}</td>`
+        + `<td class="num">${e.idd.length ? `<a class="dup-doc-link" data-id="${ei}" title="List the records where this ${escAttr(ent)} occurs WITH its identifier">${e.id.toLocaleString()}</a>` : e.id.toLocaleString()}</td>`
         + `<td class="num">${e.fix.length ? `<a class="dup-doc-link" data-fix="${ei}" title="List the records where this ${escAttr(ent)} occurs without its identifier — the ones to fix">${e.fix.length.toLocaleString()}</a>` : '—'}</td>`
         + `<td class="num ${cls(e)}">${(e.pct*100).toFixed(0)}%</td></tr>`).join('')
       + '</tbody></table>';
   $('cd-body').querySelectorAll('.dup-doc-link[data-ei]').forEach(el => el.addEventListener('click', () => {
     const e = connDetailState.entries[+el.dataset.ei];
     openDocsModal(e.name, e.docs, `${c.group} · ${c.label.split(' (')[0]}`);
+  }));
+  $('cd-body').querySelectorAll('.dup-doc-link[data-id]').forEach(el => el.addEventListener('click', () => {
+    const e = connDetailState.entries[+el.dataset.id];
+    openDocsModal(e.name, e.idd, `${c.group} · ${c.label.split(' (')[0]} · records with identifier`);
   }));
   $('cd-body').querySelectorAll('.dup-doc-link[data-fix]').forEach(el => el.addEventListener('click', () => {
     const e = connDetailState.entries[+el.dataset.fix];
@@ -1315,6 +1320,8 @@ function recTitle(r){ const t = r && r.attributes && Array.isArray(r.attributes.
 function noteDoc(e, r){ const doi = recDoi(r); if (doi && !e.docs.has(doi)) e.docs.set(doi, recTitle(r)); }
 // Records where the entity occurs WITHOUT its identifier — the ones to find and fix.
 function noteFixDoc(e, r){ if (!e.fixDocs) e.fixDocs = new Map(); const doi = recDoi(r); if (doi && !e.fixDocs.has(doi)) e.fixDocs.set(doi, recTitle(r)); }
+// Records where the entity occurs WITH its identifier — the complement of the fix list.
+function noteIdDoc(e, r){ if (!e.idDocs) e.idDocs = new Map(); const doi = recDoi(r); if (doi && !e.idDocs.has(doi)) e.idDocs.set(doi, recTitle(r)); }
 
 function collectPeople(records){
   const map = new Map();
