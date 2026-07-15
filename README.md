@@ -1,68 +1,89 @@
-# If you have feedback or find a bug please let us know through [Github issues](https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose)! 
-# Re-Curation Watch
+# Re-Curation Watch — and the Metadata Game Changers DataCite tools
+
+*Found a bug or have feedback? Please [open a GitHub issue](https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose).*
+
 [![DOI](https://img.shields.io/badge/DOI-10.60872%2FrecurationWatch-blue)](https://doi.org/10.60872/recurationWatch)
 [![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey)](https://creativecommons.org/licenses/by-nc/4.0/)
 
-A tool by [Metadata Game Changers](https://metadatagamechangers.com) for browsing any DataCite repository and inspecting the full curation history of each DOI — who changed what, when, and how.
+A suite of browser-based tools by [Metadata Game Changers](https://metadatagamechangers.com) for exploring and improving DataCite metadata — its **provenance**, **completeness**, **connectivity**, and **curation activity**.
 
-Live data is fetched directly from the [DataCite REST API](https://api.datacite.org) — no build step, no backend, no API key required. One HTML file, deploy anywhere. 
+Everything runs in your browser against the live [DataCite REST API](https://api.datacite.org): no build step, no backend, no API key, nothing uploaded or stored. Each tool is one self-contained HTML file, so the whole suite deploys to any static host.
 
-## What it does
+Start at **[tools.html](tools.html)** for a one-page overview, or jump straight to a tool below.
 
-Re-Curation Watch surfaces the metadata provenance that DataCite records for every DOI since March 2019. For each update event you can see exactly which fields changed, with before and after values shown side by side. This makes it possible to assess the curation quality of any DataCite repository — not just what the metadata says now, but how it got there.
+## The tools
 
-Note: Re-Curation Watch queries the DataCite Public REST API, which is freely accessible without authentication. DOI metadata displayed is provided by DataCite member repositories and carries the licenses assigned by those repositories. DataCite's own documentation is licensed CC-BY 4.0.
+| Tool | File | What it does | DOI |
+|---|---|---|---|
+| **Re-Curation Watch** | [`index.html`](index.html) | Browse a repository's DOIs and inspect each DOI's full **curation history** — who changed what, when — with before/after field diffs and a per-section change timeline. | [10.60872/recurationWatch](https://doi.org/10.60872/recurationWatch) |
+| **Metadata Completeness** | [`completeness.html`](completeness.html) | Score a repository (or a single DOI) against the MGC **FAIR**, **DataCite**, and **Project** use cases, and drill into any concept's values. Runs the methodology's `jq` queries in the browser via [jq-web](https://github.com/fiatjaf/jq-web). | [10.60872/metadataCompleteness](https://doi.org/10.60872/metadataCompleteness) |
+| **Metadata Connectivity** | [`metadataConnectivity.html`](metadataConnectivity.html) | Measure **identifier connectivity** — how many creators, contributors, funders, publishers, and rights carry the identifiers (ORCID, ROR, …) that connect them — with drill-downs to the exact records and hand-offs to the retrievers. | [10.60872/metadataConnectivity](https://doi.org/10.60872/metadataConnectivity) |
+| **Repository Activity** | [`repo-activity.html`](repo-activity.html) | Plot a repository's **curation activity over time**, broken down by changed property and by the actor who made the change. | [10.60872/repositoryActivity](https://doi.org/10.60872/repositoryActivity) |
+| **Repository History** | [`repositoryHistory.html`](repositoryHistory.html) | Score completeness for **every registered year** and plot the use-case trends over time (a cohort view — records as they are today). | [10.60872/repositoryHistory](https://doi.org/10.60872/repositoryHistory) |
+| **ROR Retriever** | [`rorRetriever.html`](rorRetriever.html) | Match **affiliation strings to ROR identifiers** (a browser port of [RORRetriever](https://github.com/Metadata-Game-Changers/RORRetriever)). | [10.60872/rorRetriever](https://doi.org/10.60872/rorRetriever) |
+| **ORCID Retriever** | [`orcidRetriever.html`](orcidRetriever.html) | Find **ORCID iDs for people** by name, with employment and journal context for disambiguation (a browser port of the name→ORCID flow in [ORCID-Tools](https://github.com/Metadata-Game-Changers/ORCID-Tools)). | [10.60872/orcidRetriever](https://doi.org/10.60872/orcidRetriever) |
 
+Supporting pages: **[useCases.html](useCases.html)** (the completeness use-case catalog), **[connectivityAbout.html](connectivityAbout.html)** and **[rorAbout.html](rorAbout.html)** (background), and **[tips.html](tips.html)** (the collected while-you-wait tips).
 
-## Finding a repository, DOI, or prefix
+## How the tools work together
 
-Type a repository name (e.g. "Zenodo", "Dryad", "Gump Station") or a DataCite client ID (e.g. `cern.zenodo`, `sjyq.oozvia`) into the search box in the purple hero bar. An autocomplete dropdown shows matching repositories with their DOI counts. Press Enter or click **Explore →** to load.
+- **Live data, nothing stored.** Every tool fetches directly from `api.datacite.org`. No account, no upload, no server.
+- **Repository, prefix, or a single DOI.** Enter a repository name / client ID, a DOI prefix, or a single DOI. Completeness and Connectivity analyze one DOI as easily as a whole repository.
+- **Shared selection.** The current repository (and DOI or filters) travels between tools through the top-bar links and URL parameters — `?client=`, `?doi=`, `?resource-type=`, `?query=` — so you can pivot from completeness to connectivity to history on the same selection without retyping it.
+- **Exact-sample sharing.** *Share with Metadata Connectivity / Completeness* hands the **exact sampled records** from one tool to the other (and Repository History can open any year's sample in either), so both measure the identical set instead of drawing a fresh random sample. Small samples travel through `localStorage`; large ones (many thousands of records) through IndexedDB.
+- **Actionable drill-downs.** Connectivity's drill-downs link the **Occurrences / Identified / To-fix** counts to the specific DOIs, and send the names still missing identifiers straight to the ROR and ORCID retrievers.
+- **Exports everywhere.** JSON / HTML / PDF / CSV reports, plus PNG charts and timelines you can save or copy to the clipboard.
+- **Bookmarkable URLs.** Every view encodes its state in the URL, so any result is shareable.
 
-Type a prefix in and the most recently updated 2000 records for a specific prefix will load.
+---
 
-Type in a specific DOI and the history for that DOI will load. 
+## Re-Curation Watch in detail
 
-The tool loads with the Metadata Game Changers repository by default.
+Re-Curation Watch surfaces the metadata provenance DataCite records for every DOI since March 2019. For each update event you can see exactly which fields changed, with before and after values side by side — so you can assess not just what a repository's metadata says now, but how it got there.
 
-## Filters
+*Re-Curation Watch queries the public DataCite REST API, which is freely accessible without authentication. DOI metadata is provided by DataCite member repositories and carries the licenses those repositories assign.*
 
-All filters are in the toolbar below the hero. They work together — applying one filter updates the available options in the others.
+### Finding a repository, prefix, or DOI
 
-**Search** — free-text search across titles, creator names, and DOI strings.
+Type into the search box in the purple hero bar:
 
-**Type** — filter by DataCite resource type (Dataset, Software, Text, etc.). Options shown reflect what exists in the current filtered set.
+- a **repository name** (e.g. "Zenodo", "Dryad", "Gump Station") or **client ID** (e.g. `cern.zenodo`, `sjyq.oozvia`) — an autocomplete dropdown shows matches with their DOI counts;
+- a **prefix** (e.g. `10.18739`) — loads the most recently updated records for that prefix;
+- a **single DOI** (e.g. `10.60872/recurationWatch`) — loads that one DOI's curation history.
 
-**Updated** — filter by the year the DOI record was last modified in DataCite. This is the year of the most recent curation activity, which may differ from the publication year.
+Press Enter or click **Explore →**. The tool loads with the Metadata Game Changers repository by default.
 
-**Min. versions** — filter to DOIs with a minimum `metadataVersion` value. DataCite increments this counter each time a DOI record is touched in their system, including automated changes, so it is a proxy for curation activity rather than an exact count of deliberate updates. The dropdown shows only the distinct version values that actually exist in the currently filtered set, with a count of how many DOIs have at least that many versions — so options reduce as you apply other filters and you can never select a value with zero results.
+### Filters
 
-Note: `metadataVersion` can be higher than the number of entries in the activity log, since not all system changes generate a provenance record. Open the history panel on any DOI to see the exact count of recorded activity events.
+All filters are in the toolbar below the hero and work together — applying one updates the options available in the others.
 
-**Re-curated only** — checkbox that filters to DOIs where the `updated` timestamp is more than one day later than the `created` timestamp. This identifies records that received genuine post-registration curation, as opposed to DOIs where the only activity is the original creation event. Useful for finding evidence of active metadata maintenance in a repository.
+- **Search** — free-text across titles, creator names, and DOI strings.
+- **Type** — DataCite resource type (Dataset, Software, Text, …); options reflect what exists in the current set.
+- **Updated** — the year the record was last modified in DataCite (most recent curation activity, which may differ from the publication year).
+- **Min. versions** — DOIs with at least a given `metadataVersion`. DataCite increments this counter on every system change (including automated ones), so it is a proxy for curation activity; the dropdown shows only values that exist in the current set.
+- **Re-curated only** — DOIs whose `updated` timestamp is more than a day after `created` — records with genuine post-registration curation, not just the original creation event.
+- **Reset** — clears all filters and resets sort to Updated.
 
-**Reset** — clears all filters and resets sort to Updated.
+> `metadataVersion` can exceed the number of activity-log entries, since not every system change generates a provenance record. Open a DOI's history panel to see the exact count of recorded events.
 
-## Sorting
+### Sorting
 
-Three sort options in the toolbar: **Updated** (most recently modified first), **Published** (by `publicationYear`), and **Title** (alphabetical). Default is Updated, which surfaces the most recently curated records first.
+**Updated** (most recently modified first, the default), **Published** (`publicationYear`), and **Title** (alphabetical).
 
-## Viewing curation history
+### Viewing curation history
 
-Click the **history** button on any DOI card to load its activity timeline. Each event shows:
+Click **history** on any DOI card to load its activity timeline. Each event shows the date, action type (create / update / publish, color-coded), a one-line summary ("Updated rights / licenses, related identifiers."), and a **Show details ▸** toggle that expands the full before/after field diff.
 
-- Date and action type (create, update, publish) with color coding
-- A one-line summary of what changed ("Updated rights / licenses, related identifiers.")
-- **Show details ▸** — expands the full before/after field diff for that event
+Above the table, a **section change timeline** shows one bar per major metadata section (Titles, Creators, Rights, …) across the DOI's life: each bar keeps its colour until that section changed, then the hue shifts — and stays solid for sections that never changed. Cells are spaced along a real time axis (toggle to equal-per-event), and the whole timeline can be **saved or copied as a PNG**.
 
-At the top of the history panel, a **revision pulse bar** shows the full activity sequence left to right: the leftmost (shortest, green) bar is the creation event, and bars grow taller moving right toward the most recent activity. Color indicates action type: green = create, blue = update, amber = publish.
+### URL state
 
-## URL state
-
-Every filter choice, sort order, and page is reflected in the URL automatically, making any view bookmarkable and shareable:
+Every filter choice, sort order, and page is reflected in the URL, so any view is bookmarkable and shareable:
 
 | Parameter | Description | Example |
 |---|---|---|
 | `client` | DataCite client ID | `?client=sjyq.oozvia` |
+| `doi` | A single DOI | `?doi=10.60872/recurationWatch` |
 | `q` | Search query | `&q=robinson` |
 | `type` | Resource type | `&type=Dataset` |
 | `year` | Updated year | `&year=2024` |
@@ -70,37 +91,40 @@ Every filter choice, sort order, and page is reflected in the URL automatically,
 | `recur` | Re-curated only | `&recur=1` |
 | `sort` | Sort order | `&sort=title` |
 
+---
+
 ## Deploy to GitHub Pages
 
-1. Create or rename a repository to `recuration-watch`
-2. Add `index.html`, `README.md`, `LICENSE`, and `favicon_MGC.png` to the root of `main`
-3. Go to **Settings → Pages → Source**: select `main` branch, `/ (root)`
-4. Your site will be live at `https://[org].github.io/recuration-watch/`
+This repository is served with GitHub Pages straight from a branch — no build step, no Actions.
 
-Works on any static host (Netlify, Cloudflare Pages, etc.) — no build process required.
+1. Put the tool files (the `.html` files, `FAIR_spirals.json`, the favicon, `LICENSE`, `README.md`) in the root of `main`.
+2. **Settings → Pages → Source**: select the `main` branch, `/ (root)`.
+3. The suite is live at `https://[org].github.io/recuration-watch/` — e.g. [`tools.html`](tools.html) for the overview or [`index.html`](index.html) for Re-Curation Watch.
+
+Any static host works (Netlify, Cloudflare Pages, …).
 
 ## API endpoints used
 
 | Purpose | Endpoint |
 |---|---|
-| Repository search | `GET /clients?query={name}` |
-| Repository metadata | `GET /clients/{id}` |
-| All DOIs for repository | `GET /dois?client-id={id}&page[size]=100` |
-| DOI activity log | `GET /dois/{id}/activities` |
+| Repository search / metadata | `GET /clients?query={name}` · `GET /clients/{id}` |
+| DOIs for a repository | `GET /dois?client-id={id}&affiliation=true&publisher=true` |
+| A single DOI | `GET /dois/{doi}?affiliation=true&publisher=true` |
+| DOI activity (provenance) log | `GET /dois/{doi}/activities` |
 
-All endpoints are public and CORS-enabled. The DOI endpoint paginates at 100 per page; the app fetches all pages automatically (capped at 2,000 records for performance).
+All endpoints are public and CORS-enabled. `affiliation=true&publisher=true` returns affiliation and publisher as structured objects (needed for completeness and connectivity). Completeness and Connectivity support random sampling with multiple draws, de-duplicated by DOI, for large repositories.
 
-## Customization
+## Development notes
 
-- **Default repository**: change `DEFAULT_CLIENT` in the `<script>` block
-- **Page size**: change `PAGE_SIZE` (default 50 records per page)
-- **Colors**: all CSS custom properties are in the `:root` block; the purple hero uses `#9167b0`
+- **No build.** Each tool is a single self-contained HTML file with inline CSS and vanilla JS.
+- **Completeness engine.** `completeness.html` runs MGC's `jq` use-case queries in the browser via jq-web (jq compiled to WASM); the use-case catalog lives in `FAIR_spirals.json` (and embedded in the page). `repositoryHistory.html` reuses the same scoring per year.
+- **Generated pages.** `tips.html` is generated from each tool's tips array by `makeTipsPage.py` — edit the tips in the tool, then regenerate.
 
 ## Citation
 
-If you use Re-Curation Watch in your work, please cite it as:
+Each tool has its own DOI (see the table above) — please cite the one you used. For the suite / Re-Curation Watch:
 
-Robinson, E. and Habermann, T. (2026). Re-Curation Watch (v1.0). Metadata Game Changers LLC. https://doi.org/10.60872/recurationWatch
+> Robinson, E. and Habermann, T. (2026). *Re-Curation Watch* (v1.0). Metadata Game Changers LLC. https://doi.org/10.60872/recurationWatch
 
 ## Links
 
