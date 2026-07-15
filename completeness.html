@@ -246,10 +246,6 @@
       <div class="repo-autocomplete" id="repo-autocomplete"></div>
       <div class="hero-secondary">
         <span class="hero-field grow">
-        <span class="hero-secondary-label">Use case</span>
-        <select class="hero-select" id="spiral"></select>
-        </span>
-        <span class="hero-field grow">
         <span class="hero-secondary-label">Type</span>
         <select class="hero-select" id="resource-type">
           <option value="">All resource types</option>
@@ -821,6 +817,7 @@ const TAB_TITLE = {
 const CODE_INDEX = {};
 SPIRALS.forEach((s,i) => { CODE_INDEX[s.code] = i; });
 let activeTab = 'FAIR';
+let selectedSpiralIdx = 0;   // global SPIRALS index of the use case whose detail is shown (set by the chips)
 
 /* ---------- About tab: use-case intro + concept→DataCite-path tables ---------- */
 const CONCEPT_PATHS = JSON.parse(document.getElementById('concept-paths').textContent);
@@ -866,12 +863,9 @@ function renderAbout(){
   aboutRendered = true;
 }
 
-// fill the Use-case dropdown with only the active tab's use cases (option value = global SPIRALS index)
+// default the shown use case to the first in the active tab (the chips let you pick another)
 function populateSpirals(){
-  $('spiral').innerHTML = GROUPS[activeTab].map(code => {
-    const i = CODE_INDEX[code];
-    return `<option value="${i}">${SPIRALS[i].title} (${SPIRALS[i].items.length})</option>`;
-  }).join('');
+  selectedSpiralIdx = CODE_INDEX[GROUPS[activeTab][0]];
 }
 
 // switch tab: highlight it, then either show the About panel or the active group's use cases
@@ -889,7 +883,6 @@ function selectTab(tab){
     return;
   }
   populateSpirals();
-  $('spiral').selectedIndex = 0;
   if (lastRun) showDetail();
 }
 
@@ -934,7 +927,7 @@ function renderTotal(){
     $('total-note').innerHTML = 'These use cases are scored and viewable but are <b>not</b> combined into a total. Click a use case to inspect it below.';
   }
 
-  const selIdx = parseInt($('spiral').value, 10);
+  const selIdx = selectedSpiralIdx;
   const selCode = SPIRALS[selIdx] && SPIRALS[selIdx].code;
   $('total-breakdown').innerHTML = GROUPS[activeTab].map(code => {
     const idx = CODE_INDEX[code];
@@ -949,14 +942,14 @@ function renderTotal(){
     </div>`;
   }).join('');
   $('total-breakdown').querySelectorAll('.sp-chip').forEach(el => {
-    el.addEventListener('click', () => { $('spiral').value = el.dataset.idx; showDetail(); });
+    el.addEventListener('click', () => { selectedSpiralIdx = parseInt(el.dataset.idx, 10); showDetail(); });
   });
 }
 
 /* render the plot/table for the currently-selected spiral, from cache */
 function showDetail(){
   if (!lastRun) return;
-  const spiral = SPIRALS[parseInt($('spiral').value,10)];
+  const spiral = SPIRALS[selectedSpiralIdx];
   const cached = lastRun.byCode[spiral.code];
   if (cached) renderResults(spiral, cached.res);
   renderTotal();   // refresh active-chip highlight
@@ -1358,7 +1351,7 @@ function radarToPngBlob(scale){
   scale = scale || 2;
   return new Promise((resolve, reject) => {
     const W = 460, radarH = 460, headerH = 46;
-    const idx = parseInt($('spiral').value, 10);
+    const idx = selectedSpiralIdx;
     const sp = SPIRALS[idx];
     const res = (sp && lastRun.byCode[sp.code]) ? lastRun.byCode[sp.code].res : null;
     const name = (lastRun && lastRun.repoName) ? lastRun.repoName : (lastRun ? lastRun.clientId : '');
@@ -1411,7 +1404,7 @@ async function copyRadar(){
     flashRadarBtn('✓ Copied');
   } catch (e){
     const url = URL.createObjectURL(blob);
-    const sel = SPIRALS[parseInt($('spiral').value, 10)];
+    const sel = SPIRALS[selectedSpiralIdx];
     const safeId = (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_');
     const a = document.createElement('a');
     a.href = url; a.download = `${safeId}_${sel ? sel.code : 'usecase'}.png`;
@@ -1612,7 +1605,6 @@ document.addEventListener('click', e => { if (!e.target.closest('.hero-search'))
 
 /* ---------- boot ---------- */
 $('repo-go').addEventListener('click', run);
-$('spiral').addEventListener('change', showDetail);
 /* ---------- cross-tool sample mailbox ----------
    Hands the exact analyzed sample to a sibling tool so both measure the SAME records — the point of
    random samples and queries. Small samples ride in localStorage; large ones (a 4000-record sample
