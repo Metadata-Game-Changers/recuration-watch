@@ -240,7 +240,7 @@
     </div>
     <div class="hero-search">
       <div class="hero-form">
-        <input class="hero-input" id="repo-input" type="text" placeholder="Repository name or client ID…" spellcheck="false" autocomplete="off" value="sjyq.oozvia" />
+        <input class="hero-input" id="repo-input" type="text" placeholder="Repository, client ID, or DOI…" spellcheck="false" autocomplete="off" value="sjyq.oozvia" />
         <button class="hero-go" id="repo-go" disabled>Explore →</button>
       </div>
       <div class="repo-autocomplete" id="repo-autocomplete"></div>
@@ -306,7 +306,7 @@
     <span class="sel-repo" id="sel-repo">—</span>
     <span class="sel-shared" id="sel-shared" style="display:none" title="Another tool retrieved these records; both tools are measuring exactly the same sample">—</span>
     <div class="sel-stats">
-      <span class="sel-stat"><b id="sel-records">—</b> records analyzed</span>
+      <span class="sel-stat"><b id="sel-records">—</b> <span id="sel-records-label">records analyzed</span></span>
       <span class="sel-stat" id="sel-mode">—</span>
       <span class="sel-stat" id="sel-total"></span>
       <span class="sel-stat" id="sel-filter" style="display:none"></span>
@@ -1431,12 +1431,13 @@ async function fetchClientMeta(clientId){
   } catch { return null; }
 }
 
-function renderSelection(clientId, meta, recordCount, random, repoTotal, resourceTypeId, query, sharedFrom){
+function renderSelection(clientId, meta, recordCount, random, repoTotal, resourceTypeId, query, sharedFrom, singleDoi){
   $('sel-summary').style.display = '';
-  const name = (meta && meta.name) ? meta.name : clientId;
+  const name = (meta && meta.name) ? meta.name : (clientId || 'DOI');
   $('sel-repo').innerHTML = `${escHtml(name)}<span class="sel-id">${escHtml(clientId)}</span>`;
   $('sel-records').textContent = recordCount.toLocaleString();
-  $('sel-mode').textContent = random ? 'random sample' : 'sequential sample';
+  $('sel-records-label').textContent = (recordCount === 1 ? 'record' : 'records') + ' analyzed';
+  $('sel-mode').textContent = singleDoi ? `single DOI · ${singleDoi}` : (random ? 'random sample' : 'sequential sample');
   const sh = $('sel-shared');
   if (sharedFrom){ sh.textContent = `Shared sample · from ${sharedFrom}`; sh.style.display = ''; }
   else sh.style.display = 'none';
@@ -1465,6 +1466,7 @@ function syncUrl(clientId, resourceTypeId, query){
   try {
     const url = new URL(location.href);
     url.searchParams.set('client', clientId);
+    url.searchParams.delete('doi');   // a repository run clears any single-DOI deep link
     if (resourceTypeId) url.searchParams.set('resource-type', resourceTypeId); else url.searchParams.delete('resource-type');
     url.searchParams.delete('resourceType');   // normalize the legacy alias
     if (query) url.searchParams.set('query', query); else url.searchParams.delete('query');
@@ -1473,17 +1475,17 @@ function syncUrl(clientId, resourceTypeId, query){
 }
 // score a set of records — shared by run() (which fetches them) and the shared-sample
 // boot path (which receives them from Metadata Connectivity)
-async function analyze(clientId, records, repoTotal, usedRandom, resourceTypeId, query, sharedFrom){
+async function analyze(clientId, records, repoTotal, usedRandom, resourceTypeId, query, sharedFrom, singleDoi){
   const meta = await fetchClientMeta(clientId);
-  renderSelection(clientId, meta, records.length, usedRandom, repoTotal, resourceTypeId, query, sharedFrom);
-  const sampleNote = usedRandom ? `random sample of ${records.length}` : `${records.length} sequential`;
+  renderSelection(clientId, meta, records.length, usedRandom, repoTotal, resourceTypeId, query, sharedFrom, singleDoi);
+  const sampleNote = singleDoi ? `DOI ${singleDoi}` : (usedRandom ? `random sample of ${records.length}` : `${records.length} sequential`);
 
   setStatus(`Scoring ${SPIRALS.length} use cases over ${records.length} records…`);
   setProgress(0);
   const byCode = await scoreAllSpirals(records, frac => setProgress(frac));
   const total = computeTotal(byCode);
   lastRun = { byCode, total, records, clientId, resourceTypeId, query, random: usedRandom,
-              repoName: (meta && meta.name) ? meta.name : clientId, repoTotal, sharedFrom };
+              repoName: (meta && meta.name) ? meta.name : clientId, repoTotal, sharedFrom, singleDoi };
   renderTotal();
   showDetail();
   hideProgress();
@@ -1491,15 +1493,41 @@ async function analyze(clientId, records, repoTotal, usedRandom, resourceTypeId,
   const cl = $('connectivity-link');
   cl.textContent = 'Share with Metadata Connectivity ↗';
   cl.title = 'Open Metadata Connectivity on these exact records, so both tools measure the same sample';
-  setStatus(`Done — ${sampleNote} record${records.length===1?'':'s'}${sharedFrom ? `, shared from ${sharedFrom}` : ''}, total FAIR index ${fmtPct(total)}.`);
+  setStatus(`Done — ${sampleNote}${singleDoi ? '' : ` record${records.length===1?'':'s'}`}${sharedFrom ? `, shared from ${sharedFrom}` : ''}, total FAIR index ${fmtPct(total)}.`);
+}
+// A single DOI can be scored on its own (like Re-Curation Watch) — fetch just that record and
+// analyse it as a one-record sample of its repository.
+const isDOI = v => /^(https?:\/\/(dx\.)?doi\.org\/)?10\.\d{4,}\/\S+$/i.test(String(v || '').trim());
+const parseDOI = v => String(v || '').trim().replace(/^https?:\/\/(dx\.)?doi\.org\//i, '');
+async function runSingleDoi(doi){
+  closeAutocomplete();
+  try { const u = new URL(location.href); u.searchParams.set('doi', doi); ['client','resource-type','resourceType','query','max','random','input'].forEach(k => u.searchParams.delete(k)); history.replaceState({}, '', u); } catch (e){ /* non-fatal */ }
+  $('repo-go').disabled = true; startTips();
+  try {
+    setStatus('Fetching one DOI…'); setProgressIndeterminate();
+    const res = await fetch(`${API_BASE}/dois/${encodeURIComponent(doi)}?affiliation=true&publisher=true`);   // objects, not strings — scoring needs them
+    if (!res.ok) throw new Error(res.status === 404 ? `DOI not found: ${doi}` : `DataCite returned ${res.status} for ${doi}`);
+    const rec = (await res.json()).data;
+    if (!rec || !rec.attributes) throw new Error(`No record returned for ${doi}.`);
+    const clientId = (rec.relationships && rec.relationships.client && rec.relationships.client.data && rec.relationships.client.data.id) || '';
+    if (clientId){
+      $('activity-link').href = 'repo-activity.html?client=' + encodeURIComponent(clientId);
+      $('connectivity-link').href = 'metadataConnectivity.html?client=' + encodeURIComponent(clientId);
+      $('history-link').href = historyHref(clientId, '', '');
+    }
+    await analyze(clientId, [rec], null, false, '', '', null, doi);   // repoTotal null → show the repo's real DOI count
+  } catch (e){ console.error(e); hideProgress(); setStatus(e.message || String(e), true); }
+  finally { stopTips(); $('repo-go').disabled = false; }
 }
 async function run(){
-  const clientId = $('repo-input').value.trim();
+  const input = $('repo-input').value.trim();
+  if (!input) return;
+  if (isDOI(input)){ await runSingleDoi(parseDOI(input)); return; }   // a single DOI → score just that record
+  const clientId = input;
   const cap = Math.max(1, Math.min(10000, parseInt($('cap').value,10) || 200));
   const random = $('random').checked;
   const resourceTypeId = $('resource-type').value;
   const query = $('query-input').value.trim();
-  if (!clientId) return;
   $('activity-link').href = 'repo-activity.html?client=' + encodeURIComponent(clientId);   // carry repo to the activity app
   $('connectivity-link').href = 'metadataConnectivity.html?client=' + encodeURIComponent(clientId);
   $('history-link').href = historyHref(clientId, resourceTypeId, query);                    // carry repo + filters to Repository History
@@ -1561,7 +1589,7 @@ function closeAutocomplete(){ $('repo-autocomplete').classList.remove('open'); a
 $('repo-input').addEventListener('input', () => {
   const q = $('repo-input').value.trim();
   clearTimeout(acTimer);
-  if (q.length < 2){ closeAutocomplete(); return; }
+  if (q.length < 2 || isDOI(q)){ closeAutocomplete(); return; }   // a DOI is analysed directly, not searched as a repo
   $('repo-autocomplete').innerHTML = '<div class="repo-ac-loading">Searching…</div>';
   $('repo-autocomplete').classList.add('open');
   acTimer = setTimeout(async () => showAutocomplete(await searchClients(q)), 300);
@@ -1641,7 +1669,7 @@ $('connectivity-link').addEventListener('click', ev => {
   shareSampleOpen('metadataConnectivity.html', 'metadata-connectivity-input',
     { source: 'completeness', sharedFrom: l.sharedFrom,   // carry the original provenance (e.g. Repository History · registered 2019) through the chain
       records: l.records, clientId: l.clientId, repoName: l.repoName, repoTotal: l.repoTotal,
-      random: l.random, resourceTypeId: l.resourceTypeId, query: l.query },
+      random: l.random, resourceTypeId: l.resourceTypeId, query: l.query, singleDoi: l.singleDoi },
     'metadataConnectivity.html?client=' + encodeURIComponent(l.clientId)
       + (l.resourceTypeId ? '&resource-type=' + encodeURIComponent(l.resourceTypeId) : '')
       + (l.query ? '&query=' + encodeURIComponent(l.query) : '')
@@ -1730,13 +1758,17 @@ whenJqReady().then(async ()=>{
       (async () => {
         $('repo-go').disabled = true;
         startTips();
-        try { await analyze(s.clientId, s.records, s.repoTotal, !!s.random, s.resourceTypeId || '', s.query || '', s.sharedFrom || 'Metadata Connectivity'); }
+        try { await analyze(s.clientId, s.records, s.repoTotal, !!s.random, s.resourceTypeId || '', s.query || '', s.sharedFrom || 'Metadata Connectivity', s.singleDoi); }
         catch (e){ console.error(e); hideProgress(); setStatus(e.message || String(e), true); }
         finally { stopTips(); $('repo-go').disabled = false; }
       })();
     } else {
+      const doiParam = params.get('doi');
       const clientFromUrl = params.get('client');
-      if (clientFromUrl){
+      if (doiParam){
+        $('repo-input').value = doiParam;
+        runSingleDoi(parseDOI(doiParam));
+      } else if (clientFromUrl){
         $('repo-input').value = clientFromUrl;
         const rt = params.get('resource-type') || params.get('resourceType');
         if (rt && [...$('resource-type').options].some(o => o.value === rt)) $('resource-type').value = rt;
