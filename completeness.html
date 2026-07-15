@@ -217,7 +217,7 @@
     </div>
     <div class="topbar-links">
       <div class="topbar-col">
-      <a href="index.html" target="_blank" rel="noopener">Re-Curation Watch ↗</a>
+      <a id="rcw-link" href="index.html" target="_blank" rel="noopener">Re-Curation Watch ↗</a>
       <a id="connectivity-link" href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity ↗</a>
       <a id="activity-link" href="repo-activity.html" target="_blank" rel="noopener">Repository Activity ↗</a>
       <a id="history-link" href="repositoryHistory.html" target="_blank" rel="noopener">Repository History ↗</a>
@@ -1455,6 +1455,8 @@ function historyHref(clientId, resourceTypeId, query){
     + (resourceTypeId ? '&resource-type=' + encodeURIComponent(resourceTypeId) : '')
     + (query ? '&query=' + encodeURIComponent(query) : '');
 }
+// Re-Curation Watch link: a single DOI opens that DOI's curation history; a repository opens its DOIs.
+const rcwHref = (clientId, doi) => doi ? ('index.html?doi=' + encodeURIComponent(doi)) : ('index.html?client=' + encodeURIComponent(clientId));
 function syncUrl(clientId, resourceTypeId, query){
   try {
     const url = new URL(location.href);
@@ -1498,10 +1500,13 @@ async function runSingleDoi(doi){
   $('repo-go').disabled = true; startTips();
   try {
     setStatus('Fetching one DOI…'); setProgressIndeterminate();
-    const res = await fetch(`${API_BASE}/dois/${encodeURIComponent(doi)}?affiliation=true&publisher=true`);   // objects, not strings — scoring needs them
+    const apiUrl = `${API_BASE}/dois/${encodeURIComponent(doi)}?affiliation=true&publisher=true`;   // objects, not strings — scoring needs them
+    showApiUrl(apiUrl, 1, false);
+    const res = await fetch(apiUrl);
     if (!res.ok) throw new Error(res.status === 404 ? `DOI not found: ${doi}` : `DataCite returned ${res.status} for ${doi}`);
     const rec = (await res.json()).data;
     if (!rec || !rec.attributes) throw new Error(`No record returned for ${doi}.`);
+    $('rcw-link').href = rcwHref('', doi);   // Re-Curation Watch shows this DOI's curation history
     const clientId = (rec.relationships && rec.relationships.client && rec.relationships.client.data && rec.relationships.client.data.id) || '';
     if (clientId){
       $('activity-link').href = 'repo-activity.html?client=' + encodeURIComponent(clientId);
@@ -1521,6 +1526,7 @@ async function run(){
   const random = $('random').checked;
   const resourceTypeId = $('resource-type').value;
   const query = $('query-input').value.trim();
+  $('rcw-link').href = rcwHref(clientId);                                                   // carry repo to Re-Curation Watch
   $('activity-link').href = 'repo-activity.html?client=' + encodeURIComponent(clientId);   // carry repo to the activity app
   $('connectivity-link').href = 'metadataConnectivity.html?client=' + encodeURIComponent(clientId);
   $('history-link').href = historyHref(clientId, resourceTypeId, query);                    // carry repo + filters to Repository History
@@ -1743,6 +1749,7 @@ whenJqReady().then(async ()=>{
       if (s.query) $('query-input').value = s.query;
       $('cap').value = Math.min(10000, s.records.length);
       $('random').checked = !!s.random;
+      $('rcw-link').href = rcwHref(s.clientId, s.singleDoi);
       $('activity-link').href = 'repo-activity.html?client=' + encodeURIComponent(s.clientId);
       $('connectivity-link').href = 'metadataConnectivity.html?client=' + encodeURIComponent(s.clientId);
       $('history-link').href = historyHref(s.clientId, s.resourceTypeId || '', s.query || '');
