@@ -64,6 +64,7 @@
   .hero-query::placeholder{color:#a99bbf}
   .hero-select:focus,.hero-num:focus,.hero-query:focus{border-color:#9167b0}
   .hero-chk{display:flex;align-items:center;gap:.3rem;font-size:.72rem;color:#5b3d7a;cursor:pointer}
+  .hero-sample{display:flex;align-items:center;gap:1rem;flex-basis:100%}   /* Max + Random sample together on their own row */
   /* keep each label with its control so they wrap as one unit */
   .hero-field{display:flex;align-items:center;gap:.4rem}
   .hero-field.grow{flex:1;min-width:180px}
@@ -270,11 +271,13 @@
         <span class="hero-secondary-label">Query</span>
         <input class="hero-query" id="query-input" type="text" placeholder="e.g. publicationYear:2024" spellcheck="false" autocomplete="off" />
         </span>
-        <span class="hero-field">
-        <span class="hero-secondary-label">Max</span>
-        <input class="hero-num" id="cap" type="number" value="200" min="1" max="10000" />
+        <span class="hero-sample">
+          <span class="hero-field">
+          <span class="hero-secondary-label">Max</span>
+          <input class="hero-num" id="cap" type="number" value="200" min="1" max="10000" />
+          </span>
+          <label class="hero-chk"><input type="checkbox" id="random" checked /> Random sample</label>
         </span>
-        <label class="hero-chk"><input type="checkbox" id="random" checked /> Random sample</label>
       </div>
       <div class="hero-help"><a href="https://support.datacite.org/docs/queries" target="_blank" rel="noopener" title="How to write DataCite query expressions">Using DataCite Queries ↗</a></div>
     </div>
