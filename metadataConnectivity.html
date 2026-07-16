@@ -1330,7 +1330,7 @@ function collectPeople(records){
     if (!name) return;
     let e = map.get(name);
     if (!e){ e = { name, occ:0, id:0, ids:new Map(), sources:new Set(), docs:new Map() }; map.set(name, e); }
-    e.occ++; if (idvals.length) e.id++;
+    e.occ++; if (idvals.length){ e.id++; noteIdDoc(e, r); }
     for (const v of idvals) e.ids.set(idKey(v), idDisplay(v));
     e.sources.add(source); noteDoc(e, r);
   };
@@ -1355,7 +1355,7 @@ function collectAffiliations(records){
     if (!name) return;
     let e = map.get(name);
     if (!e){ e = { name, occ:0, id:0, ids:new Map(), sources:new Set(), docs:new Map() }; map.set(name, e); }
-    e.occ++; if (idval){ e.id++; e.ids.set(idKey(idval), idDisplay(idval)); }
+    e.occ++; if (idval){ e.id++; e.ids.set(idKey(idval), idDisplay(idval)); noteIdDoc(e, r); }
     e.sources.add(source); noteDoc(e, r);
   };
   for (const r of records){
@@ -1389,7 +1389,7 @@ function collectRights(records){
     if (!name || !isLicenseLike(name)) return;
     let e = map.get(name);
     if (!e){ e = { name, occ:0, id:0, ids:new Map(), sources:new Set(), docs:new Map() }; map.set(name, e); }
-    e.occ++; if (idvals.length) e.id++;
+    e.occ++; if (idvals.length){ e.id++; noteIdDoc(e, r); }
     for (const v of idvals) e.ids.set(ridKey(v), ridDisplay(v));
     noteDoc(e, r);
   };
@@ -1468,7 +1468,8 @@ function clusterEntities(entities, sim){
       totalOcc, totalId,
       propagatable: totalId > 0 ? totalOcc - totalId : 0,
       variants: members.map(m => ({ name: m.name, occ: m.occ, id: m.id, sources: [...m.sources], identifier: [...m.ids.values()].join('; '),
-                                    docs: [...m.docs].map(([doi, title]) => ({ doi, title })) }))
+                                    docs: [...m.docs].map(([doi, title]) => ({ doi, title })),
+                                    idDocs: [...(m.idDocs || [])].map(([doi, title]) => ({ doi, title })) }))
     });
   }
   clusters.sort((a, b) => a.canonical.localeCompare(b.canonical, undefined, { sensitivity:'base' }));   // A–Z by name, for findability
@@ -1517,10 +1518,11 @@ function idHtml(joined){
 function dupClusterMarkup(cl, entLabel, pool, ci){
   const rows = cl.variants.map((v, vi) =>
     `<tr><td class="val">${escHtml(v.name)}</td>` +
-    `<td class="num">${v.docs && v.docs.length ? `<a class="dup-doc-link" data-pool="${pool}" data-ci="${ci}" data-vi="${vi}" title="List the DOIs where this spelling occurs">${v.occ.toLocaleString()}</a>` : v.occ.toLocaleString()}</td>` +
-    `<td class="num">${v.id.toLocaleString()}</td><td class="val">${escHtml(v.sources.join(', '))}</td><td class="val">${idHtml(v.identifier)}</td></tr>`).join('');
+    `<td class="num">${v.docs && v.docs.length ? `<a class="dup-doc-link" data-set="docs" data-pool="${pool}" data-ci="${ci}" data-vi="${vi}" title="List the DOIs where this spelling occurs">${v.occ.toLocaleString()}</a>` : v.occ.toLocaleString()}</td>` +
+    `<td class="num">${v.idDocs && v.idDocs.length ? `<a class="dup-doc-link" data-set="idDocs" data-pool="${pool}" data-ci="${ci}" data-vi="${vi}" title="List the records where this spelling carries an identifier — inspect these for incorrect identifiers">${v.id.toLocaleString()}</a>` : v.id.toLocaleString()}</td>` +
+    `<td class="val">${escHtml(v.sources.join(', '))}</td><td class="val">${idHtml(v.identifier)}</td></tr>`).join('');
   return `<details class="dup-cl"><summary><span class="dup-canon">${escHtml(cl.canonical)}</span> <span class="dup-count">${cl.variants.length} spellings · ${cl.totalOcc.toLocaleString()} occ</span> ${dupBadges(cl)}</summary>
-    <table class="cd-table"><thead><tr><th>${escHtml(entLabel)}</th><th class="num">Occ</th><th class="num">Identified</th><th>Source</th><th>Identifier</th></tr></thead><tbody>${rows}</tbody></table></details>`;
+    <table class="cd-table"><thead><tr><th>${escHtml(entLabel)}</th><th class="num">Occurrences</th><th class="num">Identified</th><th>Source</th><th>Identifier</th></tr></thead><tbody>${rows}</tbody></table></details>`;
 }
 function dupSortMode(){ const el = $('dup-sort'); return el ? el.value : 'name'; }
 function sortClusters(clusters, mode){
@@ -1550,7 +1552,7 @@ function renderDupBody(){      // sort by the current toggle and build the DOM (
                           + section('Affiliations', dup.affiliations, 'Affiliation', 'affiliations')
                           + section('Rights statements', dup.rights, 'Rights statement', 'rights');
   $('dup-body').querySelectorAll('.dup-doc-link').forEach(el =>
-    el.addEventListener('click', () => openDupDocs(el.dataset.pool, +el.dataset.ci, +el.dataset.vi)));
+    el.addEventListener('click', () => openDupDocs(el.dataset.pool, +el.dataset.ci, +el.dataset.vi, el.dataset.set || 'docs')));
   $('dup-card').style.display = '';
 }
 
@@ -1577,14 +1579,17 @@ function openDocsModal(name, docs, subContext, cap){
     : '<div style="padding:1rem;color:#6b7280;font-size:.8rem">No DOIs recorded.</div>';
   $('dd-modal').style.display = 'flex';
 }
-function openDupDocs(pool, ci, vi){
+function openDupDocs(pool, ci, vi, set){
   const dup = lastRun && lastRun.duplicates;
   const v = dup && dup[pool] && dup[pool][ci] && dup[pool][ci].variants[vi];
   if (!v) return;
   const poolLabel = { people:'people', affiliations:'affiliations', rights:'rights statements' }[pool] || pool;
+  const idSet = set === 'idDocs';
+  const docs = idSet ? v.idDocs : v.docs;
+  const ctx = idSet ? `${poolLabel} · records with identifier` : poolLabel;
   // variants are sorted by occurrence descending — cap only the dominant (index 0) spelling; the point is
   // drilling into the *less* common spellings (the inconsistencies), which stay uncapped.
-  openDocsModal(v.name, v.docs, poolLabel, vi === 0 ? DUP_DOC_CAP : 0);
+  openDocsModal(v.name, docs, ctx, vi === 0 ? DUP_DOC_CAP : 0);
 }
 function closeDupDocs(){ $('dd-modal').style.display = 'none'; dupDocsState = null; }
 async function dupDocsCopy(){
