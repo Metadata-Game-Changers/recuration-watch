@@ -31,7 +31,7 @@
       },
       {
         "concept": "Resource Identifier",
-        "jq_query": ".data[] | select((.attributes | type == \"object\") and (.attributes | has(\"doi\") and .doi != null) or (.attributes.identifiers | type == \"array\") and (.attributes.identifiers | length > 0) and any((.attributes.identifiers // [])[]; type == \"object\" and has(\"identifier\") and .identifier != null)) | {id: .id, concept: \"Resource Identifier\", count: ((.attributes.identifier // null) + ([(.attributes.identifiers // [])[] | select(type == \"object\" and has(\"identifier\") and .identifier != null)]) | length), values: ((.attributes.identifier // null) + ([(.attributes.identifiers // [])[] | select(type == \"object\" and has(\"identifier\") and .identifier != null) | .identifier]))}"
+        "jq_query": ".data[] | select((.attributes | type == \"object\") and (.attributes | has(\"doi\") and .doi != null) or (.attributes.identifiers | type == \"array\") and (.attributes.identifiers | length > 0) and any((.attributes.identifiers // [])[]; type == \"object\" and has(\"identifier\") and .identifier != null)) | {id: .id, concept: \"Resource Identifier\", count: (([.attributes.doi] + [(.attributes.identifiers // [])[] | select(type == \"object\" and has(\"identifier\") and .identifier != null) | .identifier] | map(select(. != null))) | length), values: ([.attributes.doi] + [(.attributes.identifiers // [])[] | select(type == \"object\" and has(\"identifier\") and .identifier != null) | .identifier] | map(select(. != null)))}"
       },
       {
         "concept": "Resource Publication Date",
