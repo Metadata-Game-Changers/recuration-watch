@@ -1,0 +1,2364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Re-Curation Watch</title>
+  <link rel="icon" type="image/png" href="favicon_MGC.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@400;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --white:   #ffffff;
+      --off:     #f5f5f4;
+      --rule:    #d6d3d1;
+      --rule-dk: #a8a29e;
+      --ink:     #1c1917;
+      --sub:     #57534e;
+      --faint:   #78716c;
+      --red:     #c0392b;
+      --red-bg:  #fef2f2;
+      --green:   #16653a;
+      --green-bg:#f0fdf4;
+      --blue:    #1d4ed8;
+      --blue-bg: #eff6ff;
+      --amber:   #92400e;
+      --amber-bg:#fffbeb;
+      --sans:    'Inter', system-ui, sans-serif;
+      --mono:    'IBM Plex Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--white);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── Top bar ─────────────────────────────────── */
+    .topbar {
+      border-bottom: 2px solid var(--ink);
+      padding: 0 2rem;
+    }
+    .topbar-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+    }
+    .topbar-brand {
+      padding: 0.5rem 2rem 0.3rem 0;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-end;
+      gap: 1rem;
+    }
+    .brand-logo {
+      height: 64px;
+      width: auto;
+      display: block;
+      flex-shrink: 0;
+    }
+    .brand-title-wrap { display: flex; flex-direction: column; justify-content: flex-end; padding-bottom: 0.15rem; align-items: flex-start; }
+    .brand-tool-name {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 2rem;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      color: #673289;
+      line-height: 1;
+      white-space: nowrap;
+      text-align: left;
+      text-transform: uppercase;
+    }
+    .brand-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      display: none;
+    }
+    .brand-sub {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--faint);
+    }
+
+    .topbar-links {
+      padding: 0 0 0 1.5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.25rem;
+      margin-left: auto;
+    }
+    .topbar-links a {
+      font-size: 0.72rem;
+      color: var(--sub);
+      text-decoration: none;
+      white-space: nowrap;
+      line-height: 1;
+    }
+    .topbar-links a:hover { color: var(--red); }
+
+    /* ── Hero ───────────────────────────────────── */
+    .hero {
+      background: #f0eaf5;
+      border-bottom: 2px solid #9167b0;
+      padding: 1.75rem 2rem;
+    }
+    .hero-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 2.5rem;
+      flex-wrap: wrap;
+    }
+    .hero-text { flex: 1; min-width: 200px; }
+    .hero-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #5b3d7a;
+      line-height: 1.2;
+      margin-bottom: 0.3rem;
+      letter-spacing: -0.01em;
+    }
+    .hero-sub {
+      font-size: 0.78rem;
+      color: var(--sub);
+      line-height: 1.5;
+      max-width: 340px;
+    }
+    .hero-search {
+      flex: 1;
+      min-width: 280px;
+      position: relative;
+    }
+    .hero-form {
+      display: flex;
+      border: 2px solid #9167b0;
+      background: var(--white);
+    }
+    .hero-input {
+      flex: 1;
+      border: none !important;
+      padding: 0.6rem 0.85rem !important;
+      font-size: 0.85rem !important;
+      width: auto !important;
+      outline: none;
+      font-family: var(--sans) !important;
+      color: var(--ink);
+      background: transparent;
+    }
+    .hero-input::placeholder { color: var(--rule-dk); }
+    .hero-go {
+      border: none !important;
+      border-left: 2px solid #9167b0 !important;
+      background: #9167b0 !important;
+      color: var(--white) !important;
+      padding: 0.6rem 1.1rem !important;
+      font-size: 0.82rem !important;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: var(--sans);
+    }
+    .hero-go:hover { background: #7a52a0 !important; }
+    .hero-hints {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.45rem;
+      font-size: 0.7rem;
+      color: var(--faint);
+      flex-wrap: wrap;
+    }
+    .hero-hint { font-size: 0.7rem; color: var(--faint); }
+    .hero-hint a { color: var(--blue); text-decoration: none; }
+    .hero-hint a:hover { text-decoration: underline; }
+    .hero-secondary {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .hero-select {
+      border: 1px solid rgba(145,103,176,0.4);
+      background: rgba(255,255,255,0.85);
+      padding: 0.32rem 0.6rem;
+      font-family: var(--sans);
+      font-size: 0.75rem;
+      color: var(--ink);
+      outline: none;
+      cursor: pointer;
+      flex: 1;
+    }
+    .hero-select:focus { border-color: #9167b0; }
+    .hero-query-input {
+      border: 1px solid rgba(145,103,176,0.4);
+      background: rgba(255,255,255,0.85);
+      padding: 0.32rem 0.6rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--ink);
+      outline: none;
+      flex: 2;
+      min-width: 0;
+    }
+    .hero-query-input:focus { border-color: #9167b0; }
+    .hero-query-input::placeholder { color: var(--faint); }
+    .hero-secondary-label {
+      font-size: 0.65rem;
+      color: rgba(103,50,137,0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    /* ── Repo stats strip ───────────────────────── */
+    .repo-stats-strip {
+      border-bottom: 1px solid var(--rule);
+      padding: 0 2rem;
+      background: var(--white);
+    }
+    .repo-stats-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      padding: 0.6rem 0;
+      flex-wrap: wrap;
+    }
+    .repo-stats-name {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--ink);
+      border-right: 1px solid var(--rule);
+      padding-right: 1.5rem;
+      white-space: nowrap;
+    }
+    .repo-stats-nums {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .rstat {
+      display: flex;
+      align-items: baseline;
+      gap: 0.35rem;
+    }
+    .rstat-spark {
+      flex-direction: row;
+      align-items: flex-end;
+      gap: 0.5rem;
+    }
+    .spark-bar {
+      display: flex;
+      align-items: flex-end;
+      gap: 1px;
+      height: 24px;
+      min-width: 80px;
+    }
+    .spark-seg {
+      flex: 1;
+      min-width: 3px;
+      background: #9167b0;
+      border-radius: 1px 1px 0 0;
+      cursor: default;
+      opacity: 0.7;
+      transition: opacity 0.1s;
+    }
+    .spark-seg:hover { opacity: 1; }
+
+    /* Inline version bar on DOI card */
+    .version-bar-wrap {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-left: 0.8rem;
+      vertical-align: middle;
+    }
+    .version-bar-track {
+      width: 48px;
+      height: 4px;
+      background: var(--rule);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .version-bar-fill {
+      height: 100%;
+      background: #9167b0;
+      border-radius: 2px;
+    }
+    .rstat-n {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+    }
+    .rstat-l {
+      font-size: 0.65rem;
+      color: var(--faint);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+    }
+
+    /* ── Toolbar ─────────────────────────────────── */
+    .toolbar {
+      border-bottom: 1px solid var(--rule);
+      padding: 0 2rem;
+      background: var(--off);
+    }
+    .toolbar-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0;
+      flex-wrap: wrap;
+    }
+    .tb-label {
+      font-size: 0.7rem;
+      color: var(--faint);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+    .tb-input {
+      border: 1px solid var(--rule);
+      background: var(--white);
+      padding: 0.38rem 0.65rem;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--ink);
+      outline: none;
+      min-width: 220px;
+    }
+    .tb-input:focus { border-color: var(--ink); }
+    .tb-select {
+      border: 1px solid var(--rule);
+      background: var(--white);
+      padding: 0.38rem 0.65rem;
+      font-family: var(--sans);
+      font-size: 0.75rem;
+      color: var(--ink);
+      outline: none;
+      cursor: pointer;
+    }
+    .tb-select:focus { border-color: var(--ink); }
+    .tb-sep { width: 1px; height: 1.4rem; background: var(--rule); }
+    .tb-sort-label {
+      font-size: 0.7rem;
+      color: var(--faint);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .sort-group { display: flex; gap: 0; }
+    .sort-opt {
+      border: 1px solid var(--rule);
+      background: var(--white);
+      padding: 0.38rem 0.7rem;
+      font-size: 0.72rem;
+      color: var(--sub);
+      cursor: pointer;
+      margin-left: -1px;
+    }
+    .sort-opt:first-child { margin-left: 0; }
+    .sort-opt.active {
+      background: var(--ink);
+      color: var(--white);
+      border-color: var(--ink);
+      z-index: 1;
+    }
+    .sort-opt:hover:not(.active) { background: var(--off); }
+
+    /* ── Main ────────────────────────────────────── */
+    .main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 0 2rem 4rem;
+    }
+    .list-meta {
+      font-size: 0.72rem;
+      color: var(--faint);
+      padding: 0.75rem 0 0.5rem;
+      border-bottom: 1px solid var(--rule);
+      margin-bottom: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ── DOI rows ────────────────────────────────── */
+    .doi-row {
+      border-bottom: 1px solid var(--rule);
+    }
+    .doi-row-main {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      padding: 0.9rem 0;
+      cursor: pointer;
+      align-items: start;
+    }
+    .doi-row-main:hover .doi-title { color: var(--red); }
+
+    .doi-title {
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--ink);
+      line-height: 1.35;
+      transition: color 0.12s;
+      margin-bottom: 0.2rem;
+    }
+    .doi-creators {
+      font-size: 0.75rem;
+      color: var(--sub);
+      margin-bottom: 0.3rem;
+    }
+    .doi-meta-line {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .doi-badge {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      padding: 0.08rem 0.4rem;
+      border: 1px solid var(--rule);
+      color: var(--sub);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .badge-type  { border-color: #c7d2fe; color: var(--blue); background: #f0f4ff; }
+    .badge-year  { border-color: var(--rule-dk); color: var(--sub); }
+    .badge-schema { border-color: #bbf7d0; color: var(--green); background: var(--green-bg); }
+
+    .doi-identifier {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--faint);
+      margin-top: 0.3rem;
+    }
+    .doi-identifier a { color: var(--blue); text-decoration: none; }
+    .doi-identifier a:hover { text-decoration: underline; }
+    .doi-counts {
+      font-size: 0.65rem;
+      color: var(--faint);
+      margin-top: 0.25rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .doi-counts span { margin-right: 0.9rem; }
+    .tip {
+      position: relative;
+      cursor: help;
+      border-bottom: 1px dotted var(--rule-dk);
+    }
+    .tip::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: 125%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: var(--white);
+      font-size: 0.65rem;
+      padding: 0.3rem 0.6rem;
+      white-space: nowrap;
+      border-radius: 2px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s;
+      z-index: 10;
+    }
+    .tip:hover::after { opacity: 1; }
+
+    .toggle-btn {
+      font-size: 0.7rem;
+      font-family: var(--mono);
+      color: var(--faint);
+      background: none;
+      border: 1px solid var(--rule);
+      padding: 0.3rem 0.6rem;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      align-self: start;
+      margin-top: 0.15rem;
+    }
+    .toggle-btn:hover { border-color: var(--red); color: var(--red); }
+    .toggle-btn.open  { border-color: var(--ink); color: var(--ink); background: var(--ink); color: var(--white); }
+
+    /* ── Activity panel ──────────────────────────── */
+    .act-panel {
+      display: none;
+      background: var(--off);
+      border-top: 1px solid var(--rule);
+      padding: 1rem 0 1.25rem;
+    }
+    .act-panel.open { display: block; }
+
+    .act-header {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--faint);
+      margin-bottom: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .act-filter-btns {
+      display: flex;
+      gap: 0;
+      margin-left: auto;
+    }
+    .act-filter-btn {
+      font-size: 0.65rem;
+      font-family: var(--mono);
+      background: none;
+      border: 1px solid var(--rule);
+      padding: 0.2rem 0.5rem;
+      cursor: pointer;
+      color: var(--faint);
+      margin-left: -1px;
+    }
+    .act-filter-btn:hover { border-color: var(--sub); color: var(--sub); }
+    .act-filter-btn.active { background: var(--ink); color: var(--white); border-color: var(--ink); z-index: 1; }
+    .act-header a {
+      font-family: var(--mono);
+      color: var(--blue);
+      text-decoration: none;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.65rem;
+    }
+    .act-header a:hover { text-decoration: underline; }
+
+    /* Pulse bar */
+    /* Section change timeline — one bar per metadata section, hue shifts on each change */
+    .sec-tl { margin: 0 0 1.15rem; }
+    .stl-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.6rem; }
+    .stl-cap { flex: 1; font-size: 0.68rem; color: var(--faint); line-height: 1.45; margin: 0; }
+    .stl-ctrl { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 0.4rem; }
+    .stl-toggle { display: inline-flex; }
+    .stl-tg, .stl-xbtn { font-family: var(--mono); font-size: 0.58rem; background: none; border: 1px solid var(--rule); color: var(--faint); padding: 0.16rem 0.5rem; cursor: pointer; }
+    .stl-tg + .stl-tg { margin-left: -1px; }
+    .stl-tg:hover, .stl-xbtn:hover { color: var(--sub); border-color: var(--rule-dk); }
+    .stl-tg.active { background: var(--ink); color: var(--white); border-color: var(--ink); }
+    .stl-grid { display: flex; flex-direction: column; gap: 2px; }
+    .stl-row { display: flex; align-items: center; gap: 0.5rem; }
+    .stl-label {
+      flex: 0 0 118px; width: 118px; font-family: var(--mono); font-size: 0.62rem;
+      color: var(--sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      display: flex; justify-content: flex-end; align-items: center; gap: 0.3rem;
+    }
+    .stl-track { flex: 1; display: flex; gap: 0; min-width: 0; }   /* no inter-cell gap → no vertical gridlines; changes shown by the white tick only */
+    .stl-seg { flex: var(--g, 1) 1 0; min-width: 5px; height: 15px; border-radius: 1px; }
+    .sec-tl.by-events .stl-seg { flex: 1 1 0; }   /* Events mode: equal width per event */
+    .stl-seg.absent { background: repeating-linear-gradient(45deg,#f0eeec,#f0eeec 3px,#e5e2df 3px,#e5e2df 6px); }
+    .stl-seg.chg { box-shadow: inset 2.5px 0 0 rgba(255,255,255,0.9); }       /* white tick marks the change point */
+    .stl-seg.born { box-shadow: inset 0 0 0 1.5px rgba(255,255,255,0.65); }   /* section first appears mid-history */
+    .stl-badge { font-family: var(--mono); font-size: 0.54rem; color: var(--faint); background: var(--off); border-radius: 3px; padding: 0 0.22rem; }
+    .stl-dates { display: flex; gap: 0.5rem; margin-top: 0.3rem; }
+    .stl-datestrack { flex: 1; display: flex; justify-content: space-between; font-family: var(--mono); font-size: 0.56rem; color: var(--faint); }
+    .stl-legend { display: flex; flex-wrap: wrap; gap: 0.3rem 0.9rem; margin-top: 0.6rem; font-size: 0.6rem; color: var(--faint); }
+    .stl-lg { display: inline-flex; align-items: center; gap: 0.3rem; }
+    .stl-sw { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
+    .stl-sw.absent { background: repeating-linear-gradient(45deg,#f0eeec,#f0eeec 3px,#e5e2df 3px,#e5e2df 6px); }
+
+    /* Timeline table layout */
+    .tl-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .tl-table td {
+      padding: 0.45rem 0.75rem 0.45rem 0;
+      vertical-align: top;
+      border-top: 1px solid var(--rule);
+      font-size: 0.75rem;
+    }
+    .tl-table tr:first-child td { border-top: none; }
+    .tl-col-date {
+      width: 110px;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--faint);
+      white-space: nowrap;
+    }
+    .tl-col-dot { width: 20px; }
+    .tl-dot-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 0.3rem;
+    }
+    .tl-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .tl-col-action { width: 80px; }
+    .act-label {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+    .act-summary {
+      font-size: 0.78rem;
+      color: var(--sub);
+      line-height: 1.4;
+    }
+    .act-summary strong { color: var(--ink); font-weight: 600; }
+    .act-toggle {
+      font-size: 0.7rem;
+      color: var(--blue);
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      margin-top: 0.3rem;
+      display: block;
+      font-family: var(--sans);
+    }
+    .act-toggle:hover { text-decoration: underline; }
+    .act-detail { display: none; margin-top: 0.5rem; }
+    .act-detail.open { display: block; }
+    .act-v {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--faint);
+    }
+    .tl-col-changes { }
+
+    /* Before/after diff */
+    .diff-block { display: flex; flex-direction: column; gap: 0.3rem; }
+    .diff-row {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 0.5rem;
+      align-items: start;
+    }
+    .diff-field {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--faint);
+      padding-top: 0.15rem;
+      line-height: 1.3;
+    }
+    .diff-values {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.67rem;
+    }
+    .diff-before {
+      background: var(--red-bg);
+      color: #991b1b;
+      padding: 0.3rem 0.5rem;
+      text-decoration: line-through;
+      word-break: break-word;
+      white-space: pre-wrap;
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.67rem;
+      margin-bottom: 0.25rem;
+    }
+    .diff-arrow { color: var(--rule-dk); font-size: 0.7rem; display: block; margin: 0.1rem 0; }
+    .diff-after {
+      background: var(--green-bg);
+      color: #166534;
+      padding: 0.3rem 0.5rem;
+      word-break: break-word;
+      white-space: pre-wrap;
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.67rem;
+    }
+    .diff-new {
+      background: var(--blue-bg);
+      color: #1e40af;
+      padding: 0.3rem 0.5rem;
+      word-break: break-word;
+      white-space: pre-wrap;
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.67rem;
+    }
+    .tl-version { display: inline; }
+
+    /* ── Pagination ──────────────────────────────── */
+    .pagination {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-top: 1.5rem;
+    }
+    .page-btn {
+      border: 1px solid var(--rule);
+      background: var(--white);
+      padding: 0.4rem 0.75rem;
+      font-size: 0.72rem;
+      color: var(--sub);
+      cursor: pointer;
+      margin-left: -1px;
+      font-variant-numeric: tabular-nums;
+    }
+    .page-btn:first-child { margin-left: 0; }
+    .page-btn.active { background: var(--ink); color: var(--white); border-color: var(--ink); z-index: 1; }
+    .page-btn:hover:not(.active):not(:disabled) { background: var(--off); }
+    .page-btn:disabled { opacity: 0.35; cursor: default; }
+    .page-ellipsis { border-color: transparent; background: none; opacity: 0.5; padding: 0.4rem 0.4rem; }
+
+    .loading-state, .error-state, .empty-state {
+      padding: 2.5rem 0;
+      font-size: 0.8rem;
+      color: var(--faint);
+    }
+    .error-state { color: var(--red); }
+
+    /* ── Topbar repo section ─────────────────────── */
+    .topbar-repo {
+      padding: 0 1.5rem;
+      border-right: 1px solid var(--rule);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.25rem;
+      position: relative;
+      min-width: 280px;
+    }
+    .repo-label {
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--blue);
+      font-weight: 500;
+    }
+    .repo-below {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .repo-below a {
+      font-size: 0.65rem;
+      color: var(--blue);
+      text-decoration: none;
+    }
+    .repo-below a:hover { text-decoration: underline; }
+
+    /* ── Autocomplete dropdown ───────────────────── */
+    .repo-autocomplete {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--white);
+      border: 1.5px solid var(--ink);
+      border-top: none;
+      z-index: 200;
+      display: none;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .repo-autocomplete.open { display: block; }
+    .repo-ac-item {
+      padding: 0.55rem 0.75rem;
+      cursor: pointer;
+      border-bottom: 1px solid var(--rule);
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+    }
+    .repo-ac-item:last-child { border-bottom: none; }
+    .repo-ac-item:hover, .repo-ac-item.highlighted { background: var(--off); }
+    .repo-ac-name {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--ink);
+    }
+    .repo-ac-id {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      color: var(--faint);
+    }
+    .repo-ac-count {
+      font-family: var(--mono);
+      font-size: 0.6rem;
+      color: var(--blue);
+    }
+    .repo-ac-loading {
+      padding: 0.6rem 0.75rem;
+      font-size: 0.75rem;
+      color: var(--faint);
+      font-style: italic;
+    }
+
+    /* ── Repo switcher ───────────────────────────── */
+    .repo-form {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      border: 1px solid var(--rule);
+      background: var(--white);
+    }
+    .repo-input {
+      border: none;
+      padding: 0.32rem 0.6rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--ink);
+      outline: none;
+      width: 200px;
+      background: transparent;
+    }
+    .repo-input::placeholder { color: var(--faint); }
+    .repo-go {
+      border: none;
+      border-left: 1px solid var(--rule);
+      background: none;
+      padding: 0.32rem 0.55rem;
+      font-size: 0.7rem;
+      color: var(--sub);
+      cursor: pointer;
+      font-family: var(--sans);
+      white-space: nowrap;
+    }
+    .repo-go:hover { background: var(--ink); color: var(--white); }
+    .repo-error {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--red);
+      margin-left: 0.5rem;
+      display: none;
+    }
+    .repo-error.show { display: inline; }
+
+    @media (max-width: 768px) {
+      /* ── Topbar: stack vertically ── */
+      .topbar { padding: 0 1rem; }
+      .topbar-inner {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+      }
+      .topbar-brand {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        border-right: none;
+        border-bottom: 1px solid var(--rule);
+      }
+      .brand-logo { height: 32px; }
+      .brand-tool-name { font-size: 1rem; }
+      .topbar-repo {
+        padding: 0.6rem 0;
+        border-right: none;
+        border-bottom: 1px solid var(--rule);
+      }
+      .repo-form { width: 100%; }
+      .repo-input { width: 100%; min-width: 0; flex: 1; }
+
+      .topbar-links {
+        flex-direction: row;
+        gap: 1rem;
+        padding: 0.6rem 0;
+        margin-left: 0;
+      }
+
+      /* ── Repo stats strip ── */
+      .repo-stats-strip { padding: 0 1rem; }
+      .repo-stats-name { border-right: none; padding-right: 0; width: 100%; }
+
+      /* ── Hero: stack ── */
+      .hero { padding: 1.25rem 1rem; }
+      .hero-inner { flex-direction: column; gap: 1rem; }
+      .hero-text { min-width: 0; }
+      .hero-search { min-width: 0; width: 100%; }
+
+      /* ── Toolbar: wrap ── */
+      .toolbar { padding: 0 1rem; }
+      .toolbar-inner { gap: 0.5rem; padding: 0.5rem 0; }
+      .tb-input { min-width: 0; flex: 1; }
+      .tb-sep { display: none; }
+
+      /* ── Main ── */
+      .main { padding: 0 1rem 3rem; }
+
+      /* ── Cards ── */
+      .doi-row-main { grid-template-columns: 1fr; gap: 0.5rem; }
+      .toggle-btn { align-self: start; }
+
+      /* ── Activity diff ── */
+      .diff-row { grid-template-columns: 80px 1fr; }
+
+      .tl-table { display: block; overflow-x: auto; }
+
+      /* ── Pagination ── */
+      .pagination { flex-wrap: wrap; }
+    }
+
+    /* ── Inline loading tips ─────────────────────── */
+    .load-spinner {
+      width: 8px; height: 8px; border-radius: 50%;
+      border: 1.5px solid var(--blue); border-top-color: transparent;
+      animation: spin 0.8s linear infinite;
+      display: inline-block; vertical-align: middle; margin-right: 0.35rem;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .inline-tip { padding: 2rem 0 1rem; }
+    .inline-tip-fetching {
+      font-family: var(--mono); font-size: 0.68rem; color: var(--faint);
+      display: flex; align-items: center; margin-bottom: 1.25rem;
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    .inline-tip-card { border-left: 2px solid var(--ink); padding: 0.4rem 0 0.4rem 1rem; max-width: 480px; }
+    .inline-tip-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--blue); margin-bottom: 0.2rem; }
+    .inline-tip-text { font-size: 0.8rem; color: var(--sub); line-height: 1.5; }
+    .inline-tip-text strong { color: var(--ink); }
+    .inline-tip-link { font-family: var(--mono); font-size: 0.63rem; color: var(--blue); text-decoration: none; display: inline-block; margin-top: 0.35rem; }
+    .inline-tip-link:hover { text-decoration: underline; }
+
+    /* ── Hero purple ──────────────────────────────── */
+    /* (hero CSS already present — just override bg/border/button) */
+
+    /* ── Toolbar two-row ─────────────────────────── */
+    .toolbar-row {
+      max-width: 1040px; margin: 0 auto;
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.5rem 0; flex-wrap: wrap;
+    }
+    .toolbar-filters { border-bottom: 1px solid var(--rule); }
+    .toolbar-sort-row {}
+    .tb-spacer { flex: 1; }
+    .tb-reset { font-size:0.7rem; font-family:var(--sans); background:none; border:1px solid var(--rule); color:var(--faint); padding:0.28rem 0.6rem; cursor:pointer; white-space:nowrap; }
+    .tb-reset:hover { border-color:var(--red); color:var(--red); }
+    .list-meta-inline { font-size: 0.72rem; color: var(--faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .tb-check-wrap { display: flex; align-items: center; gap: 0.35rem; cursor: pointer; white-space: nowrap; }
+    .tb-check { cursor: pointer; accent-color: var(--ink); flex-shrink: 0; }
+    .tb-check-label { font-size: 0.72rem; color: var(--sub); user-select: none; }
+    .tb-check-wrap:hover .tb-check-label { color: var(--ink); }
+    .tb-check:disabled + .tb-check-label { color: var(--rule-dk); cursor: default; }
+    .tb-check-wrap:has(:disabled) { cursor: default; }
+
+    /* ── Analytics banner ──────────────────────── */
+    #analytics-banner {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: var(--ink);
+      color: var(--off);
+      padding: 0.75rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      z-index: 500;
+      font-size: 0.75rem;
+      border-top: 2px solid #444;
+    }
+    #analytics-banner a { color: #93c5fd; }
+    #analytics-banner-btns { display: flex; gap: 0.5rem; }
+    .ab-btn {
+      padding: 0.35rem 0.85rem;
+      font-size: 0.72rem;
+      cursor: pointer;
+      border: 1px solid #666;
+      font-family: var(--sans);
+      background: none;
+      color: var(--off);
+    }
+    .ab-btn-ok { background: var(--white); color: var(--ink); border-color: var(--white); }
+    .ab-btn-ok:hover { background: var(--off); }
+    .ab-btn-no:hover { background: rgba(255,255,255,0.1); }
+  </style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <a href="https://metadatagamechangers.com" target="_blank">
+        <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" />
+      </a>
+      <div class="brand-title-wrap"><div class="brand-tool-name">Re-Curation Watch</div></div>
+      <span class="brand-name" id="brand-name" style="display:none">—</span>
+      <span class="brand-sub" id="brand-sub" style="display:none">—</span>
+    </div>
+    <div class="topbar-links">
+      <a href="https://github.com/Metadata-Game-Changers/recuration-watch/blob/main/README.md" target="_blank">ReadMe ↗</a>
+      <a href="tips.html" target="_blank">Metadata Tips ↗</a>
+      <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank">Feedback ↗</a>
+      <button id="cite-btn" style="background:none;border:none;cursor:pointer;font-size:0.72rem;color:var(--sub);text-decoration:none;font-family:var(--sans);padding:0;text-align:left;">Cite this tool ↗</button>
+      <a id="commons-link" href="https://commons.datacite.org/repositories/sjyq.oozvia" target="_blank" style="display:none"></a>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero" id="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h2 class="hero-title">Explore any DataCite Repository or DOI</h2>
+      <p class="hero-sub">Search by repository name or enter a DataCite client ID to browse its most recently updated DOIs, or enter a specific DataCite DOI to show a single curation history.</p>
+    </div>
+    <div class="hero-search">
+      <div class="hero-form">
+        <input class="repo-input hero-input" id="repo-input" type="text" placeholder="Repository, client ID, DOI, or prefix (e.g. 10.58052)…" spellcheck="false" autocomplete="off" />
+        <button class="repo-go hero-go" id="repo-go">Explore →</button>
+      </div>
+      <div class="repo-autocomplete" id="repo-autocomplete"></div>
+      <div class="hero-secondary">
+        <span class="hero-secondary-label">Type</span>
+        <select class="hero-select" id="hero-resource-type">
+          <option value="">All resource types</option>
+          <option value="audiovisual">Audiovisual</option>
+          <option value="book">Book</option>
+          <option value="book-chapter">Book Chapter</option>
+          <option value="collection">Collection</option>
+          <option value="computational-notebook">Computational Notebook</option>
+          <option value="conference-paper">Conference Paper</option>
+          <option value="conference-proceeding">Conference Proceeding</option>
+          <option value="data-paper">Data Paper</option>
+          <option value="dataset">Dataset</option>
+          <option value="dissertation">Dissertation</option>
+          <option value="event">Event</option>
+          <option value="image">Image</option>
+          <option value="instrument">Instrument</option>
+          <option value="interactive-resource">Interactive Resource</option>
+          <option value="journal">Journal</option>
+          <option value="journal-article">Journal Article</option>
+          <option value="model">Model</option>
+          <option value="other">Other</option>
+          <option value="output-management-plan">Output Management Plan</option>
+          <option value="peer-review">Peer Review</option>
+          <option value="physical-object">Physical Object</option>
+          <option value="preprint">Preprint</option>
+          <option value="project">Project</option>
+          <option value="report">Report</option>
+          <option value="service">Service</option>
+          <option value="software">Software</option>
+          <option value="sound">Sound</option>
+          <option value="standard">Standard</option>
+          <option value="study-registration">Study Registration</option>
+          <option value="text">Text</option>
+          <option value="workflow">Workflow</option>
+        </select>
+        <span class="hero-secondary-label">Query</span>
+        <input class="hero-query-input" id="hero-query" type="text" placeholder="e.g. publicationYear:2024" spellcheck="false" autocomplete="off" />
+      </div>
+      <div class="hero-hints">
+        <span class="repo-error" id="repo-error">Repository not found</span>
+        <span class="hero-hint">Currently viewing: <a id="commons-link-repo" href="https://commons.datacite.org/repositories/sjyq.oozvia" target="_blank" id="current-repo-name">Metadata Game Changers</a></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REPO STATS STRIP -->
+<div class="repo-stats-strip" id="repo-stats-strip" style="display:none">
+  <div class="repo-stats-inner">
+    <span class="repo-stats-name" id="repo-stats-name">—</span>
+    <div class="repo-stats-nums">
+      <span class="rstat"><span class="rstat-n" id="stat-total">—</span><span class="rstat-l">Records</span></span>
+      <span class="rstat"><span class="rstat-n" id="stat-types">—</span><span class="rstat-l">Types</span></span>
+      <span class="rstat"><span class="rstat-n" id="stat-recent">—</span><span class="rstat-l">Latest updated</span></span>
+      <span class="rstat rstat-spark" id="rstat-spark" style="display:none">
+        <div class="spark-bar" id="spark-bar"></div>
+        <span class="rstat-l">Version distribution</span>
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="toolbar-row toolbar-filters">
+    <span class="tb-label">Filter</span>
+    <input class="tb-input" id="search-input" type="search" placeholder="title, creator, DOI…" />
+    <select class="tb-select" id="type-filter"><option value="">All types</option></select>
+    <span class="tb-label">Updated</span>
+    <select class="tb-select" id="year-filter"><option value="">All years</option></select>
+    <span class="tb-label">Min. versions</span>
+    <select class="tb-select" id="version-filter"><option value="0">Any</option></select>
+  </div>
+  <div class="toolbar-row toolbar-sort-row">
+    <span class="tb-sort-label">Sort</span>
+    <div class="sort-group">
+      <button class="sort-opt active" id="sort-updated">Updated</button>
+      <button class="sort-opt" id="sort-year">Published</button>
+      <button class="sort-opt" id="sort-title">Title</button>
+      <button class="sort-opt" id="sort-version">Versions</button>
+    </div>
+    <input type="checkbox" id="recurated-only" style="display:none" />
+    <input type="checkbox" id="created-only" style="display:none" />
+    <button class="tb-reset" id="reset-filters" title="Reset all filters">✕ Reset</button>
+    <div class="tb-spacer"></div>
+    <span class="list-meta-inline" id="list-meta">Loading…</span>
+  </div>
+</div>
+
+<!-- RECORDS -->
+<div class="main">
+  <div id="doi-container"><div class="loading-state" id="loading-tip-container"></div></div>
+  <div class="pagination" id="pagination"></div>
+</div>
+
+<script>
+const API_BASE  = 'https://api.datacite.org';
+const PAGE_SIZE = 50;
+const DEFAULT_CLIENT = 'sjyq.oozvia';
+
+let CLIENT_ID   = DEFAULT_CLIENT;
+let allDOIs     = [];
+let filtered    = [];
+let currentPage = 1;
+let sortKey     = 'updated';
+let expandedDOI = null;
+let loading     = false;
+let versionMin  = 0;
+let maxVersion  = 1;
+let recuratedOnly = false;
+let createdOnly = false;
+async function fetchAllDOIs(resourceTypeId='', extraQuery='') {
+  let results = [], cursor = 1, total = null;
+  while (true) {
+    let url = `${API_BASE}/dois?client-id=${encodeURIComponent(CLIENT_ID)}&page[size]=100&page[number]=${cursor}&sort=-updated`;
+    if (resourceTypeId) url += `&resource-type-id=${encodeURIComponent(resourceTypeId)}`;
+    if (extraQuery) url += `&query=${encodeURIComponent(extraQuery)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`API error ${res.status}`);
+    const json = await res.json();
+    if (total === null) total = json.meta?.total ?? 0;
+    results = results.concat(json.data ?? []);
+    if (results.length >= total || !(json.data?.length)) break;
+    cursor++;
+    if (cursor > 20) break;
+  }
+  return results;
+}
+
+async function fetchActivities(doiId) {
+  try {
+    let results = [], total = null, page = 1;
+    while (true) {
+      const url = `${API_BASE}/dois/${encodeURIComponent(doiId)}/activities?page[size]=100&page[number]=${page}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`${res.status}`);
+      const json = await res.json();
+      if (total === null) total = json.meta?.total ?? 0;
+      const batch = json.data ?? [];
+      results = results.concat(batch);
+      if (!batch.length || results.length >= total) break;
+      page++;
+      if (page > 50) break;
+    }
+    return results;
+  } catch { return null; }
+}
+
+function populateFilters(dois) {
+  const types = [...new Set(dois.map(d => d.attributes?.types?.resourceTypeGeneral).filter(Boolean))].sort();
+  const years = [...new Set(dois.map(d => d.attributes?.updated ? new Date(d.attributes.updated).getFullYear() : null).filter(Boolean))].sort((a,b)=>b-a);
+  const ts = document.getElementById('type-filter');
+  types.forEach(t => { const o=document.createElement('option'); o.value=o.textContent=t; ts.appendChild(o); });
+  const ys = document.getElementById('year-filter');
+  years.forEach(y => { const o=document.createElement('option'); o.value=o.textContent=y; ys.appendChild(o); });
+}
+
+function populateVersionDropdown(baseDois) {
+  const sel = document.getElementById('version-filter');
+  if (!sel) return;
+  const prev = sel.value;
+  const distinctCounts = [...new Set(baseDois.map(d => d.attributes?.metadataVersion ?? 1))].sort((a,b)=>a-b);
+  sel.innerHTML = '<option value="0">Any</option>';
+  distinctCounts.filter(v => v >= 1).forEach(v => {
+    const atLeast = baseDois.filter(d => (d.attributes?.metadataVersion ?? 1) >= v).length;
+    if (atLeast === 0) return;
+    const opt = document.createElement('option');
+    opt.value = v;
+    opt.textContent = v + '+ (' + atLeast + ')';
+    sel.appendChild(opt);
+  });
+  if (prev && sel.querySelector('option[value="'+prev+'"]')) sel.value = prev;
+  else sel.value = '0';
+}
+
+
+function updateSparkline(dois) {
+  // Build version frequency buckets
+  const versions = dois.map(d => d.attributes?.metadataVersion ?? 1).filter(v => v >= 1);
+  if (!versions.length) return;
+  maxVersion = Math.max(...versions);
+
+  // Group into at most 20 buckets
+  const MAX_BUCKETS = 20;
+  const bucketSize = Math.max(1, Math.ceil(maxVersion / MAX_BUCKETS));
+  const buckets = {};
+  versions.forEach(v => {
+    const bucket = Math.floor((v - 1) / bucketSize);
+    buckets[bucket] = (buckets[bucket] || 0) + 1;
+  });
+  const bucketKeys = Object.keys(buckets).map(Number).sort((a,b)=>a-b);
+  const maxCount = Math.max(...Object.values(buckets));
+
+  const bar = document.getElementById('spark-bar');
+  const wrap = document.getElementById('rstat-spark');
+  if (!bar || !wrap) return;
+
+  bar.innerHTML = bucketKeys.map(k => {
+    const count = buckets[k];
+    const h = Math.max(2, Math.round((count / maxCount) * 24));
+    const lo = k * bucketSize + 1;
+    const hi = Math.min((k + 1) * bucketSize, maxVersion);
+    const label = lo === hi ? `v${lo}: ${count} DOIs` : `v${lo}–${hi}: ${count} DOIs`;
+    return `<div class="spark-seg" style="height:${h}px" title="${label}"></div>`;
+  }).join('');
+
+  wrap.style.display = '';
+}
+
+function updateStats(dois) {
+  document.getElementById('stat-total').textContent = dois.length;
+  document.getElementById('stat-types').textContent = new Set(dois.map(d=>d.attributes?.types?.resourceTypeGeneral).filter(Boolean)).size;
+  const years = dois.map(d=>d.attributes?.updated ? new Date(d.attributes.updated).getFullYear() : null).filter(Boolean);
+  document.getElementById('stat-recent').textContent = years.length ? Math.max(...years) : '—';
+  updateSparkline(dois);
+}
+
+function syncFiltersToURL() {
+  const url = new URL(window.location.href);
+  const q       = document.getElementById('search-input').value.trim();
+  const type    = document.getElementById('type-filter').value;
+  const year    = document.getElementById('year-filter').value;
+  const version = document.getElementById('version-filter')?.value || '0';
+  const recur   = document.getElementById('recurated-only')?.checked ? '1' : '';
+  const heroRt  = document.getElementById('hero-resource-type')?.value || '';
+  const heroQ   = document.getElementById('hero-query')?.value.trim() || '';
+  const created = document.getElementById('created-only')?.checked ? '1' : '';
+  const sort    = sortKey;
+  if (q)           url.searchParams.set('q', q);           else url.searchParams.delete('q');
+  if (type)        url.searchParams.set('type', type);     else url.searchParams.delete('type');
+  if (year)        url.searchParams.set('year', year);     else url.searchParams.delete('year');
+  if (version!=='0') url.searchParams.set('version', version); else url.searchParams.delete('version');
+  if (recur)       url.searchParams.set('recur', '1');     else url.searchParams.delete('recur');
+  if (heroRt)      url.searchParams.set('resourceType', heroRt); else url.searchParams.delete('resourceType');
+  if (heroQ)       url.searchParams.set('q2', heroQ);           else url.searchParams.delete('q2');
+  if (created)     url.searchParams.set('created', '1'); else url.searchParams.delete('created');
+  if (sort && sort!=='updated') url.searchParams.set('sort', sort); else url.searchParams.delete('sort'); // version sort preserved // activities sort preserved
+  if (currentPage > 1) url.searchParams.set('page', currentPage); else url.searchParams.delete('page');
+  try { window.history.replaceState({}, '', url); } catch(e) {}
+}
+
+function applyFiltersFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const q       = params.get('q') || '';
+  const type    = params.get('type') || '';
+  const year    = params.get('year') || '';
+  const version = params.get('version') || '0';
+  const recur   = params.get('recur') === '1';
+  const heroRtUrl = params.get('resourceType') || '';
+  const heroQUrl  = params.get('q2') || '';
+  const heroRtEl = document.getElementById('hero-resource-type'); if(heroRtEl && heroRtUrl) heroRtEl.value = heroRtUrl;
+  const heroQEl  = document.getElementById('hero-query'); if(heroQEl && heroQUrl) heroQEl.value = heroQUrl;
+  const created = params.get('created') === '1';
+  const sort    = params.get('sort') || 'updated';
+  const page    = parseInt(params.get('page') || '1', 10);
+  if (q)    document.getElementById('search-input').value = q;
+  if (type) document.getElementById('type-filter').value  = type;
+  if (year) document.getElementById('year-filter').value  = year;
+  // version-filter options built after data loads — store for later
+  window._urlVersion = version;
+  const ro = document.getElementById('recurated-only'); if (ro) ro.checked = recur;
+  const co2 = document.getElementById('created-only'); if (co2) co2.checked = created;
+  // restore sort
+  if (sort !== 'updated') {
+    sortKey = sort;
+    document.querySelectorAll('.sort-opt').forEach(b => b.classList.remove('active'));
+    const sb = document.getElementById('sort-' + sort); if (sb) sb.classList.add('active');
+  }
+  if (page > 1) currentPage = page;
+}
+
+function applyFiltersAndRender() {
+  const q    = document.getElementById('search-input').value.toLowerCase();
+  const type = document.getElementById('type-filter').value;
+  const year = document.getElementById('year-filter').value;
+  versionMin    = parseInt(document.getElementById('version-filter')?.value||'0',10)||0;
+  recuratedOnly = document.getElementById('recurated-only')?.checked||false;
+  createdOnly   = document.getElementById('created-only')?.checked||false;
+
+  // Base set (no version filter) for facet-aware dropdown
+  const baseDois = allDOIs.filter(d => {
+    const a = d.attributes ?? {};
+    const title = a.titles?.[0]?.title ?? '';
+    const creators = (a.creators??[]).map(cr=>cr.name).join(' ');
+    const doi = d.id ?? '';
+    const recur = a.created && a.updated && (new Date(a.updated)-new Date(a.created))>86400000;
+    const isCreatedOnly = !recur;
+    return (!q||[title,creators,doi].join(' ').toLowerCase().includes(q))
+        && (!type||a.types?.resourceTypeGeneral===type)
+        && (!year||(a.updated?String(new Date(a.updated).getFullYear())===year:false))
+        && (!recuratedOnly||recur)
+        && (!createdOnly||isCreatedOnly);
+  });
+  populateVersionDropdown(baseDois);
+  // Restore version from URL on first load
+  if (window._urlVersion && window._urlVersion !== '0') {
+    const vf = document.getElementById('version-filter');
+    if (vf && vf.querySelector('option[value="'+window._urlVersion+'"]')) {
+      vf.value = window._urlVersion;
+      versionMin = parseInt(window._urlVersion, 10) || 0;
+    }
+    window._urlVersion = null;
+  }
+
+  filtered = allDOIs.filter(d => {
+    const a = d.attributes ?? {};
+    const title = a.titles?.[0]?.title ?? '';
+    const creators = (a.creators??[]).map(cr=>cr.name).join(' ');
+    const doi = d.id ?? '';
+    const ver = a.metadataVersion ?? 1;
+    const recur = a.created && a.updated && (new Date(a.updated)-new Date(a.created))>86400000;
+    return (!q||[title,creators,doi].join(' ').toLowerCase().includes(q))
+        && (!type||a.types?.resourceTypeGeneral===type)
+        && (!year||(a.updated?String(new Date(a.updated).getFullYear())===year:false))
+        && (!recuratedOnly||recur)
+        && (!createdOnly||!recur)
+        && (versionMin===0||ver>=versionMin);
+  });
+  filtered.sort((a,b)=>{
+    if (sortKey==='updated') return new Date(b.attributes?.updated??0)-new Date(a.attributes?.updated??0);
+    if (sortKey==='year')    return (b.attributes?.publicationYear??0)-(a.attributes?.publicationYear??0);
+    if (sortKey==='title')   return (a.attributes?.titles?.[0]?.title??'').localeCompare(b.attributes?.titles?.[0]?.title??'');
+    if (sortKey==='version')  return (b.attributes?.metadataVersion??0)-(a.attributes?.metadataVersion??0);
+    return 0;
+  });
+  renderPage();
+}
+
+function renderPage() {
+  const total = filtered.length;
+  const pages = Math.max(1, Math.ceil(total/PAGE_SIZE));
+  if (currentPage < 1) currentPage = 1;
+  if (currentPage > pages) currentPage = pages;
+  syncFiltersToURL();
+  const start = (currentPage-1)*PAGE_SIZE;
+  const slice = filtered.slice(start, start+PAGE_SIZE);
+  document.getElementById('list-meta').textContent =
+    total ? `${start+1}–${Math.min(start+PAGE_SIZE,total)} of ${total} records` : '0 records';
+  const container = document.getElementById('doi-container');
+  if (!total) { container.innerHTML='<div class="empty-state">No records match.</div>'; document.getElementById('pagination').innerHTML=''; return; }
+  container.innerHTML = slice.map(renderRow).join('');
+  container.querySelectorAll('.toggle-btn').forEach(btn=>{
+    btn.addEventListener('click', e=>{ e.stopPropagation(); toggleActivity(btn.dataset.doi); });
+  });
+  renderPagination(pages);
+}
+
+function renderRow(d) {
+  const a  = d.attributes ?? {};
+  const doi = d.id ?? '';
+  const title    = a.titles?.[0]?.title ?? '(Untitled)';
+  const creators = (a.creators??[]).map(c => (c.name || [c.givenName, c.familyName].filter(Boolean).join(' ') || c.nameIdentifiers?.[0]?.nameIdentifier || '').trim()).filter(Boolean).join('; ') || '—';
+  const year   = a.publicationYear ?? '';
+  const typeG  = a.types?.resourceTypeGeneral ?? '';
+  const typeS  = a.types?.resourceType ?? '';
+  const schema = (a.schemaVersion??'').replace('http://datacite.org/schema/kernel-','v');
+  const updated = a.updated ? fmtDate(a.updated) : '';
+  const pubYear  = a.publicationYear ?? '';
+  const views = a.viewCount??0, cites = a.citationCount??0, dl = a.downloadCount??0;
+  const mv = a.metadataVersion ?? null;
+  const mvPct = mv !== null ? Math.round((mv / Math.max(1, maxVersion)) * 100) : 0;
+  const mvTip = 'metadataVersion: DataCite system counter incremented on each change. May include automated updates not shown in activity log.';
+  return `
+  <div class="doi-row" id="card-${sanitizeId(doi)}">
+    <div class="doi-row-main">
+      <div>
+        <div class="doi-title"><a href="https://commons.datacite.org/doi.org/${doi}" target="_blank" style="color:inherit;text-decoration:none;">${escHtml(title)}</a></div>
+        <div class="doi-creators">${escHtml(creators)}</div>
+        <div class="doi-meta-line">
+          ${typeG ? `<span class="doi-badge badge-type">${escHtml(typeG)}</span>` : ''}
+          ${typeS && typeS !== typeG ? `<span class="doi-badge badge-type" style="opacity:.7">${escHtml(typeS)}</span>` : ''}
+          ${year ? `<span class="doi-badge badge-year">${year}</span>` : ''}
+          ${schema ? `<span class="doi-badge badge-schema">${escHtml(schema)}</span>` : ''}
+        </div>
+        <div class="doi-identifier">
+          <a href="https://doi.org/${doi}" target="_blank">${escHtml(doi)}</a>
+          ${pubYear ? `<span style="margin-left:.8rem">published ${pubYear}</span>` : ''}
+          ${updated ? `<span style="margin-left:.8rem">updated ${updated}</span>` : ''}
+          <a href="https://api.datacite.org/application/vnd.datacite.datacite+json/${doi}" target="_blank" style="margin-left:.8rem;font-family:var(--mono);font-size:0.65rem;color:var(--blue);text-decoration:none;">JSON metadata ↗</a>
+          ${mv !== null ? `<span class="tip" style="margin-left:.8rem;font-family:var(--mono);color:var(--faint)" data-tip="${mvTip}">v${mv}</span><span class="version-bar-wrap"><span class="version-bar-track"><span class="version-bar-fill" style="width:${mvPct}%"></span></span></span>` : ''}
+        </div>
+        <div class="doi-counts">
+          <span class="tip" data-tip="Views reported by repository to DataCite">${views} views</span><span class="tip" data-tip="Citations harvested from Crossref &amp; DataCite Event Data">${cites} citations</span><span class="tip" data-tip="Downloads reported by repository to DataCite">${dl} downloads</span>
+        </div>
+      </div>
+      <button class="toggle-btn" data-doi="${escAttr(doi)}">history</button>
+    </div>
+    <div class="act-panel" id="act-${sanitizeId(doi)}">
+      <div style="padding:0.5rem 0">Loading…</div>
+    </div>
+  </div>`;
+}
+
+async function toggleActivity(doiId) {
+  const safeId = sanitizeId(doiId);
+  const panel  = document.getElementById(`act-${safeId}`);
+  const btn    = document.querySelector(`.toggle-btn[data-doi="${escAttr(doiId)}"]`);
+  if (!panel||!btn) return;
+  const isOpen = panel.classList.contains('open');
+  if (isOpen) { panel.classList.remove('open'); btn.classList.remove('open'); btn.textContent='history'; return; }
+  panel.classList.add('open'); btn.classList.add('open'); btn.textContent='close';
+  if (panel.dataset.loaded) return;
+  panel.dataset.loaded='true';
+  panel.innerHTML = '<div style="padding:1rem 0;font-family:var(--mono);font-size:0.68rem;color:var(--faint);display:flex;align-items:center;gap:0.5rem;"><span class=\"load-spinner\"></span>Loading activities…</div>';
+  const activities = await fetchActivities(doiId);
+  renderActivities(panel, doiId, activities);
+}
+
+function changeSummary(changes, action) {
+  if (!changes || typeof changes !== 'object') return '';
+  const SKIP = new Set(['doi','regenerate','only_validate','should_validate','aasm_state','content_url','landing_page','container','reason','source']);
+  if (action === 'create') {
+    const title = changes.titles?.[0]?.title ?? '';
+    return 'DOI registered' + (title ? ': <strong>' + escHtml(title) + '</strong>' : '') + '.';
+  }
+  const keys = Object.keys(changes).filter(k => !SKIP.has(k));
+  if (!keys.length) return 'Metadata updated.';
+  return 'Updated ' + keys.map(k => '<strong>' + escHtml(fieldLabel(k)) + '</strong>').join(', ') + '.';
+}
+
+function renderActivities(panel, doiId, activities) {
+  if (activities===null) { panel.innerHTML=`<div class="error-state">Could not load activities.</div>`; return; }
+  if (!activities.length) { panel.innerHTML=`<div class="empty-state">No activity records.</div>`; return; }
+
+  const n = activities.length;
+
+  const rows = activities.map((a,i)=>{
+    const attrs   = a.attributes ?? {};
+    const action  = attrs.action ?? 'update';
+    const ts      = attrs['prov:generatedAtTime'] ?? attrs.createdAt ?? '';
+    const version = attrs.version ?? '';
+    const dotColor = actionColor(action);
+    const summary  = changeSummary(attrs.changes, action);
+    const detail   = renderChangesDiff(attrs.changes, action);
+    const uid = `detail-${sanitizeId(doiId)}-${i}`;
+    return `<tr data-action="${escAttr(action)}">
+      <td class="tl-col-date">${ts?fmtDate(ts):'—'}</td>
+      <td class="tl-col-dot"><div class="tl-dot-wrap"><div class="tl-dot" style="background:${dotColor}"></div></div></td>
+      <td class="tl-col-action">
+        <div class="act-label" style="color:${dotColor}">${escHtml(capitalise(action))}</div>
+        ${version?`<div class="act-v">v${version}</div>`:''}
+      </td>
+      <td class="tl-col-changes">
+        <div class="act-summary">${summary}</div>
+        ${detail ? `<button class="act-toggle" data-target="${uid}">Show details ▸</button><div class="act-detail" id="${uid}">${detail}</div>` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Get distinct action types
+  const actionTypes = [...new Set(activities.map(a => a.attributes?.action ?? 'update'))].sort();
+  const tlModel = computeTimelineModel(activities);
+
+  panel.innerHTML = `
+    <div class="act-header">
+      <span>Activity · <span class="act-count-label">${n} event${n!==1?'s':''}</span></span>
+      <div class="act-filter-btns">
+        <button class="act-filter-btn active" data-action="all">All</button>
+        ${actionTypes.map(t => `<button class="act-filter-btn" data-action="${escAttr(t)}">${escHtml(capitalise(t))}</button>`).join('')}
+      </div>
+      <a href="https://api.datacite.org/dois/${encodeURIComponent(doiId)}/activities" target="_blank">raw JSON ↗</a>
+    </div>
+    ${tlModel ? renderTimelineHtml(tlModel) : ''}
+    <div class="act-table-wrap"><table class="tl-table"><tbody>${rows}</tbody></table></div>`;
+
+  // Wire up the section-timeline Time / Events axis toggle + PNG save / copy
+  panel.querySelectorAll('.stl-tg[data-mode]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tl = panel.querySelector('.sec-tl'); if (!tl) return;
+      tl.classList.toggle('by-events', btn.dataset.mode === 'events');
+      panel.querySelectorAll('.stl-tg[data-mode]').forEach(b => b.classList.toggle('active', b === btn));
+    });
+  });
+  if (tlModel){
+    const byEvents = () => panel.querySelector('.sec-tl')?.classList.contains('by-events');
+    const saveBtn = panel.querySelector('.stl-save'), copyBtn = panel.querySelector('.stl-copy');
+    saveBtn?.addEventListener('click', () => saveTimelinePng(tlModel, doiId, byEvents(), saveBtn));
+    copyBtn?.addEventListener('click', () => copyTimelinePng(tlModel, doiId, byEvents(), copyBtn));
+  }
+
+  // Wire up detail toggles
+  panel.querySelectorAll('.act-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const detail = document.getElementById(btn.dataset.target);
+      if (!detail) return;
+      const open = detail.classList.toggle('open');
+      btn.textContent = open ? 'Hide details ▾' : 'Show details ▸';
+    });
+  });
+
+  // Wire up action type filter buttons
+  panel.querySelectorAll('.act-filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      panel.querySelectorAll('.act-filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const action = btn.dataset.action;
+      const tableWrap = panel.querySelector('.act-table-wrap');
+      const allRows = tableWrap.querySelectorAll('tr');
+      let visible = 0;
+      allRows.forEach(row => {
+        const rowAction = row.dataset.action ?? 'update';
+        const show = action === 'all' || rowAction === action;
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      panel.querySelector('.act-count-label').textContent =
+        action === 'all' ? `${n} event${n!==1?'s':''}` : `${visible} ${action} event${visible!==1?'s':''}`;
+    });
+  });
+}
+
+
+// ── Action color ─────────────────────────────────────
+function actionColor(action) {
+  const a = (action??'').toLowerCase();
+  if (a.includes('create'))   return '#16a34a';
+  if (a.includes('publish'))  return '#d97706';
+  if (a.includes('update'))   return '#2563eb';
+  if (a.includes('hide'))     return '#6b7280';
+  if (a.includes('register')) return '#7c3aed';
+  return '#9ca3af';
+}
+
+// ── Field labels ─────────────────────────────────────
+const FIELD_LABELS = {
+  url:'URL', doi:'DOI', titles:'Titles', creators:'Creators',
+  contributors:'Contributors', descriptions:'Descriptions', subjects:'Subjects',
+  dates:'Dates', types:'Types', rights_list:'Rights / Licenses',
+  related_identifiers:'Related IDs', funding_references:'Funding',
+  geo_locations:'Geo Locations', publisher:'Publisher',
+  publication_year:'Pub. Year', language:'Language',
+  schema_version:'Schema', sizes:'Sizes', formats:'Formats',
+  version_info:'Version', identifiers:'Identifiers', related_items:'Related Items'
+};
+function fieldLabel(k) { return FIELD_LABELS[k]??k.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
+
+function summariseValue(val) {
+  if (val===null||val===undefined) return '—';
+  if (typeof val==='string') return val;
+  if (typeof val==='number'||typeof val==='boolean') return String(val);
+  if (Array.isArray(val)||typeof val==='object') return JSON.stringify(val, null, 2);
+  return String(val);
+}
+
+function renderChangesDiff(changes, action) {
+  if (!changes||typeof changes!=='object') return '';
+  const isCreate = (action??'').toLowerCase().includes('create');
+  const SKIP = new Set(['regenerate','only_validate','should_validate','aasm_state','content_url','landing_page','container','reason','source']);
+  const rows = [];
+  for (const [field, val] of Object.entries(changes)) {
+    if (SKIP.has(field)) continue;
+    const label = escHtml(fieldLabel(field));
+    if (isCreate) {
+      const s = summariseValue(val);
+      if (!s||s==='—'||s==='(empty)') continue;
+      rows.push(`<div class="diff-row"><span class="diff-field">${label}</span><div class="diff-values"><span class="diff-new">${escHtml(s)}</span></div></div>`);
+    } else if (Array.isArray(val)&&val.length===2) {
+      const b = summariseValue(val[0]), a2 = summariseValue(val[1]);
+      if (b===a2) continue;
+      rows.push(`<div class="diff-row"><span class="diff-field">${label}</span><div class="diff-values"><span class="diff-before">${escHtml(b)}</span><span class="diff-arrow">→</span><span class="diff-after">${escHtml(a2)}</span></div></div>`);
+    } else {
+      const s = summariseValue(val);
+      if (!s||s==='—') continue;
+      rows.push(`<div class="diff-row"><span class="diff-field">${label}</span><div class="diff-values"><span class="diff-new">${escHtml(s)}</span></div></div>`);
+    }
+  }
+  if (!rows.length) return '';
+  return `<div class="diff-block">${rows.join('')}</div>`;
+}
+
+// ── Section change timeline ───────────────────────────
+// One horizontal bar per major metadata section across the DOI's recorded events (create + each
+// update, oldest → newest). A section keeps its colour until it changes, when the hue rotates; a
+// section that never changes stays solid, and one that appears mid-history is blank before it does.
+const SECTION_ORDER = ['titles','creators','contributors','publisher','publication_year','subjects',
+  'descriptions','dates','types','rights_list','related_identifiers','related_items',
+  'funding_references','geo_locations','identifiers','url','sizes','formats','language',
+  'version_info','schema_version','doi'];
+const SECTION_HUE = { titles:210, creators:145, contributors:172, publisher:35, publication_year:50,
+  subjects:275, descriptions:255, dates:15, types:320, rights_list:2, related_identifiers:190,
+  related_items:205, funding_references:92, geo_locations:110, identifiers:230, url:245,
+  sizes:60, formats:68, language:295, version_info:340, schema_version:355, doi:240 };
+const STL_SKIP = new Set(['doi','regenerate','only_validate','should_validate','aasm_state','content_url','landing_page','container','reason','source']);
+const sectionOf = k => String(k||'').split('.')[0];                 // creators.affiliation → creators
+function stlShade(hue, changeCount){                               // changeCount 1 = introduced (base)
+  const h = ((hue ?? 220) + (changeCount-1)*34) % 360;            // rotate hue on every change
+  const l = Math.max(38, 66 - (changeCount-1)*6);                 // and deepen slightly
+  return `hsl(${h} 55% ${l}%)`;
+}
+// Prune null / empty and sort object keys so a re-serialization shows up as no change.
+function stlCanon(v){
+  if (Array.isArray(v)){ const a = v.map(stlCanon).filter(x => x !== undefined); return a.length ? a : undefined; }
+  if (v && typeof v === 'object'){ const o = {}; for (const k of Object.keys(v).sort()){ const pv = stlCanon(v[k]); if (pv !== undefined) o[k] = pv; } return Object.keys(o).length ? o : undefined; }
+  return (v === null || v === undefined || v === '') ? undefined : v;
+}
+// Top-level sections touched by one activity: create → every field it sets; update → fields whose
+// [before, after] pair is a real (non-no-op) change.
+function activitySections(attrs){
+  const changes = attrs.changes || {};
+  const action = (attrs.action || 'update').toLowerCase();
+  const secs = new Set();
+  for (const k of Object.keys(changes)){
+    if (STL_SKIP.has(k)) continue;
+    const v = changes[k];
+    if (!action.includes('create') && Array.isArray(v) && v.length === 2
+        && JSON.stringify(stlCanon(v[0])) === JSON.stringify(stlCanon(v[1]))) continue;   // no-op
+    secs.add(sectionOf(k));
+  }
+  return secs;
+}
+// Crunch a DOI's activities into a timeline model (or null when nothing changed after creation).
+function computeTimelineModel(activities){
+  const evs = [...activities].reverse().map(a => {                 // API is newest-first
+    const at = a.attributes || {};
+    return { action: (at.action || 'update').toLowerCase(),
+             ts: at['prov:generatedAtTime'] || at.createdAt || '',
+             secs: activitySections(at) };
+  });
+  const present = new Set(); evs.forEach(e => e.secs.forEach(s => present.add(s)));
+  if (!present.size) return null;
+  const birth = {}, changeCount = {};                             // first event index; # of changes after birth
+  present.forEach(s => { birth[s] = -1; changeCount[s] = 0; });
+  evs.forEach((e, i) => e.secs.forEach(s => { if (birth[s] < 0) birth[s] = i; else changeCount[s]++; }));
+  const ord = s => { const i = SECTION_ORDER.indexOf(s); return i < 0 ? 999 : i; };
+  // Focus on change: only sections that changed after creation, or were added later, earn a row.
+  const secs = [...present].filter(s => changeCount[s] > 0 || birth[s] > 0)
+    .sort((a, b) => ord(a) - ord(b) || a.localeCompare(b));  // stable canonical field order
+  if (!secs.length) return null;   // nothing changed after creation
+  const n = evs.length;
+  // x-axis is real time: each event's cell spans from its date until the next event; the most
+  // recent state runs to today. Falls back to equal widths only if timestamps are missing.
+  const tms = evs.map(e => { const d = new Date(e.ts).getTime(); return isNaN(d) ? null : d; });
+  const haveTime = n > 1 && tms.every(x => x != null) && tms[n-1] > tms[0];
+  const tEnd = haveTime ? Math.max(Date.now(), tms[n-1]) : null;
+  const grows = evs.map((e, i) => haveTime ? Math.max(1, (i < n-1 ? tms[i+1] : tEnd) - tms[i]) : 1);
+  const rows = secs.map(s => {
+    let cc = 0;
+    const segs = evs.map((e, i) => {
+      const hit = e.secs.has(s);
+      if (hit) cc++;
+      if (cc === 0) return { absent: true, tip: fieldLabel(s) + ' — not yet present' };
+      const born = hit && i === birth[s] && i > 0, changed = hit && i > birth[s];
+      return { absent: false, color: stlShade(SECTION_HUE[s], cc), born, changed,
+               tip: `${fieldLabel(s)} · ${capitalise(e.action)}${e.ts ? ' · ' + fmtDate(e.ts) : ''}${born ? ' · added' : changed ? ' · changed' : ''}` };
+    });
+    return { section: s, label: fieldLabel(s), changeCount: changeCount[s], segs };
+  });
+  return { n, grows, haveTime, rows,
+           first: evs[0]?.ts ? fmtDate(evs[0].ts) : '',
+           last: haveTime ? fmtDate(new Date(tEnd).toISOString()) : (evs[n-1]?.ts ? fmtDate(evs[n-1].ts) : '') };
+}
+function timelineRowsHtml(model){
+  return model.rows.map(r => {
+    const segs = r.segs.map((sg, i) => {
+      const g = model.haveTime ? `--g:${model.grows[i]};` : '';
+      if (sg.absent) return `<div class="stl-seg absent" style="${g}" title="${escAttr(sg.tip)}"></div>`;
+      return `<div class="stl-seg${sg.changed ? ' chg' : ''}${sg.born ? ' born' : ''}" style="background:${sg.color};${g}" title="${escAttr(sg.tip)}"></div>`;
+    }).join('');
+    const badge = r.changeCount > 0 ? `<span class="stl-badge" title="changed ${r.changeCount} time${r.changeCount !== 1 ? 's' : ''} after creation">${r.changeCount}×</span>` : '';
+    return `<div class="stl-row"><div class="stl-label" title="${escAttr(r.label)}">${escHtml(r.label)}${badge}</div><div class="stl-track">${segs}</div></div>`;
+  }).join('');
+}
+function renderTimelineHtml(model){
+  const sw = (c, extra='') => `<i class="stl-sw${extra}" style="${c ? 'background:' + c : ''}"></i>`;
+  const toggle = model.haveTime ? `<div class="stl-toggle">
+      <button type="button" class="stl-tg active" data-mode="time" title="Space cells by elapsed time between events">Time</button>
+      <button type="button" class="stl-tg" data-mode="events" title="Give every event equal width">Events</button>
+    </div>` : '';
+  return `<div class="sec-tl">
+    <div class="stl-top">
+      <div class="stl-cap">Section change timeline — one bar per metadata section that changed after the DOI was created; the hue shifts each time that section changed and stays solid between changes. Sections that never changed are omitted.${model.haveTime ? ' Cells are spaced by date; switch to Events for equal widths.' : ''}</div>
+      <div class="stl-ctrl">${toggle}<button type="button" class="stl-xbtn stl-save" title="Save this timeline as a PNG image">Save</button><button type="button" class="stl-xbtn stl-copy" title="Copy this timeline to the clipboard as an image">Copy</button></div>
+    </div>
+    <div class="stl-grid">
+      ${timelineRowsHtml(model)}
+    </div>
+    <div class="stl-dates"><span class="stl-label"></span><span class="stl-datestrack"><span>${model.first}</span><span>${model.last}</span></span></div>
+    <div class="stl-legend">
+      <span class="stl-lg">${sw('hsl(210 55% 60%)')}section state (hue shifts on change)</span>
+      <span class="stl-lg">${sw(null,' absent')}not yet present</span>
+    </div>
+  </div>`;
+}
+// ── Timeline image export (SVG → PNG, self-contained) ──
+function timelineSvg(model, doiId, byEvents){
+  const padX = 16, Lw = 150, Tw = 640, rowH = 15, rowGap = 4, rowPitch = rowH + rowGap;
+  const titleH = 50, datesH = 20, legendH = 22, padB = 12;
+  const trackX = padX + Lw, W = trackX + Tw + padX;
+  const gridY = titleH, H = gridY + model.rows.length * rowPitch + datesH + legendH + padB;
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const n = model.n, MIN = 3;
+  let widths;
+  if (byEvents || !model.haveTime) widths = model.grows.map(() => Tw / n);
+  else { const sum = model.grows.reduce((a, b) => a + b, 0) || 1, free = Math.max(0, Tw - n * MIN); widths = model.grows.map(g => MIN + free * g / sum); }
+  const xs = []; { let x = 0; for (let i = 0; i < n; i++){ xs.push(x); x += widths[i]; } }
+  const modeLabel = (byEvents || !model.haveTime) ? 'by event' : 'by date';
+  let body = `<text x="${padX}" y="22" font-size="15" font-weight="700" fill="#1c1917">${esc(doiId || 'DOI')} — section change timeline</text>`
+    + `<text x="${padX}" y="39" font-size="10.5" fill="#78716c">Metadata sections that changed after creation · hue shifts on each change · ${esc(model.first)} – ${esc(model.last)} · spaced ${esc(modeLabel)}</text>`;
+  model.rows.forEach((r, ri) => {
+    const y = gridY + ri * rowPitch;
+    const badge = r.changeCount > 0 ? ` <tspan fill="#9a8fb0">${r.changeCount}×</tspan>` : '';
+    body += `<text x="${trackX - 8}" y="${y + rowH - 4}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="10.5" fill="#57534e">${esc(r.label)}${badge}</text>`;
+    r.segs.forEach((sg, i) => {
+      const x = (trackX + xs[i]).toFixed(2), w = widths[i].toFixed(2);
+      if (sg.absent){ body += `<rect x="${x}" y="${y}" width="${w}" height="${rowH}" fill="#ececea"/>`; return; }
+      body += `<rect x="${x}" y="${y}" width="${w}" height="${rowH}" fill="${sg.color}"/>`;
+      if (sg.changed || sg.born) body += `<rect x="${x}" y="${y}" width="2" height="${rowH}" fill="#ffffff" opacity="0.9"/>`;
+    });
+  });
+  const dy = gridY + model.rows.length * rowPitch + 13;
+  body += `<text x="${trackX}" y="${dy}" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#78716c">${esc(model.first)}</text>`
+    + `<text x="${trackX + Tw}" y="${dy}" text-anchor="end" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#78716c">${esc(model.last)}</text>`;
+  const ly = dy + legendH - 6;
+  body += `<rect x="${trackX}" y="${ly - 9}" width="11" height="11" rx="2" fill="hsl(210 55% 60%)"/><text x="${trackX + 16}" y="${ly}" font-size="9.5" fill="#78716c">section state (hue shifts on change)</text>`
+    + `<rect x="${trackX + 232}" y="${ly - 9}" width="11" height="11" rx="2" fill="#ececea"/><text x="${trackX + 248}" y="${ly}" font-size="9.5" fill="#78716c">not yet present</text>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="Inter,system-ui,sans-serif"><rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>${body}</svg>`;
+}
+function stlSvgToPngBlob(svgString, scale){
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' }));
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.width * scale; c.height = img.height * scale;
+      const ctx = c.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
+      ctx.setTransform(scale, 0, 0, scale, 0, 0); ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null')), 'image/png');
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('SVG rasterization failed')); };
+    img.src = url;
+  });
+}
+function tlPngName(doiId){
+  const d = new Date(), p = x => String(x).padStart(2, '0');
+  return `${sanitizeId(doiId || 'doi')}_section-timeline__${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}.png`;
+}
+function tlDownloadBlob(blob, doiId){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = tlPngName(doiId);
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+async function saveTimelinePng(model, doiId, byEvents, btn){
+  const orig = btn ? btn.textContent : '';
+  try { tlDownloadBlob(await stlSvgToPngBlob(timelineSvg(model, doiId, byEvents), 2), doiId); if (btn) btn.textContent = '✓ Saved'; }
+  catch (e){ console.error(e); if (btn) btn.textContent = 'Save failed'; }
+  if (btn) setTimeout(() => { btn.textContent = orig; }, 1700);
+}
+async function copyTimelinePng(model, doiId, byEvents, btn){
+  const orig = btn ? btn.textContent : '';
+  let blob;
+  try { blob = await stlSvgToPngBlob(timelineSvg(model, doiId, byEvents), 2); }
+  catch (e){ console.error(e); if (btn){ btn.textContent = 'Render failed'; setTimeout(() => { btn.textContent = orig; }, 1700); } return; }
+  try {
+    if (!(navigator.clipboard && window.ClipboardItem)) throw new Error('clipboard images unsupported');
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    if (btn) btn.textContent = '✓ Copied';
+  } catch (e){ tlDownloadBlob(blob, doiId); if (btn) btn.textContent = '↓ Saved PNG'; }   // fallback: download
+  if (btn) setTimeout(() => { btn.textContent = orig; }, 1700);
+}
+
+// ── Helpers ───────────────────────────────────────────
+function fmtDate(iso) {
+  try { return new Date(iso).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}); }
+  catch { return iso; }
+}
+function capitalise(s) { return s?s[0].toUpperCase()+s.slice(1):s; }
+function sanitizeId(s) { return s.replace(/[^a-zA-Z0-9-_]/g,'-'); }
+function escHtml(s) { return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s) { return escHtml(s); }
+
+// ── Pagination ────────────────────────────────────────
+function renderPagination(pages) {
+  const pag = document.getElementById('pagination');
+  if (pages<=1) { pag.innerHTML=''; return; }
+
+  const SIBLINGS = 2;
+  const pageNums = new Set([1, pages]);
+  for (let p=Math.max(1,currentPage-SIBLINGS); p<=Math.min(pages,currentPage+SIBLINGS); p++) pageNums.add(p);
+  const sorted = [...pageNums].sort((a,b)=>a-b);
+
+  let html = `<button class="page-btn" id="prev-btn"${currentPage===1?' disabled':''}>← prev</button>`;
+  let prev = 0;
+  for (const p of sorted) {
+    if (p - prev > 1) html += `<button class="page-btn page-ellipsis" disabled>…</button>`;
+    html += `<button class="page-btn${p===currentPage?' active':''}" data-page="${p}">${p}</button>`;
+    prev = p;
+  }
+  html += `<button class="page-btn" id="next-btn"${currentPage===pages?' disabled':''}>next →</button>`;
+  pag.innerHTML = html;
+
+  pag.querySelector('#prev-btn')?.addEventListener('click',()=>{currentPage--;renderPage();window.scrollTo(0,0);});
+  pag.querySelector('#next-btn')?.addEventListener('click',()=>{currentPage++;renderPage();window.scrollTo(0,0);});
+  pag.querySelectorAll('[data-page]').forEach(b=>b.addEventListener('click',()=>{currentPage=Number(b.dataset.page);renderPage();window.scrollTo(0,0);}));
+}
+
+// ── Sort buttons ──────────────────────────────────────
+document.getElementById('reset-filters').addEventListener('click', () => {
+  if (loading) return;
+  document.getElementById('search-input').value = '';
+  document.getElementById('type-filter').value  = '';
+  document.getElementById('year-filter').value  = '';
+  const vf = document.getElementById('version-filter'); if(vf){vf.value='0';}
+  const ro = document.getElementById('recurated-only'); if(ro) ro.checked=false;
+  // reset sort to updated
+  sortKey = 'updated';
+  document.querySelectorAll('.sort-opt').forEach(b=>b.classList.remove('active'));
+  document.getElementById('sort-updated').classList.add('active');
+  versionMin=0; recuratedOnly=false; currentPage=1;
+  applyFiltersAndRender();
+});
+
+document.getElementById('hero-resource-type').addEventListener('change', () => {
+  const val = document.getElementById('repo-input').value.trim();
+  if (val && !isDOI(val)) {
+    if (isPrefix(val)) loadPrefixDOIs(val);
+    else loadRepository(val);
+  }
+});
+
+['sort-updated','sort-year','sort-title','sort-version'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',()=>{
+    document.querySelectorAll('.sort-opt').forEach(b=>b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    sortKey=id.replace('sort-','');
+    currentPage=1;
+    applyFiltersAndRender();
+  });
+});
+
+let searchTimer;
+document.getElementById('search-input').addEventListener('input',()=>{if(loading)return;clearTimeout(searchTimer);searchTimer=setTimeout(()=>{currentPage=1;applyFiltersAndRender();},280);});
+document.getElementById('type-filter').addEventListener('change',()=>{if(loading)return;currentPage=1;applyFiltersAndRender();});
+document.getElementById('year-filter').addEventListener('change',()=>{if(loading)return;currentPage=1;applyFiltersAndRender();});
+document.getElementById('version-filter').addEventListener('change',()=>{if(loading)return;currentPage=1;applyFiltersAndRender();});
+document.getElementById('recurated-only').addEventListener('change',()=>{if(loading)return;currentPage=1;applyFiltersAndRender();});
+document.getElementById('created-only').addEventListener('change',()=>{if(loading)return;currentPage=1;applyFiltersAndRender();});
+
+// ── Repo metadata lookup ─────────────────────────────
+async function fetchClientMeta(clientId) {
+  try {
+    const res = await fetch(`${API_BASE}/clients/${encodeURIComponent(clientId)}`);
+    if (!res.ok) return null;
+    return (await res.json()).data ?? null;
+  } catch { return null; }
+}
+
+function updateBranding(clientId, meta) {
+  const name = meta?.attributes?.name ?? clientId;
+  const prefix = (meta?.attributes?.prefixIds ?? []).join(', ') || '—';
+  document.getElementById('brand-name').textContent = name;
+  document.getElementById('brand-sub').textContent = `${clientId} · prefix ${prefix}`;
+  document.title = `Re-Curation Watch · ${name}`;
+  const cl = document.getElementById('commons-link');
+  const cl2 = document.getElementById('commons-link-repo');
+  if (cl2) {
+    cl2.href = `https://commons.datacite.org/repositories/${clientId}`;
+    cl2.textContent = name;
+  }
+  if (cl) cl.href = `https://commons.datacite.org/repositories/${clientId}`;
+  // Show stats strip with repo name
+  const strip = document.getElementById('repo-stats-strip');
+  const stripName = document.getElementById('repo-stats-name');
+  if (strip) strip.style.display = '';
+  if (stripName) stripName.textContent = name;
+  // update URL bar without reload
+  const url = new URL(window.location.href);
+  url.searchParams.set('client', clientId);
+  try { window.history.replaceState({}, '', url); } catch(e) {}
+}
+
+function resetFilters() {
+  document.getElementById('search-input').value = '';
+  const tf = document.getElementById('type-filter');
+  const yf = document.getElementById('year-filter');
+  tf.innerHTML = '<option value="">All types</option>';
+  yf.innerHTML = '<option value="">All years</option>';
+  const vf2 = document.getElementById('version-filter'); if(vf2){vf2.innerHTML='<option value="0">Any</option>';vf2.value='0';}
+  const ro = document.getElementById('recurated-only'); if(ro){ro.checked=false;ro.disabled=true;ro.title='Loading activity counts…';}
+  const co = document.getElementById('created-only'); if(co){co.checked=false;co.disabled=true;co.title='Loading activity counts…';}
+  versionMin=0; recuratedOnly=false; createdOnly=false;
+  const url = new URL(window.location.href);
+  url.searchParams.delete('q');
+  url.searchParams.delete('type');
+  url.searchParams.delete('year');
+  url.searchParams.delete('page');
+  try { window.history.replaceState({}, '', url); } catch(e) {}
+}
+
+async function loadRepository(clientId) {
+  clientId = clientId.trim().toLowerCase();
+  if (!clientId) return;
+  CLIENT_ID = clientId;
+  loading = true;
+
+  // Update repo input to show what's loading
+  document.getElementById('repo-input').value = clientId;
+  document.getElementById('repo-error').classList.remove('show');
+  document.getElementById('doi-container').innerHTML = '<div class="loading-state" id="loading-tip-container"><div class="inline-tip-fetching" style="padding:2rem 0 0"><span class="load-spinner"></span>Fetching records from DataCite…</div></div>';
+  setTimeout(startLoadingTips, 2000);
+  const strip = document.getElementById('repo-stats-strip');
+  if (strip) strip.style.display = 'none';
+  const lml=document.getElementById('list-meta'); if(lml) lml.textContent='Loading…';
+  document.getElementById('stat-total').textContent = '—';
+  const sparkWrap = document.getElementById('rstat-spark'); if(sparkWrap) sparkWrap.style.display='none';
+  maxVersion = 1;
+  document.getElementById('stat-types').textContent = '—';
+  document.getElementById('stat-recent').textContent = '—';
+  document.getElementById('brand-name').textContent = clientId;
+  document.getElementById('brand-sub').textContent = '…';
+  resetFilters();
+
+  try {
+    // Fetch client meta + DOIs in parallel
+    const heroResourceType = document.getElementById('hero-resource-type')?.value || '';
+    const heroQuery = document.getElementById('hero-query')?.value.trim() || '';
+    const [meta, dois] = await Promise.all([fetchClientMeta(clientId), fetchAllDOIs(heroResourceType, heroQuery)]);
+    if (!dois.length && !meta) {
+      document.getElementById('repo-error').textContent = 'client not found';
+      document.getElementById('repo-error').classList.add('show');
+      document.getElementById('doi-container').innerHTML = '<div class="empty-state">No records found for that client ID.</div>';
+      const lmz=document.getElementById('list-meta'); if(lmz) lmz.textContent='0 records';
+      return;
+    }
+    allDOIs = dois;
+    updateBranding(clientId, meta);
+    populateFilters(allDOIs);
+    updateStats(allDOIs);
+    applyFiltersFromURL();
+    // Read page LAST, after all filter state is set, so nothing can stomp it
+    const pageParam = parseInt(new URLSearchParams(window.location.search).get('page') || '1', 10);
+    currentPage = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+    stopLoadingTips();
+    loading = false;
+    applyFiltersAndRender();
+  } catch(err) {
+    document.getElementById('doi-container').innerHTML = `<div class="error-state">Failed to load: ${escHtml(err.message)}</div>`;
+    stopLoadingTips();
+    loading = false;
+    const lme=document.getElementById('list-meta'); if(lme) lme.textContent='Error';
+  }
+}
+
+// ── Autocomplete ─────────────────────────────────────
+let acTimer, acHighlight = -1, acItems = [];
+
+async function searchClients(q) {
+  try {
+    const res = await fetch(`${API_BASE}/clients?query=${encodeURIComponent(q)}&page[size]=8`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return (json.data ?? []).map(d => ({
+      id:    d.id,
+      name:  d.attributes?.name ?? d.id,
+      count: d.attributes?.doiCount ?? null
+    }));
+  } catch { return []; }
+}
+
+function showAutocomplete(items) {
+  const box = document.getElementById('repo-autocomplete');
+  acItems = items;
+  acHighlight = -1;
+  if (!items.length) { box.classList.remove('open'); return; }
+  box.innerHTML = items.map((it, i) =>
+    `<div class="repo-ac-item" data-id="${escAttr(it.id)}" data-idx="${i}">
+      <span class="repo-ac-name">${escHtml(it.name)}</span>
+      <span class="repo-ac-id">${escHtml(it.id)}</span>
+      ${it.count != null ? `<span class="repo-ac-count">${it.count.toLocaleString()} DOIs</span>` : ''}
+    </div>`
+  ).join('');
+  box.classList.add('open');
+  box.querySelectorAll('.repo-ac-item').forEach(el => {
+    el.addEventListener('mousedown', e => {
+      e.preventDefault();
+      const id = el.dataset.id;
+      document.getElementById('repo-input').value = id;
+      box.classList.remove('open');
+      loadRepository(id);
+    });
+  });
+}
+
+function closeAutocomplete() {
+  document.getElementById('repo-autocomplete').classList.remove('open');
+  acHighlight = -1;
+}
+
+document.getElementById('repo-input').addEventListener('input', () => {
+  const q = document.getElementById('repo-input').value.trim();
+  clearTimeout(acTimer);
+  if (q.length < 2 || isDOI(q) || isPrefix(q)) { closeAutocomplete(); return; }
+  document.getElementById('repo-autocomplete').innerHTML = '<div class="repo-ac-loading">Searching…</div>';
+  document.getElementById('repo-autocomplete').classList.add('open');
+  acTimer = setTimeout(async () => {
+    const items = await searchClients(q);
+    showAutocomplete(items);
+  }, 300);
+});
+
+document.getElementById('repo-input').addEventListener('keydown', e => {
+  const box = document.getElementById('repo-autocomplete');
+  const open = box.classList.contains('open');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (open && acHighlight < acItems.length - 1) {
+      acHighlight++;
+      box.querySelectorAll('.repo-ac-item').forEach((el,i) => el.classList.toggle('highlighted', i===acHighlight));
+    }
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (open && acHighlight > 0) {
+      acHighlight--;
+      box.querySelectorAll('.repo-ac-item').forEach((el,i) => el.classList.toggle('highlighted', i===acHighlight));
+    }
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (open && acHighlight >= 0 && acItems[acHighlight]) {
+      const id = acItems[acHighlight].id;
+      document.getElementById('repo-input').value = id;
+      closeAutocomplete();
+      loadRepository(id);
+    } else {
+      const val = document.getElementById('repo-input').value.trim();
+      closeAutocomplete();
+      if (!val) return;
+      if (isDOI(val)) loadSingleDOI(val);
+      else if (isPrefix(val)) loadPrefixDOIs(val);
+      else loadRepository(val);
+    }
+  } else if (e.key === 'Escape') {
+    closeAutocomplete();
+  }
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.topbar-repo')) closeAutocomplete();
+});
+
+// ── Repo switcher events ──────────────────────────────
+function isDOI(val) {
+  // Matches doi.org URLs or bare DOIs starting with 10. with a slash and suffix
+  return /^(https?:\/\/doi\.org\/)?10\.\d{4,}\/.+$/i.test(val.trim());
+}
+
+function isPrefix(val) {
+  // Matches bare prefix like 10.58052 or 10.58052/ — has 10. but no content after slash
+  return /^10\.\d{4,}\/?$/.test(val.trim());
+}
+
+function parseDOI(val) {
+  // Strip doi.org prefix if present
+  return val.trim().replace(/^https?:\/\/doi\.org\//i, '');
+}
+
+async function loadPrefixDOIs(prefix) {
+  prefix = prefix.trim().replace(/\/$/, ''); // strip trailing slash
+  document.getElementById('repo-input').value = prefix;
+  document.getElementById('repo-error').classList.remove('show');
+  document.getElementById('doi-container').innerHTML = '<div class="loading-state" id="loading-tip-container"></div>';
+  setTimeout(startLoadingTips, 2000);
+  const lm = document.getElementById('list-meta'); if(lm) lm.textContent = 'Loading…';
+
+  try {
+    let results = [], cursor = 1, total = null;
+    while (true) {
+      const heroResourceType2 = document.getElementById('hero-resource-type')?.value || '';
+      const heroQuery2 = document.getElementById('hero-query')?.value.trim() || '';
+      let url = `${API_BASE}/dois?query=doi:${encodeURIComponent(prefix)}*&page[size]=100&page[number]=${cursor}&sort=-updated`;
+      if (heroResourceType2) url += `&resource-type-id=${encodeURIComponent(heroResourceType2)}`;
+      if (heroQuery2) url += `&query=${encodeURIComponent('doi:'+prefix+'* AND '+heroQuery2)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`API error ${res.status}`);
+      const json = await res.json();
+      if (total === null) total = json.meta?.total ?? 0;
+      results = results.concat(json.data ?? []);
+      if (results.length >= total || !(json.data?.length) || results.length >= 2000) break;
+      cursor++;
+      if (cursor > 20) break;
+    }
+
+    stopLoadingTips();
+    allDOIs = results;
+    filtered = results;
+
+    // Update branding
+    const strip = document.getElementById('repo-stats-strip');
+    const stripName = document.getElementById('repo-stats-name');
+    if (strip) strip.style.display = '';
+    if (stripName) stripName.textContent = `Prefix ${prefix}`;
+    document.title = `Re-Curation Watch · ${prefix}`;
+    document.getElementById('brand-name').textContent = prefix;
+
+    // Update commons link
+    const cl = document.getElementById('commons-link');
+    const cl2 = document.getElementById('commons-link-repo');
+    const prefixUrl = `https://commons.datacite.org/doi.org?query=doi:${prefix}*`;
+    if (cl) cl.href = prefixUrl;
+    if (cl2) { cl2.href = prefixUrl; cl2.textContent = `Prefix ${prefix}`; }
+
+    // Update URL
+    const url2 = new URL(window.location.href);
+    url2.searchParams.set('prefix', prefix);
+    url2.searchParams.delete('client');
+    url2.searchParams.delete('doi');
+    try { window.history.replaceState({}, '', url2); } catch(e) {}
+
+    updateStats(allDOIs);
+    populateFilters(allDOIs);
+    resetFilters();
+    applyFiltersFromURL();
+    currentPage = 1;
+    applyFiltersAndRender();
+
+  } catch(err) {
+    stopLoadingTips();
+    document.getElementById('doi-container').innerHTML = `<div class="error-state">Could not load prefix: ${escHtml(err.message)}</div>`;
+    const lme = document.getElementById('list-meta'); if(lme) lme.textContent = 'Error';
+  }
+}
+
+async function loadSingleDOI(doiId) {
+  doiId = parseDOI(doiId);
+  document.getElementById('repo-input').value = doiId;
+  document.getElementById('repo-error').classList.remove('show');
+  document.getElementById('doi-container').innerHTML = '<div class="loading-state" id="loading-tip-container"></div>';
+  setTimeout(startLoadingTips, 2000);
+  document.getElementById('list-meta').textContent = 'Loading…';
+
+  try {
+    const res = await fetch(`${API_BASE}/dois/${encodeURIComponent(doiId)}`);
+    if (!res.ok) throw new Error(`DOI not found (${res.status})`);
+    const json = await res.json();
+    const doi = json.data;
+    if (!doi) throw new Error('No data returned');
+
+    stopLoadingTips();
+    allDOIs = [doi];
+    filtered = [doi];
+
+    // Update branding to show DOI context
+    document.getElementById('brand-name').textContent = doiId;
+    document.getElementById('brand-sub').textContent = doiId;
+    document.title = `Re-Curation Watch · ${doiId}`;
+    const title = doi.attributes?.titles?.[0]?.title ?? doiId;
+    const strip = document.getElementById('repo-stats-strip');
+    const stripName = document.getElementById('repo-stats-name');
+    if (strip) strip.style.display = '';
+    if (stripName) stripName.textContent = title;
+    document.getElementById('stat-total').textContent = '1';
+    document.getElementById('stat-types').textContent = doi.attributes?.types?.resourceTypeGeneral ?? '—';
+    const yr = doi.attributes?.updated ? new Date(doi.attributes.updated).getFullYear() : '—';
+    document.getElementById('stat-recent').textContent = yr;
+    // Update "Currently viewing" link to show DOI title
+    const cl2 = document.getElementById('commons-link-repo');
+    if (cl2) { cl2.textContent = title; cl2.href = `https://doi.org/${doiId}`; }
+
+    // Update URL
+    const url = new URL(window.location.href);
+    url.searchParams.set('doi', doiId);
+    url.searchParams.delete('client');
+    try { window.history.replaceState({}, '', url); } catch(e) {}
+
+    currentPage = 1;
+    renderPage();
+
+    // Auto-open history panel
+    setTimeout(() => toggleActivity(doi.id), 300);
+
+  } catch(err) {
+    stopLoadingTips();
+    document.getElementById('doi-container').innerHTML = `<div class="error-state">Could not load DOI: ${escHtml(err.message)}</div>`;
+    document.getElementById('list-meta').textContent = 'Error';
+  }
+}
+
+document.getElementById('repo-go').addEventListener('click', () => {
+  const val = document.getElementById('repo-input').value.trim();
+  closeAutocomplete();
+  if (!val) return;
+  if (isDOI(val)) loadSingleDOI(val);
+  else if (isPrefix(val)) loadPrefixDOIs(val);
+  else loadRepository(val);
+});
+
+
+// ── Background activity count fetcher ────────────────
+
+// ── Re-Curation tips ─────────────────────────────────
+const RCW_TIPS = [
+  { label: 'Re-Curation', text: '<strong>Re-curation</strong> means going back to published records to improve connectivity — adding ORCIDs, RORs, and related identifiers.', link: 'https://metadatagamechangers.com/blog' },
+  { label: 'FAIR Principles', text: '<strong>FAIR metadata</strong> is a continuum, not a checklist. The activity history here shows how repositories move along it over time.', link: 'https://metadatagamechangers.com/blog' },
+  { label: 'Funder Metadata', text: '<strong>Funder acronyms are not enough.</strong> Persistent identifiers like ROR make it possible to trace research outputs back to the agencies that funded them.', link: 'https://metadatagamechangers.com/blog' },
+  { label: 'DataCite Provenance', text: '<strong>Every DOI update</strong> since March 2019 is recorded by DataCite as a provenance event — this is what Re-Curation Watch visualizes.', link: 'https://support.datacite.org/docs/tracking-provenance' },
+  { label: 'MGC Mission', text: '<strong>Better documentation</strong> leads to better data discovery, reuse, and research integrity.', link: 'https://metadatagamechangers.com' },
+  { label: 'Connectivity', text: '<strong>Identifiers connect research.</strong> ORCIDs for people, RORs for organizations, DOIs for outputs — together they make the global research graph possible.', link: 'https://metadatagamechangers.com/blog' },
+];
+let tipIndex = 0, tipRotateTimer = null;
+function startLoadingTips() {
+  clearInterval(tipRotateTimer);
+  tipIndex = Math.floor(Math.random() * RCW_TIPS.length);
+  renderInlineTip();
+  tipRotateTimer = setInterval(() => { tipIndex=(tipIndex+1)%RCW_TIPS.length; renderInlineTip(); }, 4000);
+}
+function stopLoadingTips() { clearInterval(tipRotateTimer); tipRotateTimer=null; }
+function renderInlineTip() {
+  const container = document.getElementById('loading-tip-container');
+  if (!container) return;
+  const tip = RCW_TIPS[tipIndex];
+  container.innerHTML =
+    '<div class="inline-tip">' +
+    '<div class="inline-tip-fetching"><span class="load-spinner"></span>Re-Curation tips while you wait…</div>' +
+    '<div class="inline-tip-card">' +
+    '<div class="inline-tip-label">'+tip.label+'</div>' +
+    '<div class="inline-tip-text">'+tip.text+'</div>' +
+    '<a class="inline-tip-link" href="'+tip.link+'" target="_blank">Learn more at Metadata Game Changers ↗</a>' +
+    '</div></div>';
+}
+
+// ── Boot: check URL param, else load default ──────────
+(async () => {
+  const params = new URLSearchParams(window.location.search);
+  const doiParam    = params.get('doi');
+  const prefixParam = params.get('prefix');
+  const clientFromUrl = params.get('client');
+  if (doiParam) {
+    await loadSingleDOI(doiParam);
+  } else if (prefixParam) {
+    await loadPrefixDOIs(prefixParam);
+  } else {
+    await loadRepository(clientFromUrl || DEFAULT_CLIENT);
+  }
+})();
+</script>
+
+<!-- CITATION POPOVER -->
+<div id="cite-popover" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;z-index:300;align-items:flex-start;justify-content:flex-end;padding:0.5rem 1rem 0 0;" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:var(--white);border:2px solid var(--ink);max-width:480px;width:100%;padding:1.5rem;position:relative;margin-top:3.5rem;box-shadow:0 4px 24px rgba(0,0,0,0.12);">
+    <div style="font-family:var(--mono);font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--blue);margin-bottom:0.6rem;">Cite this tool</div>
+    <div id="cite-text" style="font-size:0.82rem;color:var(--ink);line-height:1.6;margin-bottom:1rem;">Loading citation…</div>
+    <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+      <button id="cite-copy" style="font-size:0.72rem;font-family:var(--sans);background:var(--ink);color:var(--white);border:none;padding:0.35rem 0.8rem;cursor:pointer;">Copy citation</button>
+      <a href="https://doi.org/10.60872/recurationWatch" target="_blank" style="font-family:var(--mono);font-size:0.68rem;color:var(--blue);text-decoration:none;">doi.org/10.60872/recurationWatch ↗</a>
+      <button onclick="document.getElementById('cite-popover').style.display='none'" style="margin-left:auto;background:none;border:1px solid var(--rule);padding:0.28rem 0.6rem;cursor:pointer;font-size:0.7rem;color:var(--faint);">Close</button>
+    </div>
+  </div>
+</div>
+</div>
+
+
+
+<!-- FOOTER -->
+<footer style="border-top:1px solid var(--rule);background:var(--off);padding:1rem 2rem;margin-top:2rem;">
+  <div style="max-width:1040px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <a href="https://metadatagamechangers.com" target="_blank">
+        <img src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" style="height:22px;width:auto;display:block;" />
+      </a>
+      <span style="font-size:0.72rem;color:var(--faint);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch" target="_blank" style="color:var(--sub);text-decoration:none;font-weight:500;">Re-Curation Watch</a> · Created by <a href="https://metadatagamechangers.com" target="_blank" style="color:var(--sub);text-decoration:none;font-weight:500;">Metadata Game Changers</a> · Better Documentation | Better Data | Better Science</span>
+    </div>
+    <span style="font-family:var(--mono);font-size:0.65rem;color:var(--faint);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" style="color:var(--blue);text-decoration:none;font-family:var(--mono);font-size:0.65rem;">Report an issue ↗</a> &nbsp;·&nbsp; <a href="https://doi.org/10.60872/recurationWatch" target="_blank" style="color:var(--sub);text-decoration:none;" title="Cite as: doi.org/10.60872/recurationWatch">DOI: 10.60872/recurationWatch</a> &nbsp;·&nbsp; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" style="color:var(--sub);text-decoration:none;">CC BY-NC 4.0</a> &nbsp;·&nbsp; Live data from <a href="https://api.datacite.org" target="_blank" style="color:var(--blue);text-decoration:none;">api.datacite.org</a></span>
+  </div>
+</footer>
+
+<script>
+// ── Citation popover ──────────────────────────────────
+const CITE_DOI = '10.60872/recurationWatch';
+
+async function loadCitation() {
+  const el = document.getElementById('cite-text');
+  try {
+    // Fetch citation in APA format via DataCite content negotiation
+    const res = await fetch(`https://doi.org/${CITE_DOI}`, {
+      headers: { 'Accept': 'text/x-bibliography; style=apa' }
+    });
+    if (!res.ok) throw new Error();
+    const text = await res.text();
+    el.textContent = text.trim();
+  } catch {
+    // Fallback: build citation from what we know
+    el.textContent = 'Robinson, E. (2026). Re-Curation Watch (v1.0). Metadata Game Changers LLC. https://doi.org/' + CITE_DOI;
+  }
+}
+
+let citationLoaded = false;
+document.getElementById('cite-btn').addEventListener('click', () => {
+  const popover = document.getElementById('cite-popover');
+  popover.style.display = 'flex';
+  if (!citationLoaded) {
+    citationLoaded = true;
+    loadCitation();
+  }
+});
+
+document.getElementById('cite-copy').addEventListener('click', () => {
+  const text = document.getElementById('cite-text').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('cite-copy');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy citation', 2000);
+  });
+});
+</script>
+
+
+
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9JQRWY72HW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-9JQRWY72HW');
+</script>
+</div>
+
+
+
+
+
+<!-- ANALYTICS BANNER -->
+<div id="analytics-banner">
+  <span>This site uses Google Analytics for anonymous usage statistics. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy ↗</a></span>
+  <div id="analytics-banner-btns">
+    <button class="ab-btn ab-btn-ok" onclick="hideBanner('accepted')">OK</button>
+    <button class="ab-btn ab-btn-no" onclick="hideBanner('declined')">Decline</button>
+  </div>
+</div>
+<script>
+  function hideBanner(choice) {
+    localStorage.setItem('rcw-ga', choice);
+    document.getElementById('analytics-banner').style.display = 'none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  }
+  (function() {
+    var choice = localStorage.getItem('rcw-ga');
+    if (choice) document.getElementById('analytics-banner').style.display = 'none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  })();
+</script>
+</body>
+</html>
