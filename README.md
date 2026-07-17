@@ -23,7 +23,7 @@ Start at **[tools.html](tools.html)** for a one-page overview, or jump straight 
 | **ROR Retriever** | [`rorRetriever.html`](rorRetriever.html) | Match **affiliation strings to ROR identifiers** (a browser port of [RORRetriever](https://github.com/Metadata-Game-Changers/RORRetriever)). | [10.60872/rorRetriever](https://doi.org/10.60872/rorRetriever) |
 | **ORCID Retriever** | [`orcidRetriever.html`](orcidRetriever.html) | Find **ORCID iDs for people** by name, with employment and journal context for disambiguation (a browser port of the name→ORCID flow in [ORCID-Tools](https://github.com/Metadata-Game-Changers/ORCID-Tools)). | [10.60872/orcidRetriever](https://doi.org/10.60872/orcidRetriever) |
 
-New to the suite? Start with the **[Beginner's Guide](guide.html)** — a task-first walkthrough ("I have a repository — now what?").
+New to the suite? Start with the **[Beginner's Guide](guide.html)** — a task-first walkthrough ("I have a repository — now what?"). Leading a DataCite consortium? The **[Consortium Leader's Guide](consortiumGuide.html)** (also as [PDF](consortiumGuide.pdf)) maps the tools onto a membership-wide, bright-spots-based improvement effort.
 
 Supporting pages: **[useCases.html](useCases.html)** (the completeness use-case catalog), **[connectivityAbout.html](connectivityAbout.html)** and **[rorAbout.html](rorAbout.html)** (background), and **[tips.html](tips.html)** (the collected while-you-wait tips).
 
