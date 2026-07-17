@@ -174,7 +174,7 @@
     </div>
     <div class="topbar-links">
       <div class="topbar-col">
-      <a id="rcw-link" href="index.html" target="_blank" rel="noopener">Re-Curation Watch ↗</a>
+      <a id="rcw-link" href="recurationWatch.html" target="_blank" rel="noopener">Re-Curation Watch ↗</a>
       <a id="completeness-link" href="completeness.html" target="_blank" rel="noopener">Metadata Completeness ↗</a>
       <a id="connectivity-link" href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity ↗</a>
       <a id="activity-link" href="repo-activity.html" target="_blank" rel="noopener">Repository Activity ↗</a>
@@ -182,6 +182,7 @@
       <div class="topbar-col">
       <button class="cite-link" id="cite-btn" type="button">Cite this Tool ↗</button>
       <a href="useCases.html" target="_blank" rel="noopener">Use Cases ↗</a>
+      <a href="guide.html">Beginner's Guide ↗</a>
       <a href="tips.html">Metadata Tips ↗</a>
       <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
       </div>
@@ -1138,7 +1139,7 @@ function setTopbarLinks(clientId){
   const rt = $('resource-type').value, uq = $('query-input').value.trim();
   const filters = id ? client + (rt ? '&resource-type=' + encodeURIComponent(rt) : '') + (uq ? '&query=' + encodeURIComponent(uq) : '') : '';
   const set = (elId, href) => { const el = $(elId); if (el) el.href = href; };
-  set('rcw-link', 'index.html' + client);
+  set('rcw-link', 'recurationWatch.html' + client);
   set('completeness-link', 'completeness.html' + filters);
   set('connectivity-link', 'metadataConnectivity.html' + filters);
   set('activity-link', 'repo-activity.html' + client);
@@ -1195,7 +1196,7 @@ document.addEventListener('click', e => { if (!e.target.closest('.hero-search'))
 
 /* ---------- loading tips ---------- */
 const HISTORY_TIPS = [
-  { label:'Cohorts, not a time machine', text:'Each year scores the records <strong>registered</strong> that year <em>as they are today</em> — a strong early year can mean good metadata then, or <strong>re-curation</strong> since. Compare with Re-Curation Watch to tell them apart.', link:'index.html' },
+  { label:'Cohorts, not a time machine', text:'Each year scores the records <strong>registered</strong> that year <em>as they are today</em> — a strong early year can mean good metadata then, or <strong>re-curation</strong> since. Compare with Re-Curation Watch to tell them apart.', link:'recurationWatch.html' },
   { label:'Registered year', text:'<strong>Registered</strong> is when DataCite first saw the DOI — assigned by the system, unlike <strong>publicationYear</strong>, which authors can backfill arbitrarily.', link:'https://support.datacite.org/docs/queries' },
   { label:'Thin years', text:'Early years often have only a handful of records, so their percentages swing wildly — <strong>hollow points</strong> mark years with fewer than 10 records. Read trends from the solid ones.', link:'https://metadatagamechangers.com' },
   { label:'Rising lines', text:'A rising line means newer records are <strong>better documented</strong> — or older cohorts were never revisited. Falling lines are rarer and worth investigating: did a workflow change?', link:'https://metadatagamechangers.com/blog' },
