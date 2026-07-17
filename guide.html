@@ -117,7 +117,8 @@
       <div class="step-t"><a href="completeness.html" target="_blank" rel="noopener">Start with Metadata Completeness</a> — what's in your metadata?</div>
       <p>Type your repository name or client ID and press <b>Explore</b>. The tool samples your records and scores them against the FAIR use cases.</p>
       <div class="look"><b>What you'll see:</b> a <b>FAIR Total</b> and four use-case chips — <b>Text</b> (can people find it?), <b>Identifiers</b> (can people connect to it?), <b>Connections</b> (who and what is connected?), and <b>Contacts</b> (Who can contact if I have questions?). Click any chip to see the concepts behind it, each with a completeness bar.</div>
-      <p>Low numbers here are normal and are not a grade. They tell you which parts of your records can be improved.</p>
+      <div class="look">If you are interested, use cases are also available for <b>Project Metadata</b>, <b>Relations</b>, or <b>Contributors</b>, click on Projects or Extras above the completeness chips to focus on these.</div>
+      <p>Low numbers here are normal. They tell you which parts of your records might be candidates for improvement.</p>
       <a class="try" href="completeness.html?client=sjyq.oozvia" target="_blank" rel="noopener">Try it on an example repository →</a>
     </div>
   </div>
@@ -128,7 +129,7 @@
       <div class="step-t">Drill into a weak concept — what's actually there?</div>
       <p>Click any concept name (e.g. <b>Project Funder</b>). You'll get the real values from your own records.</p>
       <div class="look"><b>What you'll see:</b> each distinct value with its <b>Occurrences</b> (how many times it appears) and <b>DOIs</b> (how many records it appears in) — plus how many DOIs carry the concept at all. This is where "we do record funders" meets "…in 14 of 4,000 records."</div>
-      <p>This is the fastest way to spot inconsistency: five spellings of one funder, or a concept that scores well but holds junk.</p>
+      <p>This is one way to spot common values and some inconsistencies: five spellings of one funder, or a concept that scores well but holds incorrect values.</p>
     </div>
   </div>
 
@@ -136,8 +137,8 @@
     <div class="step-n">3</div>
     <div class="step-b">
       <div class="step-t"><a href="metadataConnectivity.html" target="_blank" rel="noopener">Move to Metadata Connectivity</a> — does your metadata connect?</div>
-      <p>Completeness asks whether a name is <em>present</em>. Connectivity asks whether that name carries the <b>identifier</b> that links it to the rest of the world — an <b>ORCID</b> for a person, a <b>ROR</b> for an organization.</p>
-      <p>Use the <b>Share with Metadata Connectivity</b> link in Completeness and both tools measure the <em>same records</em> — otherwise a new random sample is drawn and the numbers won't line up.</p>
+      <p>Completeness asks whether a name is <em>present</em>. Connectivity asks whether that name carries the <b>identifier</b> that links it to the rest of the world — an <b>ORCID</b> for a person, a <b>ROR</b> for an organization, funder or publisher.</p>
+      <p>Use the <b>Share with Metadata Connectivity</b> link in the Completeness Top Bar and both tools measure the <em>same records</em> — otherwise a new random sample is drawn and the numbers may differ.</p>
       <div class="look"><b>What you'll see:</b> one bar per question — "How many identifiers do creators have?", "How many affiliations do creators have?", and the same for contributors, funders, publishers, and rights. Green = identified in every occurrence, yellow = some, red = never.</div>
     </div>
   </div>
@@ -145,10 +146,10 @@
   <div class="step">
     <div class="step-n">4</div>
     <div class="step-b">
-      <div class="step-t">Click a bar — get the list of records to fix</div>
+      <div class="step-t">Click a bar — get a list of records to fix</div>
       <p>Every bar opens a list of the distinct people, organizations, funders, or rights behind it.</p>
       <div class="look"><b>What you'll see:</b> for each one — <b>Occurrences</b>, <b>Identified</b>, and <b>To fix</b>. All three are links: they open the exact DOIs, so "we should add ORCIDs" becomes a specific list of records.</div>
-      <p><b>Start with the quick wins</b> (shown first, tagged in yellow). A quick win is an entity that already has an identifier on <em>some</em> records but not others — you don't have to look anything up, just copy what you already have.</p>
+      <p><b>Start with the quick wins</b> (shown first, tagged in yellow). A quick win is an entity that already has an identifier on <em>some</em> records but not all — you don't have to look anything up, just copy what you already have.</p>
     </div>
   </div>
 
@@ -156,8 +157,8 @@
     <div class="step-n">5</div>
     <div class="step-b">
       <div class="step-t">Find the identifiers you're missing — <a href="rorRetriever.html" target="_blank" rel="noopener">ROR</a> and <a href="orcidRetriever.html" target="_blank" rel="noopener">ORCID</a> Retrievers</div>
-      <p>In a drill-down, click <b>Find RORs</b> or <b>Find ORCIDs</b>. Every name that still needs an identifier is handed to the matching retriever automatically.</p>
-      <div class="look"><b>What you'll see:</b> candidate matches for each name — for people, each ORCID iD with their most recent employment so you can tell two "J. Smith"s apart; for organizations, ROR matches for each affiliation, funder, or publisher string. Export the results as CSV/TSV and take them back to your repository system.</div>
+      <p>In the drill-downs, click <b>Find RORs</b> or <b>Find ORCIDs</b>. Every name that still needs an identifier is handed to the matching retriever automatically.</p>
+      <div class="look"><b>What you'll see:</b> candidate matches for each name — for people, each ORCID iD with their most recent employment and the journal of their most recent paper to help tell two "J. Smith"s apart; for organizations, ROR matches for each affiliation, funder, or publisher string. The results are color-coded with the best being green. Export the results as CSV/TSV and take them back to your repository.</div>
       <p>Organizations and people are routed correctly on their own: an organizational creator goes to ROR, a person goes to ORCID.</p>
     </div>
   </div>
@@ -165,9 +166,9 @@
   <div class="step">
     <div class="step-n">6</div>
     <div class="step-b">
-      <div class="step-t">Check for duplicates — the same entity under several spellings</div>
+      <div class="step-t">Check for duplicates — the same entity with several spellings</div>
       <p>Scroll to <b>Potential duplicates</b> in Connectivity. It clusters names that look like the same person, organization, or license.</p>
-      <div class="look"><b>What you'll see:</b> a canonical name with its spellings, each with Occurrences and Identified (both link to the records). A <b>⚠ shared-id conflict</b> means two spellings carry the same identifier — usually one is wrong.</div>
+      <div class="look"><b>What you'll see:</b> a canonical name with its spellings, each with Occurrences and Identified (both link to the records). A <b>⚠ shared-id conflict</b> means two spellings carry the same identifier — sometimes they are the same name, but sometimes one needs to be fixed. Sometimes you see two people with the same ORCID or multiple ORCIDs for one person!</div>
       <p>This section is advisory: it suggests, you decide.</p>
     </div>
   </div>
@@ -177,11 +178,11 @@
     <div class="step-b">
       <div class="step-t">Understand how you got here — the history tools</div>
       <ul>
-        <li><a href="recurationWatch.html" target="_blank" rel="noopener"><b>Re-Curation Watch</b></a> — one DOI at a time: every change since 2019, with before/after values and a timeline showing which parts of the record changed and when.</li>
-        <li><a href="repo-activity.html" target="_blank" rel="noopener"><b>Repository Activity</b></a> — your whole repository over time: what's being curated, and by whom (you, DataCite, or someone else).</li>
-        <li><a href="repositoryHistory.html" target="_blank" rel="noopener"><b>Repository History</b></a> — completeness for every year you've been registering DOIs, so you can see whether newer records are better.</li>
+        <li><a href="recurationWatch.html" target="_blank" rel="noopener"><b>Re-Curation Watch</b></a> — one DOI at a time: changes since 2019 with focus on recent changes, with before/after values and a timeline showing which parts of the record changed and when.</li>
+        <li><a href="repo-activity.html" target="_blank" rel="noopener"><b>Repository Activity</b></a> — your whole repository over time: what's being curated, and by whom (you, DataCite, or someone else). Changes are shown as record timelines and specific changes.</li>
+        <li><a href="repositoryHistory.html" target="_blank" rel="noopener"><b>Repository History</b></a> — completeness for every year you've been registering DOIs, so you can see how completeness changes. You can share data back to Completeness or Connectivity to see details for any year.</li>
       </ul>
-      <p>These answer the question a completeness score can't: <em>is this improving, and who is doing the improving?</em></p>
+      <p>These answer the question a completeness score can't: <em>is this improving, and who is doing the invisible work?</em></p>
     </div>
   </div>
 
@@ -197,15 +198,15 @@
   <table class="g">
     <thead><tr><th>Your question</th><th>Tool</th></tr></thead>
     <tbody>
-      <tr><td class="q">Are the elements I care about even present?</td><td class="t"><a href="completeness.html" target="_blank" rel="noopener">Metadata Completeness</a></td></tr>
-      <tr><td class="q">What values are actually in a given element?</td><td class="t"><a href="completeness.html" target="_blank" rel="noopener">Completeness</a> → click a concept</td></tr>
+      <tr><td class="q">Are the elements I care about present?</td><td class="t"><a href="completeness.html" target="_blank" rel="noopener">Metadata Completeness</a></td></tr>
+      <tr><td class="q">What values exist in a given element?</td><td class="t"><a href="completeness.html" target="_blank" rel="noopener">Completeness</a> → click a concept</td></tr>
       <tr><td class="q">Do my people and organizations have ORCIDs and RORs?</td><td class="t"><a href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity</a></td></tr>
       <tr><td class="q">Which records should I fix first?</td><td class="t"><a href="metadataConnectivity.html" target="_blank" rel="noopener">Connectivity</a> → quick wins / To fix</td></tr>
       <tr><td class="q">What ORCID/ROR should this name have?</td><td class="t"><a href="orcidRetriever.html" target="_blank" rel="noopener">ORCID</a> / <a href="rorRetriever.html" target="_blank" rel="noopener">ROR Retriever</a></td></tr>
-      <tr><td class="q">Is the same person in here under three spellings?</td><td class="t"><a href="metadataConnectivity.html" target="_blank" rel="noopener">Connectivity</a> → Potential duplicates</td></tr>
+      <tr><td class="q">Is the same person/organization in the metadata under three spellings?</td><td class="t"><a href="metadataConnectivity.html" target="_blank" rel="noopener">Connectivity</a> → Potential duplicates</td></tr>
       <tr><td class="q">Who changed this record, and what did they change?</td><td class="t"><a href="recurationWatch.html" target="_blank" rel="noopener">Re-Curation Watch</a></td></tr>
       <tr><td class="q">Is my repository being curated, and by whom?</td><td class="t"><a href="repo-activity.html" target="_blank" rel="noopener">Repository Activity</a></td></tr>
-      <tr><td class="q">Is our metadata getting better over the years?</td><td class="t"><a href="repositoryHistory.html" target="_blank" rel="noopener">Repository History</a></td></tr>
+      <tr><td class="q">Is our metadata getting more complete over the years?</td><td class="t"><a href="repositoryHistory.html" target="_blank" rel="noopener">Repository History</a></td></tr>
     </tbody>
   </table>
 
@@ -217,24 +218,24 @@
 
   <div class="note"><b>Connectivity percentages are occurrence-based.</b> The bar's % is identified occurrences ÷ all occurrences. The bar's colored segments count <b>distinct entities</b> — one person appearing in 40 records is one entity. Both views matter: one tells you how much of the metadata is connected, the other how many people you'd have to look up.</div>
 
-  <div class="note"><b>Repository History is a cohort view.</b> Each year is scored using the records as they are <em>today</em>. A strong early year can mean the metadata was good then — or that it was re-curated since. Pair it with Re-Curation Watch to tell those apart.</div>
+  <div class="note"><b>Repository History is a cohort view.</b> Each year is scored using the records as they are <em>today</em>. A strong early year can mean the metadata was good then — or that it was re-curated since. Pair it with Re-Curation Watch or Repository Activity to tell those apart.</div>
 
-  <h2 class="sec">Narrowing what you look at</h2>
+  <h2 class="sec">Focusing on repository subsets for specific re-curation projects</h2>
   <p>Three controls, on both Completeness and Connectivity:</p>
   <ul>
     <li><b>Type</b> — score only Datasets, or only Software, etc.</li>
     <li><b>Query</b> — any DataCite query, e.g. <code>publicationYear:2024</code> or <code>prefix:10.18739</code>. (<a href="https://support.datacite.org/docs/queries" target="_blank" rel="noopener">Query syntax ↗</a>)</li>
     <li><b>Max</b> and <b>Random sample</b> — how many records, and whether they're drawn at random.</li>
   </ul>
-  <p>You can also paste a <b>single DOI</b> into the repository box to look at exactly one record — handy for checking a fix, or for showing someone what a well-formed record looks like.</p>
+  <p>You can also paste a <b>single DOI</b> into the repository box to look at exactly one record — handy for checking a fix, or for sharing what a well-formed record looks like with colleagues.</p>
 
   <h2 class="sec">Words you'll see</h2>
   <table class="g">
     <thead><tr><th>Term</th><th>What it means here</th></tr></thead>
     <tbody>
       <tr><td class="term">Client ID</td><td>Your repository's DataCite identifier, like <code>sjyq.oozvia</code>. Every tool accepts it (or your repository's name).</td></tr>
-      <tr><td class="term">Use case</td><td>A group of metadata concepts that together support a purpose — the four FAIR use cases are Text, Identifiers, Connections, Contacts.</td></tr>
-      <tr><td class="term">Concept</td><td>One thing a use case needs, e.g. <em>Project Funder</em> or <em>Resource Author Affiliation</em>. Concepts map to DataCite fields.</td></tr>
+      <tr><td class="term">Use case</td><td>A group of metadata concepts that together support a purpose — the four FAIR use cases are Text, Identifiers, Connections, Contacts. The Project use cases are Teams, Items, and Relations.</td></tr>
+      <tr><td class="term">Concept</td><td>One thing a use case needs, e.g. <em>Project Funder</em> or <em>Resource Author Affiliation</em>. Concepts map to DataCite fields and can be also used in other metadata dialects.</td></tr>
       <tr><td class="term">Occurrence</td><td>One appearance of a value. A funder named on 30 awards across 14 DOIs is 30 occurrences in 14 DOIs.</td></tr>
       <tr><td class="term">Entity</td><td>One distinct person, organization, funder, or rights statement — however many records it appears in.</td></tr>
       <tr><td class="term">Quick win</td><td>An entity that already has an identifier on some records but not others. Copy it across — no lookup needed.</td></tr>
