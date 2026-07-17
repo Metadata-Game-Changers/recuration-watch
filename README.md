@@ -15,13 +15,15 @@ Start at **[tools.html](tools.html)** for a one-page overview, or jump straight 
 
 | Tool | File | What it does | DOI |
 |---|---|---|---|
-| **Re-Curation Watch** | [`index.html`](index.html) | Browse a repository's DOIs and inspect each DOI's full **curation history** — who changed what, when — with before/after field diffs and a per-section change timeline. | [10.60872/recurationWatch](https://doi.org/10.60872/recurationWatch) |
+| **Re-Curation Watch** | [`recurationWatch.html`](recurationWatch.html) | Browse a repository's DOIs and inspect each DOI's full **curation history** — who changed what, when — with before/after field diffs and a per-section change timeline. | [10.60872/recurationWatch](https://doi.org/10.60872/recurationWatch) |
 | **Metadata Completeness** | [`completeness.html`](completeness.html) | Score a repository (or a single DOI) against the MGC **FAIR**, **DataCite**, and **Project** use cases, and drill into any concept's values. Runs the methodology's `jq` queries in the browser via [jq-web](https://github.com/fiatjaf/jq-web). | [10.60872/metadataCompleteness](https://doi.org/10.60872/metadataCompleteness) |
 | **Metadata Connectivity** | [`metadataConnectivity.html`](metadataConnectivity.html) | Measure **identifier connectivity** — how many creators, contributors, funders, publishers, and rights carry the identifiers (ORCID, ROR, …) that connect them — with drill-downs to the exact records and hand-offs to the retrievers. | [10.60872/metadataConnectivity](https://doi.org/10.60872/metadataConnectivity) |
 | **Repository Activity** | [`repo-activity.html`](repo-activity.html) | Plot a repository's **curation activity over time**, broken down by changed property and by the actor who made the change. | [10.60872/repositoryActivity](https://doi.org/10.60872/repositoryActivity) |
 | **Repository History** | [`repositoryHistory.html`](repositoryHistory.html) | Score completeness for **every registered year** and plot the use-case trends over time (a cohort view — records as they are today). | [10.60872/repositoryHistory](https://doi.org/10.60872/repositoryHistory) |
 | **ROR Retriever** | [`rorRetriever.html`](rorRetriever.html) | Match **affiliation strings to ROR identifiers** (a browser port of [RORRetriever](https://github.com/Metadata-Game-Changers/RORRetriever)). | [10.60872/rorRetriever](https://doi.org/10.60872/rorRetriever) |
 | **ORCID Retriever** | [`orcidRetriever.html`](orcidRetriever.html) | Find **ORCID iDs for people** by name, with employment and journal context for disambiguation (a browser port of the name→ORCID flow in [ORCID-Tools](https://github.com/Metadata-Game-Changers/ORCID-Tools)). | [10.60872/orcidRetriever](https://doi.org/10.60872/orcidRetriever) |
+
+New to the suite? Start with the **[Beginner's Guide](guide.html)** — a task-first walkthrough ("I have a repository — now what?").
 
 Supporting pages: **[useCases.html](useCases.html)** (the completeness use-case catalog), **[connectivityAbout.html](connectivityAbout.html)** and **[rorAbout.html](rorAbout.html)** (background), and **[tips.html](tips.html)** (the collected while-you-wait tips).
 
@@ -99,7 +101,7 @@ This repository is served with GitHub Pages straight from a branch — no build 
 
 1. Put the tool files (the `.html` files, `FAIR_spirals.json`, the favicon, `LICENSE`, `README.md`) in the root of `main`.
 2. **Settings → Pages → Source**: select the `main` branch, `/ (root)`.
-3. The suite is live at `https://[org].github.io/recuration-watch/` — e.g. [`tools.html`](tools.html) for the overview or [`index.html`](index.html) for Re-Curation Watch.
+3. The suite is live at `https://[org].github.io/recuration-watch/` — e.g. [`tools.html`](tools.html) for the overview or [`recurationWatch.html`](recurationWatch.html) for Re-Curation Watch.
 
 Any static host works (Netlify, Cloudflare Pages, …).
 

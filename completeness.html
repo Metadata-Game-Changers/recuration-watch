@@ -218,7 +218,7 @@
     </div>
     <div class="topbar-links">
       <div class="topbar-col">
-      <a id="rcw-link" href="index.html" target="_blank" rel="noopener">Re-Curation Watch ↗</a>
+      <a id="rcw-link" href="recurationWatch.html" target="_blank" rel="noopener">Re-Curation Watch ↗</a>
       <a id="connectivity-link" href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity ↗</a>
       <a id="activity-link" href="repo-activity.html" target="_blank" rel="noopener">Repository Activity ↗</a>
       <a id="history-link" href="repositoryHistory.html" target="_blank" rel="noopener">Repository History ↗</a>
@@ -226,6 +226,7 @@
       <div class="topbar-col">
       <button class="cite-link" id="cite-btn" type="button">Cite this Tool ↗</button>
       <a href="useCases.html" target="_blank" rel="noopener">Use Cases ↗</a>
+      <a href="guide.html">Beginner's Guide ↗</a>
       <a href="tips.html">Metadata Tips ↗</a>
       <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
       </div>
@@ -1459,7 +1460,7 @@ function historyHref(clientId, resourceTypeId, query){
     + (query ? '&query=' + encodeURIComponent(query) : '');
 }
 // Re-Curation Watch link: a single DOI opens that DOI's curation history; a repository opens its DOIs.
-const rcwHref = (clientId, doi) => doi ? ('index.html?doi=' + encodeURIComponent(doi)) : ('index.html?client=' + encodeURIComponent(clientId));
+const rcwHref = (clientId, doi) => doi ? ('recurationWatch.html?doi=' + encodeURIComponent(doi)) : ('recurationWatch.html?client=' + encodeURIComponent(clientId));
 function syncUrl(clientId, resourceTypeId, query){
   try {
     const url = new URL(location.href);

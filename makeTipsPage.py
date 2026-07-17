@@ -2,7 +2,7 @@
 """Regenerate tips.html from the tips arrays embedded in the tool pages.
 
 The while-you-wait tips live in each tool (the source of truth):
-    index.html                RCW_TIPS
+    recurationWatch.html      RCW_TIPS
     completeness.html         COMPLETENESS_TIPS
     metadataConnectivity.html CONNECTIVITY_TIPS
     rorRetriever.html         TIPS
@@ -23,7 +23,7 @@ import re
 import sys
 
 TOOLS = [
-    ("index.html", "RCW_TIPS", "Re-Curation Watch"),
+    ("recurationWatch.html", "RCW_TIPS", "Re-Curation Watch"),
     ("completeness.html", "COMPLETENESS_TIPS", "Metadata Completeness"),
     ("metadataConnectivity.html", "CONNECTIVITY_TIPS", "Metadata Connectivity"),
     ("rorRetriever.html", "TIPS", "ROR Retriever"),
@@ -123,6 +123,7 @@ HEAD = '''<!DOCTYPE html>
     </div>
     <div class="topbar-links">
       <a href="tools.html">All Tools ↗</a>
+      <a href="guide.html">Beginner's Guide ↗</a>
       <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
     </div>
   </div>
@@ -137,7 +138,7 @@ HEAD = '''<!DOCTYPE html>
 FOOT = '''
   <footer>
     These tips rotate inside the tools while data loads; here they are all at once. Collected from
-    <a href="index.html">Re-Curation Watch</a>, <a href="completeness.html">Metadata Completeness</a>,
+    <a href="recurationWatch.html">Re-Curation Watch</a>, <a href="completeness.html">Metadata Completeness</a>,
     <a href="metadataConnectivity.html">Metadata Connectivity</a>, <a href="rorRetriever.html">ROR Retriever</a>,
     <a href="orcidRetriever.html">ORCID Retriever</a>, and <a href="repositoryHistory.html">Repository History</a>.
     A <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers</a> prototype
