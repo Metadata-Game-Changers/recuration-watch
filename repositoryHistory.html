@@ -670,6 +670,12 @@ function yearTotals(byCode){
 }
 
 async function run(){
+  if (!SPIRALS){
+    // Enter / autocomplete can fire before the boot sequence finishes (or after it failed);
+    // without this guard they reach the scorer with a null catalog.
+    setStatus('Still loading the use-case catalog and jq engine — wait for "Engine ready", then try again. If this message persists, reload the page.', true);
+    return;
+  }
   const clientId = $('repo-input').value.trim();
   const cap = Math.max(1, Math.min(1000, parseInt($('cap').value,10) || 100));
   const random = $('random').checked;
