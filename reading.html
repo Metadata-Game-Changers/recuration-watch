@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Related Reading &mdash; Metadata Game Changers metadata tools</title>
+<link rel="icon" type="image/png" href="favicon_MGC.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{ --accent:#9167b0; --accent-dk:#673289; --tint:#f0eaf5; --ink:#1f2330; --muted:#6b7280; --line:#e6e3ec; --bg:#fbfafe; }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:0}
+  .topbar{border-bottom:2px solid var(--ink);padding:0 2rem}
+  .topbar-inner{max-width:1040px;margin:0 auto;display:flex;align-items:stretch;gap:0}
+  .topbar-brand{padding:.5rem 2rem .3rem 0;display:flex;flex-direction:row;align-items:flex-end;gap:1rem}
+  .brand-logo{height:64px;width:auto;display:block;flex-shrink:0}
+  .brand-title-wrap{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:.15rem}
+  .brand-tool-name{font-family:'Montserrat',sans-serif;font-size:2rem;font-weight:400;letter-spacing:.02em;color:#673289;line-height:1;white-space:nowrap;text-transform:uppercase}
+  .topbar-links{padding:0 0 0 1.5rem;display:flex;gap:1.6rem;margin-left:auto}
+  .topbar-col{display:flex;flex-direction:column;justify-content:center;gap:.25rem}
+  .topbar-links a{font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4}
+  .topbar-links a:hover{color:var(--accent-dk)}
+  @media(max-width:820px){.topbar{padding:0 1rem}.topbar-inner{flex-direction:column}.topbar-brand{padding-right:0}.brand-tool-name{font-size:1.5rem}.topbar-links{flex-wrap:wrap;gap:.75rem;padding:.25rem 0 .5rem}.topbar-col{flex-direction:row;flex-wrap:wrap;gap:.75rem}}
+  .wrap{max-width:1080px;margin:0 auto;padding:1.5rem 1.25rem 3rem}
+  a{color:var(--accent)}
+  .lede{font-size:.95rem;color:var(--ink);line-height:1.65;max-width:820px;margin:.8rem 0 .4rem}
+  .lede b{color:var(--accent-dk)}
+  .sub{font-size:.8rem;color:var(--muted);max-width:820px;line-height:1.6;margin:.4rem 0 1rem}
+  .toc{font-size:.8rem;line-height:1.9;margin:.4rem 0 1.4rem;padding:.7rem .95rem;border:1px solid var(--line);border-radius:10px;background:#fff;max-width:820px}
+  .toc a{color:var(--accent-dk);text-decoration:none;white-space:nowrap}
+  .toc a:hover{text-decoration:underline}
+  h2.sec{font-size:1.15rem;color:var(--accent-dk);margin:2rem 0 .2rem;border-bottom:1px solid var(--line);padding-bottom:.35rem;scroll-margin-top:1rem}
+  h2.sec a{color:var(--accent-dk);text-decoration:none}
+  h2.sec a:hover{text-decoration:underline}
+  h2.sec .count{font-size:.68rem;color:var(--muted);font-weight:400;text-transform:uppercase;letter-spacing:.03em;margin-left:.4rem}
+  .sec-blurb{font-size:.82rem;color:var(--muted);margin:.35rem 0 .6rem;max-width:820px}
+  ul.reads{list-style:none;margin:.2rem 0 1rem;padding:0;max-width:860px}
+  ul.reads li{padding:.55rem 0;border-bottom:1px solid #f0eef5}
+  .r-title{font-size:.9rem;font-weight:600;color:var(--ink);text-decoration:none}
+  .r-title:hover{color:var(--accent-dk);text-decoration:underline}
+  .star{color:var(--accent);font-weight:700}
+  .r-meta{font-size:.7rem;color:var(--muted);margin:.15rem 0 .1rem;font-family:'IBM Plex Mono',ui-monospace,monospace}
+  .r-doi{color:var(--muted);text-decoration:none}
+  .r-doi:hover{color:var(--accent-dk);text-decoration:underline}
+  .r-nodoi{font-style:italic}
+  .r-note{font-size:.8rem;color:var(--ink);line-height:1.5;max-width:760px}
+  footer{margin-top:2.5rem;font-size:.72rem;color:var(--muted);border-top:1px solid var(--line);padding-top:.9rem;line-height:1.5}
+  footer a{color:var(--accent);text-decoration:none}
+  @media print{.topbar-links,#analytics-banner{display:none} section,ul.reads li{break-inside:avoid}}
+  #analytics-banner{position:fixed;bottom:0;left:0;right:0;background:var(--ink);color:#fff;padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;z-index:500;font-size:.75rem;border-top:2px solid #444}
+  #analytics-banner a{color:#93c5fd}
+  #analytics-banner-btns{display:flex;gap:.5rem}
+  .ab-btn{padding:.35rem .85rem;font-size:.72rem;cursor:pointer;border:1px solid #666;font-family:inherit;background:none;color:#fff;border-radius:6px}
+  .ab-btn-ok{background:#fff;color:var(--ink);border-color:#fff}
+  .ab-btn-ok:hover{background:var(--tint)}
+  .ab-btn-no:hover{background:rgba(255,255,255,.1)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" onerror="this.style.display='none'" />
+      </a>
+      <div class="brand-title-wrap"><div class="brand-tool-name">Related Reading</div></div>
+    </div>
+    <div class="topbar-links">
+      <div class="topbar-col">
+      <a href="tools.html" target="_blank" rel="noopener">All Tools ↗</a>
+      <a href="completeness.html" target="_blank" rel="noopener">Metadata Completeness ↗</a>
+      <a href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity ↗</a>
+      <a href="recurationWatch.html" target="_blank" rel="noopener">Re-Curation Watch ↗</a>
+      </div>
+      <div class="topbar-col">
+      <a href="guide.html" target="_blank" rel="noopener">Beginner's Guide ↗</a>
+      <a href="useCases.html" target="_blank" rel="noopener">Use Cases ↗</a>
+      <a href="tips.html">Metadata Tips ↗</a>
+      <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <p class="lede">The <a href="https://metadatagamechangers.com/blog" target="_blank" rel="noopener">Metadata Game Changers blog</a> has been writing about DataCite metadata since 2018. These are the posts most relevant to each tool &mdash; the ideas and measurements the tools grew out of. <span style="color:var(--accent-dk)">★</span> marks the post that introduces a tool.</p>
+  <p class="sub">60 posts across 7 tools. Each tool links here from its top bar. Posts open on the blog; most carry a registered DOI.</p>
+  <nav class="toc">Jump to: <a href="#recuration-watch">Re-Curation Watch</a> · <a href="#completeness">Metadata Completeness</a> · <a href="#connectivity">Metadata Connectivity</a> · <a href="#history">Repository History</a> · <a href="#activity">Repository Activity</a> · <a href="#ror">ROR Retriever</a> · <a href="#orcid">ORCID Retriever</a></nav>
+
+  <section id="recuration-watch">
+    <h2 class="sec"><a href="recurationWatch.html" target="_blank" rel="noopener">Re-Curation Watch</a> <span class="count">8 posts</span></h2>
+    <p class="sec-blurb">Tracking metadata provenance and re-curation — who changed what, and when.</p>
+    <ul class="reads">
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2026/6/13/datacite-doi-re-curation-watch" target="_blank" rel="noopener"><span class="star" title="Introduces this tool">★</span> 2026/6/13/datacite-doi-re-curation-watch</a>
+        <div class="r-meta">Jun 2026 · <span class="r-nodoi">DOI pending</span></div>
+        <div class="r-note">Introduces Re-Curation Watch and the idea of watching metadata improve over time.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2026/5/22/metadata-for-research-integrity" target="_blank" rel="noopener">Metadata Details for Research Integrity</a>
+        <div class="r-meta">May 2026 · <a class="r-doi" href="https://doi.org/10.59350/4eya7-q4r84" target="_blank" rel="noopener">10.59350/4eya7-q4r84</a></div>
+        <div class="r-note">How DataCite metadata detail — and its provenance — supports demonstrating research integrity.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2026/5/5/community-can-help-improve-metadata" target="_blank" rel="noopener">Community Can Help Improve Metadata</a>
+        <div class="r-meta">May 2026 · <a class="r-doi" href="https://doi.org/10.59350/dzsvy-wnk87" target="_blank" rel="noopener">10.59350/dzsvy-wnk87</a></div>
+        <div class="r-note">Measuring FAIRness and finding bright spots as the starting point for enhancement.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2024/11/20/re-curating-the-gump-south-pacific-field-station" target="_blank" rel="noopener">Re-Curating the Gump South Pacific Field Station</a>
+        <div class="r-meta">Nov 2024 · <a class="r-doi" href="https://doi.org/10.59350/zw0x7-dgk35" target="_blank" rel="noopener">10.59350/zw0x7-dgk35</a></div>
+        <div class="r-note">A worked re-curation of the Gump field station — the suite&#x27;s default repository.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2024/9/22/brightspots-get-brighter" target="_blank" rel="noopener">BrightSpots Get Brighter</a>
+        <div class="r-meta">Sep 2024 · <a class="r-doi" href="https://doi.org/10.59350/prqvd-2f082" target="_blank" rel="noopener">10.59350/prqvd-2f082</a></div>
+        <div class="r-note">The University of Bath adds ORCIDs and RORs to already-strong records: re-curation in action.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2023/12/17/repository-re-curation-for-open-science" target="_blank" rel="noopener">Repository Re-Curation for Open Science</a>
+        <div class="r-meta">Dec 2023 · <a class="r-doi" href="https://doi.org/10.59350/e265t-esh97" target="_blank" rel="noopener">10.59350/e265t-esh97</a></div>
+        <div class="r-note">Re-curation approaches for responding to the OSTP public-access guidance.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2023/2/28/responding-to-the-nelson-memorepository-re-curation-for-open-science" target="_blank" rel="noopener">Responding to the Nelson Memo: Repository Re-Curation for Open Science</a>
+        <div class="r-meta">Feb 2023 · <a class="r-doi" href="https://doi.org/10.59350/vb0h7-be823" target="_blank" rel="noopener">10.59350/vb0h7-be823</a></div>
+        <div class="r-note">Re-curation strategies for different kinds of research organizations.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2021/1/1/can-repositories-improve-metadata" target="_blank" rel="noopener">Can Repositories Improve Metadata?</a>
+        <div class="r-meta">Jan 2021 · <a class="r-doi" href="https://doi.org/10.59350/t6dna-wbp85" target="_blank" rel="noopener">10.59350/t6dna-wbp85</a></div>
+        <div class="r-note">Whether repositories can streamline the work of completing and enhancing records.</div>
+      </li>
+    </ul>
+  </section>
+  <section id="completeness">
+    <h2 class="sec"><a href="completeness.html" target="_blank" rel="noopener">Metadata Completeness</a> <span class="count">12 posts</span></h2>
+    <p class="sec-blurb">Scoring a repository against the FAIR, DataCite, and Project use cases.</p>
+    <ul class="reads">
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2026/1/15/from-recommendation-to-action-a-new-tool-for-measuring-metadata-completeness" target="_blank" rel="noopener"><span class="star" title="Introduces this tool">★</span> From Recommendation to Action: A New Tool for Measuring Metadata Completeness</a>
+        <div class="r-meta">Jan 2026 · <a class="r-doi" href="https://doi.org/10.59350/5hprv-z9h09" target="_blank" rel="noopener">10.59350/5hprv-z9h09</a></div>
+        <div class="r-note">Introduces the Metadata Completeness tool.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2019/9/14/metadig-recommendations-for-fair-datacite-metadata" target="_blank" rel="noopener">MetaDIG recommendations for FAIR DataCite metadata</a>
+        <div class="r-meta">Oct 2019 · <a class="r-doi" href="https://doi.org/10.59350/n31gm-kg364" target="_blank" rel="noopener">10.59350/n31gm-kg364</a></div>
+        <div class="r-note">The community FAIR recommendations the completeness use cases are built on.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2026/7/6/a-decade-of-fair-metadata" target="_blank" rel="noopener">2026/7/6/a-decade-of-fair-metadata</a>
+        <div class="r-meta">Jul 2026 · <span class="r-nodoi">DOI pending</span></div>
+        <div class="r-note">Which repositories improved their FAIR metadata across a decade.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2026/1/9/datacite-bright-spots-repositories-consortia-and-improvements" target="_blank" rel="noopener">DataCite Bright Spots – Repositories, Consortia, and Improvements</a>
+        <div class="r-meta">Jan 2026 · <a class="r-doi" href="https://doi.org/10.59350/v2may-69s52" target="_blank" rel="noopener">10.59350/v2may-69s52</a></div>
+        <div class="r-note">Repositories and consortia with outstanding completeness, as community examples.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2025/6/14/metadata-game-changers-datacite-bright-spots" target="_blank" rel="noopener">DataCite Bright Spots</a>
+        <div class="r-meta">Jun 2025 · <a class="r-doi" href="https://doi.org/10.59350/34brd-80j48" target="_blank" rel="noopener">10.59350/34brd-80j48</a></div>
+        <div class="r-note">Ten repositories achieving exceptional metadata completeness.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2024/6/12/fair-metadata-university-and-college-bright-spots" target="_blank" rel="noopener">FAIR DataCite Metadata - University and College Bright Spots</a>
+        <div class="r-meta">Jun 2024 · <a class="r-doi" href="https://doi.org/10.59350/v6enq-99z90" target="_blank" rel="noopener">10.59350/v6enq-99z90</a></div>
+        <div class="r-note">Universities with the most complete FAIR DataCite metadata.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2025/2/2/datacite-facets-and-metadata-completeness" target="_blank" rel="noopener">DataCite Facets and Metadata Completeness</a>
+        <div class="r-meta">Feb 2025 · <a class="r-doi" href="https://doi.org/10.59350/55etd-e8154" target="_blank" rel="noopener">10.59350/55etd-e8154</a></div>
+        <div class="r-note">How DataCite facets reveal repository characteristics and improvement opportunities.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2021/2/2/a-pid-feast-for-research-pidapalooza-2021" target="_blank" rel="noopener">A PID Feast for Research – PIDapalooza 2021</a>
+        <div class="r-meta">Feb 2021 · <a class="r-doi" href="https://doi.org/10.59350/ryh7v-rmy52" target="_blank" rel="noopener">10.59350/ryh7v-rmy52</a></div>
+        <div class="r-note">Completeness assessed across 144 repositories against FAIR recommendations.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2020/12/23/minimum-metadata" target="_blank" rel="noopener">Minimum Metadata</a>
+        <div class="r-meta">Dec 2020 · <a class="r-doi" href="https://doi.org/10.59350/kanrj-qt678" target="_blank" rel="noopener">10.59350/kanrj-qt678</a></div>
+        <div class="r-note">Why &#x27;minimum metadata&#x27; only makes sense relative to a use case — the framing behind the scoring.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2026/2/13/datacite-project-use-cases" target="_blank" rel="noopener">DataCite Project Use Cases</a>
+        <div class="r-meta">Feb 2026 · <a class="r-doi" href="https://doi.org/10.59350/49wm0-n8797" target="_blank" rel="noopener">10.59350/49wm0-n8797</a></div>
+        <div class="r-note">Project team, item, and relation metadata — the basis for the Projects tab.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2024/7/25/projectsdatacite-revisited" target="_blank" rel="noopener">Projects@DataCite Revisited</a>
+        <div class="r-meta">Jul 2024 · <a class="r-doi" href="https://doi.org/10.59350/ejd15-gvd72" target="_blank" rel="noopener">10.59350/ejd15-gvd72</a></div>
+        <div class="r-note">How DataCite members use the Project resource type.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2023/5/2/project-metadata-in-datacite" target="_blank" rel="noopener">Project Metadata in DataCite</a>
+        <div class="r-meta">May 2023 · <a class="r-doi" href="https://doi.org/10.59350/zwzvv-1n627" target="_blank" rel="noopener">10.59350/zwzvv-1n627</a></div>
+        <div class="r-note">A survey of how projects are represented across DataCite repositories.</div>
+      </li>
+    </ul>
+  </section>
+  <section id="connectivity">
+    <h2 class="sec"><a href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity</a> <span class="count">14 posts</span></h2>
+    <p class="sec-blurb">Measuring how identifiers (ORCID, ROR, funders, publishers) connect research objects.</p>
+    <ul class="reads">
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2021/1/27/connectivity" target="_blank" rel="noopener"><span class="star" title="Introduces this tool">★</span> Power of PIDS: Measuring Connectivity</a>
+        <div class="r-meta">Jan 2021 · <a class="r-doi" href="https://doi.org/10.59350/59qrg-1ps18" target="_blank" rel="noopener">10.59350/59qrg-1ps18</a></div>
+        <div class="r-note">The connectivity methodology: measuring how PIDs connect research objects.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2025/3/14/connecting-pids-in-datacite-metadata" target="_blank" rel="noopener">Connecting PIDs in DataCite Metadata</a>
+        <div class="r-meta">Mar 2025 · <a class="r-doi" href="https://doi.org/10.59350/6s7dv-5ds58" target="_blank" rel="noopener">10.59350/6s7dv-5ds58</a></div>
+        <div class="r-note">Relation descriptions and connectivity opportunities within the PID Graph.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2024/10/30/university-and-college-connectivity-datacite" target="_blank" rel="noopener">University and College Connectivity @ DataCite</a>
+        <div class="r-meta">Oct 2024 · <a class="r-doi" href="https://doi.org/10.59350/w95qm-ann38" target="_blank" rel="noopener">10.59350/w95qm-ann38</a></div>
+        <div class="r-note">Connectivity measured with ORCID (people) and ROR (organizations).</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2022/10/17/the-university-of-chicago-pressdryad-journal-connectivity" target="_blank" rel="noopener">Journal Connectivity@Dryad: The University of Chicago Press</a>
+        <div class="r-meta">Oct 2022 · <a class="r-doi" href="https://doi.org/10.59350/fgy0j-cgw89" target="_blank" rel="noopener">10.59350/fgy0j-cgw89</a></div>
+        <div class="r-note">Journal and data connectivity at Dryad through identifier adoption.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2022/6/23/universitiesdatacite" target="_blank" rel="noopener">Universities@DataCite</a>
+        <div class="r-meta">Jun 2022 · <a class="r-doi" href="https://doi.org/10.59350/sgzhr-3kk88" target="_blank" rel="noopener">10.59350/sgzhr-3kk88</a></div>
+        <div class="r-note">University dataset connectivity limited by low organizational-identifier adoption.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2021/3/16/improving-domain-repository-connectivity-establishing-a-baseline" target="_blank" rel="noopener">Improving Domain Repository Connectivity: Establishing a Baseline</a>
+        <div class="r-meta">Mar 2021 · <a class="r-doi" href="https://doi.org/10.59350/kft70-xgz24" target="_blank" rel="noopener">10.59350/kft70-xgz24</a></div>
+        <div class="r-note">Establishing a connectivity baseline for domain repositories.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2021/3/26/identifying-organizations" target="_blank" rel="noopener">Improving Domain Repository Connectivity: Identifying Organizations</a>
+        <div class="r-meta">Mar 2021 · <a class="r-doi" href="https://doi.org/10.59350/8xcgf-drf32" target="_blank" rel="noopener">10.59350/8xcgf-drf32</a></div>
+        <div class="r-note">Organizational identifiers enable connectivity across thousands of records.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2021/4/6/improving-domain-repository-connectivity-person-or-organization" target="_blank" rel="noopener">Improving Domain Repository Connectivity: Person or Organization?</a>
+        <div class="r-meta">Apr 2021 · <a class="r-doi" href="https://doi.org/10.59350/yajj6-y6687" target="_blank" rel="noopener">10.59350/yajj6-y6687</a></div>
+        <div class="r-note">Community identifiers raise complete connectivity from 6% to 30%.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2021/4/27/metadata-archeology-article-metadata" target="_blank" rel="noopener">Improving Domain Repository Connectivity: Article Metadata Archeology</a>
+        <div class="r-meta">Apr 2021 · <a class="r-doi" href="https://doi.org/10.59350/s5cfh-dx817" target="_blank" rel="noopener">10.59350/s5cfh-dx817</a></div>
+        <div class="r-note">Using article metadata to supplement dataset affiliations — and its limits.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2021/5/14/improving-domain-repository-connectivity-closing-the-circle" target="_blank" rel="noopener">Improving Domain Repository Connectivity: Closing the Circle</a>
+        <div class="r-meta">May 2021 · <a class="r-doi" href="https://doi.org/10.59350/fjg8d-txx45" target="_blank" rel="noopener">10.59350/fjg8d-txx45</a></div>
+        <div class="r-note">How domain communities increase connectivity through identifier adoption.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2018/12/6/understanding-iso-metadata-citations-and-identifiers" target="_blank" rel="noopener">Discovery Through Links</a>
+        <div class="r-meta">Dec 2018 · <a class="r-doi" href="https://doi.org/10.59350/bw17z-0zw63" target="_blank" rel="noopener">10.59350/bw17z-0zw63</a></div>
+        <div class="r-note">How metadata links connect users to related resources.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2026/1/6/using-award-numbers-to-check-funder-identifiers" target="_blank" rel="noopener">Using Award Numbers to Check Funder Identifiers</a>
+        <div class="r-meta">Jan 2026 · <a class="r-doi" href="https://doi.org/10.59350/906sf-9cd82" target="_blank" rel="noopener">10.59350/906sf-9cd82</a></div>
+        <div class="r-note">Using award numbers to catch funder-identifier errors.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2025/10/27/award-metadata-datacite" target="_blank" rel="noopener">Award Metadata @ DataCite</a>
+        <div class="r-meta">Oct 2025 · <a class="r-doi" href="https://doi.org/10.59350/z0nex-23v25" target="_blank" rel="noopener">10.59350/z0nex-23v25</a></div>
+        <div class="r-note">Barriers to complete award metadata; the prevalence of funder names and identifiers.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2022/2/2/funder-metadata-identifiers-and-award-numbers" target="_blank" rel="noopener">Funder Metadata: Identifiers and Award Numbers</a>
+        <div class="r-meta">Feb 2022 · <a class="r-doi" href="https://doi.org/10.59350/xrqzb-re120" target="_blank" rel="noopener">10.59350/xrqzb-re120</a></div>
+        <div class="r-note">Extracting ROR identifiers and award numbers from funder descriptions.</div>
+      </li>
+    </ul>
+  </section>
+  <section id="history">
+    <h2 class="sec"><a href="repositoryHistory.html" target="_blank" rel="noopener">Repository History</a> <span class="count">8 posts</span></h2>
+    <p class="sec-blurb">Completeness scored across registered years — how metadata evolved over time.</p>
+    <ul class="reads">
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2026/7/6/a-decade-of-fair-metadata" target="_blank" rel="noopener">2026/7/6/a-decade-of-fair-metadata</a>
+        <div class="r-meta">Jul 2026 · <span class="r-nodoi">DOI pending</span></div>
+        <div class="r-note">A decade of FAIR metadata improvement across repositories.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2021/1/11/fair-datacite-metadata-evolution" target="_blank" rel="noopener">DataCite Metadata: Evolving to FAIRness</a>
+        <div class="r-meta">Jan 2021 · <a class="r-doi" href="https://doi.org/10.59350/ftzmw-k9q02" target="_blank" rel="noopener">10.59350/ftzmw-k9q02</a></div>
+        <div class="r-note">How the DataCite schema evolved over a decade toward FAIRness.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2025/6/9/datacite-metadata-continues-to-add-capabilities" target="_blank" rel="noopener">DataCite Metadata Continues to Add Capabilities</a>
+        <div class="r-meta">Jun 2025 · <a class="r-doi" href="https://doi.org/10.59350/wgret-2kd02" target="_blank" rel="noopener">10.59350/wgret-2kd02</a></div>
+        <div class="r-note">Schema growth: resource types, relations, and identifiers.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2025/10/12/crossref-metadata-evolution-2019-2025" target="_blank" rel="noopener">Crossref Metadata Evolution - 2019 - 2025</a>
+        <div class="r-meta">Oct 2025 · <a class="r-doi" href="https://doi.org/10.59350/56ve6-p2706" target="_blank" rel="noopener">10.59350/56ve6-p2706</a></div>
+        <div class="r-note">Crossref completeness gains 2019-2025 (abstracts, ORCID, licenses, links).</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2021/4/14/can-communities-improve-metadata" target="_blank" rel="noopener">Can Communities Improve Metadata?</a>
+        <div class="r-meta">Apr 2021 · <a class="r-doi" href="https://doi.org/10.59350/vtt2s-jss23" target="_blank" rel="noopener">10.59350/vtt2s-jss23</a></div>
+        <div class="r-note">Five-year metrics: communities and repositories improving quality together.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2019/3/25/the-big-picture-how-has-crossref-metadata-completeness-improved" target="_blank" rel="noopener">The Big Picture - Has CrossRef metadata completeness improved?</a>
+        <div class="r-meta">Mar 2019 · <a class="r-doi" href="https://doi.org/10.59350/4svpe-kcj07" target="_blank" rel="noopener">10.59350/4svpe-kcj07</a></div>
+        <div class="r-note">Visualizing Crossref completeness trends over time.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2019/3/1/metadata-evolution-metadata-completeness-agility-and-collection-size" target="_blank" rel="noopener">Metadata Evolution - Metadata Completeness, Agility, and Collection Size</a>
+        <div class="r-meta">Mar 2019 · <a class="r-doi" href="https://doi.org/10.59350/5a12z-dq192" target="_blank" rel="noopener">10.59350/5a12z-dq192</a></div>
+        <div class="r-note">Relationships between collection size and metadata completeness.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2019/2/19/metadata-evolution-crossref-participation-reports" target="_blank" rel="noopener">Metadata Evolution - CrossRef Participation Reports</a>
+        <div class="r-meta">Feb 2019 · <a class="r-doi" href="https://doi.org/10.59350/b0ctp-heh14" target="_blank" rel="noopener">10.59350/b0ctp-heh14</a></div>
+        <div class="r-note">A tool for examining metadata evolution over time.</div>
+      </li>
+    </ul>
+  </section>
+  <section id="activity">
+    <h2 class="sec"><a href="repo-activity.html" target="_blank" rel="noopener">Repository Activity</a> <span class="count">4 posts</span></h2>
+    <p class="sec-blurb">Curation activity over time, broken down by changed property and by actor.</p>
+    <ul class="reads">
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2026/6/13/datacite-doi-re-curation-watch" target="_blank" rel="noopener">2026/6/13/datacite-doi-re-curation-watch</a>
+        <div class="r-meta">Jun 2026 · <span class="r-nodoi">DOI pending</span></div>
+        <div class="r-note">Tracking curation activity — who changed what, when.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2021/4/14/can-communities-improve-metadata" target="_blank" rel="noopener">Can Communities Improve Metadata?</a>
+        <div class="r-meta">Apr 2021 · <a class="r-doi" href="https://doi.org/10.59350/vtt2s-jss23" target="_blank" rel="noopener">10.59350/vtt2s-jss23</a></div>
+        <div class="r-note">A five-year record of metadata-improvement activity.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2024/9/22/brightspots-get-brighter" target="_blank" rel="noopener">BrightSpots Get Brighter</a>
+        <div class="r-meta">Sep 2024 · <a class="r-doi" href="https://doi.org/10.59350/prqvd-2f082" target="_blank" rel="noopener">10.59350/prqvd-2f082</a></div>
+        <div class="r-note">A repository&#x27;s metadata improving through added identifiers.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2026/5/5/community-can-help-improve-metadata" target="_blank" rel="noopener">Community Can Help Improve Metadata</a>
+        <div class="r-meta">May 2026 · <a class="r-doi" href="https://doi.org/10.59350/dzsvy-wnk87" target="_blank" rel="noopener">10.59350/dzsvy-wnk87</a></div>
+        <div class="r-note">Community-driven metadata enhancement.</div>
+      </li>
+    </ul>
+  </section>
+  <section id="ror">
+    <h2 class="sec"><a href="rorRetriever.html" target="_blank" rel="noopener">ROR Retriever</a> <span class="count">11 posts</span></h2>
+    <p class="sec-blurb">Matching affiliation strings to ROR organization identifiers.</p>
+    <ul class="reads">
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2022/6/30/rorretriever" target="_blank" rel="noopener"><span class="star" title="Introduces this tool">★</span> Need help searching for RORs? Try RORRetriever!</a>
+        <div class="r-meta">Jun 2022 · <a class="r-doi" href="https://doi.org/10.59350/4gxfz-4kb47" target="_blank" rel="noopener">10.59350/4gxfz-4kb47</a></div>
+        <div class="r-note">Introduces RORRetriever — the tool this page is a browser port of.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2024/4/12/funder-acronyms-are-still-not-enough" target="_blank" rel="noopener">Funder Acronyms Are Still Not Enough</a>
+        <div class="r-meta">Apr 2024 · <a class="r-doi" href="https://doi.org/10.59350/cnkm2-18f84" target="_blank" rel="noopener">10.59350/cnkm2-18f84</a></div>
+        <div class="r-note">Why acronyms in names complicate identifier discovery.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2021/7/16/acronyms-are-definitely-not-enough" target="_blank" rel="noopener">Acronyms Are Definitely Not Enough</a>
+        <div class="r-meta">Jul 2021 · <a class="r-doi" href="https://doi.org/10.59350/93v82-yr723" target="_blank" rel="noopener">10.59350/93v82-yr723</a></div>
+        <div class="r-note">Write out acronyms in affiliations to improve disambiguation.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2019/10/24/sometimes-a-name-is-not-enough" target="_blank" rel="noopener">Sometimes a Name is Not Enough</a>
+        <div class="r-meta">Oct 2019 · <a class="r-doi" href="https://doi.org/10.59350/w46m1-evz59" target="_blank" rel="noopener">10.59350/w46m1-evz59</a></div>
+        <div class="r-note">Why many organization names resolve to multiple RORs.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2020/4/21/sometimes-a-name-is-not-enough-update" target="_blank" rel="noopener">Sometimes a Name is Not Enough - Update</a>
+        <div class="r-meta">Apr 2020 · <a class="r-doi" href="https://doi.org/10.59350/ec8fd-s5t94" target="_blank" rel="noopener">10.59350/ec8fd-s5t94</a></div>
+        <div class="r-note">Follow-up on organizational identifiers and acronyms in ROR searches.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2022/6/20/ror-in-a-database" target="_blank" rel="noopener">ROR in a Database</a>
+        <div class="r-meta">Jun 2022 · <a class="r-doi" href="https://doi.org/10.59350/129q1-ckn64" target="_blank" rel="noopener">10.59350/129q1-ckn64</a></div>
+        <div class="r-note">ROR database characteristics that affect match accuracy at scale.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2022/7/22/missing-rors" target="_blank" rel="noopener">ROR Identifiers That Have Disappeared</a>
+        <div class="r-meta">Jul 2022 · <a class="r-doi" href="https://doi.org/10.59350/7gb9z-x1767" target="_blank" rel="noopener">10.59350/7gb9z-x1767</a></div>
+        <div class="r-note">Nearly 900 ROR identifiers removed from the database — and how to cope.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2019/11/10/how-many-rors-do-we-need" target="_blank" rel="noopener">How Many RORs Do We Need?</a>
+        <div class="r-meta">Nov 2019 · <a class="r-doi" href="https://doi.org/10.59350/4tbaw-m9382" target="_blank" rel="noopener">10.59350/4tbaw-m9382</a></div>
+        <div class="r-note">Feasibility of adopting organizational identifiers in existing metadata.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2019/8/15/metadata-archeology-hunting-affiliations-and-rors-in-datacite-metadata" target="_blank" rel="noopener">Metadata Archeology: Hunting Affiliations and RORs in DataCite Metadata</a>
+        <div class="r-meta">Aug 2019 · <a class="r-doi" href="https://doi.org/10.59350/jmewf-dsf80" target="_blank" rel="noopener">10.59350/jmewf-dsf80</a></div>
+        <div class="r-note">Where organizational information hides across metadata elements.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2019/6/19/metadata-archeology-finding-dryad-affiliations-in-crossref-metadata" target="_blank" rel="noopener">Metadata Archeology – Finding Affiliations in Crossref Metadata</a>
+        <div class="r-meta">Jun 2019 · <a class="r-doi" href="https://doi.org/10.59350/n51d6-ks443" target="_blank" rel="noopener">10.59350/n51d6-ks443</a></div>
+        <div class="r-note">Finding affiliations in Crossref metadata; automating organization identification.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2020/3/5/early-adopters-of-organizational-identifiers" target="_blank" rel="noopener">Early Adopters of Organizational Identifiers in DataCite</a>
+        <div class="r-meta">Mar 2020 · <a class="r-doi" href="https://doi.org/10.59350/g96gh-x2361" target="_blank" rel="noopener">10.59350/g96gh-x2361</a></div>
+        <div class="r-note">Organizations leading adoption of organizational identifiers in DataCite.</div>
+      </li>
+    </ul>
+  </section>
+  <section id="orcid">
+    <h2 class="sec"><a href="orcidRetriever.html" target="_blank" rel="noopener">ORCID Retriever</a> <span class="count">3 posts</span></h2>
+    <p class="sec-blurb">Finding ORCID iDs for people, with employment context for disambiguation.</p>
+    <ul class="reads">
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2023/6/6/orcid-profiles-whats-there-and-where-did-it-come-from" target="_blank" rel="noopener"><span class="star" title="Introduces this tool">★</span> ORCID Profiles – What&#x27;s There and Where Did It Come From?</a>
+        <div class="r-meta">Jun 2023 · <a class="r-doi" href="https://doi.org/10.59350/ypxdr-ade49" target="_blank" rel="noopener">10.59350/ypxdr-ade49</a></div>
+        <div class="r-note">What&#x27;s in an ORCID profile and where it comes from — the disambiguation context the retriever surfaces.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2021/4/6/improving-domain-repository-connectivity-person-or-organization" target="_blank" rel="noopener">Improving Domain Repository Connectivity: Person or Organization?</a>
+        <div class="r-meta">Apr 2021 · <a class="r-doi" href="https://doi.org/10.59350/yajj6-y6687" target="_blank" rel="noopener">10.59350/yajj6-y6687</a></div>
+        <div class="r-note">Person vs organization identifiers in connectivity.</div>
+      </li>
+      <li>
+        <a class="r-title" href="https://metadatagamechangers.com/blog/2024/10/30/university-and-college-connectivity-datacite" target="_blank" rel="noopener">University and College Connectivity @ DataCite</a>
+        <div class="r-meta">Oct 2024 · <a class="r-doi" href="https://doi.org/10.59350/w95qm-ann38" target="_blank" rel="noopener">10.59350/w95qm-ann38</a></div>
+        <div class="r-note">ORCID for people alongside ROR for organizations.</div>
+      </li>
+    </ul>
+  </section>
+
+  <footer>
+    Related Reading &copy; Metadata Game Changers, licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a> ·
+    Posts from the <a href="https://metadatagamechangers.com/blog" target="_blank" rel="noopener">Metadata Game Changers blog</a> ·
+    Better Documentation | Better Data | Better Science
+  </footer>
+</div>
+<!-- Google Analytics (shared consent with the rest of the suite via localStorage 'rcw-ga') -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9JQRWY72HW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  try{ if(localStorage.getItem('rcw-ga')==='declined') window['ga-disable-G-9JQRWY72HW']=true; }catch(e){}
+  gtag('js', new Date());
+  gtag('config', 'G-9JQRWY72HW');
+</script>
+<!-- Analytics consent banner -->
+<div id="analytics-banner">
+  <span>This site uses Google Analytics for anonymous usage statistics. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy ↗</a></span>
+  <div id="analytics-banner-btns">
+    <button class="ab-btn ab-btn-ok" type="button" onclick="hideBanner('accepted')">OK</button>
+    <button class="ab-btn ab-btn-no" type="button" onclick="hideBanner('declined')">Decline</button>
+  </div>
+</div>
+<script>
+  function hideBanner(choice){
+    try{ localStorage.setItem('rcw-ga', choice); }catch(e){}
+    document.getElementById('analytics-banner').style.display='none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  }
+  (function(){
+    var choice=null; try{ choice=localStorage.getItem('rcw-ga'); }catch(e){}
+    if (choice) document.getElementById('analytics-banner').style.display='none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  })();
+</script>
+</body>
+</html>
