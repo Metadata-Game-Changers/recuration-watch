@@ -1524,6 +1524,12 @@ async function runSingleDoi(doi){
   finally { stopTips(); $('repo-go').disabled = false; }
 }
 async function run(){
+  if (!jqReady){
+    // Enter / autocomplete can fire before the jq engine finishes loading (or after the
+    // CDN load failed); without this guard they reach the scorer with jq undefined.
+    setStatus('Still loading the jq scoring engine — wait for "Engine ready", then try again. If this message persists, reload the page.', true);
+    return;
+  }
   const input = $('repo-input').value.trim();
   if (!input) return;
   if (isDOI(input)){ await runSingleDoi(parseDOI(input)); return; }   // a single DOI → score just that record
