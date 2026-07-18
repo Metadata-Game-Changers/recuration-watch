@@ -525,7 +525,7 @@ function computeConnectivity(records){
       else if (e.id >= e.occ) complete++;
       else { partial++; quickWins += (e.occ - e.id); }   // partial entity → propagatable known identifier(s)
     }
-    return { idx, group: c.group, label: c.label, entity: c.entity,
+    return { idx, group: c.group, label: c.label, entity: c.entity, kind: c.kind,
              complete, partial, missing, total: detail.size,
              overall: sumConn ? sumId / sumConn : 0, items: sumConn, identified: sumId, quickWins, detail };
   });
@@ -549,7 +549,7 @@ function renderConnectivity(results){
             m = res.missing  / res.total * 100;
       return `<div class="conn-row">
         <div class="conn-label">${escHtml(res.label)}
-          <span class="conn-meta">${res.total.toLocaleString()} distinct ${escHtml(ent)}${res.total===1?'':'s'} · ${res.items.toLocaleString()} occurrence${res.items===1?'':'s'} · ${res.identified.toLocaleString()} identified — <b class="conn-pct">${(res.overall*100).toFixed(0)}%</b>${res.quickWins>0 ? ` · <b class="conn-qw" title="Known identifiers that could be copied to the records that are missing them — no lookup needed">${res.quickWins.toLocaleString()} quick win${res.quickWins===1?'':'s'}</b>` : ''}</span>
+          <span class="conn-meta">${res.total.toLocaleString()} distinct ${escHtml(ent)}${res.total===1?'':'s'} · ${res.items.toLocaleString()} occurrence${res.items===1?'':'s'} · ${res.identified.toLocaleString()} ${res.kind==='aff' ? 'affiliated' : 'identified'} — <b class="conn-pct">${(res.overall*100).toFixed(0)}%</b>${res.quickWins>0 ? ` · <b class="conn-qw" title="Known identifiers that could be copied to the records that are missing them — no lookup needed">${res.quickWins.toLocaleString()} quick win${res.quickWins===1?'':'s'}</b>` : ''}</span>
         </div>
         <div class="conn-bar clickable" data-idx="${res.idx}" title="${res.complete} complete · ${res.partial} partial · ${res.missing} missing ${escHtml(ent)}s — click for the list">${seg('green',c)}${seg('yellow',p)}${seg('red',m)}</div>
       </div>`;
@@ -851,7 +851,7 @@ function buildConnReportHtml(){
         return `<div class="rrow"><div class="rlabel">${escHtml(res.label)} <span class="rmeta">not present in any analyzed record</span></div><div class="rempty">— no ${escHtml(ent)}s in the analyzed sample —</div></div>`;
       const c = res.complete/res.total*100, p = res.partial/res.total*100, m = res.missing/res.total*100;
       return `<div class="rrow">
-        <div class="rlabel">${escHtml(res.label)} <span class="rmeta">${res.total.toLocaleString()} distinct ${escHtml(ent)}${res.total===1?'':'s'} · ${res.items.toLocaleString()} occurrence${res.items===1?'':'s'} · ${res.identified.toLocaleString()} identified — <b>${pct(res.overall)}</b>${res.quickWins>0?` · <b class="qw">${res.quickWins.toLocaleString()} quick win${res.quickWins===1?'':'s'}</b>`:''}</span></div>
+        <div class="rlabel">${escHtml(res.label)} <span class="rmeta">${res.total.toLocaleString()} distinct ${escHtml(ent)}${res.total===1?'':'s'} · ${res.items.toLocaleString()} occurrence${res.items===1?'':'s'} · ${res.identified.toLocaleString()} ${res.kind==='aff' ? 'affiliated' : 'identified'} — <b>${pct(res.overall)}</b>${res.quickWins>0?` · <b class="qw">${res.quickWins.toLocaleString()} quick win${res.quickWins===1?'':'s'}</b>`:''}</span></div>
         <div class="rbar">${seg('green',c)}${seg('yellow',p)}${seg('red',m)}</div>
       </div>`;
     }).join('');
