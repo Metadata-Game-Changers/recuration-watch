@@ -951,6 +951,7 @@
     .tb-check-wrap:has(:disabled) { cursor: default; }
 
     /* ── Analytics banner ──────────────────────── */
+    @media print{.topbar-links,#analytics-banner{display:none !important}}
     #analytics-banner {
       position: fixed;
       bottom: 0; left: 0; right: 0;

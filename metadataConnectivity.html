@@ -905,7 +905,7 @@ function buildConnReportHtml(){
     .dups-sub{font-size:.72rem;font-weight:400;color:#6b7280}
     .dups-note{font-weight:400;text-transform:none;letter-spacing:0;color:#6b7280;font-size:.7rem}
     .dups-empty{font-size:.78rem;color:#6b7280;font-style:italic;margin:.2rem 0 .6rem}
-    @media print{body{padding:0}}
+    @media print{body{padding:0} .topbar-links,#analytics-banner{display:none !important}}
   `;
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <title>Connectivity Report: ${escHtml(lastRun.repoName)} (${escHtml(lastRun.clientId)})</title>
