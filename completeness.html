@@ -1158,7 +1158,7 @@ function buildReportHtml(){
     .bar{background:#eef0f4;border-radius:4px;height:8px;overflow:hidden;min-width:80px}
     .bar i{display:block;height:100%}
     footer{margin-top:2rem;font-size:.72rem;color:#6b7280;border-top:1px solid #e6e3ec;padding-top:.8rem}
-    @media print{body{padding:0}section.uc{border-color:#ddd}}
+    @media print{body{padding:0} .topbar-links,#analytics-banner{display:none !important}section.uc{border-color:#ddd}}
   `;
   return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <title>Completeness Report: ${escHtml(lastRun.repoName)} (${escHtml(lastRun.clientId)})</title>
