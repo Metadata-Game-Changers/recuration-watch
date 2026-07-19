@@ -85,7 +85,10 @@ HEAD = '''<!DOCTYPE html>
   .intro{font-size:.85rem;color:var(--ink);line-height:1.6;max-width:760px;margin:.4rem 0 1.2rem}
   .intro a{color:var(--accent);text-decoration:none}
   .intro a:hover{text-decoration:underline}
-  .tool-group{font-size:.95rem;font-weight:600;color:var(--accent-dk);margin:1.6rem 0 .6rem;border-bottom:1px solid var(--line);padding-bottom:.35rem;display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap}
+  .jump{font-size:.78rem;line-height:1.9;margin:.2rem 0 1rem;padding:.6rem .9rem;border:1px solid var(--line);border-radius:10px;background:#fff;max-width:760px}
+  .jump a{color:var(--accent-dk);text-decoration:none;white-space:nowrap}
+  .jump a:hover{text-decoration:underline}
+  .tool-group{font-size:.95rem;font-weight:600;color:var(--accent-dk);margin:1.6rem 0 .6rem;border-bottom:1px solid var(--line);padding-bottom:.35rem;display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap;scroll-margin-top:1rem}
   .tool-group a.open-tool{font-size:.7rem;font-weight:600;color:var(--accent);text-decoration:none}
   .tool-group a.open-tool:hover{color:var(--accent-dk)}
   .tool-group .count{margin-left:auto;font-size:.68rem;color:var(--muted);font-weight:400}
@@ -183,9 +186,17 @@ FOOT = '''
 
 def render(collected):
     body = []
+    # jump line: one link per tool section (anchor = tool filename sans .html; the tools'
+    # "Metadata Tips" nav links deep-link to these, e.g. tips.html#orcidRetriever)
+    jumps = " · ".join(
+        f'<a href="#{fname.removesuffix(".html")}">{html.escape(name)}</a>'
+        for fname, name, _ in collected
+    )
+    body.append(f'  <nav class="jump">Jump to: {jumps}</nav>')
     for fname, name, tips in collected:
+        anchor = fname.removesuffix(".html")
         body.append(
-            f'  <div class="tool-group">{html.escape(name)} <a class="open-tool" href="{fname}">Open the tool →</a>'
+            f'  <div class="tool-group" id="{anchor}">{html.escape(name)} <a class="open-tool" href="{fname}">Open the tool →</a>'
             f'<span class="count">{len(tips)} tips</span></div>'
         )
         body.append('  <div class="tips-grid">')

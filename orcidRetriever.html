@@ -142,7 +142,7 @@
       <a href="guide.html">Beginner's Guide ↗</a>
       <a href="consortiumGuide.html">Consortium Guide ↗</a>
       <a href="reading.html#orcid">Related Reading ↗</a>
-      <a href="tips.html">Metadata Tips ↗</a>
+      <a href="tips.html#orcidRetriever">Metadata Tips ↗</a>
       <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
       </div>
     </div>
@@ -300,6 +300,7 @@ async function fetchCandidate(id){
 }
 
 const TIPS = [
+  { label:'No Public Data?', text:' Let your colleagues know — having an ORCID is wonderful, but making the data public is necessary to make it visible and findable.', link:'https://support.orcid.org/hc/en-us/articles/360006897614-Visibility-settings' },
   { label:'The search', text:'Each name is parsed into <strong>family and given names</strong> and searched in the public ORCID registry \u2014 the same search MGC\u2019s getORCIDs.py uses.', link:'https://orcid.org' },
   { label:'Why the pace?', text:'Every candidate iD is a separate <strong>record fetch</strong> (that\u2019s where employment and journal come from), paced to respect ORCID\u2019s public API \u2014 results appear as they arrive.', link:'https://info.orcid.org/documentation/features/public-api/' },
   { label:'Pick one', text:'<strong>Amber rows</strong> mean several people share the name \u2014 one row per candidate. Use the <strong>employment</strong> and <strong>journal</strong> columns to pick the right person.', link:'https://orcid.org' },
