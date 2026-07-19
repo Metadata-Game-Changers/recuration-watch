@@ -122,7 +122,7 @@ HEAD = '''<!DOCTYPE html>
       <div class="brand-title-wrap"><div class="brand-tool-name">Metadata Tips</div></div>
     </div>
     <div class="topbar-links">
-      <a href="tools.html">All Tools ↗</a>
+      <a href="index.html">All Tools ↗</a>
       <a href="guide.html">Beginner's Guide ↗</a>
       <a href="consortiumGuide.html">Consortium Guide ↗</a>
       <a href="reading.html">Related Reading ↗</a>
@@ -132,7 +132,7 @@ HEAD = '''<!DOCTYPE html>
 </div>
 
 <div class="wrap">
-  <p class="intro">Every <a href="tools.html">MGC metadata tool</a> shows rotating tips while it works — small pieces of
+  <p class="intro">Every <a href="index.html">MGC metadata tool</a> shows rotating tips while it works — small pieces of
   metadata wisdom about completeness, connectivity, identifiers, and re-curation. This page collects all of them in one
   place, grouped by the tool they appear in.</p>
 '''
