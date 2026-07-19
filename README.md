@@ -9,7 +9,7 @@ A suite of browser-based tools by [Metadata Game Changers](https://metadatagamec
 
 Everything runs in your browser against the live [DataCite REST API](https://api.datacite.org): no build step, no backend, no API key, nothing uploaded or stored. Each tool is one self-contained HTML file, so the whole suite deploys to any static host.
 
-Start at **[tools.html](tools.html)** for a one-page overview, or jump straight to a tool below.
+Start at the **[site homepage](index.html)** (`index.html`) for the one-page overview, or jump straight to a tool below. (`tools.html`, the overview's old address, redirects there.)
 
 ## The tools
 
@@ -101,7 +101,7 @@ This repository is served with GitHub Pages straight from a branch — no build 
 
 1. Put the tool files (the `.html` files, `FAIR_spirals.json`, the favicon, `LICENSE`, `README.md`) in the root of `main`.
 2. **Settings → Pages → Source**: select the `main` branch, `/ (root)`.
-3. The suite is live at `https://[org].github.io/recuration-watch/` — e.g. [`tools.html`](tools.html) for the overview or [`recurationWatch.html`](recurationWatch.html) for Re-Curation Watch.
+3. The suite is live at `https://[org].github.io/recuration-watch/` — the root serves the tools overview (`index.html`); [`recurationWatch.html`](recurationWatch.html) is Re-Curation Watch.
 
 Any static host works (Netlify, Cloudflare Pages, …).
 

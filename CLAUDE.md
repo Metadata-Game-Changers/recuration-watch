@@ -8,7 +8,10 @@ Static, single-file web apps for Metadata Game Changers, deployed via GitHub Pag
 (deploy from a branch — `main` / root; no build step, no Actions). Each app is one
 self-contained HTML file with inline CSS + vanilla JS — no framework, no bundler.
 
-- `index.html` — **Re-Curation Watch** (the original tool).
+- `index.html` — the **site homepage**: the one-page tools overview (formerly `tools.html`;
+  that filename is now a redirect stub kept for old links).
+- `recurationWatch.html` — **Re-Curation Watch** (the original tool; lived at `index.html`
+  until July 2026 — the DOI 10.60872/recurationWatch should resolve here).
 - `completeness.html` — **Metadata Completeness**: scores a DataCite repository against
   MGC FAIR/DataCite/Project use cases. Runs MGC's `jq` queries **in the browser** via
   jq-web (jq compiled to WASM) and fetches live DOIs from `api.datacite.org`.
