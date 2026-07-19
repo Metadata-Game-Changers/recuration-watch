@@ -294,7 +294,10 @@
   <div class="card" id="result" style="display:none">
     <div class="card-head">
       <h2>Activity over time</h2>
-      <button class="copy-btn" id="copy-chart" type="button" title="Copy the chart as an image">⧉ Copy chart</button>
+      <span style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="copy-btn" id="copy-chart" type="button" title="Copy the chart as an image">⧉ Copy chart</button>
+        <button class="copy-btn" id="save-chart" type="button" title="Download the chart as a PNG image">⬇ Chart (PNG)</button>
+      </span>
     </div>
     <div class="chart-cap" id="chart-cap"></div>
     <div class="actor-split" id="actor-split"></div>
@@ -1245,10 +1248,21 @@ function chartToPngBlob(scale){
     img.src = url;
   });
 }
-function flashCopyBtn(text){
-  const btn = $('copy-chart'), original = '⧉ Copy chart';
+function flashBtn(id, original, text){
+  const btn = $(id);
   btn.textContent = text;
   setTimeout(() => { btn.textContent = original; }, 1800);
+}
+const flashCopyBtn = text => flashBtn('copy-chart', '⧉ Copy chart', text);
+const flashSaveBtn = text => flashBtn('save-chart', '⬇ Chart (PNG)', text);
+function downloadChartPng(blob){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const safeId = (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_');
+  const d = new Date(), p = n => String(n).padStart(2, '0');
+  a.href = url; a.download = `${safeId}_activity__${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}.png`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 async function copyChart(){
   if (!lastRun){ flashCopyBtn('Run a search first'); return; }
@@ -1261,16 +1275,17 @@ async function copyChart(){
     flashCopyBtn('✓ Copied');
   } catch (e){
     // fallback: download the PNG so the user still gets the image
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    const safeId = (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_');
-    a.href = url; a.download = `${safeId}_activity.png`;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    downloadChartPng(blob);
     flashCopyBtn('↓ Downloaded PNG');
   }
 }
+async function saveChart(){
+  if (!lastRun){ flashSaveBtn('Run a search first'); return; }
+  try { downloadChartPng(await chartToPngBlob(2)); flashSaveBtn('✓ Saved'); }
+  catch (e){ flashSaveBtn('Could not render chart'); }
+}
 $('copy-chart').addEventListener('click', copyChart);
+$('save-chart').addEventListener('click', saveChart);
 </script>
 
 <footer style="border-top:1px solid var(--line);background:#fff;padding:1rem 2rem;margin-top:2rem;">
