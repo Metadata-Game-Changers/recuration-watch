@@ -312,7 +312,7 @@
         <button class="dl-btn" id="dl-grid-copy" type="button" style="display:none" title="Copy the radar grid to the clipboard as an image">⧉ Copy grid</button>
         <button class="dl-btn" id="dl-grid-png" type="button" style="display:none" title="Download the radar grid as a PNG image">⬇ Grid (PNG)</button>
         <button class="dl-btn" id="dl-json" type="button">⬇ Data (JSON)</button>
-        <button class="dl-btn" id="dl-summary" type="button" title="One row per year matching the table: records, FAIR total, the four FAIR use cases, and Projects total">⬇ Data Summary (CSV)</button>
+        <button class="dl-btn" id="dl-summary" type="button" title="One row per year: records, FAIR total and the four FAIR use cases, Projects total and the three Project use cases, and the two additional DataCite use cases">⬇ Data Summary (CSV)</button>
         <button class="dl-btn" id="dl-csv" type="button" title="Long form: one row per year × concept (analysis-ready)">⬇ Data (CSV)</button>
       </div>
     </div>
@@ -1071,14 +1071,18 @@ function downloadSummary(){
   if (!history || !history.years.length) return;
   const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
   const round = x => x == null ? '' : Math.round(x * 10000) / 10000;
-  const headers = ['Repository_ID','Registered','Records_Scored','Matching','FAIR_Total','Text','Identifiers','Connections','Contacts','Projects_Total'];
+  const extraCodes = PLOT_GROUPS.Extras.codes;
+  const headers = ['Repository_ID','Registered','Records_Scored','Matching',
+    'FAIR_Total','Text','Identifiers','Connections','Contacts',
+    'Projects_Total', ...PROJECT_CODES, ...extraCodes];
   const rows = [headers];
   for (const e of history.years){
     const t = e.totals;
     rows.push([
       history.clientId, e.year, e.n, e.matching ?? '',
-      t ? round(t.fair) : '', t ? round(t.FAIR_Text) : '', t ? round(t.FAIR_Identifiers) : '',
-      t ? round(t.FAIR_Connections) : '', t ? round(t.FAIR_Contacts) : '', t ? round(t.projects) : ''
+      t ? round(t.fair) : '', ...TOTAL_CODES.map(c => t ? round(t[c]) : ''),
+      t ? round(t.projects) : '', ...PROJECT_CODES.map(c => t ? round(t[c]) : ''),
+      ...extraCodes.map(c => t ? round(t[c]) : '')
     ]);
   }
   const body = rows.map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
