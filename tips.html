@@ -27,7 +27,10 @@
   .intro{font-size:.85rem;color:var(--ink);line-height:1.6;max-width:760px;margin:.4rem 0 1.2rem}
   .intro a{color:var(--accent);text-decoration:none}
   .intro a:hover{text-decoration:underline}
-  .tool-group{font-size:.95rem;font-weight:600;color:var(--accent-dk);margin:1.6rem 0 .6rem;border-bottom:1px solid var(--line);padding-bottom:.35rem;display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap}
+  .jump{font-size:.78rem;line-height:1.9;margin:.2rem 0 1rem;padding:.6rem .9rem;border:1px solid var(--line);border-radius:10px;background:#fff;max-width:760px}
+  .jump a{color:var(--accent-dk);text-decoration:none;white-space:nowrap}
+  .jump a:hover{text-decoration:underline}
+  .tool-group{font-size:.95rem;font-weight:600;color:var(--accent-dk);margin:1.6rem 0 .6rem;border-bottom:1px solid var(--line);padding-bottom:.35rem;display:flex;align-items:baseline;gap:.8rem;flex-wrap:wrap;scroll-margin-top:1rem}
   .tool-group a.open-tool{font-size:.7rem;font-weight:600;color:var(--accent);text-decoration:none}
   .tool-group a.open-tool:hover{color:var(--accent-dk)}
   .tool-group .count{margin-left:auto;font-size:.68rem;color:var(--muted);font-weight:400}
@@ -77,7 +80,8 @@
   <p class="intro">Every <a href="index.html">MGC metadata tool</a> shows rotating tips while it works — small pieces of
   metadata wisdom about completeness, connectivity, identifiers, and re-curation. This page collects all of them in one
   place, grouped by the tool they appear in.</p>
-  <div class="tool-group">Re-Curation Watch <a class="open-tool" href="recurationWatch.html">Open the tool →</a><span class="count">6 tips</span></div>
+  <nav class="jump">Jump to: <a href="#recurationWatch">Re-Curation Watch</a> · <a href="#completeness">Metadata Completeness</a> · <a href="#metadataConnectivity">Metadata Connectivity</a> · <a href="#rorRetriever">ROR Retriever</a> · <a href="#orcidRetriever">ORCID Retriever</a> · <a href="#repositoryHistory">Repository History</a></nav>
+  <div class="tool-group" id="recurationWatch">Re-Curation Watch <a class="open-tool" href="recurationWatch.html">Open the tool →</a><span class="count">6 tips</span></div>
   <div class="tips-grid">
     <div class="tip">
       <div class="tips-label">Re-Curation</div>
@@ -110,7 +114,7 @@
       <a class="tips-link" href="https://metadatagamechangers.com/blog" target="_blank" rel="noopener">Learn more ↗</a>
     </div>
   </div>
-  <div class="tool-group">Metadata Completeness <a class="open-tool" href="completeness.html">Open the tool →</a><span class="count">9 tips</span></div>
+  <div class="tool-group" id="completeness">Metadata Completeness <a class="open-tool" href="completeness.html">Open the tool →</a><span class="count">9 tips</span></div>
   <div class="tips-grid">
     <div class="tip">
       <div class="tips-label">Completeness</div>
@@ -158,7 +162,7 @@
       <a class="tips-link" href="https://support.datacite.org/docs/queries" target="_blank" rel="noopener">Learn more ↗</a>
     </div>
   </div>
-  <div class="tool-group">Metadata Connectivity <a class="open-tool" href="metadataConnectivity.html">Open the tool →</a><span class="count">8 tips</span></div>
+  <div class="tool-group" id="metadataConnectivity">Metadata Connectivity <a class="open-tool" href="metadataConnectivity.html">Open the tool →</a><span class="count">8 tips</span></div>
   <div class="tips-grid">
     <div class="tip">
       <div class="tips-label">Connectivity</div>
@@ -201,7 +205,7 @@
       <a class="tips-link" href="https://metadatagamechangers.com" target="_blank" rel="noopener">Learn more ↗</a>
     </div>
   </div>
-  <div class="tool-group">ROR Retriever <a class="open-tool" href="rorRetriever.html">Open the tool →</a><span class="count">8 tips</span></div>
+  <div class="tool-group" id="rorRetriever">ROR Retriever <a class="open-tool" href="rorRetriever.html">Open the tool →</a><span class="count">8 tips</span></div>
   <div class="tips-grid">
     <div class="tip">
       <div class="tips-label">Affiliation strategy</div>
@@ -244,8 +248,13 @@
       <a class="tips-link" href="https://metadatagamechangers.com" target="_blank" rel="noopener">Learn more ↗</a>
     </div>
   </div>
-  <div class="tool-group">ORCID Retriever <a class="open-tool" href="orcidRetriever.html">Open the tool →</a><span class="count">8 tips</span></div>
+  <div class="tool-group" id="orcidRetriever">ORCID Retriever <a class="open-tool" href="orcidRetriever.html">Open the tool →</a><span class="count">9 tips</span></div>
   <div class="tips-grid">
+    <div class="tip">
+      <div class="tips-label">No Public Data?</div>
+      <div class="tips-text"> Let your colleagues know — having an ORCID is wonderful, but making the data public is necessary to make it visible and findable.</div>
+      <a class="tips-link" href="https://support.orcid.org/hc/en-us/articles/360006897614-Visibility-settings" target="_blank" rel="noopener">Learn more ↗</a>
+    </div>
     <div class="tip">
       <div class="tips-label">The search</div>
       <div class="tips-text">Each name is parsed into <strong>family and given names</strong> and searched in the public ORCID registry — the same search MGC’s getORCIDs.py uses.</div>
@@ -287,7 +296,7 @@
       <a class="tips-link" href="https://metadatagamechangers.com" target="_blank" rel="noopener">Learn more ↗</a>
     </div>
   </div>
-  <div class="tool-group">Repository History <a class="open-tool" href="repositoryHistory.html">Open the tool →</a><span class="count">6 tips</span></div>
+  <div class="tool-group" id="repositoryHistory">Repository History <a class="open-tool" href="repositoryHistory.html">Open the tool →</a><span class="count">6 tips</span></div>
   <div class="tips-grid">
     <div class="tip">
       <div class="tips-label">Cohorts, not a time machine</div>
