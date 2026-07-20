@@ -429,7 +429,7 @@ function toCsv(){
   const csv = s => /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   return [COLS.join(','), ...results.map(r => COLS.map(c => csv(colValue(r, c))).join(','))].join('\r\n') + '\r\n';
 }
-function resultsFilename(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `orcids__${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}.csv`; }
+function resultsFilename(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); const pre=sourceClientId ? sourceClientId.replace(/[^A-Za-z0-9._-]/g,'_') + '_' : ''; return `${pre}orcids__${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}.csv`; }
 function downloadCsv(){
   if (!results.length) return;
   const url = URL.createObjectURL(new Blob([toCsv()], { type: 'text/csv' }));
@@ -463,7 +463,9 @@ $('name-input').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.m
 //                    repoTotal, random, resourceTypeId, query, context}) — shown in a strip
 //                    under the hero so it's clear what dataset the names came from.
 // Add &auto=1 (or #…&auto=1) to start searching immediately.
+let sourceClientId = '';   // set by a handoff; prefixes the export filenames
 function showSource(s){
+  sourceClientId = s.clientId || '';
   if (!s.clientId && !s.repoName) return;
   const repoLabel = s.repoName || s.clientId;   // don't repeat the id when the name fell back to it
   $('src-repo').innerHTML = `${escHtml(repoLabel)}${s.clientId && s.clientId !== repoLabel ? `<span class="sel-id">${escHtml(s.clientId)}</span>` : ''}`;
