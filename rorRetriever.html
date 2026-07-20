@@ -458,7 +458,7 @@ function toCsv(){
   const csv = s => /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   return [TSV_COLS.join(','), ...results.map(r => TSV_COLS.map(c => csv(tsvValue(r, c))).join(','))].join('\r\n') + '\r\n';
 }
-function resultsFilename(ext){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `AffiliationAPI_RORData__${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}.${ext}`; }
+function resultsFilename(ext){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); const pre=sourceClientId ? sourceClientId.replace(/[^A-Za-z0-9._-]/g,'_') + '_' : ''; return `${pre}AffiliationAPI_RORData__${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}.${ext}`; }
 function downloadResults(text, mime, ext){
   if (!results.length) return;
   const url = URL.createObjectURL(new Blob([text], { type: mime }));
@@ -491,7 +491,9 @@ $('aff-input').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.me
 //                      repoTotal, random, resourceTypeId, query, context}) — shown in a strip
 //                      under the hero so it's clear what dataset the affiliations came from.
 // Add &auto=1 (or #…&auto=1) to start matching immediately.
+let sourceClientId = '';   // set by a handoff; prefixes the export filenames
 function showSource(s){
+  sourceClientId = s.clientId || '';
   if (!s.clientId && !s.repoName) return;
   const repoLabel = s.repoName || s.clientId;   // don't repeat the id when the name fell back to it
   $('src-repo').innerHTML = `${escHtml(repoLabel)}${s.clientId && s.clientId !== repoLabel ? `<span class="sel-id">${escHtml(s.clientId)}</span>` : ''}`;
