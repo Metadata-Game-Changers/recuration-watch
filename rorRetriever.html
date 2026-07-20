@@ -85,6 +85,8 @@
   .dl-btn:hover{background:var(--tint)}
   table.cd-table{border-collapse:collapse;width:100%;font-size:.8rem}
   table.cd-table th,table.cd-table td{text-align:left;padding:.32rem .5rem;border-bottom:1px solid #f0eef5;vertical-align:top}
+  table.cd-table td.chk,table.cd-table th.chk{text-align:center}
+  table.cd-table td.chk input{cursor:pointer;accent-color:var(--accent)}
   table.cd-table th{font-size:.66rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:600;position:sticky;top:0;background:#fff}
   table.cd-table td.num,table.cd-table th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
   table.cd-table td.val{word-break:break-word}
@@ -202,12 +204,13 @@
         <button class="dl-btn" id="res-csv" type="button" title="Download the results as CSV in the RORRetriever.py column layout">⬇ Results (CSV)</button>
       </div>
     </div>
-    <p class="res-intro">Rows are colored by outcome: green = a ROR was <b>chosen</b> by the matching algorithm, amber = a <b>best-score</b> match accepted without being chosen (only with the option above), red = <b>no match</b>. Affiliations the matcher can&rsquo;t place are automatically retried with ror.org&rsquo;s keyword search (the website&rsquo;s more forgiving query); its top hit appears in amber with <b>QUERY</b> in the Match column — verify those by eye. Click an affiliation or its result count to see every candidate the API returned. The CSV download matches the <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">RORRetriever.py</code> output columns.</p>
+    <p class="res-intro">Rows are colored by outcome: green = a ROR was <b>chosen</b> by the matching algorithm, amber = a <b>best-score</b> match accepted without being chosen (only with the option above), red = <b>no match</b>. Affiliations the matcher can&rsquo;t place are automatically retried with ror.org&rsquo;s keyword search (the website&rsquo;s more forgiving query); its top hit appears in amber with <b>QUERY</b> in the Match column — verify those by eye. Click an affiliation or its result count to see every candidate the API returned. The <b>Valid</b> checkboxes are for curation: chosen (green) matches start ticked — review the amber and query rows, tick the ones you verify, and the CSV&rsquo;s <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">valid</code> column records your True/False decisions. The CSV download matches the <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">RORRetriever.py</code> output columns.</p>
     <div class="res-summary" id="res-summary"></div>
     <div style="overflow-x:auto">
     <table class="cd-table"><thead><tr>
       <th>Affiliation</th><th>ROR</th><th>Organization</th><th>Country</th>
       <th class="num">Score</th><th>Match</th><th class="num">Results</th>
+      <th class="chk" title="Curator check-off: tick the identifiers you have verified. Exported as True/False in the valid column of the CSV/TSV. Chosen (green) matches start ticked.">Valid</th>
     </tr></thead><tbody id="res-body"></tbody></table>
     </div>
   </div>
@@ -253,11 +256,11 @@ function itemRow(affiliation, item, numberOfResults){
     searchString: String(item.substring || '').replace(/"/g, ''),
     ror: item.organization.id, orgName: d.value || '', orgLang: d.lang || '',
     country: orgCountry(item.organization), chosen: !!item.chosen, score: item.score,
-    match: item.matching_type, numberOfResults, valid: true };
+    match: item.matching_type, numberOfResults, found: true, valid: !!item.chosen };
 }
 function emptyRow(affiliation, match, numberOfResults){
   return { affiliation, searchString:'', ror:'', orgName:'', orgLang:'', country:'',
-    chosen:'', score:'', match, numberOfResults, valid: false };
+    chosen:'', score:'', match, numberOfResults, found: false, valid: false };
 }
 
 /* Match one affiliation. Mirrors RORRetriever.py: no results → "No Result"; all-acronym
@@ -307,7 +310,7 @@ async function queryFallback(affiliation){
   const d = rorDisplay(org);
   return { affiliation, searchString: affiliation, ror: org.id, orgName: d.value || '', orgLang: d.lang || '',
     country: orgCountry(org), chosen: false, score: '', match: 'QUERY',
-    numberOfResults: json.number_of_results, valid: true };
+    numberOfResults: json.number_of_results, found: true, valid: false };
 }
 
 const TIPS = [
@@ -347,20 +350,21 @@ let results = [];          // flat output rows, RORRetriever.py TSV order
 let candidates = new Map(); // affiliation -> raw API items (for the drill-down)
 let stopRequested = false;
 
-function rowCls(r){ return !r.valid ? 'row-none' : (r.chosen === true ? 'row-found' : 'row-best'); }
+function rowCls(r){ return !r.found ? 'row-none' : (r.chosen === true ? 'row-found' : 'row-best'); }
 function renderRow(r){
   const ri = results.length - 1;
   const cand = candidates.get(r.affiliation) || [];
   return `<tr class="${rowCls(r)}">`
-    + `<td class="val">${cand.length ? `<a class="dup-doc-link" data-aff="${escAttr(r.affiliation)}" title="Show every candidate the ROR API returned for this affiliation">${escHtml(r.affiliation)}</a>` : escHtml(r.affiliation)}${r.valid && r.chosen !== true ? ` <span class="best-tag">${r.match === 'QUERY' ? 'query' : 'best score'}</span>` : ''}</td>`
+    + `<td class="val">${cand.length ? `<a class="dup-doc-link" data-aff="${escAttr(r.affiliation)}" title="Show every candidate the ROR API returned for this affiliation">${escHtml(r.affiliation)}</a>` : escHtml(r.affiliation)}${r.found && r.chosen !== true ? ` <span class="best-tag">${r.match === 'QUERY' ? 'query' : 'best score'}</span>` : ''}</td>`
     + `<td class="mono">${r.ror ? `<a href="${escAttr(r.ror)}" target="_blank" rel="noopener" title="Open this organization at ror.org">${escHtml(r.ror.replace('https://ror.org/',''))}</a>` : '—'}</td>`
     + `<td class="val">${escHtml(r.orgName || '—')}</td><td class="val">${escHtml(r.country || '—')}</td>`
     + `<td class="num">${r.score === '' ? '—' : Number(r.score).toFixed(2)}</td>`
     + `<td>${escHtml(r.match)}</td>`
-    + `<td class="num">${cand.length ? `<a class="dup-doc-link" data-aff="${escAttr(r.affiliation)}" title="Show every candidate the ROR API returned">${r.numberOfResults}</a>` : r.numberOfResults}</td></tr>`;
+    + `<td class="num">${cand.length ? `<a class="dup-doc-link" data-aff="${escAttr(r.affiliation)}" title="Show every candidate the ROR API returned">${r.numberOfResults}</a>` : r.numberOfResults}</td>`
+    + `<td class="chk">${r.ror ? `<input type="checkbox" class="valid-chk" data-i="${ri}"${r.valid ? ' checked' : ''} title="Mark this identifier as verified">` : ''}</td></tr>`;
 }
 function renderSummary(done, total){
-  const found = results.filter(r => r.valid).length;
+  const found = results.filter(r => r.found).length;
   const noMatch = results.filter(r => r.match === 'No Match').length;
   const noResult = results.filter(r => r.match === 'No Result').length;
   const errors = results.filter(r => r.match === 'Error').length;
@@ -403,7 +407,7 @@ async function run(){
   hideProgress();
   stopTips();
   $('go-btn').disabled = false; $('stop-btn').style.display = 'none';
-  const found = results.filter(r => r.valid).length;
+  const found = results.filter(r => r.found).length;
   setStatus(stopRequested
     ? `Stopped after ${done.toLocaleString()} of ${input.length.toLocaleString()} affiliations — ${found.toLocaleString()} ROR${found===1?'':'s'} found.`
     : `Done — ${found.toLocaleString()} ROR${found===1?'':'s'} found for ${done.toLocaleString()} affiliation${done===1?'':'s'}.`);
@@ -425,6 +429,10 @@ function openCandidates(aff){
     + '</tbody></table>';
   $('cand-modal').style.display = 'flex';
 }
+$('res-body').addEventListener('change', e => {
+  const chk = e.target.closest('.valid-chk');
+  if (chk) results[+chk.dataset.i].valid = chk.checked;
+});
 $('res-body').addEventListener('click', e => {
   const el = e.target.closest('.dup-doc-link[data-aff]'); if (!el) return;
   openCandidates(el.dataset.aff);
