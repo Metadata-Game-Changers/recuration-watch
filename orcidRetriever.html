@@ -87,6 +87,8 @@
   .dl-btn:hover{background:var(--tint)}
   table.cd-table{border-collapse:collapse;width:100%;font-size:.8rem}
   table.cd-table th,table.cd-table td{text-align:left;padding:.32rem .5rem;border-bottom:1px solid #f0eef5;vertical-align:top}
+  table.cd-table td.chk,table.cd-table th.chk{text-align:center}
+  table.cd-table td.chk input{cursor:pointer;accent-color:var(--accent)}
   table.cd-table th{font-size:.66rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:600;position:sticky;top:0;background:#fff}
   table.cd-table td.num,table.cd-table th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
   table.cd-table td.val{word-break:break-word}
@@ -192,12 +194,13 @@
         <button class="dl-btn" id="res-csv" type="button" type="button" title="Download the results as CSV">⬇ Results (CSV)</button>
       </div>
     </div>
-    <p class="res-intro">Names are searched as <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">family-name AND given-names</code> in the public ORCID registry — the same search MGC&rsquo;s <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">getORCIDs.py</code> uses. Green = exactly <b>one</b> ORCID matches the name, amber = <b>several</b> match (one row per candidate — use the employment and journal columns to pick), red = <b>none</b>. ORCID profile data appears only if the person made it public. Each iD links to its orcid.org profile.</p>
+    <p class="res-intro">Names are searched as <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">family-name AND given-names</code> in the public ORCID registry — the same search MGC&rsquo;s <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">getORCIDs.py</code> uses. Green = exactly <b>one</b> ORCID matches the name, amber = <b>several</b> match (one row per candidate — use the employment and journal columns to pick), red = <b>none</b>. ORCID profile data appears only if the person made it public. Each iD links to its orcid.org profile. The <b>Valid</b> checkboxes are for curation: single-match (green) rows start ticked — for amber names, open the profiles, pick the right person, and tick that row; the CSV&rsquo;s <code style="font-family:'IBM Plex Mono',monospace;font-size:.9em">valid</code> column records your True/False decisions.</p>
     <div class="res-summary" id="res-summary"></div>
     <div style="overflow-x:auto">
     <table class="cd-table"><thead><tr>
       <th>Name</th><th>ORCID iD</th><th>Record name</th><th>Most recent employment</th>
       <th>Most recent journal</th><th class="num">Matches</th>
+      <th class="chk" title="Curator check-off: tick the iDs you have verified as the right person. Exported as True/False in the valid column of the CSV. Single-match (green) rows start ticked.">Valid</th>
     </tr></thead><tbody id="res-body"></tbody></table>
     </div>
   </div>
@@ -343,13 +346,15 @@ function empText(r){
   return `${r.employer}${yrs}`;
 }
 function renderRow(r, note){
+  const ri = results.length - 1;
   return `<tr class="${rowCls(r)}">`
     + `<td class="val">${escHtml(r.input)}${r.numFound > 1 ? ' <span class="multi-tag">pick one</span>' : ''}</td>`
     + `<td class="mono">${r.orcid ? `<a href="https://orcid.org/${escAttr(r.orcid)}" target="_blank" rel="noopener" title="Open this ORCID profile at orcid.org">${escHtml(r.orcid)}</a>` : '—'}</td>`
     + `<td class="val">${escHtml([r.given, r.family].filter(Boolean).join(' ') || '—')}</td>`
     + `<td class="val">${escHtml(empText(r))}</td>`
     + `<td class="val">${escHtml(r.journal || '—')}</td>`
-    + `<td class="num">${note || r.numFound}</td></tr>`;
+    + `<td class="num">${note || r.numFound}</td>`
+    + `<td class="chk">${r.orcid ? `<input type="checkbox" class="valid-chk" data-i="${ri}"${r.valid ? ' checked' : ''} title="Mark this iD as verified — the right person for this name">` : ''}</td></tr>`;
 }
 function renderSummary(done, total){
   const names = new Map();
@@ -377,7 +382,7 @@ async function run(){
     try {
       const s = await searchName(name);
       if (s.numFound === 0 || !s.ids.length){
-        const r = { input: name, given: s.given, family: s.family, orcid: '', employer: '', empStart: '', empEnd: '', journal: '', numFound: 0 };
+        const r = { input: name, given: s.given, family: s.family, orcid: '', employer: '', empStart: '', empEnd: '', journal: '', numFound: 0, valid: false };
         results.push(r); $('res-body').insertAdjacentHTML('beforeend', renderRow(r));
       } else {
         const ids = s.ids.slice(0, cap);
@@ -385,7 +390,7 @@ async function run(){
           if (stopRequested) break;
           setStatus(`Searching ${done + 1} of ${input.length}: ${name} — candidate ${k + 1} of ${ids.length}`);
           const c = await fetchCandidate(ids[k]);
-          const r = { input: name, ...c, numFound: s.numFound };
+          const r = { input: name, ...c, numFound: s.numFound, valid: s.numFound === 1 };
           results.push(r);
           const note = (s.numFound > ids.length && k === 0) ? `first ${ids.length} of ${s.numFound}` : '';
           $('res-body').insertAdjacentHTML('beforeend', renderRow(r, note));
@@ -394,7 +399,7 @@ async function run(){
       }
     } catch (e){
       console.error(name, e);
-      const r = { input: name, given: '', family: '', orcid: '', employer: '', empStart: '', empEnd: '', journal: '', numFound: 0 };
+      const r = { input: name, given: '', family: '', orcid: '', employer: '', empStart: '', empEnd: '', journal: '', numFound: 0, valid: false };
       results.push(r); $('res-body').insertAdjacentHTML('beforeend', renderRow(r, 'error'));
     }
     done++;
@@ -411,11 +416,11 @@ async function run(){
 }
 
 /* ---------- downloads ---------- */
-const COLS = ['input','given','family','orcid','employment','employmentStart','employmentEnd','journal','numberOfMatches'];
+const COLS = ['input','given','family','orcid','employment','employmentStart','employmentEnd','journal','numberOfMatches','valid'];
 function colValue(r, col){
   const v = { input:r.input, given:r.given, family:r.family, orcid:r.orcid ? `https://orcid.org/${r.orcid}` : '',
     employment:r.employer, employmentStart:r.empStart, employmentEnd:r.empEnd,
-    journal:r.journal, numberOfMatches:r.numFound }[col];
+    journal:r.journal, numberOfMatches:r.numFound, valid:r.valid ? 'True' : 'False' }[col];
   return String(v == null ? '' : v).replace(/[\t\n\r]/g, ' ');
 }
 function toTsv(){ return [COLS.join('\t'), ...results.map(r => COLS.map(c => colValue(r, c)).join('\t'))].join('\n') + '\n'; }
@@ -440,6 +445,10 @@ async function copyTsv(){
 }
 
 /* ---------- boot ---------- */
+$('res-body').addEventListener('change', e => {
+  const chk = e.target.closest('.valid-chk');
+  if (chk) results[+chk.dataset.i].valid = chk.checked;
+});
 $('go-btn').addEventListener('click', run);
 $('stop-btn').addEventListener('click', () => { stopRequested = true; });
 $('res-csv').addEventListener('click', downloadCsv);
