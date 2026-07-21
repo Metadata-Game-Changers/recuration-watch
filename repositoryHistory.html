@@ -304,8 +304,9 @@
           <select class="hero-select" id="plot-group" style="flex:none;min-width:0">
             <option value="FAIR" selected>FAIR (4 + total)</option>
             <option value="Projects">Projects (3 + total)</option>
+            <option value="SHARE">SHARE (5 + total)</option>
             <option value="Extras">Extras (2)</option>
-            <option value="All">All (9)</option>
+            <option value="All">All (14)</option>
           </select>
         </label>
         <button class="dl-btn" id="dl-png" type="button">⬇ Plot (PNG)</button>
@@ -470,6 +471,7 @@ async function scoreAllSpirals(records, onProgress){
 
 const TOTAL_CODES = ['FAIR_Text','FAIR_Identifiers','FAIR_Connections','FAIR_Contacts'];
 const PROJECT_CODES = ['Project_Team','Project_Items','Project_Relations'];
+const SHARE_CODES = ['SHARE_stewardship','SHARE_harmonization','SHARE_access','SHARE_reuse','SHARE_engagement'];
 function weightedTotal(byCode, codes){
   let totalScore = 0, totalCount = 0;
   for (const code of codes){
@@ -574,6 +576,11 @@ const CODE_STYLE = {
   Project_Team:              { label: 'Team',         color: '#b3005e' },
   Project_Items:             { label: 'Items',        color: '#0070C0' },
   Project_Relations:         { label: 'Relations',    color: '#3a9d6e' },
+  SHARE_stewardship:         { label: 'Stewardship',  color: '#2F6FB0' },
+  SHARE_harmonization:       { label: 'Harmonization',color: '#D4910B' },
+  SHARE_access:              { label: 'Access',       color: '#3A9D6E' },
+  SHARE_reuse:               { label: 'Reuse',        color: '#B3005E' },
+  SHARE_engagement:          { label: 'Engagement',   color: '#5B3D7A' },
   DataCite_Relations:        { label: 'Relations',    color: '#0070C0' },
   DataCite_ContributorTypes: { label: 'Contributors', color: '#e2725b' },
 };
@@ -582,9 +589,12 @@ const PLOT_GROUPS = {
               codes: ['FAIR_Text','FAIR_Identifiers','FAIR_Connections','FAIR_Contacts'] },
   Projects: { totals: [{ key: 'projects', label: 'Projects Total', color: '#673289', width: 3 }],
               codes: ['Project_Team','Project_Items','Project_Relations'] },
+  SHARE:    { totals: [{ key: 'share',    label: 'SHARE Total',    color: '#673289', width: 3 }],
+              codes: ['SHARE_stewardship','SHARE_harmonization','SHARE_access','SHARE_reuse','SHARE_engagement'] },
   Extras:   { totals: [], codes: ['DataCite_Relations','DataCite_ContributorTypes'] },
   All:      { totals: [], codes: ['FAIR_Text','FAIR_Identifiers','FAIR_Connections','FAIR_Contacts',
                                   'Project_Team','Project_Items','Project_Relations',
+                                  'SHARE_stewardship','SHARE_harmonization','SHARE_access','SHARE_reuse','SHARE_engagement',
                                   'DataCite_Relations','DataCite_ContributorTypes'] },
 };
 const ALL_PALETTE = ['#e2725b','#0070C0','#9167b0','#3a9d6e','#b3005e','#d4910b','#2f6fb0','#c0392b','#5b3d7a'];
@@ -665,7 +675,7 @@ let history = null;   // { clientId, repoName, resourceTypeId, query, cap, rando
 let stopRequested = false;
 
 function yearTotals(byCode){
-  const t = { fair: weightedTotal(byCode, TOTAL_CODES), projects: weightedTotal(byCode, PROJECT_CODES) };
+  const t = { fair: weightedTotal(byCode, TOTAL_CODES), projects: weightedTotal(byCode, PROJECT_CODES), share: weightedTotal(byCode, SHARE_CODES) };
   for (const code of Object.keys(byCode)) t[code] = byCode[code] ? byCode[code].res.average : null;
   return t;
 }
@@ -874,7 +884,7 @@ function drawGrid(){
 }
 
 /* ---------- grid export: one composite SVG of the whole grid, rasterized to PNG ---------- */
-const GRID_GROUP_LABEL = { FAIR:'FAIR use cases', Projects:'Project use cases', Extras:'Additional DataCite use cases', All:'All nine use cases' };
+const GRID_GROUP_LABEL = { FAIR:'FAIR use cases', Projects:'Project use cases', SHARE:'SHARE use cases', Extras:'Additional DataCite use cases', All:'All fourteen use cases' };
 // "type: … · query: …" for the current run's filters (empty when none) — mirrors the on-screen selection
 function selectionFilterText(){
   return [history.resourceTypeId ? `type: ${history.resourceTypeId}` : '', history.query ? `query: ${history.query}` : ''].filter(Boolean).join(' · ');
@@ -1036,7 +1046,7 @@ function downloadJson(){
     note: 'Each year scores a sample of the records REGISTERED in that year, as those records are at the generated time (current state, including any re-curation since).',
     years: history.years.map(e => ({
       year: e.year, recordsScored: e.n, matchingTotal: e.matching,
-      totals: e.totals ? { fairTotal: e.totals.fair, projectsTotal: e.totals.projects,
+      totals: e.totals ? { fairTotal: e.totals.fair, projectsTotal: e.totals.projects, shareTotal: e.totals.share,
         text: e.totals.FAIR_Text, identifiers: e.totals.FAIR_Identifiers,
         connections: e.totals.FAIR_Connections, contacts: e.totals.FAIR_Contacts } : null,
       useCases: e.byCode ? Object.fromEntries(Object.entries(e.byCode).map(([code, v]) => [code, {
@@ -1061,6 +1071,7 @@ function downloadCsv(){
     }
     rows.push([e.year, e.n, e.matching ?? '', '(FAIR total)', '', e.totals.fair.toFixed(4)]);
     rows.push([e.year, e.n, e.matching ?? '', '(Projects total)', '', e.totals.projects.toFixed(4)]);
+    rows.push([e.year, e.n, e.matching ?? '', '(SHARE total)', '', e.totals.share.toFixed(4)]);
   }
   const body = rows.map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
   triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_history__${nowStamp()}.csv`);
@@ -1074,7 +1085,7 @@ function downloadSummary(){
   const extraCodes = PLOT_GROUPS.Extras.codes;
   const headers = ['Repository_ID','Registered','Records_Scored','Matching',
     'FAIR_Total','Text','Identifiers','Connections','Contacts',
-    'Projects_Total', ...PROJECT_CODES, ...extraCodes];
+    'Projects_Total', ...PROJECT_CODES, 'SHARE_Total', ...SHARE_CODES, ...extraCodes];
   const rows = [headers];
   for (const e of history.years){
     const t = e.totals;
@@ -1082,6 +1093,7 @@ function downloadSummary(){
       history.clientId, e.year, e.n, e.matching ?? '',
       t ? round(t.fair) : '', ...TOTAL_CODES.map(c => t ? round(t[c]) : ''),
       t ? round(t.projects) : '', ...PROJECT_CODES.map(c => t ? round(t[c]) : ''),
+      t ? round(t.share) : '', ...SHARE_CODES.map(c => t ? round(t[c]) : ''),
       ...extraCodes.map(c => t ? round(t[c]) : '')
     ]);
   }
@@ -1113,7 +1125,7 @@ function downloadPng(){
   ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = '#673289'; ctx.font = '600 15px Inter, sans-serif'; ctx.textBaseline = 'top';
   ctx.fillText(`${history.repoName} (${history.clientId}) — completeness by registered year`, pad, 12);
-  const groupLabel = { FAIR: 'FAIR use cases', Projects: 'Project use cases', Extras: 'Additional DataCite use cases', All: 'All nine use cases' }[plotGroup] || plotGroup;
+  const groupLabel = { FAIR: 'FAIR use cases', Projects: 'Project use cases', SHARE: 'SHARE use cases', Extras: 'Additional DataCite use cases', All: 'All fourteen use cases' }[plotGroup] || plotGroup;
   ctx.fillStyle = '#6b7280'; ctx.font = '11px Inter, sans-serif';
   const filt = selectionFilterText();
   ctx.fillText(`${groupLabel} · up to ${history.cap} records/year${filt ? ' · ' + filt : ''} · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. re-curation)`, pad, 33);

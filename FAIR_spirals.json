@@ -854,5 +854,145 @@
         "jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"References\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)) | {id: .id, concept: \"References\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"References\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"References\" and has(\"relatedIdentifier\") and .relatedIdentifier != null) | .relatedIdentifier]))}"
       }
     ]
+  },
+  {
+    "title": "Share Stewardship",
+    "code": "SHARE_stewardship",
+    "dialect": "DataCite",
+    "description": "DataCite that supports SHARE stewardship (https://sharescore.org/framework)",
+    "items": [
+      {
+        "concept": "Spatial Extent",
+        "jq_query": ".data[] | select((.attributes.geoLocations | type == \"array\") and (.attributes.geoLocations | length > 0) and any((.attributes.geoLocations // [])[]; type == \"object\" and has(\"geoLocationBox\") and .geoLocationBox != null) or (.attributes.geoLocations | type == \"array\") and (.attributes.geoLocations | length > 0) and any((.attributes.geoLocations // [])[]; type == \"object\" and has(\"geoLocationPoint\") and .geoLocationPoint != null) or (.attributes.geoLocations | type == \"array\") and (.attributes.geoLocations | length > 0) and any((.attributes.geoLocations // [])[]; type == \"object\" and has(\"geoLocationPolygon\") and .geoLocationPolygon != null) or (.attributes.geoLocations | type == \"array\") and (.attributes.geoLocations | length > 0) and any((.attributes.geoLocations // [])[]; type == \"object\" and has(\"geoLocationPlace\") and .geoLocationPlace != null)) | {id: .id, concept: \"Spatial Extent\", count: (([(.attributes.geoLocations // [])[] | select(type == \"object\" and has(\"geoLocationBox\") and .geoLocationBox != null)]) + ([(.attributes.geoLocations // [])[] | select(type == \"object\" and has(\"geoLocationPoint\") and .geoLocationPoint != null)]) + ([(.attributes.geoLocations // [])[] | select(type == \"object\" and has(\"geoLocationPolygon\") and .geoLocationPolygon != null)]) + ([(.attributes.geoLocations // [])[] | select(type == \"object\" and has(\"geoLocationPlace\") and .geoLocationPlace != null)]) | length), values: (([(.attributes.geoLocations // [])[] | select(type == \"object\" and has(\"geoLocationBox\") and .geoLocationBox != null) | .geoLocationBox]) + ([(.attributes.geoLocations // [])[] | select(type == \"object\" and has(\"geoLocationPoint\") and .geoLocationPoint != null) | .geoLocationPoint]) + ([(.attributes.geoLocations // [])[] | select(type == \"object\" and has(\"geoLocationPolygon\") and .geoLocationPolygon != null) | .geoLocationPolygon]) + ([(.attributes.geoLocations // [])[] | select(type == \"object\" and has(\"geoLocationPlace\") and .geoLocationPlace != null) | .geoLocationPlace]))}"
+      },
+      {
+        "concept": "Temporal Extent",
+        "jq_query": ".data[] | select((.attributes.dates | type == \"array\") and (.attributes.dates | length > 0) and any((.attributes.dates // [])[]; type == \"object\" and .dateType == \"Collected\" and has(\"date\") and .date != null and .date != null) or (.attributes.dates | type == \"array\") and (.attributes.dates | length > 0) and any((.attributes.dates // [])[]; type == \"object\" and .dateType == \"Coverage\" and has(\"date\") and .date != null and .date != null)) | {id: .id, concept: \"Temporal Extent\", count: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Collected\" and has(\"date\") and .date != null and .date != null)]) + ([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Coverage\" and has(\"date\") and .date != null and .date != null)]) | length), values: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Collected\" and has(\"date\") and .date != null and .date != null) | .date]) + ([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Coverage\" and has(\"date\") and .date != null and .date != null) | .date]))}"
+      },
+      {
+        "concept": "Contributor Type",
+        "jq_query": ".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and has(\"contributorType\") and .contributorType != null)) | {id: .id, concept: \"Contributor Type\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and has(\"contributorType\") and .contributorType != null)]) | length), values: (([(.attributes.contributors // [])[] | select(type == \"object\" and has(\"contributorType\") and .contributorType != null) | .contributorType]))}"
+      },
+      {
+        "concept": "Keyword",
+        "jq_query": ".data[] | select((.attributes.subjects | type == \"array\") and (.attributes.subjects | length > 0) and any((.attributes.subjects // [])[]; type == \"object\" and has(\"subject\") and .subject != null)) | {id: .id, concept: \"Keyword\", count: (([(.attributes.subjects // [])[] | select(type == \"object\" and has(\"subject\") and .subject != null)]) | length), values: (([(.attributes.subjects // [])[] | select(type == \"object\" and has(\"subject\") and .subject != null) | .subject]))}"
+      }
+    ]
+  },
+  {
+    "title": "Share Harmonization",
+    "code": "SHARE_harmonization",
+    "dialect": "DataCite",
+    "description": "DataCite that supports SHARE harmonization (https://sharescore.org/framework)",
+    "items": [
+      {
+        "concept": "Methods",
+        "jq_query": ".data[] | select((.attributes.descriptions | type == \"array\") and (.attributes.descriptions | length > 0) and any((.attributes.descriptions // [])[]; type == \"object\" and .descriptionType == \"Methods\" and has(\"description\") and .description != null)) | {id: .id, concept: \"Methods\", count: (([(.attributes.descriptions // [])[] | select(type == \"object\" and .descriptionType == \"Methods\" and has(\"description\") and .description != null)]) | length), values: (([(.attributes.descriptions // [])[] | select(type == \"object\" and .descriptionType == \"Methods\" and has(\"description\") and .description != null) | .description]))}"
+      },
+      {
+        "concept": "Resource Author Identifier",
+        "jq_query": ".data[] | select(\n    (.attributes.creators | type == \"array\") and \n    (.attributes.creators | length > 0) and \n    any((.attributes.creators // [])[]; \n        type == \"object\" and has(\"nameIdentifiers\") and \n        (.nameIdentifiers | type == \"array\") and \n        (.nameIdentifiers | length > 0) and \n        any((.nameIdentifiers // [])[]; type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null)\n    )\n) | {\n    id: .id, \n    concept: \"Resource Author Identifier\", \n    count: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | \n             (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null)] | length),\n    values: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | \n              (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null) | .nameIdentifier])\n}"
+      },
+      {
+        "concept": "Resource Contributor Identifier",
+        "jq_query": ".data[] | select(\n    (.attributes.contributors | type == \"array\") and \n    (.attributes.contributors | length > 0) and \n    any((.attributes.contributors // [])[]; \n        type == \"object\" and has(\"nameIdentifiers\") and \n        (.nameIdentifiers | type == \"array\") and \n        (.nameIdentifiers | length > 0) and \n        any((.nameIdentifiers // [])[]; type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null)\n    )\n) | {\n    id: .id, \n    concept: \"Resource Contributor Identifier\", \n    count: ([(.attributes.contributors // [])[] | select(type == \"object\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | \n             (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null)] | length),\n    values: ([(.attributes.contributors // [])[] | select(type == \"object\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | \n              (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null) | .nameIdentifier])\n}"
+      },
+      {
+        "concept": "IsCitedBy",
+        "jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsCitedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)) | {id: .id, concept: \"IsCitedBy\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsCitedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsCitedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null) | .relatedIdentifier]))}"
+      },
+      {
+        "concept": "Abstract",
+        "jq_query": ".data[] | select((.attributes.descriptions | type == \"array\") and (.attributes.descriptions | length > 0) and any((.attributes.descriptions // [])[]; type == \"object\" and .descriptionType == \"Abstract\" and has(\"description\") and .description != null)) | {id: .id, concept: \"Abstract\", count: (([(.attributes.descriptions // [])[] | select(type == \"object\" and .descriptionType == \"Abstract\" and has(\"description\") and .description != null)]) | length), values: (([(.attributes.descriptions // [])[] | select(type == \"object\" and .descriptionType == \"Abstract\" and has(\"description\") and .description != null) | .description]))}"
+      }
+    ]
+  },
+  {
+    "title": "Share Access",
+    "code": "SHARE_access",
+    "dialect": "DataCite",
+    "description": "DataCite that supports SHARE access (https://sharescore.org/framework)",
+    "items": [
+      {
+        "concept": "Rights Identifier",
+        "jq_query": ".data[] | select((.attributes.rightsList | type == \"array\") and (.attributes.rightsList | length > 0) and any((.attributes.rightsList // [])[]; type == \"object\" and has(\"rightsIdentifier\") and .rightsIdentifier != null)) | {id: .id, concept: \"Rights Identifier\", count: (([(.attributes.rightsList // [])[] | select(type == \"object\" and has(\"rightsIdentifier\") and .rightsIdentifier != null)]) | length), values: (([(.attributes.rightsList // [])[] | select(type == \"object\" and has(\"rightsIdentifier\") and .rightsIdentifier != null) | .rightsIdentifier]))}"
+      },
+      {
+        "concept": "Rights",
+        "jq_query": ".data[] | select((.attributes.rightsList | type == \"array\") and (.attributes.rightsList | length > 0) and any((.attributes.rightsList // [])[]; type == \"object\" and has(\"rights\") and .rights != null)) | {id: .id, concept: \"Rights\", count: (([(.attributes.rightsList // [])[] | select(type == \"object\" and has(\"rights\") and .rights != null)]) | length), values: (([(.attributes.rightsList // [])[] | select(type == \"object\" and has(\"rights\") and .rights != null) | .rights]))}"
+      },
+      {
+        "concept": "Date Available",
+        "jq_query": ".data[] | select((.attributes.dates | type == \"array\") and (.attributes.dates | length > 0) and any((.attributes.dates // [])[]; type == \"object\" and .dateType == \"Available\" and has(\"date\") and .date != null)) | {id: .id, concept: \"Date Available\", count: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Available\" and has(\"date\") and .date != null)]) | length), values: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Available\" and has(\"date\") and .date != null) | .date]))}"
+      }
+    ]
+  },
+  {
+    "title": "Share Reuse",
+    "code": "SHARE_reuse",
+    "dialect": "DataCite",
+    "description": "DataCite that supports SHARE reuse (https://sharescore.org/framework)",
+    "items": [
+      {
+        "concept": "CitedBy",
+        "jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsCitedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)) | {id: .id, concept: \"CitedBy\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsCitedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsCitedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null) | .relatedIdentifier]))}"
+      },
+      {
+        "concept": "IsSourceOf",
+        "jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsSourceOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)) | {id: .id, concept: \"IsSourceOf\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSourceOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSourceOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null) | .relatedIdentifier]))}"
+      }
+    ]
+  },
+  {
+    "title": "Share Engagement",
+    "code": "SHARE_engagement",
+    "dialect": "DataCite",
+    "description": "DataCite that supports SHARE engagement (https://sharescore.org/framework)",
+    "items": [
+      {
+        "concept": "JournalArticle",
+        "jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .resourceTypeGeneral == \"JournalArticle\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null)) | {id: .id, concept: \"JournalArticle\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .resourceTypeGeneral == \"JournalArticle\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .resourceTypeGeneral == \"JournalArticle\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null) | .resourceTypeGeneral]))}"
+      },
+      {
+        "concept": "Preprint",
+        "jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .resourceTypeGeneral == \"Preprint\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null)) | {id: .id, concept: \"Preprint\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .resourceTypeGeneral == \"Preprint\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .resourceTypeGeneral == \"Preprint\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null) | .resourceTypeGeneral]))}"
+      },
+      {
+        "concept": "ConferencePaper",
+        "jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .resourceTypeGeneral == \"ConferencePaper\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null)) | {id: .id, concept: \"ConferencePaper\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .resourceTypeGeneral == \"ConferencePaper\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .resourceTypeGeneral == \"ConferencePaper\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null) | .resourceTypeGeneral]))}"
+      },
+      {
+        "concept": "ConferenceProceeding",
+        "jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .resourceTypeGeneral == \"ConferenceProceeding\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null)) | {id: .id, concept: \"ConferenceProceeding\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .resourceTypeGeneral == \"ConferenceProceeding\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .resourceTypeGeneral == \"ConferenceProceeding\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null) | .resourceTypeGeneral]))}"
+      },
+      {
+        "concept": "Dataset",
+        "jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .resourceTypeGeneral == \"Dataset\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null)) | {id: .id, concept: \"Dataset\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .resourceTypeGeneral == \"Dataset\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .resourceTypeGeneral == \"Dataset\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null) | .resourceTypeGeneral]))}"
+      },
+      {
+        "concept": "Software",
+        "jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .resourceTypeGeneral == \"Software\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null)) | {id: .id, concept: \"Software\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .resourceTypeGeneral == \"Software\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .resourceTypeGeneral == \"Software\" and has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null) | .resourceTypeGeneral]))}"
+      },
+      {
+        "concept": "Project Funder",
+        "jq_query": ".data[] | select((.attributes.fundingReferences | type == \"array\") and (.attributes.fundingReferences | length > 0) and any((.attributes.fundingReferences // [])[]; type == \"object\" and has(\"funderName\") and .funderName != null)) | {id: .id, concept: \"Project Funder\", count: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"funderName\") and .funderName != null)]) | length), values: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"funderName\") and .funderName != null) | .funderName]))}"
+      },
+      {
+        "concept": "Funder Identifier",
+        "jq_query": ".data[] | select((.attributes.fundingReferences | type == \"array\") and (.attributes.fundingReferences | length > 0) and any((.attributes.fundingReferences // [])[]; type == \"object\" and has(\"funderIdentifier\") and .funderIdentifier != null)) | {id: .id, concept: \"Funder Identifier\", count: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"funderIdentifier\") and .funderIdentifier != null)]) | length), values: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"funderIdentifier\") and .funderIdentifier != null) | .funderIdentifier]))}"
+      },
+      {
+        "concept": "Award Title",
+        "jq_query": ".data[] | select((.attributes.fundingReferences | type == \"array\") and (.attributes.fundingReferences | length > 0) and any((.attributes.fundingReferences // [])[]; type == \"object\" and has(\"awardTitle\") and .awardTitle != null)) | {id: .id, concept: \"Award Title\", count: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"awardTitle\") and .awardTitle != null)]) | length), values: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"awardTitle\") and .awardTitle != null) | .awardTitle]))}"
+      },
+      {
+        "concept": "Award Number",
+        "jq_query": ".data[] | select((.attributes.fundingReferences | type == \"array\") and (.attributes.fundingReferences | length > 0) and any((.attributes.fundingReferences // [])[]; type == \"object\" and has(\"awardNumber\") and .awardNumber != null)) | {id: .id, concept: \"Award Number\", count: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"awardNumber\") and .awardNumber != null)]) | length), values: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"awardNumber\") and .awardNumber != null) | .awardNumber]))}"
+      },
+      {
+        "concept": "IsVersionOf",
+        "jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsVersionOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)) | {id: .id, concept: \"IsVersionOf\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsVersionOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsVersionOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null) | .relatedIdentifier]))}"
+      }
+    ]
   }
 ]
