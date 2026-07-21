@@ -589,7 +589,24 @@ function personDetail(records, source, kind){
         if (!name) continue;
         const org = isOrgEntity(p.nameType, name);
         if (kind === 'nameId') bump(name, Array.isArray(p.nameIdentifiers) && p.nameIdentifiers.some(n => n && n.nameIdentifier), r, org);
-        else bump(name, Array.isArray(p.affiliation) && p.affiliation.some(a => a && a.name), r, org);
+        else {
+          const affs = Array.isArray(p.affiliation) ? p.affiliation.filter(a => a && a.name) : [];
+          bump(name, affs.length > 0, r, org);
+          // the 'aff' drill-down shows each person's affiliation history: distinct strings (never
+          // fuzzy-merged), their RORs when asserted, and publication-year ranges
+          const e = map.get(name);
+          if (e){
+            if (!e.affs) e.affs = new Map();
+            const y = r.attributes && typeof r.attributes.publicationYear === 'number' ? r.attributes.publicationYear : null;
+            for (const a of affs){
+              let ae = e.affs.get(a.name);
+              if (!ae){ ae = { n: 0, ids: new Set(), y0: null, y1: null }; e.affs.set(a.name, ae); }
+              ae.n++;
+              if (a.affiliationIdentifier) ae.ids.add(a.affiliationIdentifier);
+              if (y != null){ ae.y0 = ae.y0 == null ? y : Math.min(ae.y0, y); ae.y1 = ae.y1 == null ? y : Math.max(ae.y1, y); }
+            }
+          }
+        }
       }
     }
   }
@@ -642,15 +659,27 @@ function openConnDetail(idx){
   const c = CONNECTORS[idx];
   const map = (lastRun.results && lastRun.results[idx] && lastRun.results[idx].detail) || connDetail(lastRun.records, c);
   const isQw = e => e.id > 0 && e.id < e.occ;               // a known identifier that can be propagated
-  const rank = e => (isQw(e) ? 0 : (e.id === 0 ? 1 : 2));   // quick wins first, then missing, then complete
+  const isAff = c.kind === 'aff';
+  // aff view: distinct institutions = distinct by ROR when asserted, else by exact string (never fuzzy)
+  const instCount = a => { const seen = new Set(); for (const x of a.affs) seen.add(x.ids[0] || x.name); return seen.size; };
+  const rank = e => isAff
+    ? (isQw(e) && e.inst === 1 ? 0                          // safe to propagate: gaps + a single institution
+       : isQw(e) ? 1                                        // multi-affiliation partials — need review
+       : e.id === 0 ? 2 : 3)                                // no affiliation anywhere, then complete
+    : (isQw(e) ? 0 : (e.id === 0 ? 1 : 2));                 // other drills: quick wins, missing, complete
   const entries = [...map.entries()]
-    .map(([name, e]) => ({ name, occ: e.occ, id: e.id, pct: e.occ ? e.id / e.occ : 0,
+    .map(([name, e]) => { const o = { name, occ: e.occ, id: e.id, pct: e.occ ? e.id / e.occ : 0,
       org: (e.orgN || 0) * 2 > e.occ,   // majority of occurrences look organizational → ROR, else person → ORCID
+      affs: e.affs ? [...e.affs.entries()].map(([an, ae]) => ({ name: an, n: ae.n, ids: [...ae.ids], y0: ae.y0, y1: ae.y1 })).sort((x, y) => y.n - x.n) : [],
       docs: [...(e.docs || [])].map(([doi, title]) => ({ doi, title })),
       idd: [...(e.idDocs || [])].map(([doi, title]) => ({ doi, title })),
-      fix: [...(e.fixDocs || [])].map(([doi, title]) => ({ doi, title })) }))
+      fix: [...(e.fixDocs || [])].map(([doi, title]) => ({ doi, title })) };
+      o.inst = instCount(o);
+      // possible variants: two strings, no shared ROR, same conservative normalization — flag, never merge
+      o.variants = o.affs.length > o.inst || (o.affs.length > 1 && new Set(o.affs.map(x => normName(x.name))).size < o.affs.length);
+      return o; })
     .sort((a, b) => rank(a) - rank(b)
-      || (isQw(a) ? (b.occ - b.id) - (a.occ - a.id) : 0)    // within quick wins, biggest propagatable gap first
+      || (isQw(a) && isQw(b) ? (b.occ - b.id) - (a.occ - a.id) : 0)    // within a tier, biggest propagatable gap first
       || b.occ - a.occ || a.name.localeCompare(b.name));
   connDetailState = { entries, c };
   const missing = entries.filter(e => e.id === 0).length;
@@ -658,14 +687,27 @@ function openConnDetail(idx){
   const complete = entries.filter(e => e.id >= e.occ).length;
   const ent = c.entity.toLowerCase();
   $('cd-title').textContent = `${c.group} · ${c.label.split(' (')[0]}`;
-  $('cd-sub').textContent = `${entries.length.toLocaleString()} distinct ${ent}${entries.length===1?'':'s'} · ${partial.toLocaleString()} quick win${partial===1?'':'s'} (shown first) · ${missing.toLocaleString()} missing · ${complete.toLocaleString()} complete`;
+  if (c.kind === 'aff'){
+    const safe = entries.filter(e => isQw(e) && e.inst === 1).length;
+    const review = entries.filter(e => isQw(e) && e.inst > 1).length;
+    $('cd-sub').textContent = `${entries.length.toLocaleString()} distinct ${ent}${entries.length===1?'':'s'} · ${safe.toLocaleString()} safe to propagate (one institution, shown first) · ${review.toLocaleString()} multi-affiliation (review) · ${missing.toLocaleString()} with no affiliation · ${complete.toLocaleString()} complete — within the analyzed sample`;
+  } else {
+    $('cd-sub').textContent = `${entries.length.toLocaleString()} distinct ${ent}${entries.length===1?'':'s'} · ${partial.toLocaleString()} quick win${partial===1?'':'s'} (shown first) · ${missing.toLocaleString()} missing · ${complete.toLocaleString()} complete`;
+  }
   // drill-downs can send every name identified < 100% (never identified + quick wins) to a
   // retriever: affiliations/funders/publishers → ROR Retriever, people → ORCID Retriever
   const rorBtn = $('cd-ror'), orcidBtn = $('cd-orcid'), incomplete = missing + partial;
   const incOrgs = entries.filter(e => e.id < e.occ && e.org).length;      // organizations → ROR
   const incPeople = entries.filter(e => e.id < e.occ && !e.org).length;   // people → ORCID
-  if (c.kind === 'nameId' || c.kind === 'aff'){
-    // name-identifier and affiliation lists hold the same creators/contributors — a mix of people
+  if (c.kind === 'aff'){
+    // the interesting question here is each person's affiliation history, not their ORCID —
+    // but ORCID employment IS how you research an affiliation for people who have none anywhere
+    rorBtn.style.display = 'none';
+    const noAff = entries.filter(e => e.id === 0 && !e.org).length;
+    if (noAff > 0){ orcidBtn.style.display = ''; orcidBtn.textContent = `Find affiliations via ORCID (${noAff.toLocaleString()}) ↗`; orcidBtn.title = 'Send the people with no affiliation in any record to the ORCID Retriever — each candidate iD shows its most recent employment, a starting point for the missing affiliation'; }
+    else orcidBtn.style.display = 'none';
+  } else if (c.kind === 'nameId'){
+    // name-identifier lists hold the same creators/contributors — a mix of people
     // and organizations, so send each to its own registry
     if (incOrgs > 0){ rorBtn.style.display = ''; rorBtn.textContent = `Find RORs (${incOrgs.toLocaleString()}) ↗`; } else rorBtn.style.display = 'none';
     if (incPeople > 0){ orcidBtn.style.display = ''; orcidBtn.textContent = `Find ORCIDs (${incPeople.toLocaleString()}) ↗`; } else orcidBtn.style.display = 'none';
@@ -694,10 +736,21 @@ function openConnDetail(idx){
   const nameCell = e => { const l = linkFor(e); return l
     ? `<a href="${escAttr(l.url)}" target="_blank" rel="noopener" title="${l.title}">${escHtml(e.name)}</a>`
     : escHtml(e.name); };
+  const affCell = e => {
+    if (!e.affs.length) return '<span style="color:#9aa0ab">—</span>';
+    const parts = e.affs.map(a => {
+      const yrs = a.y0 != null ? ` (${a.y0}${a.y1 !== a.y0 ? '–' + a.y1 : ''})` : '';
+      const ror = a.ids.length ? ` <a href="${escAttr(a.ids[0])}" target="_blank" rel="noopener" title="${escAttr(a.ids[0])}" style="text-decoration:none">✓</a>` : '';
+      return `${escHtml(a.name)} ×${a.n}${yrs}${ror}`;
+    });
+    const flag = e.variants ? ' <span class="qw-tag" title="Two or more of these strings may be the same institution (shared ROR or matching normalized name) — counts are kept separate">variants?</span>' : '';
+    return parts.join(' · ') + flag;
+  };
   $('cd-body').innerHTML = entries.length === 0
     ? '<div style="padding:1rem;color:#6b7280;font-size:.8rem">No items found in the analyzed sample.</div>'
-    : `<table class="cd-table"><thead><tr><th>${escHtml(c.entity)}</th><th class="num">Occurrences</th><th class="num">Identified</th><th class="num" title="Records where this ${escAttr(ent)} occurs WITHOUT its identifier — the records to find and fix">To fix</th><th class="num">%</th></tr></thead><tbody>`
-      + entries.map((e, ei) => `<tr class="${rowCls(e)}"><td class="val">${nameCell(e)}${isQw(e) ? ' <span class="qw-tag">quick win</span>' : ''}</td>`
+    : `<table class="cd-table"><thead><tr><th>${escHtml(c.entity)}</th>${c.kind === 'aff' ? '<th title="Each distinct affiliation string (never fuzzy-merged), its occurrence count and publication-year range. Strings sharing a ROR are one institution.">Affiliations (years)</th>' : ''}<th class="num">Occurrences</th><th class="num">${c.kind === 'aff' ? 'Affiliated' : 'Identified'}</th><th class="num" title="Records where this ${escAttr(ent)} occurs WITHOUT its ${c.kind === 'aff' ? 'affiliation' : 'identifier'} — the records to find and fix">To fix</th><th class="num">%</th></tr></thead><tbody>`
+      + entries.map((e, ei) => `<tr class="${rowCls(e)}"><td class="val">${nameCell(e)}${c.kind === 'aff' ? (isQw(e) && e.inst === 1 ? ' <span class="qw-tag">safe to propagate</span>' : isQw(e) ? ' <span class="qw-tag" style="background:#f4d7d0;color:#8a3a2a">review</span>' : '') : (isQw(e) ? ' <span class="qw-tag">quick win</span>' : '')}</td>`
+        + (c.kind === 'aff' ? `<td class="val" style="font-size:.72rem;max-width:340px">${affCell(e)}</td>` : '')
         + `<td class="num">${e.docs.length ? `<a class="dup-doc-link" data-ei="${ei}" title="List the DOIs where this ${escAttr(ent)} occurs">${e.occ.toLocaleString()}</a>` : e.occ.toLocaleString()}</td>`
         + `<td class="num">${e.idd.length ? `<a class="dup-doc-link" data-id="${ei}" title="List the records where this ${escAttr(ent)} occurs WITH its identifier">${e.id.toLocaleString()}</a>` : e.id.toLocaleString()}</td>`
         + `<td class="num">${e.fix.length ? `<a class="dup-doc-link" data-fix="${ei}" title="List the records where this ${escAttr(ent)} occurs without its identifier — the ones to fix">${e.fix.length.toLocaleString()}</a>` : '—'}</td>`
@@ -726,8 +779,10 @@ function connDetailFilename(ext){
 function connDetailDownloadCsv(){
   if (!connDetailState) return;
   const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
-  const head = [connDetailState.c.entity, 'Occurrences', 'Identified', 'RecordsToFix', 'Percent'];
-  const body = [head, ...connDetailState.entries.map(e => [csv(e.name), e.occ, e.id, e.fix.length, (e.pct*100).toFixed(0)])].map(r => r.join(',')).join('\r\n') + '\r\n';
+  const isAff = connDetailState.c.kind === 'aff';
+  const affTxt = e => e.affs.map(a => `${a.name} x${a.n}${a.y0 != null ? ` (${a.y0}${a.y1 !== a.y0 ? '-' + a.y1 : ''})` : ''}${a.ids.length ? ` [${a.ids[0]}]` : ''}`).join('; ');
+  const head = [connDetailState.c.entity, ...(isAff ? ['DistinctAffiliations', 'DistinctInstitutions', 'Affiliations'] : []), 'Occurrences', isAff ? 'Affiliated' : 'Identified', 'RecordsToFix', 'Percent'];
+  const body = [head, ...connDetailState.entries.map(e => [csv(e.name), ...(isAff ? [e.affs.length, e.inst, csv(affTxt(e))] : []), e.occ, e.id, e.fix.length, (e.pct*100).toFixed(0)])].map(r => r.join(',')).join('\r\n') + '\r\n';
   const url = URL.createObjectURL(new Blob([body], { type: 'text/csv' }));
   const a = document.createElement('a'); a.href = url; a.download = connDetailFilename('csv');
   document.body.appendChild(a); a.click(); a.remove();
@@ -1912,7 +1967,8 @@ function retrieverHandoff(page, storageKey, listKey, filter){
 // On a name-identifier list the ROR button carries only the organizations and the ORCID button
 // only the people; on affiliation/funder/publisher lists every entity is an organization → ROR.
 $('cd-ror').addEventListener('click', () => retrieverHandoff('rorRetriever.html', 'ror-retriever-input', 'affiliations', connDetailState && (connDetailState.c.kind === 'nameId' || connDetailState.c.kind === 'aff') ? (e => e.org) : null));
-$('cd-orcid').addEventListener('click', () => retrieverHandoff('orcidRetriever.html', 'orcid-retriever-input', 'names', e => !e.org));
+$('cd-orcid').addEventListener('click', () => retrieverHandoff('orcidRetriever.html', 'orcid-retriever-input', 'names',
+  connDetailState && connDetailState.c.kind === 'aff' ? (e => !e.org && e.id === 0) : (e => !e.org)));
 $('cd-modal').addEventListener('click', e => { if (e.target.id === 'cd-modal') closeConnDetail(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('cd-modal').style.display !== 'none' && $('dd-modal').style.display === 'none') closeConnDetail(); });
 $('dd-close').addEventListener('click', closeDupDocs);
