@@ -144,6 +144,7 @@
   .dl-btn:hover{background:var(--tint)}
   .modal-overlay{position:fixed;inset:0;background:rgba(31,35,48,.45);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:5vh 1rem}
   .modal-card{background:#fff;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.25);max-width:600px;width:100%;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+  #cd-modal .modal-card{max-width:960px}
   .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:.9rem 1.1rem;border-bottom:1px solid var(--line)}
   .modal-title{font-size:1rem;font-weight:600;color:var(--accent-dk)}
   .modal-sub{font-size:.74rem;color:var(--muted);margin-top:.15rem}
@@ -690,7 +691,7 @@ function openConnDetail(idx){
   if (c.kind === 'aff'){
     const safe = entries.filter(e => isQw(e) && e.inst === 1).length;
     const review = entries.filter(e => isQw(e) && e.inst > 1).length;
-    $('cd-sub').textContent = `${entries.length.toLocaleString()} distinct ${ent}${entries.length===1?'':'s'} · ${safe.toLocaleString()} safe to propagate (one institution, shown first) · ${review.toLocaleString()} multi-affiliation (review) · ${missing.toLocaleString()} with no affiliation · ${complete.toLocaleString()} complete — within the analyzed sample`;
+    $('cd-sub').textContent = `${entries.length.toLocaleString()} distinct ${ent}${entries.length===1?'':'s'} · ${safe.toLocaleString()} single (one institution, gaps to fill — shown first) · ${review.toLocaleString()} multi-affiliation (review) · ${missing.toLocaleString()} with no affiliation · ${complete.toLocaleString()} complete — within the analyzed sample`;
   } else {
     $('cd-sub').textContent = `${entries.length.toLocaleString()} distinct ${ent}${entries.length===1?'':'s'} · ${partial.toLocaleString()} quick win${partial===1?'':'s'} (shown first) · ${missing.toLocaleString()} missing · ${complete.toLocaleString()} complete`;
   }
@@ -749,8 +750,8 @@ function openConnDetail(idx){
   $('cd-body').innerHTML = entries.length === 0
     ? '<div style="padding:1rem;color:#6b7280;font-size:.8rem">No items found in the analyzed sample.</div>'
     : `<table class="cd-table"><thead><tr><th>${escHtml(c.entity)}</th>${c.kind === 'aff' ? '<th title="Each distinct affiliation string (never fuzzy-merged), its occurrence count and publication-year range. Strings sharing a ROR are one institution.">Affiliations (years)</th>' : ''}<th class="num">Occurrences</th><th class="num">${c.kind === 'aff' ? 'Affiliated' : 'Identified'}</th><th class="num" title="Records where this ${escAttr(ent)} occurs WITHOUT its ${c.kind === 'aff' ? 'affiliation' : 'identifier'} — the records to find and fix">To fix</th><th class="num">%</th></tr></thead><tbody>`
-      + entries.map((e, ei) => `<tr class="${rowCls(e)}"><td class="val">${nameCell(e)}${c.kind === 'aff' ? (isQw(e) && e.inst === 1 ? ' <span class="qw-tag">safe to propagate</span>' : isQw(e) ? ' <span class="qw-tag" style="background:#f4d7d0;color:#8a3a2a">review</span>' : '') : (isQw(e) ? ' <span class="qw-tag">quick win</span>' : '')}</td>`
-        + (c.kind === 'aff' ? `<td class="val" style="font-size:.72rem;max-width:340px">${affCell(e)}</td>` : '')
+      + entries.map((e, ei) => `<tr class="${rowCls(e)}"><td class="val">${nameCell(e)}${c.kind === 'aff' ? (isQw(e) && e.inst === 1 ? ' <span class="qw-tag" title="One institution, affiliation missing in some occurrences — safe to propagate to the records without it">single</span>' : isQw(e) ? ' <span class="qw-tag" style="background:#f4d7d0;color:#8a3a2a">review</span>' : '') : (isQw(e) ? ' <span class="qw-tag">quick win</span>' : '')}</td>`
+        + (c.kind === 'aff' ? `<td class="val" style="font-size:.72rem">${affCell(e)}</td>` : '')
         + `<td class="num">${e.docs.length ? `<a class="dup-doc-link" data-ei="${ei}" title="List the DOIs where this ${escAttr(ent)} occurs">${e.occ.toLocaleString()}</a>` : e.occ.toLocaleString()}</td>`
         + `<td class="num">${e.idd.length ? `<a class="dup-doc-link" data-id="${ei}" title="List the records where this ${escAttr(ent)} occurs WITH its identifier">${e.id.toLocaleString()}</a>` : e.id.toLocaleString()}</td>`
         + `<td class="num">${e.fix.length ? `<a class="dup-doc-link" data-fix="${ei}" title="List the records where this ${escAttr(ent)} occurs without its identifier — the ones to fix">${e.fix.length.toLocaleString()}</a>` : '—'}</td>`
