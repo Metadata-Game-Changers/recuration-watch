@@ -966,12 +966,20 @@
     "description": "DataCite that supports SHARE reuse (https://sharescore.org/framework)",
     "items": [
       {
-        "concept": "CitedBy",
-        "jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsCitedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)) | {id: .id, concept: \"CitedBy\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsCitedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsCitedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null) | .relatedIdentifier]))}"
-      },
-      {
         "concept": "IsSourceOf",
         "jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsSourceOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)) | {id: .id, concept: \"IsSourceOf\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSourceOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null)]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSourceOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null) | .relatedIdentifier]))}"
+      },
+      {
+        "concept": "Discovery Metrics",
+        "jq_query": ".data[] | select((.attributes.viewCount | type == \"number\") and (.attributes.viewCount > 0)) | {id: .id, concept: \"Discovery Metrics\", count: 1, values: [.attributes.viewCount]}"
+      },
+      {
+        "concept": "Access Metrics",
+        "jq_query": ".data[] | select((.attributes.downloadCount | type == \"number\") and (.attributes.downloadCount > 0)) | {id: .id, concept: \"Access Metrics\", count: 1, values: [.attributes.downloadCount]}"
+      },
+      {
+        "concept": "Citation Metrics",
+        "jq_query": ".data[] | select((.attributes.citationCount | type == \"number\") and (.attributes.citationCount > 0)) | {id: .id, concept: \"Citation Metrics\", count: 1, values: [.attributes.citationCount]}"
       }
     ]
   },

@@ -294,13 +294,13 @@
       <tr><td class="concept">Date Available</td><td class="path">dates[?(@.dateType=&quot;Available&quot;)].date</td></tr>
       <tr><td class="concept">Resource Format</td><td class="path">data[*].attributes.formats</td></tr>
     </tbody></table>
-  <div class="about-uc" style="border-left-color:#B3005E">Share Reuse <span class="uc-n">— 2 concepts Note: this section changed significantly in <a href="https://sharescore.org/framework/versions/2.0" target="_blank" rel="noopener" style="color:var(--accent)">SHARE framework Version 2.0</a></span></div>
+  <div class="about-uc" style="border-left-color:#B3005E">Share Reuse <span class="uc-n">— 4 concepts Note: this section changed significantly in <a href="https://sharescore.org/framework/versions/2.0" target="_blank" rel="noopener" style="color:var(--accent)">SHARE framework Version 2.0</a></span></div>
   <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
-      <tr><td class="concept">Discovery Metrics</td><td class="path">Not currently mapped.</td></tr>
-      <tr><td class="concept">Access Metrics</td><td class="path">Not currently mapped.</td></tr>
-      <tr><td class="concept">CitedBy</td><td class="path">relatedIdentifiers[?(@.relationType=&#x27;IsCitedBy&#x27;)].relatedIdentifier</td></tr>
+      <tr><td class="concept">Discovery Metrics</td><td class="path">viewCount (counted only when &gt; 0)</td></tr>
+      <tr><td class="concept">Access Metrics</td><td class="path">downloadCount (counted only when &gt; 0)</td></tr>
       <tr><td class="concept">IsSourceOf</td><td class="path">relatedIdentifiers[?(@.relationType=&#x27;IsSourceOf&#x27;)].relatedIdentifier</td></tr>
       <tr><td class="concept">Community Engagement</td><td class="path">Not currently mapped.</td></tr>
+      <tr><td class="concept">Citation Metrics</td><td class="path">citationCount (counted only when &gt; 0)</td></tr>
     </tbody></table>
   <div class="about-uc" style="border-left-color:#5B3D7A">Share Engagement <span class="uc-n">— 12 concepts</span></div>
   <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
