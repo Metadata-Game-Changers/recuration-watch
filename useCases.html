@@ -261,6 +261,47 @@
       <tr><td class="concept">Related Item Type</td><td class="path">relatedIdentifiers[*].resourceTypeGeneral</td></tr>
       <tr><td class="concept">Relation Type</td><td class="path">relatedIdentifiers[*].relationType</td></tr>
     </tbody></table>
+  <div class="about-group">SHARE use cases <span style="text-transform:none;letter-spacing:0">— supporting the <a href="https://sharescore.org/framework" target="_blank" rel="noopener" style="color:var(--accent)">SHARE framework</a>, built from existing concepts</span></div>
+  <div class="about-uc" style="border-left-color:#2F6FB0">Share Stewardship <span class="uc-n">— 4 concepts</span></div>
+  <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
+      <tr><td class="concept">Contributor Type</td><td class="path">contributors.contributorType</td></tr>
+      <tr><td class="concept">Keyword</td><td class="path">subjects[*].subject</td></tr>
+      <tr><td class="concept">Spatial Extent</td><td class="path">geoLocations[*].geoLocationBox, geoLocations[*].geoLocationPoint, geoLocations[*].geoLocationPolygon, geoLocations[*].geoLocationPlace</td></tr>
+      <tr><td class="concept">Temporal Extent</td><td class="path">dates[?(@.dateType=&quot;Collected&quot;)].date, dates[?(@.dateType=&quot;Coverage&quot;)].date</td></tr>
+    </tbody></table>
+  <div class="about-uc" style="border-left-color:#D4910B">Share Harmonization <span class="uc-n">— 5 concepts</span></div>
+  <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
+      <tr><td class="concept">Abstract</td><td class="path">descriptions[?(@.descriptionType=&quot;Abstract&quot;)].description</td></tr>
+      <tr><td class="concept">IsCitedBy</td><td class="path">relatedIdentifiers[?(@.relationType=&#x27;IsCitedBy&#x27;)].relatedIdentifier</td></tr>
+      <tr><td class="concept">Methods</td><td class="path">descriptions[?(@.descriptionType=&quot;Methods&quot;)].description</td></tr>
+      <tr><td class="concept">Resource Author Identifier</td><td class="path">creators[*].nameIdentifiers[*].nameIdentifier</td></tr>
+      <tr><td class="concept">Resource Contributor Identifier</td><td class="path">contributors[*].nameIdentifiers[*].nameIdentifier</td></tr>
+    </tbody></table>
+  <div class="about-uc" style="border-left-color:#3A9D6E">Share Access <span class="uc-n">— 3 concepts</span></div>
+  <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
+      <tr><td class="concept">Date Available</td><td class="path">dates[?(@.dateType=&quot;Available&quot;)].date</td></tr>
+      <tr><td class="concept">Rights</td><td class="path">rightsList[*].rights</td></tr>
+      <tr><td class="concept">Rights Identifier</td><td class="path">rightsList[*].rightsIdentifier</td></tr>
+    </tbody></table>
+  <div class="about-uc" style="border-left-color:#B3005E">Share Reuse <span class="uc-n">— 2 concepts</span></div>
+  <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
+      <tr><td class="concept">CitedBy</td><td class="path">relatedIdentifiers[?(@.relationType=&#x27;IsCitedBy&#x27;)].relatedIdentifier</td></tr>
+      <tr><td class="concept">IsSourceOf</td><td class="path">relatedIdentifiers[?(@.relationType=&#x27;IsSourceOf&#x27;)].relatedIdentifier</td></tr>
+    </tbody></table>
+  <div class="about-uc" style="border-left-color:#5B3D7A">Share Engagement <span class="uc-n">— 11 concepts</span></div>
+  <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
+      <tr><td class="concept">Award Number</td><td class="path">fundingReferences[*].awardNumber</td></tr>
+      <tr><td class="concept">Award Title</td><td class="path">fundingReferences[*].awardTitle</td></tr>
+      <tr><td class="concept">ConferencePaper</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral=&#x27;ConferencePaper&#x27;)].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">ConferenceProceeding</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral=&#x27;ConferenceProceeding&#x27;)].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Dataset</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral=&#x27;Dataset&#x27;)].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Funder Identifier</td><td class="path">fundingReferences[*].funderIdentifier</td></tr>
+      <tr><td class="concept">IsVersionOf</td><td class="path">relatedIdentifiers[?(@.relationType=&#x27;IsVersionOf&#x27;)].relatedIdentifier</td></tr>
+      <tr><td class="concept">JournalArticle</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral=&#x27;JournalArticle&#x27;)].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Preprint</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral=&#x27;Preprint&#x27;)].resourceTypeGeneral</td></tr>
+      <tr><td class="concept">Project Funder</td><td class="path">fundingReferences[*].funderName</td></tr>
+      <tr><td class="concept">Software</td><td class="path">relatedIdentifiers[?(@.resourceTypeGeneral=&#x27;Software&#x27;)].resourceTypeGeneral</td></tr>
+    </tbody></table>
   <div class="about-group">Additional DataCite use cases</div>
   <div class="about-uc" style="border-left-color:#C0392B">DataCite Relations <span class="uc-n">— 41 concepts</span></div>
   <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
