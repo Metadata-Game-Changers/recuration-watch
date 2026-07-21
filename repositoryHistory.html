@@ -336,9 +336,9 @@
   <div class="card" id="table-card" style="display:none">
     <h2>Year by year</h2>
     <div style="overflow-x:auto">
-    <table class="hist"><thead><tr>
+    <table class="hist"><thead><tr id="hist-head">
       <th>Registered</th><th>Records scored</th><th>Matching</th><th>FAIR Total</th>
-      <th>Text</th><th>Identifiers</th><th>Connections</th><th>Contacts</th><th>Projects</th>
+      <th>Text</th><th>Identifiers</th><th>Connections</th><th>Contacts</th>
       <th title="Open this year's exact sample in another tool — both then measure the same records">Open this year</th>
     </tr></thead><tbody id="hist-body"></tbody></table>
     </div>
@@ -717,6 +717,7 @@ async function run(){
     movieStop(); movieIdx = 0;   // fresh run resets the movie to the first year
     renderSelection(meta, clientId, minY, maxY, resourceTypeId, query);
     $('chart-card').style.display = ''; $('table-card').style.display = '';
+    renderTableHead();
     $('hist-body').innerHTML = '';
     renderLegend();
     renderView();
@@ -783,17 +784,38 @@ function renderLegend(){
     + '<span class="thin-note">hollow point = fewer than 10 records</span>';
 }
 
+// the year-by-year table follows the Use Cases selector: the group's total (Extras/All fall
+// back to the FAIR total, like the grid) plus one column per use case in the group
+function tableColumns(){
+  const g = PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR;
+  const gt = g.totals[0];
+  const labels = {}; seriesFor(plotGroup).forEach(sr => { labels[sr.key] = sr.label; });
+  return { totKey: gt ? gt.key : 'fair', totName: gt ? gt.label : 'FAIR Total',
+           codes: g.codes.map(c => ({ code: c, label: labels[c] || c })) };
+}
+function renderTableHead(){
+  const tc = tableColumns();
+  $('hist-head').innerHTML = `<th>Registered</th><th>Records scored</th><th>Matching</th><th>${escHtml(tc.totName)}</th>`
+    + tc.codes.map(c => `<th>${escHtml(c.label)}</th>`).join('')
+    + `<th title="Open this year's exact sample in another tool — both then measure the same records">Open this year</th>`;
+}
 function addTableRow(e){
+  const tc = tableColumns();
   const thin = e.n > 0 && e.n < THIN;
   const cell = v => v == null ? '—' : fmtPct(v);
   const row = e.n === 0
-    ? `<tr><td>${e.year}</td><td class="num">0</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td><td colspan="7" style="text-align:left;color:var(--muted);font-style:italic">no records registered</td></tr>`
+    ? `<tr><td>${e.year}</td><td class="num">0</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td><td colspan="${tc.codes.length + 2}" style="text-align:left;color:var(--muted);font-style:italic">no records registered</td></tr>`
     : `<tr><td>${e.year}${thin ? ' *' : ''}</td><td class="num${thin?' thin':''}">${e.n.toLocaleString()}</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td>`
-      + `<td class="num"><b>${cell(e.totals.fair)}</b></td>`
-      + TOTAL_CODES.map(c => `<td class="num">${cell(e.totals[c])}</td>`).join('')
-      + `<td class="num">${cell(e.totals.projects)}</td>`
+      + `<td class="num"><b>${cell(e.totals[tc.totKey])}</b></td>`
+      + tc.codes.map(c => `<td class="num">${cell(e.totals[c.code])}</td>`).join('')
       + `<td class="year-open"><a data-hy="${e.year}" data-target="completeness" title="Open ${e.n.toLocaleString()} record${e.n===1?'':'s'} from ${e.year} in Metadata Completeness">Completeness ↗</a> <a data-hy="${e.year}" data-target="connectivity" title="Open ${e.n.toLocaleString()} record${e.n===1?'':'s'} from ${e.year} in Metadata Connectivity">Connectivity ↗</a></td></tr>`;
   $('hist-body').insertAdjacentHTML('beforeend', row);
+}
+function renderTable(){
+  if (!history) return;
+  renderTableHead();
+  $('hist-body').innerHTML = '';
+  for (const e of history.years) addTableRow(e);
 }
 
 function drawChart(){
@@ -1258,7 +1280,7 @@ $('stop-btn').addEventListener('click', () => { stopRequested = true; });
 $('dl-png').addEventListener('click', downloadPng);
 $('dl-grid-png').addEventListener('click', downloadGridPng);
 $('dl-grid-copy').addEventListener('click', copyGrid);
-$('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; $('share-proto').style.display = plotGroup === 'SHARE' ? '' : 'none'; renderLegend(); if (viewMode === 'grid') drawGrid(); else if (viewMode === 'movie') drawMovie(); else drawChart(); });
+$('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; $('share-proto').style.display = plotGroup === 'SHARE' ? '' : 'none'; renderLegend(); renderTable(); if (viewMode === 'grid') drawGrid(); else if (viewMode === 'movie') drawMovie(); else drawChart(); });
 $('view-mode').addEventListener('change', () => { viewMode = $('view-mode').value; renderView(); });
 $('movie-play').addEventListener('click', moviePlay);
 $('movie-prev').addEventListener('click', () => movieStep(-1));
