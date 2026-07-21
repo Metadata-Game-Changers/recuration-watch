@@ -289,7 +289,7 @@
 
   <div class="card" id="chart-card" style="display:none">
     <div class="card-head">
-      <h2>Completeness by registered year</h2>
+      <h2>Completeness by registered year <span class="proto-flag" id="share-proto" style="display:none">SHARE · Prototype</span></h2>
       <div class="card-actions">
         <label class="hero-chk" style="gap:.4rem" title="Lines: one trend line per use case over the years. Grid: a radar plot per use case per year. Movie: one year at a time, enlarged — press Play to animate across the years.">
           <span class="hero-secondary-label">View</span>
@@ -861,8 +861,9 @@ function drawGrid(){
   if (!years.length){ grid.innerHTML = '<p class="card-intro">No scored years to show yet.</p>'; return; }
   // the total shown atop each year column: the group's own total (Projects → Projects total,
   // otherwise the FAIR headline total)
-  const totalKey = plotGroup === 'Projects' ? 'projects' : 'fair';
-  const totalName = plotGroup === 'Projects' ? 'Projects' : 'FAIR';
+  const groupTot = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).totals[0];   // FAIR/Projects/SHARE have their own total; Extras/All fall back to FAIR
+  const totalKey = groupTot ? groupTot.key : 'fair';
+  const totalName = groupTot ? groupTot.label.replace(' Total','') : 'FAIR';
   const head = '<tr><th class="corner"></th>' + years.map(e => {
     const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
     return `<th class="yr" title="${e.year}: ${e.n.toLocaleString()} records scored · ${totalName} total ${tot}">`
@@ -892,8 +893,9 @@ function selectionFilterText(){
 function gridSvgMarkup(){
   const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
   const years = history.years.filter(e => e.n > 0 && e.byCode);
-  const totalKey = plotGroup === 'Projects' ? 'projects' : 'fair';
-  const totalName = plotGroup === 'Projects' ? 'Projects' : 'FAIR';
+  const groupTot = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).totals[0];   // FAIR/Projects/SHARE have their own total; Extras/All fall back to FAIR
+  const totalKey = groupTot ? groupTot.key : 'fair';
+  const totalName = groupTot ? groupTot.label.replace(' Total','') : 'FAIR';
   const PAD = 14, TITLE_H = 42, LABEL_W = 96, HEADER_H = 46, RAD = 132, AVG_H = 18;
   const COL_W = RAD + 16, ROW_H = RAD + AVG_H + 8;
   const gridLeft = PAD + LABEL_W, gridTop = PAD + TITLE_H + HEADER_H;
@@ -995,8 +997,9 @@ function drawMovie(){
   $('movie-play').disabled = years.length < 2;
   $('movie-prev').disabled = movieIdx <= 0;
   $('movie-next').disabled = movieIdx >= years.length - 1;
-  const totalKey = plotGroup === 'Projects' ? 'projects' : 'fair';
-  const totalName = plotGroup === 'Projects' ? 'Projects' : 'FAIR';
+  const groupTot = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).totals[0];   // FAIR/Projects/SHARE have their own total; Extras/All fall back to FAIR
+  const totalKey = groupTot ? groupTot.key : 'fair';
+  const totalName = groupTot ? groupTot.label.replace(' Total','') : 'FAIR';
   const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
   $('movie-caption').innerHTML = `<b>${e.year}</b> · ${e.n.toLocaleString()} record${e.n===1?'':'s'}${e.n < THIN ? ' *' : ''} · ${totalName} total ${tot}`;
   const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
@@ -1255,7 +1258,7 @@ $('stop-btn').addEventListener('click', () => { stopRequested = true; });
 $('dl-png').addEventListener('click', downloadPng);
 $('dl-grid-png').addEventListener('click', downloadGridPng);
 $('dl-grid-copy').addEventListener('click', copyGrid);
-$('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; renderLegend(); if (viewMode === 'grid') drawGrid(); else if (viewMode === 'movie') drawMovie(); else drawChart(); });
+$('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; $('share-proto').style.display = plotGroup === 'SHARE' ? '' : 'none'; renderLegend(); if (viewMode === 'grid') drawGrid(); else if (viewMode === 'movie') drawMovie(); else drawChart(); });
 $('view-mode').addEventListener('change', () => { viewMode = $('view-mode').value; renderView(); });
 $('movie-play').addEventListener('click', moviePlay);
 $('movie-prev').addEventListener('click', () => movieStep(-1));
