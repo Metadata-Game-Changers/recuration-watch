@@ -77,10 +77,11 @@ Example repository to test with: client ID `sjyq.oozvia` (Metadata Game Changers
 ## Scoring & UI model (completeness.html)
 
 - Completeness per concept = admitted records / analyzed records (capped at 1).
-- Use cases are grouped into three tabs: **FAIR** (feeds the headline Total), **Projects**,
+- Use cases are grouped into four tabs: **FAIR** (feeds the headline Total), **Projects**,
+  **SHARE** (five `SHARE_*` use cases built from existing items, sharescore.org framework),
   **Extras**. `TOTAL_CODES` defines which feed the repository Total. `weightedTotal(byCode,
-  codes)` is the concept-count-weighted average; FAIR and Projects each show their own total,
-  Extras shows none.
+  codes)` is the concept-count-weighted average; FAIR, Projects, and SHARE each show their
+  own total, Extras shows none.
 - DataCite API: send `&affiliation=true&publisher=true` (without them, publisher/affiliation
   concepts silently under-count). Optional `&resource-type-id=` and `&query=` filters.
   Random sampling fires multiple draws and dedups by DOI id; it falls back to deterministic
