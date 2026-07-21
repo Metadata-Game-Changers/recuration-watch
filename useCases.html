@@ -262,12 +262,13 @@
       <tr><td class="concept">Relation Type</td><td class="path">relatedIdentifiers[*].relationType</td></tr>
     </tbody></table>
   <div class="about-group">SHARE use cases <span style="text-transform:none;letter-spacing:0">— supporting the <a href="https://sharescore.org/framework" target="_blank" rel="noopener" style="color:var(--accent)">SHARE framework</a>, built from existing concepts</span></div>
-  <div class="about-uc" style="border-left-color:#2F6FB0">Share Stewardship <span class="uc-n">— 4 concepts</span></div>
+  <div class="about-uc" style="border-left-color:#2F6FB0">Share Stewardship <span class="uc-n">— 5 concepts</span></div>
   <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
       <tr><td class="concept">Contributor Type</td><td class="path">contributors.contributorType</td></tr>
+      <tr><td class="concept">Date Collected</td><td class="path">dates[?(@.dateType=&quot;Collected&quot;)].date</td></tr>
+      <tr><td class="concept">Date Coverage</td><td class="path">dates[?(@.dateType=&quot;Coverage&quot;)].date</td></tr>
       <tr><td class="concept">Keyword</td><td class="path">subjects[*].subject</td></tr>
       <tr><td class="concept">Spatial Extent</td><td class="path">geoLocations[*].geoLocationBox, geoLocations[*].geoLocationPoint, geoLocations[*].geoLocationPolygon, geoLocations[*].geoLocationPlace</td></tr>
-      <tr><td class="concept">Temporal Extent</td><td class="path">dates[?(@.dateType=&quot;Collected&quot;)].date, dates[?(@.dateType=&quot;Coverage&quot;)].date</td></tr>
     </tbody></table>
   <div class="about-uc" style="border-left-color:#D4910B">Share Harmonization <span class="uc-n">— 5 concepts</span></div>
   <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>
