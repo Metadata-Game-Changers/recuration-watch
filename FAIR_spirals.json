@@ -908,6 +908,14 @@
       {
         "concept": "Abstract",
         "jq_query": ".data[] | select((.attributes.descriptions | type == \"array\") and (.attributes.descriptions | length > 0) and any((.attributes.descriptions // [])[]; type == \"object\" and .descriptionType == \"Abstract\" and has(\"description\") and .description != null)) | {id: .id, concept: \"Abstract\", count: (([(.attributes.descriptions // [])[] | select(type == \"object\" and .descriptionType == \"Abstract\" and has(\"description\") and .description != null)]) | length), values: (([(.attributes.descriptions // [])[] | select(type == \"object\" and .descriptionType == \"Abstract\" and has(\"description\") and .description != null) | .description]))}"
+      },
+      {
+        "concept": "Resource Author Affiliation Identifier",
+        "jq_query": ".data[] | select((.attributes.creators | type == \"array\") and (.attributes.creators | length > 0) and any((.attributes.creators // [])[]; type == \"object\" and has(\"affiliation\")) and any((.attributes.creators // [])[]; .affiliation | type == \"array\") and any((.attributes.creators // [])[] | (.affiliation // [])[]?; type == \"object\" and has(\"affiliationIdentifier\") and .affiliationIdentifier != null)) | {id: .id, concept: \"Resource Author Affiliation Identifier\", count: (([(.attributes.creators // [])[] | (.affiliation // [])[]? | select(type == \"object\" and has(\"affiliationIdentifier\") and .affiliationIdentifier != null)]) | length), values: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"affiliation\") and (.affiliation | type == \"array\")) | (.affiliation // [])[] | select(type == \"object\" and has(\"affiliationIdentifier\") and .affiliationIdentifier != null) | .affiliationIdentifier])}"
+      },
+      {
+        "concept": "Resource Contributor Affiliation Identifier",
+        "jq_query": ".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and has(\"affiliationIdentifier\") and .affiliationIdentifier != null and .affiliationIdentifier != null) or (.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and has(\"affiliation\")) and any((.attributes.contributors // [])[]; .affiliation | type == \"array\") and any((.attributes.contributors // [])[] | (.affiliation // [])[]?; type == \"object\" and has(\"affiliationIdentifier\") and .affiliationIdentifier != null and .affiliationIdentifier != null)) | {id: .id, concept: \"Resource Contributor Affiliation Identifier\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and has(\"affiliationIdentifier\") and .affiliationIdentifier != null and .affiliationIdentifier != null and .affiliationIdentifier != null)]) + ([(.attributes.contributors // [])[] | (.affiliation // [])[]? | select(type == \"object\" and has(\"affiliationIdentifier\") and .affiliationIdentifier != null and .affiliationIdentifier != null and .affiliationIdentifier != null)]) | length), values: ([(.attributes.contributors // [])[] | select(type == \"object\" and has(\"affiliation\") and (.affiliation | type == \"array\")) | (.affiliation // [])[] | select(type == \"object\" and has(\"affiliationIdentifier\") and .affiliationIdentifier != null) | .affiliationIdentifier])}"
       }
     ]
   },
@@ -928,6 +936,10 @@
       {
         "concept": "Date Available",
         "jq_query": ".data[] | select((.attributes.dates | type == \"array\") and (.attributes.dates | length > 0) and any((.attributes.dates // [])[]; type == \"object\" and .dateType == \"Available\" and has(\"date\") and .date != null)) | {id: .id, concept: \"Date Available\", count: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Available\" and has(\"date\") and .date != null)]) | length), values: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Available\" and has(\"date\") and .date != null) | .date]))}"
+      },
+      {
+        "concept": "Resource Format",
+        "jq_query": ".data[] | select((.attributes | type == \"object\") and (.attributes | has(\"formats\")) and (.attributes.formats | type == \"array\") and (.attributes.formats | length > 0)) | {id: .id, concept: \"Resource Format\", count: (if ((.attributes.formats // null)) != null then 1 else 0 end), values: ((.attributes.formats // null))}"
       }
     ]
   },
