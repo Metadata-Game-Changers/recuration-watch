@@ -326,7 +326,7 @@
     <div class="tabs" id="tabs">
       <button class="tab" type="button" data-tab="FAIR">FAIR</button>
       <button class="tab" type="button" data-tab="Projects">Projects</button>
-      <button class="tab" type="button" data-tab="SHARE">SHARE</button>
+      <button class="tab" type="button" data-tab="SHARE">SHARE <span class="proto-flag">Prototype</span></button>
       <button class="tab" type="button" data-tab="Extras">Extras</button>
       <button class="tab" type="button" data-tab="About">About</button>
     </div>
@@ -838,7 +838,7 @@ const CONCEPT_PATHS = JSON.parse(document.getElementById('concept-paths').textCo
 const ABOUT_GROUPS = [
   { label: 'FAIR use cases',                codes: GROUPS.FAIR },
   { label: 'Project use cases',             codes: GROUPS.Projects },
-  { label: 'SHARE use cases',               codes: GROUPS.SHARE },
+  { label: 'SHARE use cases',               badge: true, codes: GROUPS.SHARE },
   { label: 'Additional DataCite use cases', codes: GROUPS.Extras },
 ];
 const ABOUT_INTRO_HTML = `
@@ -873,7 +873,7 @@ function renderAbout(){
       return `<div class="about-uc" style="border-left-color:${color}">${escHtml(uc.title)} <span style="font-weight:400;color:var(--muted);font-size:.78rem">— ${uc.items.length} concepts</span></div>
         <table class="path-table"><thead><tr><th>Concept</th><th>Paths (after data[*].attributes)</th></tr></thead><tbody>${rows}</tbody></table>`;
     }).join('');
-    return `<div class="about-group">${escHtml(g.label)}</div>${sections}`;
+    return `<div class="about-group">${escHtml(g.label)}${g.badge ? ' <span class="proto-flag">Prototype</span>' : ''}</div>${sections}`;
   }).join('');
   aboutRendered = true;
 }
@@ -931,6 +931,7 @@ function renderTotal(){
   if (!lastRun) return;
   $('total-card').style.display = '';
   $('total-title').textContent = TAB_TITLE[activeTab];
+  if (activeTab === 'SHARE') $('total-title').insertAdjacentHTML('beforeend', ' <span class="proto-flag">Prototype</span>');
 
   // each tab can show its own concept-weighted combined index (FAIR, Projects); others just list chips
   const gt = GROUP_TOTAL[activeTab];
@@ -938,7 +939,7 @@ function renderTotal(){
   if (gt){
     $('total-pct').textContent = fmtPct(weightedTotal(lastRun.byCode, GROUPS[activeTab]));
     $('total-label').textContent = gt.label;
-    $('total-note').innerHTML = `${gt.label} = Σ(use case average × concept count) ÷ Σ(concept count), across the ${gt.count} use cases. Each tab's total is computed independently. Click a use case to inspect it below.`;
+    $('total-note').innerHTML = `${gt.label} = Σ(use case average × concept count) ÷ Σ(concept count), across the ${gt.count} use cases. Each tab's total is computed independently. Click a use case to inspect it below.` + (activeTab === 'SHARE' ? ' <b>The SHARE use cases are a prototype</b> — new and still settling; their composition may change.' : '');
   } else {
     $('total-note').innerHTML = 'These use cases are scored and viewable but are <b>not</b> combined into a total. Click a use case to inspect it below.';
   }
