@@ -108,6 +108,18 @@
   .tips .tips-link:hover{text-decoration:underline}
   #apiurl b{color:var(--ink);font-weight:600}
   #status.err{color:#b4322f}
+    /* group-at-a-glance strip: one small radar per use case in the active group */
+  #group-grid{margin:0 0 1rem}
+  .gg-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 .5rem}
+  .gg-title{font-size:.78rem;font-weight:600;color:var(--accent-dk)}
+  #gg-toggle{align-self:center}
+  .gg-row{display:flex;gap:.8rem;overflow-x:auto;padding:.2rem}
+  .gg-cell{flex:1 1 0;min-width:140px;max-width:240px;text-align:center;cursor:pointer;border:1px solid var(--line);border-radius:10px;padding:.55rem .5rem .35rem;background:#fff;transition:border-color .15s}
+  .gg-cell:hover{border-color:var(--accent)}
+  .gg-cell.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+  .gg-name{font-size:.72rem;font-weight:600;color:var(--ink);line-height:1.25;min-height:2em}
+  .gg-pct{font-size:1.05rem;font-weight:700;margin:.1rem 0 .2rem}
+  .gg-cell svg{width:100%;height:auto;display:block}
   .grid{display:grid;grid-template-columns:minmax(360px,1fr) 1fr;gap:1.5rem;align-items:start}
   @media(max-width:820px){.grid{grid-template-columns:1fr}}
   .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:1rem}
@@ -349,6 +361,11 @@
       <p class="about-sub">Each use case's concepts and the DataCite metadata paths (after <code>data[*].attributes</code>) they are drawn from.</p>
       <div id="about-tables"></div>
     </div>
+  </div>
+
+  <div class="card" id="group-grid" style="display:none">
+    <div class="gg-head"><span class="gg-title" id="gg-title"></span><button class="copy-btn" id="gg-copy" type="button" title="Copy the radar strip to the clipboard as an image (with repository, date, and group in the title)">⧉ Copy strip</button></div>
+    <div class="gg-row" id="gg-row"></div>
   </div>
 
   <div class="grid" id="grid">
@@ -831,6 +848,7 @@ const TAB_TITLE = {
 const CODE_INDEX = {};
 SPIRALS.forEach((s,i) => { CODE_INDEX[s.code] = i; });
 let activeTab = 'FAIR';
+let groupGridOpen = false;   // the radar strip is opt-in — toggled by the button next to the chips
 let selectedSpiralIdx = 0;   // global SPIRALS index of the use case whose detail is shown (set by the chips)
 
 /* ---------- About tab: use-case intro + concept→DataCite-path tables ---------- */
@@ -892,6 +910,7 @@ function selectTab(tab){
   ['total-wrap','total-note','total-actions'].forEach(id => { $(id).style.display = isAbout ? 'none' : ''; });
   $('grid').style.display = isAbout ? 'none' : '';
   $('about-panel').style.display = isAbout ? '' : 'none';
+  $('group-grid').style.display = (isAbout || !lastRun || !groupGridOpen) ? 'none' : '';
   if (isAbout){
     $('total-title').textContent = 'About — metadata use cases';
     renderAbout();
@@ -958,7 +977,30 @@ function renderTotal(){
       <span class="ct">${s.items.length} concepts</span>
     </div>`;
   }).join('');
+  $('total-breakdown').insertAdjacentHTML('beforeend',
+    `<button class="dl-btn" id="gg-toggle" type="button" title="Show or hide a row of radar plots, one per use case in this group">▦ Plots ${groupGridOpen ? '▴' : '▾'}</button>`);
   $('total-breakdown').querySelectorAll('.sp-chip').forEach(el => {
+    el.addEventListener('click', () => { selectedSpiralIdx = parseInt(el.dataset.idx, 10); showDetail(); });
+  });
+  $('gg-toggle').addEventListener('click', () => { groupGridOpen = !groupGridOpen; renderTotal(); });
+
+  // group at a glance (opt-in): one small radar per use case in the active group, name + score on top
+  $('group-grid').style.display = groupGridOpen ? '' : 'none';
+  if (!groupGridOpen) return;
+  $('gg-title').textContent = `${lastRun.repoName || lastRun.clientId} · ${TAB_TITLE[activeTab]}`;
+  $('gg-row').innerHTML = GROUPS[activeTab].map(code => {
+    const idx = CODE_INDEX[code];
+    const s = SPIRALS[idx];
+    const r = lastRun.byCode[s.code];
+    const color = SPIRAL_COLORS[s.code] || '#9167b0';
+    const active = s.code === selCode ? ' active' : '';
+    return `<div class="gg-cell${active}" data-idx="${idx}" title="Click to inspect ${escAttr(s.title)} below">
+      <div class="gg-name">${escHtml(s.title.replace('FAIR ',''))}</div>
+      <div class="gg-pct" style="color:${color}">${r ? fmtPct(r.res.average) : '—'}</div>
+      ${r ? radarSvgMarkup(r.res.items, color, false) : ''}
+    </div>`;
+  }).join('');
+  $('gg-row').querySelectorAll('.gg-cell').forEach(el => {
     el.addEventListener('click', () => { selectedSpiralIdx = parseInt(el.dataset.idx, 10); showDetail(); });
   });
 }
@@ -1078,7 +1120,7 @@ function downloadSummary(){
 
 /* ---------- shareable HTML report (plots + tables) ---------- */
 // Standalone SVG radial plot as a string (mirrors renderRadar), so the report is fully self-contained.
-function radarSvgMarkup(items, color){
+function radarSvgMarkup(items, color, labels = true){
   const W = 520, cx = W/2, cy = W/2, R = 185, N = items.length || 1;
   const ang = i => (i/N) * 2 * Math.PI - Math.PI/2;
   const pt  = (i,r) => [ +(cx + Math.cos(ang(i))*R*r).toFixed(1), +(cy + Math.sin(ang(i))*R*r).toFixed(1) ];
@@ -1088,7 +1130,7 @@ function radarSvgMarkup(items, color){
   const pts = items.map((it,i) => pt(i, Math.min(it.comp,1)).join(',')).join(' ');
   g += `<polygon points="${pts}" fill="${color}" fill-opacity="0.28" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`;
   const LH = 9;
-  items.forEach((it,i) => {
+  if (labels) items.forEach((it,i) => {
     const [x,y] = pt(i, 1.08); const a = ang(i);
     const anchor = Math.abs(Math.cos(a)) < 0.3 ? 'middle' : (Math.cos(a) > 0 ? 'start' : 'end');
     const lines = wrapLabel(displayConcept(it.concept), 16);
@@ -1215,6 +1257,56 @@ function downloadHtmlReport(){
 /* ---------- PDF report (jsPDF) ---------- */
 // Rasterize an SVG string to a PNG data URL (same Image→canvas trick as radarToPngBlob), so each radial
 // plot can be placed in the PDF as one atomic image that never splits across a page.
+/* ---------- copy the radar strip as one PNG ---------- */
+// Compose a standalone SVG: title (repository · group · date), then one cell per use case in the
+// active group — name, score, radar (nested scaled <svg>) — and rasterize at 2x for the clipboard.
+function stripSvgMarkup(){
+  const codes = GROUPS[activeTab];
+  const CELL = 240, RAD = 200, PAD = 18, TITLE_H = 56, HEAD_H = 46;
+  const W = PAD*2 + CELL*codes.length, H = TITLE_H + HEAD_H + RAD + PAD;
+  const d = new Date(), p = n => String(n).padStart(2,'0');
+  const date = `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}`;
+  const esc = escHtml;
+  let g = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`
+    + `<text x="${PAD}" y="24" font-size="16" font-weight="700" fill="#673289">${esc(lastRun.repoName || lastRun.clientId)}</text>`
+    + `<text x="${PAD}" y="42" font-size="11" fill="#6b7280">${esc(lastRun.clientId)} · ${esc(TAB_TITLE[activeTab])} · ${date}</text>`;
+  codes.forEach((code, i) => {
+    const sIdx = CODE_INDEX[code], sp = SPIRALS[sIdx], r = lastRun.byCode[code];
+    if (!r) return;
+    const color = SPIRAL_COLORS[code] || '#9167b0';
+    const x = PAD + i*CELL, cx = x + CELL/2;
+    g += `<text x="${cx}" y="${TITLE_H + 14}" font-size="12" font-weight="600" fill="#1f2330" text-anchor="middle">${esc(sp.title.replace('FAIR ',''))}</text>`
+      + `<text x="${cx}" y="${TITLE_H + 34}" font-size="16" font-weight="700" fill="${color}" text-anchor="middle">${fmtPct(r.res.average)}</text>`
+      + `<svg x="${x + (CELL-RAD)/2}" y="${TITLE_H + HEAD_H}" width="${RAD}" height="${RAD}" viewBox="0 0 520 520">${radarSvgMarkup(r.res.items, color, false).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '')}</svg>`;
+  });
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="Inter, system-ui, sans-serif">${g}</svg>`, w: W, h: H };
+}
+async function copyStrip(){
+  if (!lastRun) return;
+  const btn = $('gg-copy'), original = '⧉ Copy strip';
+  const flash = t => { btn.textContent = t; setTimeout(() => { btn.textContent = original; }, 1800); };
+  try {
+    const { svg, w, h } = stripSvgMarkup();
+    const dataUrl = await svgToPngDataUrl(svg, w, h, 2);
+    const blob = await (await fetch(dataUrl)).blob();
+    try {
+      if (!(navigator.clipboard && window.ClipboardItem)) throw new Error('clipboard images unsupported');
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      flash('✓ Copied');
+    } catch (e){
+      const a = document.createElement('a');
+      const safeId = (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_');
+      const dd = new Date(), p = n => String(n).padStart(2,'0');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${safeId}_${activeTab}_radars__${dd.getFullYear()}-${p(dd.getMonth()+1)}-${p(dd.getDate())}T${p(dd.getHours())}.png`;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      flash('↓ Downloaded PNG');
+    }
+  } catch (e){ flash('Could not render'); }
+}
+$('gg-copy').addEventListener('click', copyStrip);
+
 function svgToPngDataUrl(svgStr, w, h, scale){
   scale = scale || 3;
   return new Promise((resolve, reject) => {
