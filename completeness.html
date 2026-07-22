@@ -987,7 +987,10 @@ function renderTotal(){
   // group at a glance (opt-in): one small radar per use case in the active group, name + score on top
   $('group-grid').style.display = groupGridOpen ? '' : 'none';
   if (!groupGridOpen) return;
-  $('gg-title').textContent = `${lastRun.repoName || lastRun.clientId} · ${TAB_TITLE[activeTab]}`;
+  const ggd = new Date(), ggp = n => String(n).padStart(2,'0');
+  $('gg-title').textContent = `${lastRun.repoName || lastRun.clientId} · ${TAB_TITLE[activeTab]}`
+    + (GROUP_TOTAL[activeTab] ? ` · ${GROUP_TOTAL[activeTab].label} ${fmtPct(weightedTotal(lastRun.byCode, GROUPS[activeTab]))}` : '')
+    + ` · ${ggd.getFullYear()}-${ggp(ggd.getMonth()+1)}-${ggp(ggd.getDate())}T${ggp(ggd.getHours())}`;
   $('gg-row').innerHTML = GROUPS[activeTab].map(code => {
     const idx = CODE_INDEX[code];
     const s = SPIRALS[idx];
