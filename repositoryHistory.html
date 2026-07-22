@@ -370,6 +370,12 @@
    completeness.html; the use-case catalog is FETCHED from FAIR_spirals.json at boot
    (deliberately not embedded — a third catalog copy would drift; see CLAUDE.md). */
 const API_BASE = 'https://api.datacite.org';
+// Unadvertised: client id 'datacite.all' means the whole of DataCite — the client-id
+// filter is omitted from queries (mirrors dataCiteRepositories.py). Pair it with a
+// query/type filter, e.g. ?client=datacite.all&query=creators.nameIdentifiers.nameIdentifier:*0000-0001-2345-6789*
+const ALL_DATACITE = 'datacite.all';
+const clientQS = id => id === ALL_DATACITE ? '' : `client-id=${encodeURIComponent(id)}&`;
+
 let SPIRALS = null;   // loaded from FAIR_spirals.json
 
 const $ = id => document.getElementById(id);
@@ -503,7 +509,7 @@ async function fetchYear(clientId, year, cap, random, resourceTypeId, userQuery)
   // peek at the matching total: skip empty years fast, and fall back to a deterministic
   // fetch when the whole year fits within the cap
   try {
-    const peek = await fetch(`${API_BASE}/dois?client-id=${encodeURIComponent(clientId)}&page[size]=1&disable-facets=true${filter}`);
+    const peek = await fetch(`${API_BASE}/dois?${clientQS(clientId)}page[size]=1&disable-facets=true${filter}`);
     if (peek.ok){
       const pj = await peek.json();
       const t = pj.meta && typeof pj.meta.total === 'number' ? pj.meta.total : null;
@@ -513,7 +519,7 @@ async function fetchYear(clientId, year, cap, random, resourceTypeId, userQuery)
   } catch { /* best-effort */ }
   while (records.length < cap) {
     requests++;
-    const base = `${API_BASE}/dois?client-id=${encodeURIComponent(clientId)}&page[size]=${pageSize}&affiliation=true&publisher=true${filter}`;
+    const base = `${API_BASE}/dois?${clientQS(clientId)}page[size]=${pageSize}&affiliation=true&publisher=true${filter}`;
     const url = effectiveRandom
       ? `${base}&random=true&disable-facets=true`
       : `${base}&page[number]=${page}`;
@@ -541,6 +547,7 @@ async function fetchYear(clientId, year, cap, random, resourceTypeId, userQuery)
 }
 
 async function fetchClientMeta(clientId){
+  if (clientId === ALL_DATACITE) return { name: 'All of DataCite', doiCount: null };
   try {
     const res = await fetch(`${API_BASE}/clients/${encodeURIComponent(clientId)}`);
     if (!res.ok) return null;
@@ -555,7 +562,7 @@ async function detectYearBounds(clientId, resourceTypeId, userQuery){
   const filter = (resourceTypeId ? `&resource-type-id=${encodeURIComponent(resourceTypeId)}` : '')
                + (userQuery ? `&query=${encodeURIComponent(userQuery)}` : '');
   const yearOf = async sort => {
-    const res = await fetch(`${API_BASE}/dois?client-id=${encodeURIComponent(clientId)}&page[size]=1&sort=${sort}&disable-facets=true${filter}`);
+    const res = await fetch(`${API_BASE}/dois?${clientQS(clientId)}page[size]=1&sort=${sort}&disable-facets=true${filter}`);
     if (!res.ok) return NaN;
     const json = await res.json();
     const a = json.data && json.data[0] && json.data[0].attributes;

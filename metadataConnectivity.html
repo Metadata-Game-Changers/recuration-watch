@@ -397,6 +397,12 @@
 
 <script>
 const API_BASE = 'https://api.datacite.org';
+// Unadvertised: client id 'datacite.all' means the whole of DataCite — the client-id
+// filter is omitted from queries (mirrors dataCiteRepositories.py). Pair it with a
+// query/type filter, e.g. ?client=datacite.all&query=creators.nameIdentifiers.nameIdentifier:*0000-0001-2345-6789*
+const ALL_DATACITE = 'datacite.all';
+const clientQS = id => id === ALL_DATACITE ? '' : `client-id=${encodeURIComponent(id)}&`;
+
 const $ = id => document.getElementById(id);
 const statusEl = $('status');
 function setStatus(msg, isErr){ statusEl.textContent = msg; statusEl.className = isErr ? 'err' : ''; }
@@ -420,7 +426,7 @@ async function fetchRepo(clientId, cap, random, resourceTypeId, query){
   let effectiveRandom = random;
   if (random){
     try {
-      const peek = await fetch(`${API_BASE}/dois?client-id=${encodeURIComponent(clientId)}&page[size]=1&disable-facets=true${filter}`);
+      const peek = await fetch(`${API_BASE}/dois?${clientQS(clientId)}page[size]=1&disable-facets=true${filter}`);
       if (peek.ok){
         const pj = await peek.json();
         const t = pj.meta && typeof pj.meta.total === 'number' ? pj.meta.total : null;
@@ -431,7 +437,7 @@ async function fetchRepo(clientId, cap, random, resourceTypeId, query){
   if (!effectiveRandom) setProgress(0);
   while (records.length < cap) {
     requests++;
-    const base = `${API_BASE}/dois?client-id=${encodeURIComponent(clientId)}&page[size]=${pageSize}&affiliation=true&publisher=true${filter}`;
+    const base = `${API_BASE}/dois?${clientQS(clientId)}page[size]=${pageSize}&affiliation=true&publisher=true${filter}`;
     const url = effectiveRandom ? `${base}&random=true&disable-facets=true` : `${base}&page[number]=${page}`;
     if (!firstUrl) firstUrl = url;
     let res;
@@ -471,6 +477,7 @@ function showApiUrl(url, requests, random){
   el.innerHTML = `<b>API call:</b> ${url}${extra}`;
 }
 async function fetchClientMeta(clientId){
+  if (clientId === ALL_DATACITE) return { name: 'All of DataCite', doiCount: null };
   try {
     const res = await fetch(`${API_BASE}/clients/${encodeURIComponent(clientId)}`);
     if (!res.ok) return null;

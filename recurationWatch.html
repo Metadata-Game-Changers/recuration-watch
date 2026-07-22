@@ -1120,6 +1120,12 @@
 
 <script>
 const API_BASE  = 'https://api.datacite.org';
+// Unadvertised: client id 'datacite.all' means the whole of DataCite — the client-id
+// filter is omitted from queries (mirrors dataCiteRepositories.py). Pair it with a
+// query/type filter, e.g. ?client=datacite.all&query=creators.nameIdentifiers.nameIdentifier:*0000-0001-2345-6789*
+const ALL_DATACITE = 'datacite.all';
+const clientQS = id => id === ALL_DATACITE ? '' : `client-id=${encodeURIComponent(id)}&`;
+
 const PAGE_SIZE = 50;
 const DEFAULT_CLIENT = 'sjyq.oozvia';
 
@@ -1137,7 +1143,7 @@ let createdOnly = false;
 async function fetchAllDOIs(resourceTypeId='', extraQuery='') {
   let results = [], cursor = 1, total = null;
   while (true) {
-    let url = `${API_BASE}/dois?client-id=${encodeURIComponent(CLIENT_ID)}&page[size]=100&page[number]=${cursor}&sort=-updated`;
+    let url = `${API_BASE}/dois?${clientQS(CLIENT_ID)}page[size]=100&page[number]=${cursor}&sort=-updated`;
     if (resourceTypeId) url += `&resource-type-id=${encodeURIComponent(resourceTypeId)}`;
     if (extraQuery) url += `&query=${encodeURIComponent(extraQuery)}`;
     const res = await fetch(url);
@@ -1864,6 +1870,7 @@ document.getElementById('created-only').addEventListener('change',()=>{if(loadin
 
 // ── Repo metadata lookup ─────────────────────────────
 async function fetchClientMeta(clientId) {
+  if (clientId === ALL_DATACITE) return { attributes: { name: 'All of DataCite', prefixIds: [] } };
   try {
     const res = await fetch(`${API_BASE}/clients/${encodeURIComponent(clientId)}`);
     if (!res.ok) return null;
