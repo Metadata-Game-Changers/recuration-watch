@@ -569,20 +569,20 @@ async function detectYearBounds(clientId, resourceTypeId, userQuery){
 /* ---------- run: harvest year by year ---------- */
 /* plot groups: which lines to draw (Extras has no combined total, matching completeness) */
 const CODE_STYLE = {
-  FAIR_Text:                 { label: 'Text',         color: '#e2725b' },
+  FAIR_Text:                 { label: 'Text',         color: '#E97131' },
   FAIR_Identifiers:          { label: 'Identifiers',  color: '#0070C0' },
-  FAIR_Connections:          { label: 'Connections',  color: '#9167b0' },
-  FAIR_Contacts:             { label: 'Contacts',     color: '#3a9d6e' },
-  Project_Team:              { label: 'Team',         color: '#b3005e' },
-  Project_Items:             { label: 'Items',        color: '#0070C0' },
-  Project_Relations:         { label: 'Relations',    color: '#3a9d6e' },
+  FAIR_Connections:          { label: 'Connections',  color: '#A02C93' },
+  FAIR_Contacts:             { label: 'Contacts',     color: '#4EA62E' },
+  Project_Team:              { label: 'Team',         color: '#7A5195' },
+  Project_Items:             { label: 'Items',        color: '#EF9B20' },
+  Project_Relations:         { label: 'Relations',    color: '#BC5090' },
   SHARE_stewardship:         { label: 'Stewardship',  color: '#2F6FB0' },
   SHARE_harmonization:       { label: 'Harmonization',color: '#D4910B' },
   SHARE_access:              { label: 'Access',       color: '#3A9D6E' },
   SHARE_reuse:               { label: 'Reuse',        color: '#B3005E' },
   SHARE_engagement:          { label: 'Engagement',   color: '#5B3D7A' },
-  DataCite_Relations:        { label: 'Relations',    color: '#0070C0' },
-  DataCite_ContributorTypes: { label: 'Contributors', color: '#e2725b' },
+  DataCite_Relations:        { label: 'Relations',    color: '#C0392B' },
+  DataCite_ContributorTypes: { label: 'Contributors', color: '#0E8A8A' },
 };
 const PLOT_GROUPS = {
   FAIR:     { totals: [{ key: 'fair',     label: 'FAIR Total',     color: '#673289', width: 3 }],
@@ -614,6 +614,8 @@ const SPIRAL_COLORS = {
   FAIR_Text:'#E97131', FAIR_Identifiers:'#0070C0', FAIR_Connections:'#A02C93', FAIR_Contacts:'#4EA62E',
   DataCite_Relations:'#C0392B', DataCite_ContributorTypes:'#0E8A8A',
   Project_Team:'#7A5195', Project_Items:'#EF9B20', Project_Relations:'#BC5090',
+  SHARE_stewardship:'#2F6FB0', SHARE_harmonization:'#D4910B', SHARE_access:'#3A9D6E',
+  SHARE_reuse:'#B3005E', SHARE_engagement:'#5B3D7A',
 };
 // a small, label-free radar of a use case's concepts (small-multiples cell); shape comparison
 // across a row is the point — the row label names the use case, axes are consistent within a row
