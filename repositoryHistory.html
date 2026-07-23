@@ -252,11 +252,11 @@
       <div class="hero-secondary">
         <span class="hero-field">
         <span class="hero-secondary-label">From</span>
-        <input class="hero-num" id="year-min" type="number" min="2011" max="2100" placeholder="auto" title="First registered year to sample — left blank, the repository's earliest year is detected automatically" />
+        <input class="hero-num" id="year-min" type="number" min="2011" max="2100" placeholder="auto" autocomplete="off" title="First registered year to sample — left blank, the repository's earliest year is detected automatically" />
         </span>
         <span class="hero-field">
         <span class="hero-secondary-label">To</span>
-        <input class="hero-num" id="year-max" type="number" min="2011" max="2100" placeholder="auto" title="Last registered year to sample — left blank, the repository's latest year is detected automatically" />
+        <input class="hero-num" id="year-max" type="number" min="2011" max="2100" placeholder="auto" autocomplete="off" title="Last registered year to sample — left blank, the repository's latest year is detected automatically" />
         </span>
         <span class="hero-field">
         <span class="hero-secondary-label">Max / year</span>
@@ -561,16 +561,18 @@ async function fetchClientMeta(clientId){
 async function detectYearBounds(clientId, resourceTypeId, userQuery){
   const filter = (resourceTypeId ? `&resource-type-id=${encodeURIComponent(resourceTypeId)}` : '')
                + (userQuery ? `&query=${encodeURIComponent(userQuery)}` : '');
-  const yearOf = async sort => {
+  const yearsOf = async sort => {   // both dates of the boundary record — created is the sort key,
     const res = await fetch(`${API_BASE}/dois?${clientQS(clientId)}page[size]=1&sort=${sort}&disable-facets=true${filter}`);
-    if (!res.ok) return NaN;
+    if (!res.ok) return [];
     const json = await res.json();
     const a = json.data && json.data[0] && json.data[0].attributes;
-    const d = a && (a.registered || a.created);
-    return d ? new Date(d).getUTCFullYear() : NaN;
+    return [a && a.registered, a && a.created].filter(Boolean).map(d => new Date(d).getUTCFullYear()).filter(y => !Number.isNaN(y));
   };
-  const [minY, maxY] = await Promise.all([yearOf('created'), yearOf('-created')]);
-  return (Number.isNaN(minY) || Number.isNaN(maxY)) ? null : { minY, maxY };
+  const [first, last] = await Promise.all([yearsOf('created'), yearsOf('-created')]);
+  if (!first.length || !last.length) return null;
+  // registered is what the per-year queries filter on, but created is the only supported sort —
+  // take the widest span of both dates so migrated records can't clip the range
+  return { minY: Math.min(...first, ...last), maxY: Math.max(...first, ...last) };
 }
 
 /* ---------- run: harvest year by year ---------- */
@@ -719,7 +721,7 @@ async function run(){
     if (Number.isNaN(minY) || Number.isNaN(maxY)){ hideProgress(); setStatus('Could not detect registered years — enter From and To years and try again.', true); return; }
     if (minY > maxY){ const t = minY; minY = maxY; maxY = t; }
     if (maxY - minY + 1 > 30){ hideProgress(); setStatus(`That is ${maxY - minY + 1} years — please narrow the range to 30 or fewer.`, true); return; }
-    $('year-min').value = minY; $('year-max').value = maxY;
+    $('year-min').placeholder = minY; $('year-max').placeholder = maxY;   // show the resolved range without making it sticky
 
     history = { clientId, repoName: (meta && meta.name) ? meta.name : clientId,
                 resourceTypeId, query, cap, random, years: [] };
@@ -1232,6 +1234,7 @@ function showAutocomplete(items){
 }
 function closeAutocomplete(){ $('repo-autocomplete').classList.remove('open'); acHighlight = -1; }
 $('repo-input').addEventListener('input', () => {
+  $('year-min').value = ''; $('year-max').value = ''; $('year-min').placeholder = 'auto'; $('year-max').placeholder = 'auto';
   const q = $('repo-input').value.trim();
   clearTimeout(acTimer);
   if (q.length < 2){ closeAutocomplete(); return; }
@@ -1378,8 +1381,8 @@ if (location.protocol === 'file:') {
       const q = params.get('query'); if (q) $('query-input').value = q;
       const max = parseInt(params.get('max'), 10); if (max > 0) $('cap').value = Math.min(1000, max);
       const rand = params.get('random'); if (rand != null) $('random').checked = !/^(0|false|no)$/i.test(rand);
-      const from = parseInt(params.get('from'), 10); if (!Number.isNaN(from)) $('year-min').value = from;
-      const to = parseInt(params.get('to'), 10); if (!Number.isNaN(to)) $('year-max').value = to;
+      const from = parseInt(params.get('from'), 10); $('year-min').value = Number.isNaN(from) ? '' : from;   // no param -> clear (browsers can restore stale form values on reload/handoff)
+      const to = parseInt(params.get('to'), 10); $('year-max').value = Number.isNaN(to) ? '' : to;
       run();
     }
     setTopbarLinks();                                              // carry the repo (default or ?client=) to the sibling links
