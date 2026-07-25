@@ -996,6 +996,7 @@ function renderTotal(){
   const ggd = new Date(), ggp = n => String(n).padStart(2,'0');
   $('gg-title').textContent = `${lastRun.repoName || lastRun.clientId} · ${TAB_TITLE[activeTab]}`
     + (GROUP_TOTAL[activeTab] ? ` · ${GROUP_TOTAL[activeTab].label} ${fmtPct(weightedTotal(lastRun.byCode, GROUPS[activeTab]))}` : '')
+    + stripFilterText()
     + ` · ${ggd.getFullYear()}-${ggp(ggd.getMonth()+1)}-${ggp(ggd.getDate())}T${ggp(ggd.getHours())}`;
   $('gg-row').innerHTML = GROUPS[activeTab].map(code => {
     const idx = CODE_INDEX[code];
@@ -1266,6 +1267,14 @@ function downloadHtmlReport(){
 /* ---------- PDF report (jsPDF) ---------- */
 // Rasterize an SVG string to a PNG data URL (same Image→canvas trick as radarToPngBlob), so each radial
 // plot can be placed in the PDF as one atomic image that never splits across a page.
+// active filters, for the strip titles: the strip scores the filtered slice, so say so
+function stripFilterText(){
+  const parts = [];
+  if (lastRun.resourceTypeId) parts.push(`type: ${lastRun.resourceTypeId}`);
+  if (lastRun.query) parts.push(`query: ${lastRun.query}`);
+  return parts.length ? ' · ' + parts.join(' · ') : '';
+}
+
 /* ---------- copy the radar strip as one PNG ---------- */
 // Compose a standalone SVG: title (repository · group · date), then one cell per use case in the
 // active group — name, score, radar (nested scaled <svg>) — and rasterize at 2x for the clipboard.
@@ -1278,7 +1287,7 @@ function stripSvgMarkup(){
   const esc = escHtml;
   let g = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`
     + `<text x="${PAD}" y="24" font-size="16" font-weight="700" fill="#673289">${esc(lastRun.repoName || lastRun.clientId)}</text>`
-    + `<text x="${PAD}" y="42" font-size="11" fill="#6b7280">${esc(lastRun.clientId)} · ${esc(TAB_TITLE[activeTab])}${GROUP_TOTAL[activeTab] ? ` · ${esc(GROUP_TOTAL[activeTab].label)} ${fmtPct(weightedTotal(lastRun.byCode, GROUPS[activeTab]))}` : ''} · ${date}</text>`;
+    + `<text x="${PAD}" y="42" font-size="11" fill="#6b7280">${esc(lastRun.clientId)} · ${esc(TAB_TITLE[activeTab])}${GROUP_TOTAL[activeTab] ? ` · ${esc(GROUP_TOTAL[activeTab].label)} ${fmtPct(weightedTotal(lastRun.byCode, GROUPS[activeTab]))}` : ''}${esc(stripFilterText())} · ${date}</text>`;
   codes.forEach((code, i) => {
     const sIdx = CODE_INDEX[code], sp = SPIRALS[sIdx], r = lastRun.byCode[code];
     if (!r) return;
