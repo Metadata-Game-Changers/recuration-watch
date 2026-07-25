@@ -316,6 +316,7 @@
             <option value="All">All (14)</option>
           </select>
         </label>
+        <button class="dl-btn" id="dl-lines-copy" type="button" title="Copy the line plot to the clipboard as an image">⧉ Copy plot</button>
         <button class="dl-btn" id="dl-png" type="button">⬇ Plot (PNG)</button>
         <button class="dl-btn" id="dl-grid-copy" type="button" style="display:none" title="Copy the radar grid to the clipboard as an image">⧉ Copy grid</button>
         <button class="dl-btn" id="dl-grid-png" type="button" style="display:none" title="Download the radar grid as a PNG image">⬇ Grid (PNG)</button>
@@ -1040,6 +1041,7 @@ function renderView(){
   $('grid').style.display    = viewMode === 'grid'  ? '' : 'none';
   $('movie').style.display   = viewMode === 'movie' ? '' : 'none';
   $('dl-png').style.display  = viewMode === 'lines' ? '' : 'none';   // PNG export is the line chart
+  $('dl-lines-copy').style.display = viewMode === 'lines' ? '' : 'none';
   $('dl-grid-copy').style.display = viewMode === 'grid' ? '' : 'none';
   $('dl-grid-png').style.display  = viewMode === 'grid' ? '' : 'none';
   if (viewMode !== 'movie') movieStop();
@@ -1168,8 +1170,8 @@ function downloadSummary(){
   triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_historySummary__${nowStamp()}.csv`);
 }
 
-function downloadPng(){
-  if (!history || !history.years.length) return;
+// compose the lines chart + title + legend into a PNG blob (shared by download and copy)
+function linesPngBlob(){
   const chart = $('chart');
   const scale = 2;
   const W = chart.clientWidth || 960, chartH = 360;
@@ -1203,7 +1205,24 @@ function downloadPng(){
     ctx.fillStyle = s.color; ctx.fillRect(pos[i].x, y - 2, sw, s.width > 2 ? 4 : 3);
     ctx.fillStyle = '#374151'; ctx.fillText(s.label, pos[i].x + sw + gapIn, y);
   });
-  out.toBlob(b => { if (b) triggerDownload(b, `${safeRepoId()}_history_${plotGroup}__${nowStamp()}.png`); }, 'image/png');
+  return new Promise((resolve, reject) => out.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null')), 'image/png'));
+}
+async function downloadPng(){
+  if (!history || !history.years.length) return;
+  try {
+    const blob = await linesPngBlob();
+    triggerDownload(blob, `${safeRepoId()}_history_${plotGroup}__${nowStamp()}.png`);
+  } catch (e){ console.error(e); setStatus('Could not render the plot to PNG: ' + (e.message || e), true); }
+}
+async function copyLines(){
+  if (!history || !history.years.length) return;
+  const btn = $('dl-lines-copy'); const label = btn.textContent;
+  try {
+    const blob = await linesPngBlob();
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    btn.textContent = '✓ Copied';
+  } catch (e){ console.error(e); btn.textContent = 'Copy failed'; }
+  setTimeout(() => { btn.textContent = label; }, 1600);
 }
 
 /* ---------- URL sync + deep links ---------- */
@@ -1324,6 +1343,7 @@ $('stop-btn').addEventListener('click', () => { stopRequested = true; });
 $('dl-png').addEventListener('click', downloadPng);
 $('dl-grid-png').addEventListener('click', downloadGridPng);
 $('dl-grid-copy').addEventListener('click', copyGrid);
+$('dl-lines-copy').addEventListener('click', copyLines);
 $('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; $('share-proto').style.display = plotGroup === 'SHARE' ? '' : 'none'; renderLegend(); renderTable(); if (viewMode === 'grid') drawGrid(); else if (viewMode === 'movie') drawMovie(); else drawChart(); });
 $('view-mode').addEventListener('change', () => { viewMode = $('view-mode').value; renderView(); });
 $('movie-play').addEventListener('click', moviePlay);
