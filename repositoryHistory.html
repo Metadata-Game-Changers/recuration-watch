@@ -251,6 +251,13 @@
       </div>
       <div class="hero-secondary">
         <span class="hero-field">
+        <span class="hero-secondary-label">Sample by</span>
+        <select class="hero-select" id="date-field" style="flex:0 0 auto;min-width:0" title="Registered groups records by when DataCite first saw the DOI. Updated groups them by when the metadata last changed — the view to watch when re-curating records registered years ago.">
+          <option value="registered">Registered</option>
+          <option value="updated">Updated</option>
+        </select>
+        </span>
+        <span class="hero-field">
         <span class="hero-secondary-label">From</span>
         <input class="hero-num" id="year-min" type="number" min="2011" max="2100" placeholder="auto" autocomplete="off" title="First registered year to sample — left blank, the repository's earliest year is detected automatically" />
         </span>
@@ -289,7 +296,7 @@
 
   <div class="card" id="chart-card" style="display:none">
     <div class="card-head">
-      <h2>Completeness by registered year <span class="proto-flag" id="share-proto" style="display:none">SHARE · Prototype</span></h2>
+      <h2><span id="chart-head-label">Completeness by registered year</span> <span class="proto-flag" id="share-proto" style="display:none">SHARE · Prototype</span></h2>
       <div class="card-actions">
         <label class="hero-chk" style="gap:.4rem" title="Lines: one trend line per use case over the years. Grid: a radar plot per use case per year. Movie: one year at a time, enlarged — press Play to animate across the years.">
           <span class="hero-secondary-label">View</span>
@@ -317,7 +324,7 @@
         <button class="dl-btn" id="dl-csv" type="button" title="Long form: one row per year × concept (analysis-ready)">⬇ Data (CSV)</button>
       </div>
     </div>
-    <p class="card-intro">Each point scores a sample of the records <b>registered</b> in that year, as those records are <b>today</b> — so a strong early year can mean good metadata then <i>or</i> re-curation since (compare with Re-Curation Watch). Thin years (fewer than 10 records) — hollow points in <b>Lines</b>, dimmed cells in <b>Grid</b> — have noisy percentages. Results appear as each year finishes; switch <b>View</b> to a radar-plot <b>Grid</b> to watch each use case&rsquo;s concept profile change year to year. Short ranges sample finer: set <b>From&nbsp;=&nbsp;To</b> for a <b>monthly</b> view of one year, a span of up to four years for a <b>quarterly</b> view.</p>
+    <p class="card-intro">Each point scores a sample of the records <b>registered</b> in that year, as those records are <b>today</b> — so a strong early year can mean good metadata then <i>or</i> re-curation since (compare with Re-Curation Watch). Thin years (fewer than 10 records) — hollow points in <b>Lines</b>, dimmed cells in <b>Grid</b> — have noisy percentages. Results appear as each year finishes; switch <b>View</b> to a radar-plot <b>Grid</b> to watch each use case&rsquo;s concept profile change year to year. Short ranges sample finer: set <b>From&nbsp;=&nbsp;To</b> for a <b>monthly</b> view of one year, a span of up to four years for a <b>quarterly</b> view. Sampling by <b>Updated</b> instead groups records by when their metadata last changed — the view to watch when re-curating records registered years ago.</p>
     <canvas id="chart" width="960" height="360"></canvas>
     <div class="legend" id="legend"></div>
     <div id="grid" style="display:none"></div>
@@ -490,15 +497,15 @@ function weightedTotal(byCode, codes){
   return totalCount > 0 ? totalScore / totalCount : 0;
 }
 
-// the DataCite query that scopes a selection to one registered period (shared by the fetch
-// and the per-period handoff, so a shared sample reloads to the same period)
-function periodQuery(period, userQuery){
-  const clause = `registered:[${period.from} TO ${period.to}]`;
+// the DataCite query that scopes a selection to one registered/updated period (shared by the
+// fetch and the per-period handoff, so a shared sample reloads to the same period)
+function periodQuery(period, userQuery, dateField){
+  const clause = `${dateField === 'updated' ? 'updated' : 'registered'}:[${period.from} TO ${period.to}]`;
   return userQuery ? `(${userQuery}) AND ${clause}` : clause;
 }
 /* ---------- fetch one registered period (adapted from completeness fetchRepo) ---------- */
-async function fetchYear(clientId, period, cap, random, resourceTypeId, userQuery){
-  const query = periodQuery(period, userQuery);
+async function fetchYear(clientId, period, cap, random, resourceTypeId, userQuery, dateField){
+  const query = periodQuery(period, userQuery, dateField);
   const filter = (resourceTypeId ? `&resource-type-id=${encodeURIComponent(resourceTypeId)}` : '')
                + `&query=${encodeURIComponent(query)}`;
   const records = [];
@@ -556,22 +563,24 @@ async function fetchClientMeta(clientId){
   } catch { return null; }
 }
 
-/* detect the selection's first and last registered years: two one-record requests sorted by
-   created (a supported sort that registered tracks; the API ignores sort=registered) */
-async function detectYearBounds(clientId, resourceTypeId, userQuery){
+/* detect the selection's first and last years on the sampled date field. Registered mode sorts
+   by created (a supported sort that registered tracks; the API ignores sort=registered) and takes
+   the widest span of both dates so migrated records can't clip the range. Updated mode sorts by
+   updated directly (a supported sort) and reads the boundary records' updated years. */
+async function detectYearBounds(clientId, resourceTypeId, userQuery, dateField){
   const filter = (resourceTypeId ? `&resource-type-id=${encodeURIComponent(resourceTypeId)}` : '')
                + (userQuery ? `&query=${encodeURIComponent(userQuery)}` : '');
-  const yearsOf = async sort => {   // both dates of the boundary record — created is the sort key,
+  const sortKey = dateField === 'updated' ? 'updated' : 'created';
+  const yearsOf = async sort => {
     const res = await fetch(`${API_BASE}/dois?${clientQS(clientId)}page[size]=1&sort=${sort}&disable-facets=true${filter}`);
     if (!res.ok) return [];
     const json = await res.json();
     const a = json.data && json.data[0] && json.data[0].attributes;
-    return [a && a.registered, a && a.created].filter(Boolean).map(d => new Date(d).getUTCFullYear()).filter(y => !Number.isNaN(y));
+    const dates = dateField === 'updated' ? [a && a.updated] : [a && a.registered, a && a.created];
+    return dates.filter(Boolean).map(d => new Date(d).getUTCFullYear()).filter(y => !Number.isNaN(y));
   };
-  const [first, last] = await Promise.all([yearsOf('created'), yearsOf('-created')]);
+  const [first, last] = await Promise.all([yearsOf(sortKey), yearsOf('-' + sortKey)]);
   if (!first.length || !last.length) return null;
-  // registered is what the per-year queries filter on, but created is the only supported sort —
-  // take the widest span of both dates so migrated records can't clip the range
   return { minY: Math.min(...first, ...last), maxY: Math.max(...first, ...last) };
 }
 
@@ -703,6 +712,7 @@ async function run(){
   const random = $('random').checked;
   const resourceTypeId = $('resource-type').value;
   const query = $('query-input').value.trim();
+  const dateField = $('date-field').value === 'updated' ? 'updated' : 'registered';
   if (!clientId) return;
   syncUrl(clientId, resourceTypeId, query, cap, random);
   setTopbarLinks(clientId);
@@ -711,20 +721,21 @@ async function run(){
   stopRequested = false;
   startTips();
   try {
-    setStatus('Detecting registered years…');
+    setStatus(`Detecting ${dateField} years…`);
     setProgressIndeterminate();
-    const [meta, bounds] = await Promise.all([fetchClientMeta(clientId), detectYearBounds(clientId, resourceTypeId, query)]);
+    const [meta, bounds] = await Promise.all([fetchClientMeta(clientId), detectYearBounds(clientId, resourceTypeId, query, dateField)]);
     let minY = parseInt($('year-min').value, 10);
     let maxY = parseInt($('year-max').value, 10);
     if (Number.isNaN(minY)) minY = bounds ? bounds.minY : NaN;
     if (Number.isNaN(maxY)) maxY = bounds ? bounds.maxY : NaN;
-    if (Number.isNaN(minY) || Number.isNaN(maxY)){ hideProgress(); setStatus('Could not detect registered years — enter From and To years and try again.', true); return; }
+    if (Number.isNaN(minY) || Number.isNaN(maxY)){ hideProgress(); setStatus(`Could not detect ${dateField} years — enter From and To years and try again.`, true); return; }
     if (minY > maxY){ const t = minY; minY = maxY; maxY = t; }
     if (maxY - minY + 1 > 30){ hideProgress(); setStatus(`That is ${maxY - minY + 1} years — please narrow the range to 30 or fewer.`, true); return; }
     $('year-min').placeholder = minY; $('year-max').placeholder = maxY;   // show the resolved range without making it sticky
 
     history = { clientId, repoName: (meta && meta.name) ? meta.name : clientId,
-                resourceTypeId, query, cap, random, years: [] };
+                resourceTypeId, query, cap, random, dateField, years: [] };
+    $('chart-head-label').textContent = `Completeness by ${dateField} year`;
     movieStop(); movieIdx = 0;   // fresh run resets the movie to the first year
     renderSelection(meta, clientId, minY, maxY, resourceTypeId, query);
     $('chart-card').style.display = ''; $('table-card').style.display = '';
@@ -756,7 +767,7 @@ async function run(){
       if (stopRequested) break;
       setStatus(`${p.label} — fetching records (period ${done + 1} of ${yearList.length})…`);
       setProgress(done / yearList.length);
-      const { records, matching, random: usedRandom, firstUrl } = await fetchYear(clientId, p, cap, random, resourceTypeId, query);
+      const { records, matching, random: usedRandom, firstUrl } = await fetchYear(clientId, p, cap, random, resourceTypeId, query, dateField);
       if (!shownUrl && firstUrl){ $('apiurl').style.display=''; $('apiurl').innerHTML = `<b>API call (per period):</b> ${escHtml(firstUrl)}`; shownUrl = true; }
       if (stopRequested) break;
       let entry;
@@ -781,7 +792,7 @@ async function run(){
     const unit = span === 0 ? 'month' : (span <= 3 ? 'quarter' : 'year');
     setStatus(stopRequested
       ? `Stopped — ${scoredYears} ${unit}${scoredYears===1?'':'s'} scored (${scoredRecords.toLocaleString()} records).`
-      : `Done — ${scoredYears} ${unit}${scoredYears===1?'':'s'} scored, ${scoredRecords.toLocaleString()} records, registered ${minY}–${maxY}.`);
+      : `Done — ${scoredYears} ${unit}${scoredYears===1?'':'s'} scored, ${scoredRecords.toLocaleString()} records, ${dateField} ${minY}–${maxY}.`);
   } catch (e){
     console.error(e); hideProgress(); setStatus(e.message || String(e), true);
   } finally {
@@ -797,13 +808,15 @@ function renderSelection(meta, clientId, minY, maxY, resourceTypeId, query){
   $('sel-repo').innerHTML = `${escHtml(name)}<span class="sel-id">${escHtml(clientId)}</span>`;
   $('sel-years').textContent = `${minY}–${maxY}`;
   $('sel-records').textContent = '0';
-  $('sel-mode').textContent = `${$('random').checked ? 'random sample' : 'sequential sample'} · up to ${$('cap').value}/year`;
+  $('sel-mode').textContent = `${$('random').checked ? 'random sample' : 'sequential sample'} · up to ${$('cap').value}/year`
+    + ($('date-field').value === 'updated' ? ' · by updated date' : '');
   const parts = [];
   if (resourceTypeId) parts.push(`type: ${resourceTypeId}`);
   if (query) parts.push(`query: ${query}`);
   $('sel-filter').textContent = parts.length ? `filter — ${parts.join(' · ')}` : '';
   $('sel-filter').style.display = parts.length ? '' : 'none';
 }
+function dateFieldName(){ return history && history.dateField === 'updated' ? 'updated' : 'registered'; }
 function updateSelStats(scoredRecords){ $('sel-records').textContent = scoredRecords.toLocaleString(); }
 
 function renderLegend(){
@@ -823,7 +836,8 @@ function tableColumns(){
 }
 function renderTableHead(){
   const tc = tableColumns();
-  $('hist-head').innerHTML = `<th>Registered</th><th>Records scored</th><th>Matching</th><th>${escHtml(tc.totName)}</th>`
+  const dLabel = dateFieldName() === 'updated' ? 'Updated' : 'Registered';
+  $('hist-head').innerHTML = `<th>${dLabel}</th><th>Records scored</th><th>Matching</th><th>${escHtml(tc.totName)}</th>`
     + tc.codes.map(c => `<th>${escHtml(c.label)}</th>`).join('')
     + `<th title="Open this year's exact sample in another tool — both then measure the same records">Open this year</th>`;
 }
@@ -953,7 +967,7 @@ function gridSvgMarkup(){
   const H = gridTop + codes.length * ROW_H + PAD;
   const FONT = "font-family='Inter, system-ui, sans-serif'";
   let s = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
-  s += `<text x="${PAD}" y="18" ${FONT} font-size="15" font-weight="600" fill="#673289">${escHtml(history.repoName)} (${escHtml(history.clientId)}) — completeness by registered year</text>`;
+  s += `<text x="${PAD}" y="18" ${FONT} font-size="15" font-weight="600" fill="#673289">${escHtml(history.repoName)} (${escHtml(history.clientId)}) — completeness by ${dateFieldName()} year</text>`;
   const gridFilt = selectionFilterText();
   s += `<text x="${PAD}" y="34" ${FONT} font-size="11" fill="#6b7280">${escHtml(GRID_GROUP_LABEL[plotGroup] || plotGroup)} · up to ${history.cap} records/year${gridFilt ? ' · ' + escHtml(gridFilt) : ''} · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. re-curation)</text>`;
   // column headers: year / n / total
@@ -1095,8 +1109,8 @@ function downloadJson(){
     repository: { id: history.clientId, name: history.repoName },
     generated: new Date().toISOString(),
     selection: { resourceTypeId: history.resourceTypeId || '', query: history.query || '',
-                 maxPerYear: history.cap, random: history.random, dateField: 'registered' },
-    note: 'Each year scores a sample of the records REGISTERED in that year, as those records are at the generated time (current state, including any re-curation since).',
+                 maxPerYear: history.cap, random: history.random, dateField: dateFieldName() },
+    note: `Each period scores a sample of the records ${dateFieldName().toUpperCase()} in that period, as those records are at the generated time (current state, including any re-curation since).`,
     years: history.years.map(e => ({
       year: e.year, period: e.period || null, recordsScored: e.n, matchingTotal: e.matching,
       totals: e.totals ? { fairTotal: e.totals.fair, projectsTotal: e.totals.projects, shareTotal: e.totals.share,
@@ -1136,7 +1150,7 @@ function downloadSummary(){
   const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
   const round = x => x == null ? '' : Math.round(x * 10000) / 10000;
   const extraCodes = PLOT_GROUPS.Extras.codes;
-  const headers = ['Repository_ID','Registered','Records_Scored','Matching',
+  const headers = ['Repository_ID', dateFieldName() === 'updated' ? 'Updated' : 'Registered', 'Records_Scored','Matching',
     'FAIR_Total','Text','Identifiers','Connections','Contacts',
     'Projects_Total', ...PROJECT_CODES, 'SHARE_Total', ...SHARE_CODES, ...extraCodes];
   const rows = [headers];
@@ -1177,7 +1191,7 @@ function downloadPng(){
   const ctx = out.getContext('2d'); ctx.scale(scale, scale);
   ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = '#673289'; ctx.font = '600 15px Inter, sans-serif'; ctx.textBaseline = 'top';
-  ctx.fillText(`${history.repoName} (${history.clientId}) — completeness by registered year`, pad, 12);
+  ctx.fillText(`${history.repoName} (${history.clientId}) — completeness by ${dateFieldName()} year`, pad, 12);
   const groupLabel = { FAIR: 'FAIR use cases', Projects: 'Project use cases', SHARE: 'SHARE use cases', Extras: 'Additional DataCite use cases', All: 'All fourteen use cases' }[plotGroup] || plotGroup;
   ctx.fillStyle = '#6b7280'; ctx.font = '11px Inter, sans-serif';
   const filt = selectionFilterText();
@@ -1201,6 +1215,7 @@ function syncUrl(clientId, resourceTypeId, query, cap, random){
     if (query) url.searchParams.set('query', query); else url.searchParams.delete('query');
     if (cap && cap !== 100) url.searchParams.set('max', cap); else url.searchParams.delete('max');
     if (random === false) url.searchParams.set('random', '0'); else url.searchParams.delete('random');
+    if ($('date-field').value === 'updated') url.searchParams.set('by', 'updated'); else url.searchParams.delete('by');
     const ymin = $('year-min').value, ymax = $('year-max').value;
     if (ymin) url.searchParams.set('from', ymin); else url.searchParams.delete('from');
     if (ymax) url.searchParams.set('to', ymax); else url.searchParams.delete('to');
@@ -1364,11 +1379,11 @@ $('hist-body').addEventListener('click', e => {
   const page = target === 'connectivity' ? 'metadataConnectivity.html' : 'completeness.html';
   const key  = target === 'connectivity' ? 'metadata-connectivity-input' : 'metadata-completeness-input';
   const payload = {
-    source: 'repositoryHistory', sharedFrom: `Repository History · registered ${entry.year}`,
+    source: 'repositoryHistory', sharedFrom: `Repository History · ${dateFieldName()} ${entry.year}`,
     records: entry.records, clientId: history.clientId, repoName: history.repoName,
     repoTotal: entry.matching, random: !!entry.random,
     resourceTypeId: history.resourceTypeId || '',
-    query: periodQuery(entry.period, history.query)   // period-scoped so a reload reproduces it
+    query: periodQuery(entry.period, history.query, history.dateField)   // period-scoped so a reload reproduces it
   };
   const fallback = `${page}?client=${encodeURIComponent(history.clientId)}`
     + (history.resourceTypeId ? `&resource-type=${encodeURIComponent(history.resourceTypeId)}` : '')
@@ -1398,6 +1413,7 @@ if (location.protocol === 'file:') {
       const q = params.get('query'); if (q) $('query-input').value = q;
       const max = parseInt(params.get('max'), 10); if (max > 0) $('cap').value = Math.min(1000, max);
       const rand = params.get('random'); if (rand != null) $('random').checked = !/^(0|false|no)$/i.test(rand);
+      $('date-field').value = /^updated$/i.test(params.get('by') || '') ? 'updated' : 'registered';
       const from = parseInt(params.get('from'), 10); $('year-min').value = Number.isNaN(from) ? '' : from;   // no param -> clear (browsers can restore stale form values on reload/handoff)
       const to = parseInt(params.get('to'), 10); $('year-max').value = Number.isNaN(to) ? '' : to;
       run();
