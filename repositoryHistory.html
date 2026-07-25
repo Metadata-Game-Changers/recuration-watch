@@ -317,7 +317,7 @@
         <button class="dl-btn" id="dl-csv" type="button" title="Long form: one row per year × concept (analysis-ready)">⬇ Data (CSV)</button>
       </div>
     </div>
-    <p class="card-intro">Each point scores a sample of the records <b>registered</b> in that year, as those records are <b>today</b> — so a strong early year can mean good metadata then <i>or</i> re-curation since (compare with Re-Curation Watch). Thin years (fewer than 10 records) — hollow points in <b>Lines</b>, dimmed cells in <b>Grid</b> — have noisy percentages. Results appear as each year finishes; switch <b>View</b> to a radar-plot <b>Grid</b> to watch each use case&rsquo;s concept profile change year to year.</p>
+    <p class="card-intro">Each point scores a sample of the records <b>registered</b> in that year, as those records are <b>today</b> — so a strong early year can mean good metadata then <i>or</i> re-curation since (compare with Re-Curation Watch). Thin years (fewer than 10 records) — hollow points in <b>Lines</b>, dimmed cells in <b>Grid</b> — have noisy percentages. Results appear as each year finishes; switch <b>View</b> to a radar-plot <b>Grid</b> to watch each use case&rsquo;s concept profile change year to year. Short ranges sample finer: set <b>From&nbsp;=&nbsp;To</b> for a <b>monthly</b> view of one year, a span of up to four years for a <b>quarterly</b> view.</p>
     <canvas id="chart" width="960" height="360"></canvas>
     <div class="legend" id="legend"></div>
     <div id="grid" style="display:none"></div>
@@ -490,15 +490,15 @@ function weightedTotal(byCode, codes){
   return totalCount > 0 ? totalScore / totalCount : 0;
 }
 
-// the DataCite query that scopes a selection to one registered year (shared by the fetch
-// and the per-year handoff, so a shared sample reloads to the same year)
-function yearQuery(year, userQuery){
-  const yearClause = `registered:[${year}-01-01 TO ${year}-12-31]`;
-  return userQuery ? `(${userQuery}) AND ${yearClause}` : yearClause;
+// the DataCite query that scopes a selection to one registered period (shared by the fetch
+// and the per-period handoff, so a shared sample reloads to the same period)
+function periodQuery(period, userQuery){
+  const clause = `registered:[${period.from} TO ${period.to}]`;
+  return userQuery ? `(${userQuery}) AND ${clause}` : clause;
 }
-/* ---------- fetch one registered year (adapted from completeness fetchRepo) ---------- */
-async function fetchYear(clientId, year, cap, random, resourceTypeId, userQuery){
-  const query = yearQuery(year, userQuery);
+/* ---------- fetch one registered period (adapted from completeness fetchRepo) ---------- */
+async function fetchYear(clientId, period, cap, random, resourceTypeId, userQuery){
+  const query = periodQuery(period, userQuery);
   const filter = (resourceTypeId ? `&resource-type-id=${encodeURIComponent(resourceTypeId)}` : '')
                + `&query=${encodeURIComponent(query)}`;
   const records = [];
@@ -525,7 +525,7 @@ async function fetchYear(clientId, year, cap, random, resourceTypeId, userQuery)
       : `${base}&page[number]=${page}`;
     if (!firstUrl) firstUrl = url;
     const res = await fetch(url);
-    if (!res.ok) throw new Error(`DataCite returned ${res.status} for client "${clientId}" (${year})`);
+    if (!res.ok) throw new Error(`DataCite returned ${res.status} for client "${clientId}" (${period.label})`);
     const json = await res.json();
     const batch = json.data || [];
     let added = 0;
@@ -733,25 +733,41 @@ async function run(){
     renderLegend();
     renderView();
 
-    const yearList = [];
-    for (let y = minY; y <= maxY; y++) yearList.push(y);
+    // adaptive sampling period: a single selected year samples monthly, a span of up to
+    // four years samples quarterly, longer spans sample yearly (the classic view)
+    const span = maxY - minY;
+    const pp = n => String(n).padStart(2, '0');
+    const lastDay = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();   // m is 1-based month
+    let yearList = [];
+    if (span === 0){
+      for (let m = 1; m <= 12; m++) yearList.push({ label: `${minY}-${pp(m)}`,
+        from: `${minY}-${pp(m)}-01`, to: `${minY}-${pp(m)}-${pp(lastDay(minY, m))}`, t: minY + (m - 0.5) / 12 });
+    } else if (span <= 3){
+      for (let y = minY; y <= maxY; y++) for (let q = 1; q <= 4; q++) yearList.push({ label: `${y} Q${q}`,
+        from: `${y}-${pp(3*q - 2)}-01`, to: `${y}-${pp(3*q)}-${pp(lastDay(y, 3*q))}`, t: y + (q - 0.5) / 4 });
+    } else {
+      for (let y = minY; y <= maxY; y++) yearList.push({ label: String(y),
+        from: `${y}-01-01`, to: `${y}-12-31`, t: y });
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    yearList = yearList.filter(p => p.from <= today);                     // never sample the future
     let done = 0, scoredRecords = 0, shownUrl = false;
-    for (const y of yearList){
+    for (const p of yearList){
       if (stopRequested) break;
-      setStatus(`${y} — fetching records (year ${done + 1} of ${yearList.length})…`);
+      setStatus(`${p.label} — fetching records (period ${done + 1} of ${yearList.length})…`);
       setProgress(done / yearList.length);
-      const { records, matching, random: usedRandom, firstUrl } = await fetchYear(clientId, y, cap, random, resourceTypeId, query);
-      if (!shownUrl && firstUrl){ $('apiurl').style.display=''; $('apiurl').innerHTML = `<b>API call (per year):</b> ${escHtml(firstUrl)}`; shownUrl = true; }
+      const { records, matching, random: usedRandom, firstUrl } = await fetchYear(clientId, p, cap, random, resourceTypeId, query);
+      if (!shownUrl && firstUrl){ $('apiurl').style.display=''; $('apiurl').innerHTML = `<b>API call (per period):</b> ${escHtml(firstUrl)}`; shownUrl = true; }
       if (stopRequested) break;
       let entry;
       if (!records.length){
-        entry = { year: y, n: 0, matching: matching || 0, totals: null, byCode: null };
+        entry = { year: p.label, period: { from: p.from, to: p.to }, t: p.t, n: 0, matching: matching || 0, totals: null, byCode: null };
       } else {
-        setStatus(`${y} — scoring ${records.length} record${records.length===1?'':'s'} (year ${done + 1} of ${yearList.length})…`);
+        setStatus(`${p.label} — scoring ${records.length} record${records.length===1?'':'s'} (period ${done + 1} of ${yearList.length})…`);
         const byCode = await scoreAllSpirals(records, f => setProgress((done + f) / yearList.length));
-        // retain the year's records so a row can be handed to Completeness/Connectivity without
-        // re-fetching (bounded: ≤ cap per year, and only one year is ever put in the mailbox)
-        entry = { year: y, n: records.length, matching, random: usedRandom, totals: yearTotals(byCode), byCode, records };
+        // retain the period's records so a row can be handed to Completeness/Connectivity without
+        // re-fetching (bounded: ≤ cap per period, and only one period is ever put in the mailbox)
+        entry = { year: p.label, period: { from: p.from, to: p.to }, t: p.t, n: records.length, matching, random: usedRandom, totals: yearTotals(byCode), byCode, records };
         scoredRecords += records.length;
       }
       history.years.push(entry);
@@ -762,9 +778,10 @@ async function run(){
     }
     hideProgress();
     const scoredYears = history.years.filter(e => e.n > 0).length;
+    const unit = span === 0 ? 'month' : (span <= 3 ? 'quarter' : 'year');
     setStatus(stopRequested
-      ? `Stopped — ${scoredYears} year${scoredYears===1?'':'s'} scored (${scoredRecords.toLocaleString()} records).`
-      : `Done — ${scoredYears} year${scoredYears===1?'':'s'} scored, ${scoredRecords.toLocaleString()} records, registered ${minY}–${maxY}.`);
+      ? `Stopped — ${scoredYears} ${unit}${scoredYears===1?'':'s'} scored (${scoredRecords.toLocaleString()} records).`
+      : `Done — ${scoredYears} ${unit}${scoredYears===1?'':'s'} scored, ${scoredRecords.toLocaleString()} records, registered ${minY}–${maxY}.`);
   } catch (e){
     console.error(e); hideProgress(); setStatus(e.message || String(e), true);
   } finally {
@@ -838,11 +855,11 @@ function drawChart(){
   ctx.scale(dpr, dpr);
   ctx.clearRect(0, 0, cssW, cssH);
   if (!history || !history.years.length) return;
-  const years = history.years.map(e => e.year);
-  const minY = Math.min(...years), maxY = Math.max(...years);
+  const ts = history.years.map(e => e.t ?? e.year);
+  const minT = Math.min(...ts), maxT = Math.max(...ts);
   const padL = 44, padR = 16, padT = 12, padB = 40;
   const W = cssW - padL - padR, H = cssH - padT - padB;
-  const x = y => padL + (maxY === minY ? W/2 : (y - minY) / (maxY - minY) * W);
+  const x = t => padL + (maxT === minT ? W/2 : (t - minT) / (maxT - minT) * W);
   const yy = v => padT + (1 - v) * H;
   // grid + axes
   ctx.font = '11px Inter, sans-serif';
@@ -852,20 +869,20 @@ function drawChart(){
     ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(cssW - padR, gy); ctx.stroke();
     ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText(g + '%', padL - 6, gy);
   }
-  const span = Math.max(1, maxY - minY);
-  const step = span > 18 ? 4 : (span > 9 ? 2 : 1);
+  const nP = history.years.length;
+  const step = nP > 18 ? 4 : (nP > 9 ? 2 : 1);
   ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  for (let y = minY; y <= maxY; y++){
-    if ((y - minY) % step !== 0 && y !== maxY) continue;
-    ctx.fillStyle = '#6b7280'; ctx.fillText(String(y), x(y), cssH - padB + 8);
-    const e = history.years.find(h => h.year === y);
-    if (e){ ctx.fillStyle = '#a99bbf'; ctx.font = '9px Inter, sans-serif'; ctx.fillText(e.n ? 'n=' + e.n : '·', x(y), cssH - padB + 22); ctx.font = '11px Inter, sans-serif'; }
-  }
+  history.years.forEach((e, i) => {
+    if (i % step !== 0 && i !== nP - 1) return;
+    const px = x(e.t ?? e.year);
+    ctx.fillStyle = '#6b7280'; ctx.fillText(String(e.year), px, cssH - padB + 8);
+    ctx.fillStyle = '#a99bbf'; ctx.font = '9px Inter, sans-serif'; ctx.fillText(e.n ? 'n=' + e.n : '·', px, cssH - padB + 22); ctx.font = '11px Inter, sans-serif';
+  });
   // series
   for (const s of seriesFor(plotGroup)){
     const pts = history.years
       .filter(e => e.n > 0 && e.totals && e.totals[s.key] != null)
-      .map(e => ({ px: x(e.year), py: yy(Math.min(1, e.totals[s.key])), thin: e.n < THIN }));
+      .map(e => ({ px: x(e.t ?? e.year), py: yy(Math.min(1, e.totals[s.key])), thin: e.n < THIN }));
     if (!pts.length) continue;
     ctx.strokeStyle = s.color; ctx.lineWidth = s.width || 1.5;
     ctx.setLineDash(s.dash || []);
@@ -1081,7 +1098,7 @@ function downloadJson(){
                  maxPerYear: history.cap, random: history.random, dateField: 'registered' },
     note: 'Each year scores a sample of the records REGISTERED in that year, as those records are at the generated time (current state, including any re-curation since).',
     years: history.years.map(e => ({
-      year: e.year, recordsScored: e.n, matchingTotal: e.matching,
+      year: e.year, period: e.period || null, recordsScored: e.n, matchingTotal: e.matching,
       totals: e.totals ? { fairTotal: e.totals.fair, projectsTotal: e.totals.projects, shareTotal: e.totals.share,
         text: e.totals.FAIR_Text, identifiers: e.totals.FAIR_Identifiers,
         connections: e.totals.FAIR_Connections, contacts: e.totals.FAIR_Contacts } : null,
@@ -1351,7 +1368,7 @@ $('hist-body').addEventListener('click', e => {
     records: entry.records, clientId: history.clientId, repoName: history.repoName,
     repoTotal: entry.matching, random: !!entry.random,
     resourceTypeId: history.resourceTypeId || '',
-    query: yearQuery(entry.year, history.query)   // year-scoped so a reload reproduces this year
+    query: periodQuery(entry.period, history.query)   // period-scoped so a reload reproduces it
   };
   const fallback = `${page}?client=${encodeURIComponent(history.clientId)}`
     + (history.resourceTypeId ? `&resource-type=${encodeURIComponent(history.resourceTypeId)}` : '')
