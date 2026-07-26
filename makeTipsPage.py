@@ -126,7 +126,7 @@ HEAD = '''<!DOCTYPE html>
     </div>
     <div class="topbar-links">
       <a href="index.html">All Tools ↗</a>
-      <a href="guide.html">Beginner's Guide ↗</a>
+      <a href="guide.html">Repository Guide ↗</a>
       <a href="consortiumGuide.html">Consortium Guide ↗</a>
       <a href="reading.html">Related Reading ↗</a>
       <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
