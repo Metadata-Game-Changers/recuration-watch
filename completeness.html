@@ -725,17 +725,35 @@ let valuesState = null;   // { conceptRaw, freq:[{v,n}], spiralTitle }
 // and let jq tally, per unique value, both its occurrence count (n) and the number of distinct DOIs
 // it appears in (d) — a value can occur many times yet in only a few records. One pass, small result.
 async function computeValueFreq(item){
-  if (!lastRun._inputStr) lastRun._inputStr = JSON.stringify({ data: lastRun.records });
   const prog = `[ ${item.jq_query} | {id: .id, vals: (.values | (if type == "array" then . else [.] end) | map(select(. != null))) } ] as $recs`
     + ` | ( [ $recs[] | .vals[] ] | group_by(.) | map({v: .[0], n: length}) ) as $occ`                        // occurrences per value
     + ` | ( [ $recs[] | (.vals | unique[]) | (.|tostring) ] | group_by(.) | map({(.[0]): length}) | add // {} ) as $docs`   // distinct DOIs per value
     + ` | { rows: ($occ | map(. + { d: ($docs[(.v|tostring)] // 0) }) | sort_by([-.n, -.d, (.v|tostring)])),`
     + `     dois: ([ $recs[] | select((.vals | length) > 0) ] | length) }`;                                    // distinct DOIs carrying ANY value (the union)
-  const out = await jq.promised.raw(lastRun._inputStr, prog, ['-c']);
-  const res = (out && out.trim()) ? JSON.parse(out.trim()) : { rows: [], dois: 0 };
-  const freq = res.rows || [];
+  // Batch like the scorer: the whole sample in one jq call can exceed the WASM engine's
+  // memory on large samples, and the engine then returns EMPTY output instead of throwing —
+  // which used to render as "no values found". Batches are merged by value below; an empty
+  // output is now an error, so a real engine failure says so instead of masquerading as
+  // an empty concept.
+  const BATCH = 500;
+  const byKey = new Map();   // JSON key -> { v, n, d }
+  let dois = 0;
+  for (let i = 0; i < lastRun.records.length; i += BATCH){
+    const inputStr = JSON.stringify({ data: lastRun.records.slice(i, i + BATCH) });
+    const out = await jq.promised.raw(inputStr, prog, ['-c']);
+    if (!out || !out.trim()) throw new Error('the jq engine returned no output — try reloading the page or a smaller Max');
+    const res = JSON.parse(out.trim());
+    for (const r of (res.rows || [])){
+      const k = JSON.stringify(r.v);
+      const e = byKey.get(k);
+      if (e){ e.n += r.n; e.d += (r.d || 0); } else byKey.set(k, { v: r.v, n: r.n, d: r.d || 0 });
+    }
+    dois += res.dois || 0;
+  }
+  const freq = [...byKey.values()].sort((a, b) =>
+    b.n - a.n || b.d - a.d || String(valDisplay(a.v)).localeCompare(String(valDisplay(b.v))));
   const total = freq.reduce((s, e) => s + e.n, 0);
-  return { freq, total, unique: freq.length, dois: res.dois || 0 };
+  return { freq, total, unique: freq.length, dois };
 }
 const valDisplay = v => (v !== null && typeof v === 'object') ? JSON.stringify(v) : String(v);
 
