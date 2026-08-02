@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Repository History — completeness by registered year</title>
+<title>Metrics Viewer — use-case score history</title>
 <link rel="icon" type="image/png" href="favicon_MGC.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -171,7 +171,7 @@
       <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
         <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" onerror="this.style.display='none'" />
       </a>
-      <div class="brand-title-wrap"><div class="brand-tool-name">Repository History</div></div>
+      <div class="brand-title-wrap"><div class="brand-tool-name">Metrics Viewer</div></div>
     </div>
     <div class="topbar-links">
       <div class="topbar-col">
@@ -179,15 +179,14 @@
       <a id="completeness-link" href="completeness.html" target="_blank" rel="noopener">Metadata Completeness ↗</a>
       <a id="connectivity-link" href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity ↗</a>
       <a id="activity-link" href="repo-activity.html" target="_blank" rel="noopener">Repository Activity ↗</a>
-      <a href="metricsViewer.html" target="_blank" rel="noopener">Metrics Viewer ↗</a>
+      <a id="history-link" href="repositoryHistory.html" target="_blank" rel="noopener">Repository History ↗</a>
       </div>
       <div class="topbar-col">
-      <button class="cite-link" id="cite-btn" type="button">Cite this Tool ↗</button>
       <a href="useCases.html" target="_blank" rel="noopener">Use Cases ↗</a>
       <a href="guide.html">Repository Guide ↗</a>
       <a href="consortiumGuide.html">Consortium Guide ↗</a>
-      <a href="reading.html#history">Related Reading ↗</a>
-      <a href="tips.html#repositoryHistory">Metadata Tips ↗</a>
+      <a href="reading.html">Related Reading ↗</a>
+      <a href="tips.html">Metadata Tips ↗</a>
       <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
       </div>
     </div>
@@ -197,82 +196,24 @@
 <div class="hero">
   <div class="hero-inner">
     <div class="hero-text">
-      <h2 class="hero-title">Completeness, year by year</h2>
-      <p class="hero-sub">Samples a repository&rsquo;s records for each <b>registered year</b>, scores every year against the MGC FAIR use cases, and plots how completeness evolves. Each year&rsquo;s score reflects those records <b>as they are today</b> — including any re-curation since.</p>
+      <h2 class="hero-title">Score history, run by run</h2>
+      <p class="hero-sub">Views a <b>useCaseHistory.json</b> — the accumulated use-case scores a
+      <a href="https://github.com/Metadata-Game-Changers/metrics-watch" target="_blank" rel="noopener" style="color:#5b3d7a">metrics-watch</a>
+      repository (or the MGC score archive) builds run by run — as line trends, a grid of radar plots, or a movie. Nothing is fetched from DataCite; every run was scored at its own date.</p>
     </div>
     <div class="hero-search">
       <div class="hero-form">
-        <input class="hero-input" id="repo-input" type="text" placeholder="Repository name or client ID…" spellcheck="false" autocomplete="off" value="sjyq.oozvia" />
-        <button class="hero-stop" id="stop-btn">Stop</button>
-        <button class="hero-go" id="repo-go" disabled>Explore →</button>
-      </div>
-      <div class="repo-autocomplete" id="repo-autocomplete"></div>
-      <div class="hero-secondary">
-        <span class="hero-field grow">
-        <span class="hero-secondary-label">Type</span>
-        <select class="hero-select" id="resource-type">
-          <option value="">All resource types</option>
-          <option value="audiovisual">Audiovisual</option>
-          <option value="book">Book</option>
-          <option value="book-chapter">Book Chapter</option>
-          <option value="collection">Collection</option>
-          <option value="computational-notebook">Computational Notebook</option>
-          <option value="conference-paper">Conference Paper</option>
-          <option value="conference-proceeding">Conference Proceeding</option>
-          <option value="data-paper">Data Paper</option>
-          <option value="dataset">Dataset</option>
-          <option value="dissertation">Dissertation</option>
-          <option value="event">Event</option>
-          <option value="image">Image</option>
-          <option value="instrument">Instrument</option>
-          <option value="interactive-resource">Interactive Resource</option>
-          <option value="journal">Journal</option>
-          <option value="journal-article">Journal Article</option>
-          <option value="model">Model</option>
-          <option value="other">Other</option>
-          <option value="output-management-plan">Output Management Plan</option>
-          <option value="peer-review">Peer Review</option>
-          <option value="physical-object">Physical Object</option>
-          <option value="preprint">Preprint</option>
-          <option value="project">Project</option>
-          <option value="report">Report</option>
-          <option value="service">Service</option>
-          <option value="software">Software</option>
-          <option value="sound">Sound</option>
-          <option value="standard">Standard</option>
-          <option value="study-registration">Study Registration</option>
-          <option value="text">Text</option>
-          <option value="workflow">Workflow</option>
-        </select>
-        </span>
-        <span class="hero-field grow">
-        <span class="hero-secondary-label">Query</span>
-        <input class="hero-query" id="query-input" type="text" placeholder="e.g. types.resourceTypeGeneral:Dataset" spellcheck="false" autocomplete="off" />
-        </span>
+        <input class="hero-input" id="src-input" type="url" placeholder="https://github.com/…/reports/…/…_useCaseHistory.json" spellcheck="false" autocomplete="off" />
+        <button class="hero-go" id="load-go">Load →</button>
       </div>
       <div class="hero-secondary">
-        <span class="hero-field">
-        <span class="hero-secondary-label">Sample by</span>
-        <select class="hero-select" id="date-field" style="flex:0 0 auto;min-width:0" title="Registered groups records by when DataCite first saw the DOI. Updated groups them by when the metadata last changed — the view to watch when re-curating records registered years ago.">
-          <option value="registered">Registered</option>
-          <option value="updated">Updated</option>
-        </select>
+        <span class="hero-field grow">
+          <span class="hero-secondary-label">or open a file</span>
+          <input type="file" id="file-input" accept=".json,application/json" style="font-size:.72rem;color:#5b3d7a" />
         </span>
-        <span class="hero-field">
-        <span class="hero-secondary-label">From</span>
-        <input class="hero-num" id="year-min" type="number" min="2011" max="2100" placeholder="auto" autocomplete="off" title="First registered year to sample — left blank, the repository's earliest year is detected automatically" />
-        </span>
-        <span class="hero-field">
-        <span class="hero-secondary-label">To</span>
-        <input class="hero-num" id="year-max" type="number" min="2011" max="2100" placeholder="auto" autocomplete="off" title="Last registered year to sample — left blank, the repository's latest year is detected automatically" />
-        </span>
-        <span class="hero-field">
-        <span class="hero-secondary-label">Max / year</span>
-        <input class="hero-num" id="cap" type="number" value="100" min="1" max="1000" />
-        </span>
-        <label class="hero-chk"><input type="checkbox" id="random" checked /> Random sample</label>
+        <span class="hero-field" style="font-size:.68rem;color:#5b3d7a">…or drop a history file anywhere on this page</span>
       </div>
-      <div class="hero-help"><a href="https://support.datacite.org/docs/queries" target="_blank" rel="noopener" title="How to write DataCite query expressions">Using DataCite Queries ↗</a></div>
+      <div class="hero-help"><a href="https://github.com/Metadata-Game-Changers/metrics-watch#what-a-run-produces" target="_blank" rel="noopener" title="Where useCaseHistory.json files come from">Where do these files come from? ↗</a></div>
     </div>
   </div>
 </div>
@@ -281,7 +222,7 @@
   <div class="sel-inner">
     <span class="sel-repo" id="sel-repo">—</span>
     <div class="sel-stats">
-      <span class="sel-stat"><b id="sel-years">—</b> years</span>
+      <span class="sel-stat"><b id="sel-years">—</b> runs</span>
       <span class="sel-stat"><b id="sel-records">—</b> records scored</span>
       <span class="sel-stat" id="sel-mode">—</span>
       <span class="sel-stat" id="sel-filter" style="display:none"></span>
@@ -290,14 +231,14 @@
 </div>
 
 <div class="wrap">
-  <div id="status">Loading engine…</div>
+  <div id="status">Paste a useCaseHistory.json URL (a GitHub link works) or choose a local file to view its score history.</div>
   <div id="progress"><i></i></div>
   <div id="apiurl"></div>
   <div id="tips" class="tips" style="display:none"></div>
 
   <div class="card" id="chart-card" style="display:none">
     <div class="card-head">
-      <h2><span id="chart-head-label">Completeness by registered year</span> <span class="proto-flag" id="share-proto" style="display:none">SHARE · Prototype</span></h2>
+      <h2><span id="chart-head-label">Completeness by run</span> <span class="proto-flag" id="share-proto" style="display:none">SHARE · Prototype</span></h2>
       <div class="card-actions">
         <label class="hero-chk" style="gap:.4rem" title="Lines: one trend line per use case over the years. Grid: a radar plot per use case per year. Movie: one year at a time, enlarged — press Play to animate across the years.">
           <span class="hero-secondary-label">View</span>
@@ -321,12 +262,12 @@
         <button class="dl-btn" id="dl-png" type="button">⬇ Plot (PNG)</button>
         <button class="dl-btn" id="dl-grid-copy" type="button" style="display:none" title="Copy the radar grid to the clipboard as an image">⧉ Copy grid</button>
         <button class="dl-btn" id="dl-grid-png" type="button" style="display:none" title="Download the radar grid as a PNG image">⬇ Grid (PNG)</button>
-        <button class="dl-btn" id="dl-json" type="button">⬇ Data (JSON)</button>
         <button class="dl-btn" id="dl-summary" type="button" title="One row per year: records, FAIR total and the four FAIR use cases, Projects total and the three Project use cases, and the two additional DataCite use cases">⬇ Data Summary (CSV)</button>
         <button class="dl-btn" id="dl-csv" type="button" title="Long form: one row per year × concept (analysis-ready)">⬇ Data (CSV)</button>
       </div>
     </div>
-    <p class="card-intro">Each point scores a sample of the records <b>registered</b> in that year, as those records are <b>today</b> — so a strong early year can mean good metadata then <i>or</i> re-curation since (compare with Re-Curation Watch). Thin years (fewer than 10 records) — hollow points in <b>Lines</b>, dimmed cells in <b>Grid</b> — have noisy percentages. Results appear as each year finishes; switch <b>View</b> to a radar-plot <b>Grid</b> to watch each use case&rsquo;s concept profile change year to year. Short ranges sample finer: set <b>From&nbsp;=&nbsp;To</b> for a <b>monthly</b> view of one year, a span of up to four years for a <b>quarterly</b> view. Sampling by <b>Updated</b> instead groups records by when their metadata last changed — the view to watch when re-curating records registered years ago.</p>
+    <p class="card-intro">Each point is one <b>scoring run</b> — a sample of the repository&rsquo;s records as they were <b>on that run&rsquo;s date</b> — so a rising line is re-curation you can watch happening. Thin runs (fewer than 10 records) — hollow points in <b>Lines</b>, dimmed cells in <b>Grid</b> — have noisy percentages. Switch <b>View</b> to a radar-plot <b>Grid</b> to watch each use case&rsquo;s concept profile change run to run, or to <b>Movie</b> to animate it.</p>
+
     <canvas id="chart" width="960" height="360"></canvas>
     <div class="legend" id="legend"></div>
     <div id="grid" style="display:none"></div>
@@ -335,7 +276,7 @@
         <button class="dl-btn" id="movie-prev" type="button" title="Previous year (←)">◀ Prev</button>
         <button class="dl-btn" id="movie-play" type="button">▶ Play</button>
         <button class="dl-btn" id="movie-next" type="button" title="Next year (→)">Next ▶</button>
-        <input type="range" id="movie-slider" min="0" max="0" value="0" step="1" aria-label="Registered year" />
+        <input type="range" id="movie-slider" min="0" max="0" value="0" step="1" aria-label="Run" />
         <span class="movie-caption" id="movie-caption"></span>
       </div>
       <div class="movie-radars" id="movie-radars"></div>
@@ -343,50 +284,24 @@
   </div>
 
   <div class="card" id="table-card" style="display:none">
-    <h2>Year by year</h2>
+    <h2>Run by run</h2>
     <div style="overflow-x:auto">
     <table class="hist"><thead><tr id="hist-head">
-      <th>Registered</th><th>Records scored</th><th>Matching</th><th>FAIR Total</th>
+      <th>Run</th><th>Records scored</th><th>Matching</th><th>FAIR Total</th>
       <th>Text</th><th>Identifiers</th><th>Connections</th><th>Contacts</th>
-      <th title="Open this year's exact sample in another tool — both then measure the same records">Open this year</th>
     </tr></thead><tbody id="hist-body"></tbody></table>
     </div>
   </div>
 </div>
 
-<!-- jq-web (jq compiled to WASM/asm.js), same loader as completeness.html -->
-<script>
-(function(){
-  var sources = [
-    'https://cdn.jsdelivr.net/npm/jq-web@0.5.1/jq.asm.bundle.js',
-    'https://unpkg.com/jq-web@0.5.1/jq.asm.bundle.js'
-  ];
-  var i = 0;
-  (function load(){
-    if (i >= sources.length){ window.__jqLoadFailed = true; return; }
-    var s = document.createElement('script');
-    s.src = sources[i++];
-    s.onerror = load;
-    document.head.appendChild(s);
-  })();
-})();
-</script>
 
 <script>
-/* Repository History: samples each registered year, scores every year with the same jq
-   use-case queries as completeness.html, and plots completeness over time. The scoring
-   engine (whenJqReady / countExpr / scoreAllSpirals / weightedTotal) is ported from
-   completeness.html; the use-case catalog is FETCHED from FAIR_spirals.json at boot
-   (deliberately not embedded — a third catalog copy would drift; see CLAUDE.md). */
-const API_BASE = 'https://api.datacite.org';
-// Unadvertised: client id 'datacite.all' means the whole of DataCite — the client-id
-// filter is omitted from queries (mirrors dataCiteRepositories.py). Pair it with a
-// query/type filter, e.g. ?client=datacite.all&query=creators.nameIdentifiers.nameIdentifier:*0000-0001-2345-6789*
-const ALL_DATACITE = 'datacite.all';
-const clientQS = id => id === ALL_DATACITE ? '' : `client-id=${encodeURIComponent(id)}&`;
-
-let SPIRALS = null;   // loaded from FAIR_spirals.json
-
+/* Metrics Viewer: renders a useCaseHistory.json — the per-series score history a metrics-watch
+   repository (github.com/Metadata-Game-Changers/metrics-watch) or the MGC score archive derives
+   from useCaseReport snapshots — with the same Lines / Grid / Movie views as Repository History.
+   The viewer never fetches DataCite and never scores: every snapshot already carries each use
+   case's average and per-concept completeness, scored at that run's own date. The rendering
+   machinery below is ported from repositoryHistory.html — keep the two in sync. */
 const $ = id => document.getElementById(id);
 const statusEl = $('status');
 function setStatus(msg, isErr){ statusEl.textContent = msg; statusEl.className = isErr ? 'err' : ''; }
@@ -396,93 +311,6 @@ function hideProgress(){ const p=$('progress'); p.classList.remove('on','indet')
 const escHtml = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const escAttr = s => escHtml(s);
 function fmtPct(x){ return (x*100).toFixed(0) + '%'; }
-
-/* ---------- jq readiness (ported from completeness.html) ---------- */
-function whenJqReady(){
-  return new Promise((resolve, reject) => {
-    let tries = 0;
-    (function poll(){
-      if (window.__jqLoadFailed) return reject(new Error('Could not load the jq engine from any CDN — network/CDN appears blocked.'));
-      if (typeof jq !== 'undefined' && jq && jq.promised && typeof jq.promised.raw === 'function') {
-        jq.promised.raw('{"a":1}', '.a', ['-c'])
-          .then(out => (out && out.trim() === '1') ? resolve() : reject(new Error('jq loaded but self-test failed (got "'+out+'").')))
-          .catch(err => reject(new Error('jq self-test threw: ' + (err && err.message || err))));
-        return;
-      }
-      if (++tries > 300) return reject(new Error('jq engine did not initialize within 30s.'));
-      setTimeout(poll, 100);
-    })();
-  });
-}
-
-function countExpr(query){
-  const i = query.indexOf('{');
-  if (i < 0) return query;
-  return query.slice(0, i).replace(/\|\s*$/, '').trim();
-}
-
-/* ---------- scoring (ported from completeness.html scoreAllSpirals) ---------- */
-async function scoreAllSpirals(records, onProgress){
-  const total = records.length;
-  const BATCH = 500;
-  const batches = [];
-  for (let i = 0; i < records.length; i += BATCH) batches.push(records.slice(i, i + BATCH));
-  if (!batches.length) batches.push([]);
-
-  const flat = [];
-  SPIRALS.forEach(s => s.items.forEach(it => { if (it.jq_query) flat.push({ code: s.code, concept: it.concept, jq: it.jq_query }); }));
-
-  const exprList = [];
-  const exprIndex = new Map();
-  const flatExpr = flat.map(it => {
-    const e = countExpr(it.jq);
-    if (!exprIndex.has(e)){ exprIndex.set(e, exprList.length); exprList.push(e); }
-    return exprIndex.get(e);
-  });
-  const matched = exprList.map(() => 0);
-  const errored = exprList.map(() => false);
-  const program = '{' + exprList.map((e, i) => `"c${i}":([ ${e} ]|length)`).join(',') + '}';
-
-  for (let b = 0; b < batches.length; b++){
-    const inputStr = JSON.stringify({ data: batches[b] });
-    let obj = null;
-    try {
-      const out = await jq.promised.raw(inputStr, program, ['-c']);
-      obj = JSON.parse(out);
-    } catch (e){
-      console.warn('combined scoring failed for a batch, falling back to per-query:', (e && e.message) || e);
-    }
-    if (obj){
-      exprList.forEach((e, i) => { const v = obj['c' + i]; if (typeof v === 'number') matched[i] += v; else errored[i] = true; });
-    } else {
-      for (let i = 0; i < exprList.length; i++){
-        try { const o = await jq.promised.raw(inputStr, `[ ${exprList[i]} ] | length`, ['-c']); const n = parseInt((o||'').trim(),10); matched[i] += Number.isNaN(n)?0:n; }
-        catch (e){ errored[i] = true; }
-      }
-    }
-    if (onProgress) onProgress((b + 1) / batches.length);
-    await new Promise(r => setTimeout(r));
-  }
-
-  const byCode = {};
-  SPIRALS.forEach(s => {
-    const items = flat
-      .map((it, i) => ({ it, u: flatExpr[i] }))
-      .filter(x => x.it.code === s.code)
-      .map(({ it, u }) => {
-        let comp = errored[u] ? 0 : (total > 0 ? matched[u] / total : 0);
-        if (comp > 1) comp = 1;
-        return { concept: it.concept, matched: matched[u], comp, errored: errored[u] };
-      })
-      .sort((a, b) => a.concept.localeCompare(b.concept));
-    const n = items.length || 1;
-    const average  = items.reduce((a, b) => a + Math.min(b.comp, 1), 0) / n;
-    const exist    = items.filter(i => i.comp > 0).length;
-    const complete = items.filter(i => i.comp >= 1).length;
-    byCode[s.code] = { spiral: s, res: { items, average, exist, complete, total } };
-  });
-  return byCode;
-}
 
 const TOTAL_CODES = ['FAIR_Text','FAIR_Identifiers','FAIR_Connections','FAIR_Contacts'];
 const PROJECT_CODES = ['Project_Team','Project_Items','Project_Relations'];
@@ -499,95 +327,7 @@ function weightedTotal(byCode, codes){
   return totalCount > 0 ? totalScore / totalCount : 0;
 }
 
-// the DataCite query that scopes a selection to one registered/updated period (shared by the
-// fetch and the per-period handoff, so a shared sample reloads to the same period)
-function periodQuery(period, userQuery, dateField){
-  const clause = `${dateField === 'updated' ? 'updated' : 'registered'}:[${period.from} TO ${period.to}]`;
-  return userQuery ? `(${userQuery}) AND ${clause}` : clause;
-}
-/* ---------- fetch one registered period (adapted from completeness fetchRepo) ---------- */
-async function fetchYear(clientId, period, cap, random, resourceTypeId, userQuery, dateField){
-  const query = periodQuery(period, userQuery, dateField);
-  const filter = (resourceTypeId ? `&resource-type-id=${encodeURIComponent(resourceTypeId)}` : '')
-               + `&query=${encodeURIComponent(query)}`;
-  const records = [];
-  const seen = new Set();
-  const pageSize = Math.min(1000, cap);
-  let page = 1, requests = 0, firstUrl = '', matching = null;
-  let effectiveRandom = random;
-  // peek at the matching total: skip empty years fast, and fall back to a deterministic
-  // fetch when the whole year fits within the cap
-  try {
-    const peek = await fetch(`${API_BASE}/dois?${clientQS(clientId)}page[size]=1&disable-facets=true${filter}`);
-    if (peek.ok){
-      const pj = await peek.json();
-      const t = pj.meta && typeof pj.meta.total === 'number' ? pj.meta.total : null;
-      if (t != null){ matching = t; if (t <= cap) effectiveRandom = false; }
-      if (t === 0) return { records: [], matching: 0, random: false, firstUrl: '' };
-    }
-  } catch { /* best-effort */ }
-  while (records.length < cap) {
-    requests++;
-    const base = `${API_BASE}/dois?${clientQS(clientId)}page[size]=${pageSize}&affiliation=true&publisher=true${filter}`;
-    const url = effectiveRandom
-      ? `${base}&random=true&disable-facets=true`
-      : `${base}&page[number]=${page}`;
-    if (!firstUrl) firstUrl = url;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`DataCite returned ${res.status} for client "${clientId}" (${period.label})`);
-    const json = await res.json();
-    const batch = json.data || [];
-    let added = 0;
-    for (const r of batch){ if (!seen.has(r.id)){ seen.add(r.id); records.push(r); added++; } }
-    const total = json.meta && typeof json.meta.total === 'number' ? json.meta.total : null;
-    if (total != null) matching = total;
-    if (effectiveRandom){
-      if (records.length >= cap) break;
-      if (total != null && records.length >= total) break;
-      if (added === 0) break;
-      if (requests >= 30) break;
-    } else {
-      const totalPages = json.meta && json.meta.totalPages ? json.meta.totalPages : page;
-      if (batch.length === 0 || page >= totalPages || page >= 10) break;
-      page++;
-    }
-  }
-  return { records: records.slice(0, cap), matching, random: effectiveRandom, firstUrl };
-}
-
-async function fetchClientMeta(clientId){
-  if (clientId === ALL_DATACITE) return { name: 'All of DataCite', doiCount: null };
-  try {
-    const res = await fetch(`${API_BASE}/clients/${encodeURIComponent(clientId)}`);
-    if (!res.ok) return null;
-    const j = await res.json();
-    return { name: j.data?.attributes?.name ?? clientId, doiCount: j.data?.attributes?.doiCount ?? null };
-  } catch { return null; }
-}
-
-/* detect the selection's first and last years on the sampled date field. Registered mode sorts
-   by created (a supported sort that registered tracks; the API ignores sort=registered) and takes
-   the widest span of both dates so migrated records can't clip the range. Updated mode sorts by
-   updated directly (a supported sort) and reads the boundary records' updated years. */
-async function detectYearBounds(clientId, resourceTypeId, userQuery, dateField){
-  const filter = (resourceTypeId ? `&resource-type-id=${encodeURIComponent(resourceTypeId)}` : '')
-               + (userQuery ? `&query=${encodeURIComponent(userQuery)}` : '');
-  const sortKey = dateField === 'updated' ? 'updated' : 'created';
-  const yearsOf = async sort => {
-    const res = await fetch(`${API_BASE}/dois?${clientQS(clientId)}page[size]=1&sort=${sort}&disable-facets=true${filter}`);
-    if (!res.ok) return [];
-    const json = await res.json();
-    const a = json.data && json.data[0] && json.data[0].attributes;
-    const dates = dateField === 'updated' ? [a && a.updated] : [a && a.registered, a && a.created];
-    return dates.filter(Boolean).map(d => new Date(d).getUTCFullYear()).filter(y => !Number.isNaN(y));
-  };
-  const [first, last] = await Promise.all([yearsOf(sortKey), yearsOf('-' + sortKey)]);
-  if (!first.length || !last.length) return null;
-  return { minY: Math.min(...first, ...last), maxY: Math.max(...first, ...last) };
-}
-
-/* ---------- run: harvest year by year ---------- */
-/* plot groups: which lines to draw (Extras has no combined total, matching completeness) */
+/* ---------- plot groups / radars (ported from repositoryHistory.html) ---------- */
 const CODE_STYLE = {
   FAIR_Text:                 { label: 'Text',         color: '#E97131' },
   FAIR_Identifiers:          { label: 'Identifiers',  color: '#0070C0' },
@@ -692,9 +432,8 @@ function movieRadar(items, color){
   }
   return `<svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
 }
-const THIN = 10;   // years with fewer records than this are drawn hollow / italic
-let history = null;   // { clientId, repoName, resourceTypeId, query, cap, random, years:[{year, n, matching, totals, byCode}] }
-let stopRequested = false;
+const THIN = 10;   // runs with fewer records than this are drawn hollow / italic
+let history = null;   // { clientId, queryLabel, repoName, source, years:[{year, t, n, matching, totals, byCode}] }
 
 function yearTotals(byCode){
   const t = { fair: weightedTotal(byCode, TOTAL_CODES), projects: weightedTotal(byCode, PROJECT_CODES), share: weightedTotal(byCode, SHARE_CODES) };
@@ -702,124 +441,111 @@ function yearTotals(byCode){
   return t;
 }
 
-async function run(){
-  if (!SPIRALS){
-    // Enter / autocomplete can fire before the boot sequence finishes (or after it failed);
-    // without this guard they reach the scorer with a null catalog.
-    setStatus('Still loading the use-case catalog and jq engine — wait for "Engine ready", then try again. If this message persists, reload the page.', true);
-    return;
+/* ---------- loading: history file -> entries the views understand ---------- */
+// '2026-08-01T16' -> decimal year, so runs land at true positions on the time axis
+function tOf(stamp){
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}))?/.exec(String(stamp || ''));
+  if (!m) return null;
+  const y = +m[1];
+  const start = Date.UTC(y, 0, 1), end = Date.UTC(y + 1, 0, 1);
+  return y + (Date.UTC(y, +m[2] - 1, +m[3], +(m[4] || 0)) - start) / (end - start);
+}
+function entryFromSnapshot(snap){
+  const rep = snap.repository || {};
+  const byCode = {};
+  for (const uc of (snap.useCases || [])){
+    const items = (uc.items || []).map(i => ({
+      concept: i.concept,
+      comp: i.completeness == null ? 0 : Math.min(1, i.completeness),
+      errored: i.completeness == null,
+    }));
+    byCode[uc.code] = {
+      spiral: { code: uc.code, title: uc.title, items },
+      res: { items,
+             average: uc.average != null ? uc.average : items.reduce((a, b) => a + b.comp, 0) / (items.length || 1),
+             exist: uc.exist, complete: uc.complete,
+             total: uc.records != null ? uc.records : (rep.records || 0) },
+    };
   }
-  const clientId = $('repo-input').value.trim();
-  const cap = Math.max(1, Math.min(1000, parseInt($('cap').value,10) || 100));
-  const random = $('random').checked;
-  const resourceTypeId = $('resource-type').value;
-  const query = $('query-input').value.trim();
-  const dateField = $('date-field').value === 'updated' ? 'updated' : 'registered';
-  if (!clientId) return;
-  syncUrl(clientId, resourceTypeId, query, cap, random);
-  setTopbarLinks(clientId);
-  closeAutocomplete();
-  $('repo-go').disabled = true; $('stop-btn').style.display = '';
-  stopRequested = false;
-  startTips();
+  const totals = yearTotals(byCode);
+  // prefer the snapshot's own recorded group totals when present (byte-fidelity with the report)
+  if (rep.fairTotal != null) totals.fair = rep.fairTotal;
+  if (rep.projectsTotal != null) totals.projects = rep.projectsTotal;
+  if (rep.shareTotal != null) totals.share = rep.shareTotal;
+  const stamp = snap.dateTime || rep.dateTime || '';
+  return { year: stamp, t: tOf(stamp) ?? undefined, n: rep.records || 0,
+           matching: rep.totalInRepository != null ? rep.totalInRepository : null,
+           sampling: rep.sampling || '', query: rep.query || '', repoName: rep.name || '',
+           byCode, totals };
+}
+function loadHistoryObject(h, sourceLabel){
+  // a single useCaseReport snapshot is welcome too — wrap it as a one-run history
+  if (h && !h.snapshots && Array.isArray(h.useCases)){
+    h = { repository: { id: h.repository && h.repository.id },
+          snapshots: [{ dateTime: h.repository && h.repository.dateTime, repository: h.repository, useCases: h.useCases }] };
+  }
+  const snaps = (h && Array.isArray(h.snapshots)) ? h.snapshots.slice() : null;
+  if (!snaps || !snaps.length) throw new Error('That is not a useCaseHistory.json — expected a top-level "snapshots" array of useCaseReport snapshots (or a single useCaseReport).');
+  snaps.sort((a, b) => String(a.dateTime || '').localeCompare(String(b.dateTime || '')));
+  const entries = snaps.map(entryFromSnapshot);
+  const last = entries[entries.length - 1];
+  history = {
+    clientId: (h.repository && h.repository.id) || '',
+    queryLabel: (h.repository && h.repository.queryLabel) || '',
+    repoName: last.repoName || entries.map(e => e.repoName).filter(Boolean)[0] || (h.repository && h.repository.id) || 'repository',
+    source: sourceLabel || 'useCaseHistory.json',
+    years: entries,
+  };
+  movieStop(); movieIdx = 0;
+  renderSelection();
+  $('chart-card').style.display = ''; $('table-card').style.display = '';
+  renderLegend(); renderTable(); renderView();
+  const scored = entries.filter(e => e.n > 0).length;
+  setStatus(`Loaded ${entries.length} run${entries.length === 1 ? '' : 's'} (${scored} scored) — ${history.repoName}${history.queryLabel ? ' · ' + history.queryLabel : ''}.`);
+}
+// GitHub "blob" page URLs aren't the file itself — quietly swap in the raw equivalent
+function rawUrl(u){
+  const m = /^https?:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/(.+)$/.exec(String(u || '').trim());
+  return m ? `https://raw.githubusercontent.com/${m[1]}/${m[2]}/${m[3]}` : String(u || '').trim();
+}
+async function loadFromUrl(url){
+  const src = rawUrl(url);
   try {
-    setStatus(`Detecting ${dateField} years…`);
-    setProgressIndeterminate();
-    const [meta, bounds] = await Promise.all([fetchClientMeta(clientId), detectYearBounds(clientId, resourceTypeId, query, dateField)]);
-    let minY = parseInt($('year-min').value, 10);
-    let maxY = parseInt($('year-max').value, 10);
-    if (Number.isNaN(minY)) minY = bounds ? bounds.minY : NaN;
-    if (Number.isNaN(maxY)) maxY = bounds ? bounds.maxY : NaN;
-    if (Number.isNaN(minY) || Number.isNaN(maxY)){ hideProgress(); setStatus(`Could not detect ${dateField} years — enter From and To years and try again.`, true); return; }
-    if (minY > maxY){ const t = minY; minY = maxY; maxY = t; }
-    if (maxY - minY + 1 > 30){ hideProgress(); setStatus(`That is ${maxY - minY + 1} years — please narrow the range to 30 or fewer.`, true); return; }
-    $('year-min').placeholder = minY; $('year-max').placeholder = maxY;   // show the resolved range without making it sticky
-
-    history = { clientId, repoName: (meta && meta.name) ? meta.name : clientId,
-                resourceTypeId, query, cap, random, dateField, years: [] };
-    $('chart-head-label').textContent = `Completeness by ${dateField} year`;
-    movieStop(); movieIdx = 0;   // fresh run resets the movie to the first year
-    renderSelection(meta, clientId, minY, maxY, resourceTypeId, query);
-    $('chart-card').style.display = ''; $('table-card').style.display = '';
-    renderTableHead();
-    $('hist-body').innerHTML = '';
-    renderLegend();
-    renderView();
-
-    // adaptive sampling period: a single selected year samples monthly, a span of up to
-    // four years samples quarterly, longer spans sample yearly (the classic view)
-    const span = maxY - minY;
-    const pp = n => String(n).padStart(2, '0');
-    const lastDay = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();   // m is 1-based month
-    let yearList = [];
-    if (span === 0){
-      for (let m = 1; m <= 12; m++) yearList.push({ label: `${minY}-${pp(m)}`,
-        from: `${minY}-${pp(m)}-01`, to: `${minY}-${pp(m)}-${pp(lastDay(minY, m))}`, t: minY + (m - 0.5) / 12 });
-    } else if (span <= 3){
-      for (let y = minY; y <= maxY; y++) for (let q = 1; q <= 4; q++) yearList.push({ label: `${y} Q${q}`,
-        from: `${y}-${pp(3*q - 2)}-01`, to: `${y}-${pp(3*q)}-${pp(lastDay(y, 3*q))}`, t: y + (q - 0.5) / 4 });
-    } else {
-      for (let y = minY; y <= maxY; y++) yearList.push({ label: String(y),
-        from: `${y}-01-01`, to: `${y}-12-31`, t: y });
-    }
-    const today = new Date().toISOString().slice(0, 10);
-    yearList = yearList.filter(p => p.from <= today);                     // never sample the future
-    let done = 0, scoredRecords = 0, shownUrl = false;
-    for (const p of yearList){
-      if (stopRequested) break;
-      setStatus(`${p.label} — fetching records (period ${done + 1} of ${yearList.length})…`);
-      setProgress(done / yearList.length);
-      const { records, matching, random: usedRandom, firstUrl } = await fetchYear(clientId, p, cap, random, resourceTypeId, query, dateField);
-      if (!shownUrl && firstUrl){ $('apiurl').style.display=''; $('apiurl').innerHTML = `<b>API call (per period):</b> ${escHtml(firstUrl)}`; shownUrl = true; }
-      if (stopRequested) break;
-      let entry;
-      if (!records.length){
-        entry = { year: p.label, period: { from: p.from, to: p.to }, t: p.t, n: 0, matching: matching || 0, totals: null, byCode: null };
-      } else {
-        setStatus(`${p.label} — scoring ${records.length} record${records.length===1?'':'s'} (period ${done + 1} of ${yearList.length})…`);
-        const byCode = await scoreAllSpirals(records, f => setProgress((done + f) / yearList.length));
-        // retain the period's records so a row can be handed to Completeness/Connectivity without
-        // re-fetching (bounded: ≤ cap per period, and only one period is ever put in the mailbox)
-        entry = { year: p.label, period: { from: p.from, to: p.to }, t: p.t, n: records.length, matching, random: usedRandom, totals: yearTotals(byCode), byCode, records };
-        scoredRecords += records.length;
-      }
-      history.years.push(entry);
-      addTableRow(entry);
-      if (viewMode === 'grid') drawGrid(); else if (viewMode === 'movie') drawMovie(); else drawChart();
-      updateSelStats(scoredRecords);
-      done++;
-    }
-    hideProgress();
-    const scoredYears = history.years.filter(e => e.n > 0).length;
-    const unit = span === 0 ? 'month' : (span <= 3 ? 'quarter' : 'year');
-    setStatus(stopRequested
-      ? `Stopped — ${scoredYears} ${unit}${scoredYears===1?'':'s'} scored (${scoredRecords.toLocaleString()} records).`
-      : `Done — ${scoredYears} ${unit}${scoredYears===1?'':'s'} scored, ${scoredRecords.toLocaleString()} records, ${dateField} ${minY}–${maxY}.`);
+    setStatus('Loading history…'); setProgressIndeterminate();
+    const res = await fetch(src);
+    if (!res.ok) throw new Error(`Could not load the history file (HTTP ${res.status}). Public repositories serve it via their raw URL — for a private repository, download the file and use the file picker instead.`);
+    loadHistoryObject(await res.json(), src);
+    try { const u = new URL(location.href); u.searchParams.set('src', src); window.history.replaceState({}, '', u); } catch (e){ /* non-fatal */ }
   } catch (e){
-    console.error(e); hideProgress(); setStatus(e.message || String(e), true);
-  } finally {
-    stopTips();
-    $('repo-go').disabled = false; $('stop-btn').style.display = 'none';
-  }
+    console.error(e);
+    setStatus(e instanceof SyntaxError ? 'That URL did not return JSON — check it points at a useCaseHistory.json file.' : (e.message || String(e)), true);
+  } finally { hideProgress(); }
+}
+function loadFromFile(file){
+  const reader = new FileReader();
+  reader.onload = () => {
+    try { loadHistoryObject(JSON.parse(reader.result), file.name); }
+    catch (e){ console.error(e); setStatus(e instanceof SyntaxError ? `${file.name} is not valid JSON.` : (e.message || String(e)), true); }
+  };
+  reader.onerror = () => setStatus(`Could not read ${file.name}.`, true);
+  reader.readAsText(file);
 }
 
 /* ---------- rendering ---------- */
-function renderSelection(meta, clientId, minY, maxY, resourceTypeId, query){
+function renderSelection(){
   $('sel-summary').style.display = '';
-  const name = (meta && meta.name) ? meta.name : clientId;
-  $('sel-repo').innerHTML = `${escHtml(name)}<span class="sel-id">${escHtml(clientId)}</span>`;
-  $('sel-years').textContent = `${minY}–${maxY}`;
-  $('sel-records').textContent = '0';
-  $('sel-mode').textContent = `${$('random').checked ? 'random sample' : 'sequential sample'} · up to ${$('cap').value}/year`
-    + ($('date-field').value === 'updated' ? ' · by updated date' : '');
+  $('sel-repo').innerHTML = `${escHtml(history.repoName)}<span class="sel-id">${escHtml(history.clientId)}${history.queryLabel ? ' · ' + escHtml(history.queryLabel) : ''}</span>`;
+  const es = history.years;
+  $('sel-years').textContent = String(es.length);
+  $('sel-records').textContent = es.reduce((a, e) => a + (e.n || 0), 0).toLocaleString();
+  $('sel-mode').textContent = `${String(es[0].year).slice(0, 10)} → ${String(es[es.length - 1].year).slice(0, 10)}`;
+  const last = es[es.length - 1];
   const parts = [];
-  if (resourceTypeId) parts.push(`type: ${resourceTypeId}`);
-  if (query) parts.push(`query: ${query}`);
-  $('sel-filter').textContent = parts.length ? `filter — ${parts.join(' · ')}` : '';
+  if (last.query) parts.push(`query: ${last.query}`);
+  if (last.sampling) parts.push(last.sampling);
+  $('sel-filter').textContent = parts.length ? parts.join(' · ') : '';
   $('sel-filter').style.display = parts.length ? '' : 'none';
 }
-function dateFieldName(){ return history && history.dateField === 'updated' ? 'updated' : 'registered'; }
-function updateSelStats(scoredRecords){ $('sel-records').textContent = scoredRecords.toLocaleString(); }
 
 function renderLegend(){
   $('legend').innerHTML = seriesFor(plotGroup).map(s =>
@@ -827,7 +553,7 @@ function renderLegend(){
     + '<span class="thin-note">hollow point = fewer than 10 records</span>';
 }
 
-// the year-by-year table follows the Use Cases selector: the group's total (Extras/All fall
+// the run-by-run table follows the Use Cases selector: the group's total (Extras/All fall
 // back to the FAIR total, like the grid) plus one column per use case in the group
 function tableColumns(){
   const g = PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR;
@@ -838,21 +564,18 @@ function tableColumns(){
 }
 function renderTableHead(){
   const tc = tableColumns();
-  const dLabel = dateFieldName() === 'updated' ? 'Updated' : 'Registered';
-  $('hist-head').innerHTML = `<th>${dLabel}</th><th>Records scored</th><th>Matching</th><th>${escHtml(tc.totName)}</th>`
-    + tc.codes.map(c => `<th>${escHtml(c.label)}</th>`).join('')
-    + `<th title="Open this year's exact sample in another tool — both then measure the same records">Open this year</th>`;
+  $('hist-head').innerHTML = `<th>Run</th><th>Records scored</th><th>Matching</th><th>${escHtml(tc.totName)}</th>`
+    + tc.codes.map(c => `<th>${escHtml(c.label)}</th>`).join('');
 }
 function addTableRow(e){
   const tc = tableColumns();
   const thin = e.n > 0 && e.n < THIN;
   const cell = v => v == null ? '—' : fmtPct(v);
   const row = e.n === 0
-    ? `<tr><td>${e.year}</td><td class="num">0</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td><td colspan="${tc.codes.length + 2}" style="text-align:left;color:var(--muted);font-style:italic">no records registered</td></tr>`
-    : `<tr><td>${e.year}${thin ? ' *' : ''}</td><td class="num${thin?' thin':''}">${e.n.toLocaleString()}</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td>`
+    ? `<tr><td>${escHtml(String(e.year))}</td><td class="num">0</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td><td colspan="${tc.codes.length + 1}" style="text-align:left;color:var(--muted);font-style:italic">no records scored</td></tr>`
+    : `<tr><td>${escHtml(String(e.year))}${thin ? ' *' : ''}</td><td class="num${thin ? ' thin' : ''}">${e.n.toLocaleString()}</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td>`
       + `<td class="num"><b>${cell(e.totals[tc.totKey])}</b></td>`
-      + tc.codes.map(c => `<td class="num">${cell(e.totals[c.code])}</td>`).join('')
-      + `<td class="year-open"><a data-hy="${e.year}" data-target="completeness" title="Open ${e.n.toLocaleString()} record${e.n===1?'':'s'} from ${e.year} in Metadata Completeness">Completeness ↗</a> <a data-hy="${e.year}" data-target="connectivity" title="Open ${e.n.toLocaleString()} record${e.n===1?'':'s'} from ${e.year} in Metadata Connectivity">Connectivity ↗</a></td></tr>`;
+      + tc.codes.map(cc => `<td class="num">${cell(e.totals[cc.code])}</td>`).join('') + '</tr>';
   $('hist-body').insertAdjacentHTML('beforeend', row);
 }
 function renderTable(){
@@ -891,7 +614,7 @@ function drawChart(){
   history.years.forEach((e, i) => {
     if (i % step !== 0 && i !== nP - 1) return;
     const px = x(e.t ?? e.year);
-    ctx.fillStyle = '#6b7280'; ctx.fillText(String(e.year), px, cssH - padB + 8);
+    ctx.fillStyle = '#6b7280'; ctx.fillText(String(e.year).slice(0, 10), px, cssH - padB + 8);
     ctx.fillStyle = '#a99bbf'; ctx.font = '9px Inter, sans-serif'; ctx.fillText(e.n ? 'n=' + e.n : '·', px, cssH - padB + 22); ctx.font = '11px Inter, sans-serif';
   });
   // series
@@ -914,26 +637,24 @@ function drawChart(){
   }
 }
 window.addEventListener('resize', () => { if (viewMode === 'lines') drawChart(); });
+window.addEventListener('resize', () => { if (viewMode === 'lines') drawChart(); });
 
-/* radar-grid view: rows = the plot-group's use cases, columns = scored years, each cell a
-   small radar of that use case's concepts that year (ported concept from dataCiteRepositories.py's
-   makeRadarPlotGrid). Reuses the retained per-year byCode scoring — no re-fetch. */
+/* radar-grid view: rows = the plot-group's use cases, columns = scored runs, each cell a
+   small radar of that use case's concepts at that run (same machinery as Repository History). */
 const CELL = 132;
 function drawGrid(){
   const grid = $('grid');
   if (!history){ grid.innerHTML = ''; return; }
   const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
   const years = history.years.filter(e => e.n > 0 && e.byCode);
-  if (!years.length){ grid.innerHTML = '<p class="card-intro">No scored years to show yet.</p>'; return; }
-  // the total shown atop each year column: the group's own total (Projects → Projects total,
-  // otherwise the FAIR headline total)
+  if (!years.length){ grid.innerHTML = '<p class="card-intro">No scored runs to show yet.</p>'; return; }
   const groupTot = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).totals[0];   // FAIR/Projects/SHARE have their own total; Extras/All fall back to FAIR
   const totalKey = groupTot ? groupTot.key : 'fair';
   const totalName = groupTot ? groupTot.label.replace(' Total','') : 'FAIR';
   const head = '<tr><th class="corner"></th>' + years.map(e => {
     const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
-    return `<th class="yr" title="${e.year}: ${e.n.toLocaleString()} records scored · ${totalName} total ${tot}">`
-      + `${e.year}<small>n=${e.n.toLocaleString()}${e.n < THIN ? ' *' : ''}</small><small class="tot">${tot}</small></th>`;
+    return `<th class="yr" title="${escHtml(String(e.year))}: ${e.n.toLocaleString()} records scored · ${totalName} total ${tot}">`
+      + `${escHtml(String(e.year).slice(0, 10))}<small>n=${e.n.toLocaleString()}${e.n < THIN ? ' *' : ''}</small><small class="tot">${tot}</small></th>`;
   }).join('') + '</tr>';
   const rows = codes.map(code => {
     const color = SPIRAL_COLORS[code] || '#9167b0';
@@ -942,7 +663,7 @@ function drawGrid(){
       const uc = e.byCode[code];
       if (!uc){ return '<td class="cell">—</td>'; }
       const avg = (uc.res.average * 100).toFixed(0) + '%';
-      return `<td class="cell${e.n < THIN ? ' thin' : ''}" title="${escHtml(label)} · ${e.year} · ${avg} (${e.n} records)">`
+      return `<td class="cell${e.n < THIN ? ' thin' : ''}" title="${escHtml(label)} · ${escHtml(String(e.year))} · ${avg} (${e.n} records)">`
         + `${miniRadar(uc.res.items, color, CELL)}<div class="cell-avg">${avg}</div></td>`;
     }).join('');
     return `<tr><th class="rowlab">${escHtml(label)}</th>${cells}</tr>`;
@@ -952,16 +673,16 @@ function drawGrid(){
 
 /* ---------- grid export: one composite SVG of the whole grid, rasterized to PNG ---------- */
 const GRID_GROUP_LABEL = { FAIR:'FAIR use cases', Projects:'Project use cases', SHARE:'SHARE use cases', Extras:'Additional DataCite use cases', All:'All fourteen use cases' };
-// "type: … · query: …" for the current run's filters (empty when none) — mirrors the on-screen selection
+// series label + latest sampling mode for image subtitles (empty when none)
 function selectionFilterText(){
-  return [history.resourceTypeId ? `type: ${history.resourceTypeId}` : '', history.query ? `query: ${history.query}` : ''].filter(Boolean).join(' · ');
+  const last = history.years[history.years.length - 1] || {};
+  return [history.queryLabel ? `series: ${history.queryLabel}` : (last.query ? `query: ${last.query}` : ''), last.sampling || ''].filter(Boolean).join(' · ');
 }
 function gridSvgMarkup(){
   const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
   const years = history.years.filter(e => e.n > 0 && e.byCode);
   const groupTot = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).totals[0];   // FAIR/Projects/SHARE have their own total; Extras/All fall back to FAIR
   const totalKey = groupTot ? groupTot.key : 'fair';
-  const totalName = groupTot ? groupTot.label.replace(' Total','') : 'FAIR';
   const PAD = 14, TITLE_H = 42, LABEL_W = 96, HEADER_H = 46, RAD = 132, AVG_H = 18;
   const COL_W = RAD + 16, ROW_H = RAD + AVG_H + 8;
   const gridLeft = PAD + LABEL_W, gridTop = PAD + TITLE_H + HEADER_H;
@@ -969,15 +690,15 @@ function gridSvgMarkup(){
   const H = gridTop + codes.length * ROW_H + PAD;
   const FONT = "font-family='Inter, system-ui, sans-serif'";
   let s = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
-  s += `<text x="${PAD}" y="18" ${FONT} font-size="15" font-weight="600" fill="#673289">${escHtml(history.repoName)} (${escHtml(history.clientId)}) — completeness by ${dateFieldName()} year</text>`;
+  s += `<text x="${PAD}" y="18" ${FONT} font-size="15" font-weight="600" fill="#673289">${escHtml(history.repoName)} (${escHtml(history.clientId)}) — use-case scores by run</text>`;
   const gridFilt = selectionFilterText();
-  s += `<text x="${PAD}" y="34" ${FONT} font-size="11" fill="#6b7280">${escHtml(GRID_GROUP_LABEL[plotGroup] || plotGroup)} · up to ${history.cap} records/year${gridFilt ? ' · ' + escHtml(gridFilt) : ''} · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. re-curation)</text>`;
-  // column headers: year / n / total
+  s += `<text x="${PAD}" y="34" ${FONT} font-size="11" fill="#6b7280">${escHtml(GRID_GROUP_LABEL[plotGroup] || plotGroup)}${gridFilt ? ' · ' + escHtml(gridFilt) : ''} · each run scored at its own date</text>`;
+  // column headers: run / n / total
   years.forEach((e, j) => {
     const cxp = gridLeft + j*COL_W + COL_W/2;
     const top = PAD + TITLE_H;
     const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
-    s += `<text x="${cxp}" y="${top+13}" ${FONT} font-size="13" font-weight="600" text-anchor="middle" fill="#1f2330">${e.year}</text>`;
+    s += `<text x="${cxp}" y="${top+13}" ${FONT} font-size="13" font-weight="600" text-anchor="middle" fill="#1f2330">${escHtml(String(e.year).slice(0, 10))}</text>`;
     s += `<text x="${cxp}" y="${top+27}" ${FONT} font-size="10" text-anchor="middle" fill="#6b7280">n=${e.n.toLocaleString()}${e.n < THIN ? ' *' : ''}</text>`;
     s += `<text x="${cxp}" y="${top+41}" ${FONT} font-size="11" font-weight="600" text-anchor="middle" fill="#673289">${tot}</text>`;
   });
@@ -1035,7 +756,7 @@ async function copyGrid(){
   setTimeout(() => { btn.textContent = label; }, 1600);
 }
 
-// switch between the line chart and the radar grid, keeping the download buttons sensible
+// switch between the line chart, the radar grid and the movie, keeping the buttons sensible
 function renderView(){
   $('chart').style.display   = viewMode === 'lines' ? '' : 'none';
   $('legend').style.display  = viewMode === 'lines' ? '' : 'none';
@@ -1051,7 +772,7 @@ function renderView(){
   else drawChart();
 }
 
-/* ---------- movie: one year at a time, enlarged, scrub + play across the years ---------- */
+/* ---------- movie: one run at a time, enlarged, scrub + play across the runs ---------- */
 let movieIdx = 0, movieTimer = null;
 function scoredYears(){ return history ? history.years.filter(e => e.n > 0 && e.byCode) : []; }
 function drawMovie(){
@@ -1106,33 +827,11 @@ function triggerDownload(blob, filename){
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-function downloadJson(){
-  if (!history) return;
-  const out = {
-    repository: { id: history.clientId, name: history.repoName },
-    generated: new Date().toISOString(),
-    selection: { resourceTypeId: history.resourceTypeId || '', query: history.query || '',
-                 maxPerYear: history.cap, random: history.random, dateField: dateFieldName() },
-    note: `Each period scores a sample of the records ${dateFieldName().toUpperCase()} in that period, as those records are at the generated time (current state, including any re-curation since).`,
-    years: history.years.map(e => ({
-      year: e.year, period: e.period || null, recordsScored: e.n, matchingTotal: e.matching,
-      totals: e.totals ? { fairTotal: e.totals.fair, projectsTotal: e.totals.projects, shareTotal: e.totals.share,
-        text: e.totals.FAIR_Text, identifiers: e.totals.FAIR_Identifiers,
-        connections: e.totals.FAIR_Connections, contacts: e.totals.FAIR_Contacts } : null,
-      useCases: e.byCode ? Object.fromEntries(Object.entries(e.byCode).map(([code, v]) => [code, {
-        average: v.res.average,
-        concepts: v.res.items.map(i => ({ concept: i.concept, matched: i.matched, completeness: i.comp }))
-      }])) : null
-    }))
-  };
-  triggerDownload(new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }),
-    `${safeRepoId()}_historyReport__${nowStamp()}.json`);
-}
 function downloadCsv(){
   if (!history) return;
   const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
-  // one row per year × concept, plus per-year use-case averages — long form, analysis-ready
-  const rows = [['year','recordsScored','matchingTotal','useCase','concept','completeness']];
+  // one row per run x concept, plus per-run use-case averages — long form, analysis-ready
+  const rows = [['run','recordsScored','matchingTotal','useCase','concept','completeness']];
   for (const e of history.years){
     if (!e.byCode) continue;
     for (const [code, v] of Object.entries(e.byCode)){
@@ -1144,16 +843,16 @@ function downloadCsv(){
     rows.push([e.year, e.n, e.matching ?? '', '(SHARE total)', '', e.totals.share.toFixed(4)]);
   }
   const body = rows.map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
-  triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_history__${nowStamp()}.csv`);
+  triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_scoreHistory__${nowStamp()}.csv`);
 }
-// wide summary: one row per year matching the year-by-year table's columns (values as
-// fractions 0–1, rounded like the suite's other summary CSVs). Empty years get blank scores.
+// wide summary: one row per run matching the run-by-run table's columns (values as
+// fractions 0-1, rounded like the suite's other summary CSVs). Empty runs get blank scores.
 function downloadSummary(){
   if (!history || !history.years.length) return;
   const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
   const round = x => x == null ? '' : Math.round(x * 10000) / 10000;
   const extraCodes = PLOT_GROUPS.Extras.codes;
-  const headers = ['Repository_ID', dateFieldName() === 'updated' ? 'Updated' : 'Registered', 'Records_Scored','Matching',
+  const headers = ['Repository_ID','Run','Records_Scored','Matching',
     'FAIR_Total','Text','Identifiers','Connections','Contacts',
     'Projects_Total', ...PROJECT_CODES, 'SHARE_Total', ...SHARE_CODES, ...extraCodes];
   const rows = [headers];
@@ -1161,14 +860,14 @@ function downloadSummary(){
     const t = e.totals;
     rows.push([
       history.clientId, e.year, e.n, e.matching ?? '',
-      t ? round(t.fair) : '', ...TOTAL_CODES.map(c => t ? round(t[c]) : ''),
-      t ? round(t.projects) : '', ...PROJECT_CODES.map(c => t ? round(t[c]) : ''),
-      t ? round(t.share) : '', ...SHARE_CODES.map(c => t ? round(t[c]) : ''),
-      ...extraCodes.map(c => t ? round(t[c]) : '')
+      t ? round(t.fair) : '', ...TOTAL_CODES.map(cc => t ? round(t[cc]) : ''),
+      t ? round(t.projects) : '', ...PROJECT_CODES.map(cc => t ? round(t[cc]) : ''),
+      t ? round(t.share) : '', ...SHARE_CODES.map(cc => t ? round(t[cc]) : ''),
+      ...extraCodes.map(cc => t ? round(t[cc]) : '')
     ]);
   }
   const body = rows.map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
-  triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_historySummary__${nowStamp()}.csv`);
+  triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_scoreHistorySummary__${nowStamp()}.csv`);
 }
 
 // compose the lines chart + title + legend into a PNG blob (shared by download and copy)
@@ -1194,11 +893,11 @@ function linesPngBlob(){
   const ctx = out.getContext('2d'); ctx.scale(scale, scale);
   ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = '#673289'; ctx.font = '600 15px Inter, sans-serif'; ctx.textBaseline = 'top';
-  ctx.fillText(`${history.repoName} (${history.clientId}) — completeness by ${dateFieldName()} year`, pad, 12);
-  const groupLabel = { FAIR: 'FAIR use cases', Projects: 'Project use cases', SHARE: 'SHARE use cases', Extras: 'Additional DataCite use cases', All: 'All fourteen use cases' }[plotGroup] || plotGroup;
+  ctx.fillText(`${history.repoName} (${history.clientId}) — use-case scores by run`, pad, 12);
+  const groupLabel = GRID_GROUP_LABEL[plotGroup] || plotGroup;
   ctx.fillStyle = '#6b7280'; ctx.font = '11px Inter, sans-serif';
   const filt = selectionFilterText();
-  ctx.fillText(`${groupLabel} · up to ${history.cap} records/year${filt ? ' · ' + filt : ''} · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. re-curation)`, pad, 33);
+  ctx.fillText(`${groupLabel}${filt ? ' · ' + filt : ''} · each run scored at its own date`, pad, 33);
   ctx.drawImage(chart, 0, titleH, W, chartH);
   ctx.font = legendFont; ctx.textBaseline = 'middle';
   items.forEach((s, i) => {
@@ -1212,7 +911,7 @@ async function downloadPng(){
   if (!history || !history.years.length) return;
   try {
     const blob = await linesPngBlob();
-    triggerDownload(blob, `${safeRepoId()}_history_${plotGroup}__${nowStamp()}.png`);
+    triggerDownload(blob, `${safeRepoId()}_scoreHistory_${plotGroup}__${nowStamp()}.png`);
   } catch (e){ console.error(e); setStatus('Could not render the plot to PNG: ' + (e.message || e), true); }
 }
 async function copyLines(){
@@ -1226,225 +925,40 @@ async function copyLines(){
   setTimeout(() => { btn.textContent = label; }, 1600);
 }
 
-/* ---------- URL sync + deep links ---------- */
-function syncUrl(clientId, resourceTypeId, query, cap, random){
-  try {
-    const url = new URL(location.href);
-    url.searchParams.set('client', clientId);
-    if (resourceTypeId) url.searchParams.set('resource-type', resourceTypeId); else url.searchParams.delete('resource-type');
-    if (query) url.searchParams.set('query', query); else url.searchParams.delete('query');
-    if (cap && cap !== 100) url.searchParams.set('max', cap); else url.searchParams.delete('max');
-    if (random === false) url.searchParams.set('random', '0'); else url.searchParams.delete('random');
-    if ($('date-field').value === 'updated') url.searchParams.set('by', 'updated'); else url.searchParams.delete('by');
-    const ymin = $('year-min').value, ymax = $('year-max').value;
-    if (ymin) url.searchParams.set('from', ymin); else url.searchParams.delete('from');
-    if (ymax) url.searchParams.set('to', ymax); else url.searchParams.delete('to');
-    history_replaceState(url);
-  } catch (e) { /* non-fatal */ }
-}
-// Carry the current repository to the sibling tools' top-bar links. Not a data handoff — each tool
-// re-fetches — but it keeps the selected client id (from ?client=, shared across the tool suite).
-// Metadata Completeness and Connectivity also read resource-type / query, so their links carry the
-// active filters too; Re-Curation Watch and Repository Activity take only the client.
-function setTopbarLinks(clientId){
-  const id = (clientId ?? $('repo-input').value).trim();
-  const client = id ? '?client=' + encodeURIComponent(id) : '';
-  const rt = $('resource-type').value, uq = $('query-input').value.trim();
-  const filters = id ? client + (rt ? '&resource-type=' + encodeURIComponent(rt) : '') + (uq ? '&query=' + encodeURIComponent(uq) : '') : '';
-  const set = (elId, href) => { const el = $(elId); if (el) el.href = href; };
-  set('rcw-link', 'recurationWatch.html' + client);
-  set('completeness-link', 'completeness.html' + filters);
-  set('connectivity-link', 'metadataConnectivity.html' + filters);
-  set('activity-link', 'repo-activity.html' + client);
-}
-function history_replaceState(url){ try { window.history.replaceState({}, '', url); } catch(e){} }
-
-/* ---------- repository autocomplete (ported from completeness.html) ---------- */
-let acTimer, acHighlight = -1, acItems = [];
-async function searchClients(q){
-  try {
-    const res = await fetch(`${API_BASE}/clients?query=${encodeURIComponent(q)}&page[size]=8`);
-    if (!res.ok) return [];
-    const json = await res.json();
-    return (json.data ?? []).map(d => ({ id: d.id, name: d.attributes?.name ?? d.id, count: d.attributes?.doiCount ?? null }));
-  } catch { return []; }
-}
-function showAutocomplete(items){
-  const box = $('repo-autocomplete');
-  acItems = items; acHighlight = -1;
-  if (!items.length){ box.classList.remove('open'); return; }
-  box.innerHTML = items.map((it,i) =>
-    `<div class="repo-ac-item" data-id="${escAttr(it.id)}" data-idx="${i}">
-      <span class="repo-ac-name">${escHtml(it.name)}</span>
-      <span class="repo-ac-id">${escHtml(it.id)}</span>
-      ${it.count != null ? `<span class="repo-ac-count">${it.count.toLocaleString()} DOIs</span>` : ''}
-    </div>`).join('');
-  box.classList.add('open');
-  box.querySelectorAll('.repo-ac-item').forEach(el => {
-    el.addEventListener('mousedown', e => { e.preventDefault(); $('repo-input').value = el.dataset.id; box.classList.remove('open'); run(); });
-  });
-}
-function closeAutocomplete(){ $('repo-autocomplete').classList.remove('open'); acHighlight = -1; }
-$('repo-input').addEventListener('input', () => {
-  $('year-min').value = ''; $('year-max').value = ''; $('year-min').placeholder = 'auto'; $('year-max').placeholder = 'auto';
-  const q = $('repo-input').value.trim();
-  clearTimeout(acTimer);
-  if (q.length < 2){ closeAutocomplete(); return; }
-  $('repo-autocomplete').innerHTML = '<div class="repo-ac-loading">Searching…</div>';
-  $('repo-autocomplete').classList.add('open');
-  acTimer = setTimeout(async () => showAutocomplete(await searchClients(q)), 300);
-});
-$('repo-input').addEventListener('keydown', e => {
-  const box = $('repo-autocomplete');
-  const open = box.classList.contains('open');
-  if (e.key === 'ArrowDown'){ e.preventDefault();
-    if (open && acHighlight < acItems.length - 1){ acHighlight++; box.querySelectorAll('.repo-ac-item').forEach((el,i)=>el.classList.toggle('highlighted', i===acHighlight)); }
-  } else if (e.key === 'ArrowUp'){ e.preventDefault();
-    if (open && acHighlight > 0){ acHighlight--; box.querySelectorAll('.repo-ac-item').forEach((el,i)=>el.classList.toggle('highlighted', i===acHighlight)); }
-  } else if (e.key === 'Enter'){ e.preventDefault();
-    if (open && acHighlight >= 0 && acItems[acHighlight]){ $('repo-input').value = acItems[acHighlight].id; closeAutocomplete(); run(); }
-    else { closeAutocomplete(); run(); }
-  } else if (e.key === 'Escape'){ closeAutocomplete(); }
-});
-document.addEventListener('click', e => { if (!e.target.closest('.hero-search')) closeAutocomplete(); });
-
-/* ---------- loading tips ---------- */
-const HISTORY_TIPS = [
-  { label:'Cohorts, not a time machine', text:'Each year scores the records <strong>registered</strong> that year <em>as they are today</em> — a strong early year can mean good metadata then, or <strong>re-curation</strong> since. Compare with Re-Curation Watch to tell them apart.', link:'recurationWatch.html' },
-  { label:'Registered year', text:'<strong>Registered</strong> is when DataCite first saw the DOI — assigned by the system, unlike <strong>publicationYear</strong>, which authors can backfill arbitrarily.', link:'https://support.datacite.org/docs/queries' },
-  { label:'Thin years', text:'Early years often have only a handful of records, so their percentages swing wildly — <strong>hollow points</strong> mark years with fewer than 10 records. Read trends from the solid ones.', link:'https://metadatagamechangers.com' },
-  { label:'Rising lines', text:'A rising line means newer records are <strong>better documented</strong> — or older cohorts were never revisited. Falling lines are rarer and worth investigating: did a workflow change?', link:'https://metadatagamechangers.com/blog' },
-  { label:'Focus with a query', text:'The <strong>Query</strong> filter composes with each year — e.g. <strong>types.resourceTypeGeneral:Dataset</strong> tracks dataset metadata only, excluding text or software records.', link:'https://support.datacite.org/docs/queries' },
-  { label:'In your browser', text:'Every year is fetched from DataCite and scored <strong>in your browser</strong> with the same jq use-case queries as Metadata Completeness — nothing is uploaded or stored.', link:'https://metadatagamechangers.com' },
-];
-const TIPS = HISTORY_TIPS;
-let tipTimer = null, tipDelay = null, tipIndex = 0;
-function renderTip(){
-  const t = TIPS[tipIndex];
-  $('tips').innerHTML =
-    '<div class="tips-head">While you wait…</div>' +
-    '<div class="tips-label">' + t.label + '</div>' +
-    '<div class="tips-text">' + t.text + '</div>' +
-    (t.link ? '<a class="tips-link" href="' + t.link + '" target="_blank" rel="noopener">Learn more ↗</a>' : '');
-}
-function startTips(){
-  stopTips();
-  tipDelay = setTimeout(() => {
-    tipIndex = Math.floor(Math.random() * TIPS.length);
-    renderTip();
-    $('tips').style.display = '';
-    tipTimer = setInterval(() => { tipIndex = (tipIndex + 1) % TIPS.length; renderTip(); }, 4500);
-  }, 1200);
-}
-function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay = tipTimer = null; $('tips').style.display = 'none'; }
-
 /* ---------- boot ---------- */
-$('repo-go').addEventListener('click', run);
-$('stop-btn').addEventListener('click', () => { stopRequested = true; });
+$('load-go').addEventListener('click', () => { const u = $('src-input').value.trim(); if (u) loadFromUrl(u); });
+$('src-input').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); $('load-go').click(); } });
+$('file-input').addEventListener('change', () => { const f = $('file-input').files[0]; if (f) loadFromFile(f); });
+// a history file can be dropped anywhere on the page
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f) loadFromFile(f);
+});
 $('dl-png').addEventListener('click', downloadPng);
 $('dl-grid-png').addEventListener('click', downloadGridPng);
 $('dl-grid-copy').addEventListener('click', copyGrid);
 $('dl-lines-copy').addEventListener('click', copyLines);
-$('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; $('share-proto').style.display = plotGroup === 'SHARE' ? '' : 'none'; renderLegend(); renderTable(); if (viewMode === 'grid') drawGrid(); else if (viewMode === 'movie') drawMovie(); else drawChart(); });
-$('view-mode').addEventListener('change', () => { viewMode = $('view-mode').value; renderView(); });
+$('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; $('share-proto').style.display = plotGroup === 'SHARE' ? '' : 'none'; if (!history) return; renderLegend(); renderTable(); if (viewMode === 'grid') drawGrid(); else if (viewMode === 'movie') drawMovie(); else drawChart(); });
+$('view-mode').addEventListener('change', () => { viewMode = $('view-mode').value; if (history) renderView(); });
 $('movie-play').addEventListener('click', moviePlay);
 $('movie-prev').addEventListener('click', () => movieStep(-1));
 $('movie-next').addEventListener('click', () => movieStep(1));
 $('movie-slider').addEventListener('input', () => { movieStop(); movieIdx = +$('movie-slider').value; drawMovie(); });
-// arrow keys step through the years while the Movie view is active (ignore when typing in a field)
+// arrow keys step through the runs while the Movie view is active (ignore when typing in a field)
 document.addEventListener('keydown', e => {
   if (viewMode !== 'movie' || $('movie').style.display === 'none') return;
   if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || ''))) return;
   if (e.key === 'ArrowLeft'){ e.preventDefault(); movieStep(-1); }
   else if (e.key === 'ArrowRight'){ e.preventDefault(); movieStep(1); }
 });
-$('dl-json').addEventListener('click', downloadJson);
 $('dl-summary').addEventListener('click', downloadSummary);
 $('dl-csv').addEventListener('click', downloadCsv);
-/* ---------- cross-tool sample mailbox ----------
-   Hands a year's exact sample to Completeness/Connectivity so both measure the SAME records. Small
-   samples ride in localStorage; large ones (past its ~5 MB quota) go through IndexedDB (hundreds of
-   MB). The receiver consumes the mailbox via ?input=stored; if no storage works it degrades to a
-   re-fetch of that year's selection. */
-const MAILBOX_DB = 'mgc-handoff', MAILBOX_STORE = 'samples';
-function mailboxIdb(){
-  return new Promise((resolve, reject) => {
-    let rq; try { rq = indexedDB.open(MAILBOX_DB, 1); } catch (e){ return reject(e); }
-    rq.onupgradeneeded = () => { try { rq.result.createObjectStore(MAILBOX_STORE); } catch (e){} };
-    rq.onsuccess = () => resolve(rq.result);
-    rq.onerror = () => reject(rq.error);
-  });
-}
-async function mailboxPutIdb(key, value){
-  try {
-    const db = await mailboxIdb();
-    await new Promise((res, rej) => { const tx = db.transaction(MAILBOX_STORE, 'readwrite'); tx.objectStore(MAILBOX_STORE).put(value, key); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
-    return true;
-  } catch (e){ return false; }
-}
-function shareSampleOpen(page, key, payload, fallbackUrl){
-  try { localStorage.removeItem(key); localStorage.setItem(key, JSON.stringify(payload)); window.open(page + '?input=stored', '_blank', 'noopener'); return; }
-  catch (e){ /* too big for localStorage — IndexedDB */ }
-  const w = window.open(page + '?input=stored', '_blank');
-  mailboxPutIdb(key, payload).then(ok => { if (!ok && w){ try { w.location = fallbackUrl; } catch (e){} } })
-    .catch(() => { if (w){ try { w.location = fallbackUrl; } catch (e){} } });
-}
-// per-year handoff: open a year's exact sample in Completeness or Connectivity (same mailbox those
-// tools read via ?input=stored), so both measure the same records
-$('hist-body').addEventListener('click', e => {
-  const a = e.target.closest('a[data-hy]'); if (!a) return;
-  e.preventDefault();
-  const entry = history && history.years.find(y => String(y.year) === a.dataset.hy);
-  if (!entry || !entry.records || !entry.records.length) return;
-  const target = a.dataset.target;
-  const page = target === 'connectivity' ? 'metadataConnectivity.html' : 'completeness.html';
-  const key  = target === 'connectivity' ? 'metadata-connectivity-input' : 'metadata-completeness-input';
-  const payload = {
-    source: 'repositoryHistory', sharedFrom: `Repository History · ${dateFieldName()} ${entry.year}`,
-    records: entry.records, clientId: history.clientId, repoName: history.repoName,
-    repoTotal: entry.matching, random: !!entry.random,
-    resourceTypeId: history.resourceTypeId || '',
-    query: periodQuery(entry.period, history.query, history.dateField)   // period-scoped so a reload reproduces it
-  };
-  const fallback = `${page}?client=${encodeURIComponent(history.clientId)}`
-    + (history.resourceTypeId ? `&resource-type=${encodeURIComponent(history.resourceTypeId)}` : '')
-    + `&query=${encodeURIComponent(payload.query)}&max=${entry.records.length}${entry.random ? '' : '&random=0'}`;
-  shareSampleOpen(page, key, payload, fallback);
-});
-if (location.protocol === 'file:') {
-  setStatus('This page is open as a local file (file://). DataCite requests will be blocked — serve it over http (e.g. "python3 -m http.server" → http://localhost:8000/repositoryHistory.html).', true);
-}
-(async () => {
-  try {
-    // the use-case catalog is fetched, not embedded — keep FAIR_spirals.json in sync with spirals.py
-    const [catalog] = await Promise.all([
-      fetch('FAIR_spirals.json').then(r => { if (!r.ok) throw new Error('Could not load FAIR_spirals.json (' + r.status + ')'); return r.json(); }),
-      whenJqReady()
-    ]);
-    SPIRALS = catalog;
-    $('repo-go').disabled = false;
-    setStatus('Engine ready. Search for a repository (or enter a client ID) and click Explore.');
-    // deep links: ?client=…&resource-type=…&query=…&max=…&random=0&from=YYYY&to=YYYY
-    const params = new URLSearchParams(location.search);
-    const clientFromUrl = params.get('client');
-    if (clientFromUrl){
-      $('repo-input').value = clientFromUrl;
-      const rt = params.get('resource-type');
-      if (rt && [...$('resource-type').options].some(o => o.value === rt)) $('resource-type').value = rt;
-      const q = params.get('query'); if (q) $('query-input').value = q;
-      const max = parseInt(params.get('max'), 10); if (max > 0) $('cap').value = Math.min(1000, max);
-      const rand = params.get('random'); if (rand != null) $('random').checked = !/^(0|false|no)$/i.test(rand);
-      $('date-field').value = /^updated$/i.test(params.get('by') || '') ? 'updated' : 'registered';
-      const from = parseInt(params.get('from'), 10); $('year-min').value = Number.isNaN(from) ? '' : from;   // no param -> clear (browsers can restore stale form values on reload/handoff)
-      const to = parseInt(params.get('to'), 10); $('year-max').value = Number.isNaN(to) ? '' : to;
-      run();
-    }
-    setTopbarLinks();                                              // carry the repo (default or ?client=) to the sibling links
-    ['repo-input','query-input'].forEach(id => $(id).addEventListener('input', () => setTopbarLinks()));   // keep in sync as the box/filter change
-    $('resource-type').addEventListener('change', () => setTopbarLinks());
-  } catch (e){
-    console.error(e); hideProgress(); setStatus(e.message || String(e), true);
-  }
+// deep link: ?src=<history-file URL> loads on arrival (GitHub blob URLs are converted to raw)
+(() => {
+  const src = new URLSearchParams(location.search).get('src');
+  if (src){ $('src-input').value = src; loadFromUrl(src); }
 })();
 </script>
 
@@ -1454,37 +968,11 @@ if (location.protocol === 'file:') {
       <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
         <img src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" style="height:22px;width:auto;display:block;" onerror="this.style.display='none'" />
       </a>
-      <span style="font-size:0.72rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Repository History</a> · Created by <a href="https://metadatagamechangers.com" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Metadata Game Changers</a> · Better Documentation | Better Data | Better Science</span>
+      <span style="font-size:0.72rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Metrics Viewer</a> · Created by <a href="https://metadatagamechangers.com" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Metadata Game Changers</a> · Better Documentation | Better Data | Better Science</span>
     </div>
-    <span style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:0.65rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Report an issue ↗</a> &nbsp;·&nbsp; <a href="https://doi.org/10.60872/repositoryHistory" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none;" title="Cite as: doi.org/10.60872/repositoryHistory">DOI: 10.60872/repositoryHistory</a> &nbsp;·&nbsp; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none;">CC BY-NC 4.0</a> &nbsp;·&nbsp; Live data from <a href="https://api.datacite.org" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">api.datacite.org</a></span>
+    <span style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:0.65rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Report an issue ↗</a> &nbsp;·&nbsp; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none;">CC BY-NC 4.0</a> &nbsp;·&nbsp; Data from <a href="https://github.com/Metadata-Game-Changers/metrics-watch" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">metrics-watch</a> history files</span>
   </div>
 </footer>
-<div class="cite-pop" id="cite-pop" onclick="if(event.target===this)this.classList.remove('open')">
-  <div class="cite-card">
-    <div class="cite-head">Cite this tool</div>
-    <div class="cite-text" id="cite-text">Loading citation…</div>
-    <div class="cite-row">
-      <button class="cite-copy" id="cite-copy" type="button">Copy citation</button>
-      <a class="cite-doi" href="https://doi.org/10.60872/repositoryHistory" target="_blank" rel="noopener">doi.org/10.60872/repositoryHistory ↗</a>
-      <button class="cite-close" type="button" onclick="document.getElementById('cite-pop').classList.remove('open')">Close</button>
-    </div>
-  </div>
-</div>
-<script>
-(function(){
-  var citeDoi='10.60872/repositoryHistory', loaded=false;
-  var pop=document.getElementById('cite-pop'), txt=document.getElementById('cite-text');
-  function load(){
-    fetch('https://doi.org/'+citeDoi, {headers:{'Accept':'text/x-bibliography; style=apa'}})
-      .then(function(r){ if(!r.ok) throw 0; return r.text(); })
-      .then(function(t){ txt.textContent=(new DOMParser().parseFromString(t.trim(),'text/html')).body.textContent; })
-      .catch(function(){ txt.textContent='Metadata Game Changers. (2026). Repository History (Version 1) [Computer software]. https://doi.org/'+citeDoi; });
-  }
-  document.getElementById('cite-btn').addEventListener('click', function(){ pop.classList.add('open'); if(!loaded){loaded=true;load();} });
-  document.getElementById('cite-copy').addEventListener('click', function(){ navigator.clipboard.writeText(txt.textContent).then(function(){ var b=document.getElementById('cite-copy'); b.textContent='Copied!'; setTimeout(function(){b.textContent='Copy citation';},1600); }).catch(function(){}); });
-  document.addEventListener('keydown', function(e){ if(e.key==='Escape') pop.classList.remove('open'); });
-})();
-</script>
 <!-- Google Analytics (shared consent with the rest of the suite via localStorage 'rcw-ga') -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-9JQRWY72HW"></script>
 <script>
