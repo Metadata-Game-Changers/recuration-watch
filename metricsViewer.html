@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Metrics Viewer — use-case score history</title>
+<link rel="icon" type="image/png" href="favicon_MGC.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --accent:#9167b0; --accent-dk:#673289; --tint:#f0eaf5;
+    --ink:#1f2330; --muted:#6b7280; --line:#e6e3ec; --bg:#fbfafe;
+    --green:#3a9d6e; --amber:#d4910b; --red:#c0392b;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:0}
+
+  /* ── Brand top bar ── */
+  .topbar{border-bottom:2px solid var(--ink);padding:0 2rem}
+  .topbar-inner{max-width:1040px;margin:0 auto;display:flex;align-items:stretch;gap:0}
+  .topbar-brand{padding:.5rem 2rem .3rem 0;display:flex;flex-direction:row;align-items:flex-end;gap:1rem}
+  .brand-logo{height:64px;width:auto;display:block;flex-shrink:0}
+  .brand-title-wrap{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:.15rem}
+  .brand-tool-name{font-family:'Montserrat',sans-serif;font-size:2rem;font-weight:400;letter-spacing:.02em;color:#673289;line-height:1;white-space:nowrap;text-transform:uppercase}
+  .topbar-links{padding:0 0 0 1.5rem;display:flex;gap:1.6rem;margin-left:auto}
+  .topbar-col{display:flex;flex-direction:column;justify-content:center;gap:.25rem}
+  .topbar-links a{font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4}
+  .topbar-links a:hover{color:var(--accent-dk)}
+  @media(max-width:820px){.topbar{padding:0 1rem}.topbar-inner{flex-direction:column}.topbar-brand{padding-right:0}.brand-tool-name{font-size:1.5rem}.topbar-links{flex-wrap:wrap;gap:.75rem;padding:.25rem 0 .5rem}.topbar-col{flex-direction:row;flex-wrap:wrap;gap:.75rem}}
+  .wrap{max-width:1080px;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+  .proto-flag{display:inline-block;background:#fff;color:var(--accent-dk);font-size:.62rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:.12rem .45rem;border-radius:4px;margin-left:.5rem;vertical-align:middle;border:1px solid var(--accent)}
+
+  /* ── Hero bar ── */
+  .hero{background:#f0eaf5;border-bottom:2px solid #9167b0;padding:1.75rem 2rem}
+  .hero-inner{max-width:1040px;margin:0 auto;display:flex;align-items:center;gap:2.5rem;flex-wrap:wrap}
+  .hero-text{flex:1;min-width:200px}
+  .hero-title{font-size:1.15rem;font-weight:600;color:#5b3d7a;line-height:1.2;margin:0 0 .3rem;letter-spacing:-.01em}
+  .hero-sub{font-size:.78rem;color:var(--muted);line-height:1.5;max-width:380px;margin:0}
+  .hero-search{flex:1;min-width:280px;position:relative}
+  .hero-form{display:flex;border:2px solid #9167b0;background:#fff}
+  .hero-input{flex:1;border:none;padding:.6rem .85rem;font-size:.85rem;outline:none;font-family:Inter,sans-serif;color:var(--ink);background:transparent}
+  .hero-input::placeholder{color:#a99bbf}
+  .hero-go{border:none;border-left:2px solid #9167b0;background:#9167b0;color:#fff;padding:.6rem 1.1rem;font-size:.82rem;font-weight:500;cursor:pointer;white-space:nowrap;font-family:Inter,sans-serif}
+  .hero-go:hover{background:#7a52a0}
+  .hero-go:disabled{opacity:.5;cursor:default}
+  .hero-stop{border:none;border-left:2px solid var(--red);background:#fff;color:var(--red);padding:.6rem 1.1rem;font-size:.82rem;font-weight:500;cursor:pointer;white-space:nowrap;font-family:Inter,sans-serif;display:none}
+  .hero-secondary{display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap;align-items:center}
+  .hero-secondary-label{font-size:.65rem;font-weight:600;color:#5b3d7a;text-transform:uppercase;letter-spacing:.03em}
+  .hero-select,.hero-num{border:1px solid rgba(145,103,176,.4);background:rgba(255,255,255,.85);padding:.32rem .6rem;font-family:Inter,sans-serif;font-size:.75rem;color:var(--ink);outline:none}
+  .hero-select{cursor:pointer;flex:1;min-width:150px}
+  .hero-num{width:74px}
+  .hero-query{border:1px solid rgba(145,103,176,.4);background:rgba(255,255,255,.85);padding:.32rem .6rem;font-family:Inter,sans-serif;font-size:.75rem;color:var(--ink);outline:none;flex:1;min-width:160px}
+  .hero-query::placeholder{color:#a99bbf}
+  .hero-select:focus,.hero-num:focus,.hero-query:focus{border-color:#9167b0}
+  .hero-chk{display:flex;align-items:center;gap:.3rem;font-size:.72rem;color:#5b3d7a;cursor:pointer}
+  .hero-field{display:flex;align-items:center;gap:.4rem}
+  .hero-field.grow{flex:1;min-width:180px}
+  .hero-help{margin-top:.35rem;text-align:right}
+  .hero-help a{font-size:.68rem;color:#5b3d7a;text-decoration:none}
+  .hero-help a:hover{color:var(--accent-dk);text-decoration:underline}
+  .repo-autocomplete{position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--ink);border-top:none;z-index:200;display:none;max-height:260px;overflow-y:auto}
+  .repo-autocomplete.open{display:block}
+  .repo-ac-item{padding:.55rem .75rem;cursor:pointer;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:.1rem}
+  .repo-ac-item:last-child{border-bottom:none}
+  .repo-ac-item:hover,.repo-ac-item.highlighted{background:var(--bg)}
+  .repo-ac-name{font-size:.78rem;font-weight:500;color:var(--ink)}
+  .repo-ac-id{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted)}
+  .repo-ac-count{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:#0070C0}
+  .repo-ac-loading{padding:.6rem .75rem;font-size:.75rem;color:var(--muted);font-style:italic}
+  @media(max-width:820px){.hero{padding:1.25rem 1rem}.hero-inner{flex-direction:column;gap:1rem;align-items:stretch}.hero-text{min-width:0}.hero-search{min-width:0;width:100%}}
+
+  /* ── Selection summary strip ── */
+  .sel-summary{background:#fff;border-bottom:1px solid var(--line)}
+  .sel-inner{max-width:1040px;margin:0 auto;padding:.7rem 2rem;display:flex;align-items:baseline;gap:1.5rem;flex-wrap:wrap}
+  .sel-repo{font-size:.95rem;font-weight:600;color:var(--accent-dk)}
+  .sel-repo .sel-id{font-family:'IBM Plex Mono',monospace;font-size:.7rem;font-weight:400;color:var(--muted);margin-left:.5rem}
+  .sel-stats{display:flex;gap:1.4rem;flex-wrap:wrap;margin-left:auto}
+  .sel-stat{font-size:.78rem;color:var(--muted)}
+  .sel-stat b{color:var(--ink);font-weight:600}
+  @media(max-width:820px){.sel-inner{padding:.7rem 1rem}.sel-stats{margin-left:0}}
+
+  #status{font-size:.82rem;color:var(--muted);min-height:1.2em;margin:.2rem 0 .5rem}
+  #status.err{color:var(--red)}
+  #progress{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin:0 0 1rem;display:none}
+  #progress.on{display:block}
+  #progress>i{display:block;height:100%;width:0;background:var(--accent);border-radius:3px;transition:width .18s ease}
+  #progress.indet>i{width:40%;animation:indet 1.1s ease-in-out infinite}
+  @keyframes indet{0%{margin-left:-40%}100%{margin-left:100%}}
+  #apiurl{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;color:var(--muted);background:#f3f1f8;border-radius:6px;padding:.45rem .6rem;margin:0 0 1rem;word-break:break-all;line-height:1.5;display:none}
+  #apiurl b{color:var(--ink);font-weight:600}
+  .tips{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;background:#fff;padding:.7rem .9rem;margin:0 0 1rem;max-width:560px}
+  .tips .tips-head{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.35rem}
+  .tips .tips-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-dk);font-weight:600;margin-bottom:.2rem}
+  .tips .tips-text{font-size:.82rem;color:var(--ink);line-height:1.5}
+  .tips .tips-text strong{color:var(--accent-dk)}
+  .tips .tips-link{display:inline-block;margin-top:.4rem;font-size:.68rem;color:var(--accent);text-decoration:none}
+  .tips .tips-link:hover{text-decoration:underline}
+
+  /* ── Cards ── */
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:1rem}
+  .card h2{font-size:1rem;margin:0 0 .4rem;color:var(--accent-dk)}
+  .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:.2rem}
+  .card-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+  .card-intro{font-size:.78rem;color:var(--muted);margin:0 0 1rem;line-height:1.5;max-width:760px}
+  .dl-btn{appearance:none;border:1px solid var(--accent);background:#fff;color:var(--accent-dk);font:inherit;font-size:.75rem;font-weight:600;padding:.42rem .85rem;border-radius:6px;cursor:pointer}
+  .dl-btn:hover{background:var(--tint)}
+  #chart{width:100%;height:auto;display:block}
+  .legend{display:flex;gap:1.1rem;flex-wrap:wrap;font-size:.72rem;color:var(--muted);margin:.6rem 0 .2rem}
+  .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:.4rem;vertical-align:middle}
+  .legend .thin-note{color:var(--muted);font-style:italic}
+  table.hist{border-collapse:collapse;width:100%;font-size:.8rem}
+  table.hist th,table.hist td{text-align:right;padding:.32rem .55rem;border-bottom:1px solid #f0eef5;white-space:nowrap}
+  table.hist th{font-size:.66rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:600}
+  table.hist th:first-child,table.hist td:first-child{text-align:left}
+  table.hist td.thin{color:var(--muted);font-style:italic}
+  table.hist td.num{font-variant-numeric:tabular-nums}
+  table.hist td.year-open{text-align:left;white-space:nowrap}
+  table.hist td.year-open a{color:var(--accent);text-decoration:none;cursor:pointer;font-size:.72rem;font-weight:600;margin-right:.5rem}
+  table.hist td.year-open a:hover{color:var(--accent-dk);text-decoration:underline}
+  /* radar grid (small multiples: use cases × years) */
+  #grid{overflow-x:auto;margin-top:.4rem}
+  table.grid-tbl{border-collapse:collapse}
+  table.grid-tbl th.corner{background:#fff}
+  table.grid-tbl th.yr{font-size:.74rem;font-weight:600;color:var(--ink);padding:.2rem .3rem;text-align:center;white-space:nowrap}
+  table.grid-tbl th.yr small{display:block;font-weight:400;color:var(--muted);font-size:.62rem}
+  table.grid-tbl th.yr small.tot{color:var(--accent-dk);font-weight:600;font-size:.68rem}
+  table.grid-tbl th.rowlab{font-size:.72rem;font-weight:600;color:var(--accent-dk);text-align:right;padding:0 .6rem 0 .2rem;white-space:nowrap;vertical-align:middle}
+  table.grid-tbl td.cell{padding:.15rem;text-align:center;vertical-align:top}
+  table.grid-tbl td.cell .cell-avg{font-size:.68rem;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:-.15rem}
+  table.grid-tbl td.cell.thin{opacity:.5}
+  table.grid-tbl td.cell svg{display:block;margin:0 auto}
+  /* movie: one year at a time, enlarged, with a play/scrub control */
+  .movie-bar{display:flex;align-items:center;gap:1rem;margin:.4rem 0 1rem;flex-wrap:wrap}
+  .movie-bar input[type=range]{flex:1;min-width:180px;accent-color:var(--accent);cursor:pointer}
+  .movie-caption{font-size:.95rem;font-weight:600;color:var(--accent-dk);white-space:nowrap}
+  .movie-caption b{color:var(--ink);font-size:1.15rem}
+  .movie-radars{display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;justify-content:center;align-items:flex-start}
+  .movie-cell{text-align:center;width:240px}
+  .movie-cell .mc-title{font-size:.78rem;font-weight:600;color:var(--accent-dk)}
+  .movie-cell .mc-avg{font-size:.74rem;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:-.4rem}
+  .movie-cell svg{display:block;margin:0 auto}
+  /* cite-this-tool popover */
+  .cite-link{background:none;border:none;cursor:pointer;font:inherit;font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4;padding:0;text-align:left}
+  .cite-link:hover{color:var(--accent-dk)}
+  .cite-pop{display:none;position:fixed;inset:0;z-index:300;background:rgba(31,35,48,.35);align-items:flex-start;justify-content:flex-end;padding:4rem 1.5rem 0 0}
+  .cite-pop.open{display:flex}
+  .cite-card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.25);max-width:480px;width:100%;padding:1.3rem}
+  .cite-card .cite-head{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:.5rem}
+  .cite-card .cite-text{font-size:.82rem;color:var(--ink);line-height:1.6;margin-bottom:1rem}
+  .cite-card .cite-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+  .cite-card .cite-copy{font-size:.72rem;font-weight:600;background:var(--accent);color:#fff;border:none;padding:.4rem .8rem;border-radius:6px;cursor:pointer}
+  .cite-card .cite-doi{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.68rem;color:var(--accent);text-decoration:none}
+  .cite-card .cite-close{margin-left:auto;background:none;border:1px solid var(--line);border-radius:6px;padding:.3rem .6rem;cursor:pointer;font-size:.7rem;color:var(--muted)}
+  /* analytics consent banner */
+  #analytics-banner{position:fixed;bottom:0;left:0;right:0;background:var(--ink);color:#fff;padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;z-index:500;font-size:.75rem;border-top:2px solid #444}
+  #analytics-banner a{color:#93c5fd}
+  #analytics-banner-btns{display:flex;gap:.5rem}
+  .ab-btn{padding:.35rem .85rem;font-size:.72rem;cursor:pointer;border:1px solid #666;font-family:inherit;background:none;color:#fff;border-radius:6px}
+  .ab-btn-ok{background:#fff;color:var(--ink);border-color:#fff}
+  .ab-btn-ok:hover{background:var(--tint)}
+  .ab-btn-no:hover{background:rgba(255,255,255,.1)}
+  @media print{.topbar-links,#analytics-banner{display:none !important}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" onerror="this.style.display='none'" />
+      </a>
+      <div class="brand-title-wrap"><div class="brand-tool-name">Metrics Viewer</div></div>
+    </div>
+    <div class="topbar-links">
+      <div class="topbar-col">
+      <a id="rcw-link" href="recurationWatch.html" target="_blank" rel="noopener">Re-Curation Watch ↗</a>
+      <a id="completeness-link" href="completeness.html" target="_blank" rel="noopener">Metadata Completeness ↗</a>
+      <a id="connectivity-link" href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity ↗</a>
+      <a id="activity-link" href="repo-activity.html" target="_blank" rel="noopener">Repository Activity ↗</a>
+      <a id="history-link" href="repositoryHistory.html" target="_blank" rel="noopener">Repository History ↗</a>
+      </div>
+      <div class="topbar-col">
+      <a href="useCases.html" target="_blank" rel="noopener">Use Cases ↗</a>
+      <a href="guide.html">Repository Guide ↗</a>
+      <a href="consortiumGuide.html">Consortium Guide ↗</a>
+      <a href="reading.html">Related Reading ↗</a>
+      <a href="tips.html">Metadata Tips ↗</a>
+      <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h2 class="hero-title">Score history, run by run</h2>
+      <p class="hero-sub">Views a <b>useCaseHistory.json</b> — the accumulated use-case scores a
+      <a href="https://github.com/Metadata-Game-Changers/metrics-watch" target="_blank" rel="noopener" style="color:#5b3d7a">metrics-watch</a>
+      repository (or the MGC score archive) builds run by run — as line trends, a grid of radar plots, or a movie. Nothing is fetched from DataCite; every run was scored at its own date.</p>
+    </div>
+    <div class="hero-search">
+      <div class="hero-form">
+        <input class="hero-input" id="src-input" type="url" placeholder="https://github.com/…/reports/…/…_useCaseHistory.json" spellcheck="false" autocomplete="off" />
+        <button class="hero-go" id="load-go">Load →</button>
+      </div>
+      <div class="hero-secondary">
+        <span class="hero-field grow">
+          <span class="hero-secondary-label">or open a file</span>
+          <input type="file" id="file-input" accept=".json,application/json" style="font-size:.72rem;color:#5b3d7a" />
+        </span>
+        <span class="hero-field" style="font-size:.68rem;color:#5b3d7a">…or drop a history file anywhere on this page</span>
+      </div>
+      <div class="hero-help"><a href="https://github.com/Metadata-Game-Changers/metrics-watch#what-a-run-produces" target="_blank" rel="noopener" title="Where useCaseHistory.json files come from">Where do these files come from? ↗</a></div>
+    </div>
+  </div>
+</div>
+
+<div class="sel-summary" id="sel-summary" style="display:none">
+  <div class="sel-inner">
+    <span class="sel-repo" id="sel-repo">—</span>
+    <div class="sel-stats">
+      <span class="sel-stat"><b id="sel-years">—</b> runs</span>
+      <span class="sel-stat"><b id="sel-records">—</b> records scored</span>
+      <span class="sel-stat" id="sel-mode">—</span>
+      <span class="sel-stat" id="sel-filter" style="display:none"></span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="status">Paste a useCaseHistory.json URL (a GitHub link works) or choose a local file to view its score history.</div>
+  <div id="progress"><i></i></div>
+  <div id="apiurl"></div>
+  <div id="tips" class="tips" style="display:none"></div>
+
+  <div class="card" id="chart-card" style="display:none">
+    <div class="card-head">
+      <h2><span id="chart-head-label">Completeness by run</span> <span class="proto-flag" id="share-proto" style="display:none">SHARE · Prototype</span></h2>
+      <div class="card-actions">
+        <label class="hero-chk" style="gap:.4rem" title="Lines: one trend line per use case over the years. Grid: a radar plot per use case per year. Movie: one year at a time, enlarged — press Play to animate across the years.">
+          <span class="hero-secondary-label">View</span>
+          <select class="hero-select" id="view-mode" style="flex:none;min-width:0">
+            <option value="lines" selected>Lines</option>
+            <option value="grid">Grid</option>
+            <option value="movie">Movie</option>
+          </select>
+        </label>
+        <label class="hero-chk" style="gap:.4rem" title="Which use cases to show: the four FAIR use cases, the three Project use cases, the two additional DataCite use cases, or all nine">
+          <span class="hero-secondary-label">Use Cases</span>
+          <select class="hero-select" id="plot-group" style="flex:none;min-width:0">
+            <option value="FAIR" selected>FAIR (4 + total)</option>
+            <option value="Projects">Projects (3 + total)</option>
+            <option value="SHARE">SHARE (5 + total)</option>
+            <option value="Extras">Extras (2)</option>
+            <option value="All">All (14)</option>
+          </select>
+        </label>
+        <button class="dl-btn" id="dl-lines-copy" type="button" title="Copy the line plot to the clipboard as an image">⧉ Copy plot</button>
+        <button class="dl-btn" id="dl-png" type="button">⬇ Plot (PNG)</button>
+        <button class="dl-btn" id="dl-grid-copy" type="button" style="display:none" title="Copy the radar grid to the clipboard as an image">⧉ Copy grid</button>
+        <button class="dl-btn" id="dl-grid-png" type="button" style="display:none" title="Download the radar grid as a PNG image">⬇ Grid (PNG)</button>
+        <button class="dl-btn" id="dl-summary" type="button" title="One row per year: records, FAIR total and the four FAIR use cases, Projects total and the three Project use cases, and the two additional DataCite use cases">⬇ Data Summary (CSV)</button>
+        <button class="dl-btn" id="dl-csv" type="button" title="Long form: one row per year × concept (analysis-ready)">⬇ Data (CSV)</button>
+      </div>
+    </div>
+    <p class="card-intro">Each point is one <b>scoring run</b> — a sample of the repository&rsquo;s records as they were <b>on that run&rsquo;s date</b> — so a rising line is re-curation you can watch happening. Thin runs (fewer than 10 records) — hollow points in <b>Lines</b>, dimmed cells in <b>Grid</b> — have noisy percentages. Switch <b>View</b> to a radar-plot <b>Grid</b> to watch each use case&rsquo;s concept profile change run to run, or to <b>Movie</b> to animate it.</p>
+
+    <canvas id="chart" width="960" height="360"></canvas>
+    <div class="legend" id="legend"></div>
+    <div id="grid" style="display:none"></div>
+    <div id="movie" style="display:none">
+      <div class="movie-bar">
+        <button class="dl-btn" id="movie-prev" type="button" title="Previous year (←)">◀ Prev</button>
+        <button class="dl-btn" id="movie-play" type="button">▶ Play</button>
+        <button class="dl-btn" id="movie-next" type="button" title="Next year (→)">Next ▶</button>
+        <input type="range" id="movie-slider" min="0" max="0" value="0" step="1" aria-label="Run" />
+        <span class="movie-caption" id="movie-caption"></span>
+      </div>
+      <div class="movie-radars" id="movie-radars"></div>
+    </div>
+  </div>
+
+  <div class="card" id="table-card" style="display:none">
+    <h2>Run by run</h2>
+    <div style="overflow-x:auto">
+    <table class="hist"><thead><tr id="hist-head">
+      <th>Run</th><th>Records scored</th><th>Matching</th><th>FAIR Total</th>
+      <th>Text</th><th>Identifiers</th><th>Connections</th><th>Contacts</th>
+    </tr></thead><tbody id="hist-body"></tbody></table>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* Metrics Viewer: renders a useCaseHistory.json — the per-series score history a metrics-watch
+   repository (github.com/Metadata-Game-Changers/metrics-watch) or the MGC score archive derives
+   from useCaseReport snapshots — with the same Lines / Grid / Movie views as Repository History.
+   The viewer never fetches DataCite and never scores: every snapshot already carries each use
+   case's average and per-concept completeness, scored at that run's own date. The rendering
+   machinery below is ported from repositoryHistory.html — keep the two in sync. */
+const $ = id => document.getElementById(id);
+const statusEl = $('status');
+function setStatus(msg, isErr){ statusEl.textContent = msg; statusEl.className = isErr ? 'err' : ''; }
+function setProgress(frac){ const p=$('progress'); p.classList.add('on'); p.classList.remove('indet'); p.firstElementChild.style.width = Math.max(0,Math.min(1,frac))*100 + '%'; }
+function setProgressIndeterminate(){ const p=$('progress'); p.classList.add('on','indet'); p.firstElementChild.style.width=''; }
+function hideProgress(){ const p=$('progress'); p.classList.remove('on','indet'); p.firstElementChild.style.width='0'; }
+const escHtml = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const escAttr = s => escHtml(s);
+function fmtPct(x){ return (x*100).toFixed(0) + '%'; }
+
+const TOTAL_CODES = ['FAIR_Text','FAIR_Identifiers','FAIR_Connections','FAIR_Contacts'];
+const PROJECT_CODES = ['Project_Team','Project_Items','Project_Relations'];
+const SHARE_CODES = ['SHARE_stewardship','SHARE_harmonization','SHARE_access','SHARE_reuse','SHARE_engagement'];
+function weightedTotal(byCode, codes){
+  let totalScore = 0, totalCount = 0;
+  for (const code of codes){
+    const e = byCode[code];
+    if (!e) continue;
+    const n = e.spiral.items.length;
+    totalScore += e.res.average * n;
+    totalCount += n;
+  }
+  return totalCount > 0 ? totalScore / totalCount : 0;
+}
+
+/* ---------- plot groups / radars (ported from repositoryHistory.html) ---------- */
+const CODE_STYLE = {
+  FAIR_Text:                 { label: 'Text',         color: '#E97131' },
+  FAIR_Identifiers:          { label: 'Identifiers',  color: '#0070C0' },
+  FAIR_Connections:          { label: 'Connections',  color: '#A02C93' },
+  FAIR_Contacts:             { label: 'Contacts',     color: '#4EA62E' },
+  Project_Team:              { label: 'Team',         color: '#7A5195' },
+  Project_Items:             { label: 'Items',        color: '#EF9B20' },
+  Project_Relations:         { label: 'Relations',    color: '#BC5090' },
+  SHARE_stewardship:         { label: 'Stewardship',  color: '#2F6FB0' },
+  SHARE_harmonization:       { label: 'Harmonization',color: '#D4910B' },
+  SHARE_access:              { label: 'Access',       color: '#3A9D6E' },
+  SHARE_reuse:               { label: 'Reuse',        color: '#B3005E' },
+  SHARE_engagement:          { label: 'Engagement',   color: '#5B3D7A' },
+  DataCite_Relations:        { label: 'Relations',    color: '#C0392B' },
+  DataCite_ContributorTypes: { label: 'Contributors', color: '#0E8A8A' },
+};
+const PLOT_GROUPS = {
+  FAIR:     { totals: [{ key: 'fair',     label: 'FAIR Total',     color: '#673289', width: 3 }],
+              codes: ['FAIR_Text','FAIR_Identifiers','FAIR_Connections','FAIR_Contacts'] },
+  Projects: { totals: [{ key: 'projects', label: 'Projects Total', color: '#673289', width: 3 }],
+              codes: ['Project_Team','Project_Items','Project_Relations'] },
+  SHARE:    { totals: [{ key: 'share',    label: 'SHARE Total',    color: '#673289', width: 3 }],
+              codes: ['SHARE_stewardship','SHARE_harmonization','SHARE_access','SHARE_reuse','SHARE_engagement'] },
+  Extras:   { totals: [], codes: ['DataCite_Relations','DataCite_ContributorTypes'] },
+  All:      { totals: [], codes: ['FAIR_Text','FAIR_Identifiers','FAIR_Connections','FAIR_Contacts',
+                                  'Project_Team','Project_Items','Project_Relations',
+                                  'SHARE_stewardship','SHARE_harmonization','SHARE_access','SHARE_reuse','SHARE_engagement',
+                                  'DataCite_Relations','DataCite_ContributorTypes'] },
+};
+const ALL_PALETTE = ['#e2725b','#0070C0','#9167b0','#3a9d6e','#b3005e','#d4910b','#2f6fb0','#c0392b','#5b3d7a'];
+function seriesFor(group){
+  const g = PLOT_GROUPS[group] || PLOT_GROUPS.FAIR;
+  const codeSeries = g.codes.map((code, i) => ({
+    key: code, width: 1.5,
+    label: group === 'All' ? code.replace('_', ' · ').replace(/_/g, ' ') : (CODE_STYLE[code] ? CODE_STYLE[code].label : code),
+    color: group === 'All' ? ALL_PALETTE[i % ALL_PALETTE.length] : (CODE_STYLE[code] ? CODE_STYLE[code].color : '#6b7280'),
+  }));
+  return [...g.totals, ...codeSeries];
+}
+let plotGroup = 'FAIR';
+let viewMode = 'lines';
+// use-case colours for the radar grid cells (ported from completeness.html SPIRAL_COLORS)
+const SPIRAL_COLORS = {
+  FAIR_Text:'#E97131', FAIR_Identifiers:'#0070C0', FAIR_Connections:'#A02C93', FAIR_Contacts:'#4EA62E',
+  DataCite_Relations:'#C0392B', DataCite_ContributorTypes:'#0E8A8A',
+  Project_Team:'#7A5195', Project_Items:'#EF9B20', Project_Relations:'#BC5090',
+  SHARE_stewardship:'#2F6FB0', SHARE_harmonization:'#D4910B', SHARE_access:'#3A9D6E',
+  SHARE_reuse:'#B3005E', SHARE_engagement:'#5B3D7A',
+};
+// a small, label-free radar of a use case's concepts (small-multiples cell); shape comparison
+// across a row is the point — the row label names the use case, axes are consistent within a row
+// inner geometry of a small radar (no outer <svg>) so it can be embedded both as a standalone
+// SVG (miniRadar) and as a nested cell in the composite grid SVG (gridSvgMarkup)
+function radarInner(items, color, size){
+  const W = size, cx = W/2, cy = W/2, R = W/2 * 0.82, N = items.length || 1;
+  const ang = i => (i/N) * 2 * Math.PI - Math.PI/2;
+  const pt  = (i,r) => [ +(cx + Math.cos(ang(i))*R*r).toFixed(1), +(cy + Math.sin(ang(i))*R*r).toFixed(1) ];
+  let g = '';
+  [0.5, 1].forEach(r => { g += `<circle cx="${cx}" cy="${cy}" r="${(R*r).toFixed(1)}" fill="none" stroke="#ece9f3" stroke-width="1"/>`; });
+  for (let i=0;i<N;i++){ const [x,y]=pt(i,1); g += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#f0eef5" stroke-width="1"/>`; }
+  const pts = items.map((it,i) => pt(i, Math.min(it.comp,1)).join(',')).join(' ');
+  g += `<polygon points="${pts}" fill="${color}" fill-opacity="0.30" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>`;
+  return g;
+}
+function miniRadar(items, color, size){
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">${radarInner(items, color, size)}</svg>`;
+}
+// a larger, labeled radar for the movie view (perimeter concept labels fit at this size;
+// omitted for very busy use cases to avoid a tangle). Ported from completeness.html.
+const displayConcept = c => String(c).replace(/Identifier/g, 'ID');
+function wrapLabel(text, width){
+  const lines = []; let line = '';
+  for (const w of String(text).split(/\s+/)){
+    if (!line) line = w;
+    else if ((line + ' ' + w).length <= width) line += ' ' + w;
+    else { lines.push(line); line = w; }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+function movieRadar(items, color){
+  const S = 240, cx = S/2, cy = S/2, N = items.length || 1;
+  const withLabels = N <= 18;
+  const R = (S/2) * (withLabels ? 0.60 : 0.82);
+  const ang = i => (i/N) * 2 * Math.PI - Math.PI/2;
+  const pt  = (i,r) => [ +(cx + Math.cos(ang(i))*R*r).toFixed(1), +(cy + Math.sin(ang(i))*R*r).toFixed(1) ];
+  let g = '';
+  [0.25,0.5,0.75,1].forEach(r => { g += `<circle cx="${cx}" cy="${cy}" r="${(R*r).toFixed(1)}" fill="none" stroke="#ece9f3" stroke-width="1"/>`; });
+  for (let i=0;i<N;i++){ const [x,y]=pt(i,1); g += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#f0eef5" stroke-width="1"/>`; }
+  const pts = items.map((it,i) => pt(i, Math.min(it.comp,1)).join(',')).join(' ');
+  g += `<polygon points="${pts}" fill="${color}" fill-opacity="0.30" stroke="${color}" stroke-width="1.75" stroke-linejoin="round"/>`;
+  if (withLabels){
+    const LH = 9;
+    items.forEach((it,i) => {
+      const [x,y] = pt(i, 1.12); const a = ang(i);
+      const anchor = Math.abs(Math.cos(a)) < 0.3 ? 'middle' : (Math.cos(a) > 0 ? 'start' : 'end');
+      const lines = wrapLabel(displayConcept(it.concept), 13);
+      const tspans = lines.map((ln,k) =>
+        `<tspan x="${x}" dy="${k===0 ? (-(lines.length-1)/2*LH).toFixed(1) : LH}">${escHtml(ln)}</tspan>`).join('');
+      g += `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle" font-size="7.5" fill="#6b7280">${tspans}</text>`;
+    });
+  }
+  return `<svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
+}
+const THIN = 10;   // runs with fewer records than this are drawn hollow / italic
+let history = null;   // { clientId, queryLabel, repoName, source, years:[{year, t, n, matching, totals, byCode}] }
+
+function yearTotals(byCode){
+  const t = { fair: weightedTotal(byCode, TOTAL_CODES), projects: weightedTotal(byCode, PROJECT_CODES), share: weightedTotal(byCode, SHARE_CODES) };
+  for (const code of Object.keys(byCode)) t[code] = byCode[code] ? byCode[code].res.average : null;
+  return t;
+}
+
+/* ---------- loading: history file -> entries the views understand ---------- */
+// '2026-08-01T16' -> decimal year, so runs land at true positions on the time axis
+function tOf(stamp){
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}))?/.exec(String(stamp || ''));
+  if (!m) return null;
+  const y = +m[1];
+  const start = Date.UTC(y, 0, 1), end = Date.UTC(y + 1, 0, 1);
+  return y + (Date.UTC(y, +m[2] - 1, +m[3], +(m[4] || 0)) - start) / (end - start);
+}
+function entryFromSnapshot(snap){
+  const rep = snap.repository || {};
+  const byCode = {};
+  for (const uc of (snap.useCases || [])){
+    const items = (uc.items || []).map(i => ({
+      concept: i.concept,
+      comp: i.completeness == null ? 0 : Math.min(1, i.completeness),
+      errored: i.completeness == null,
+    }));
+    byCode[uc.code] = {
+      spiral: { code: uc.code, title: uc.title, items },
+      res: { items,
+             average: uc.average != null ? uc.average : items.reduce((a, b) => a + b.comp, 0) / (items.length || 1),
+             exist: uc.exist, complete: uc.complete,
+             total: uc.records != null ? uc.records : (rep.records || 0) },
+    };
+  }
+  const totals = yearTotals(byCode);
+  // prefer the snapshot's own recorded group totals when present (byte-fidelity with the report)
+  if (rep.fairTotal != null) totals.fair = rep.fairTotal;
+  if (rep.projectsTotal != null) totals.projects = rep.projectsTotal;
+  if (rep.shareTotal != null) totals.share = rep.shareTotal;
+  const stamp = snap.dateTime || rep.dateTime || '';
+  return { year: stamp, t: tOf(stamp) ?? undefined, n: rep.records || 0,
+           matching: rep.totalInRepository != null ? rep.totalInRepository : null,
+           sampling: rep.sampling || '', query: rep.query || '', repoName: rep.name || '',
+           byCode, totals };
+}
+function loadHistoryObject(h, sourceLabel){
+  // a single useCaseReport snapshot is welcome too — wrap it as a one-run history
+  if (h && !h.snapshots && Array.isArray(h.useCases)){
+    h = { repository: { id: h.repository && h.repository.id },
+          snapshots: [{ dateTime: h.repository && h.repository.dateTime, repository: h.repository, useCases: h.useCases }] };
+  }
+  const snaps = (h && Array.isArray(h.snapshots)) ? h.snapshots.slice() : null;
+  if (!snaps || !snaps.length) throw new Error('That is not a useCaseHistory.json — expected a top-level "snapshots" array of useCaseReport snapshots (or a single useCaseReport).');
+  snaps.sort((a, b) => String(a.dateTime || '').localeCompare(String(b.dateTime || '')));
+  const entries = snaps.map(entryFromSnapshot);
+  const last = entries[entries.length - 1];
+  history = {
+    clientId: (h.repository && h.repository.id) || '',
+    queryLabel: (h.repository && h.repository.queryLabel) || '',
+    repoName: last.repoName || entries.map(e => e.repoName).filter(Boolean)[0] || (h.repository && h.repository.id) || 'repository',
+    source: sourceLabel || 'useCaseHistory.json',
+    years: entries,
+  };
+  movieStop(); movieIdx = 0;
+  renderSelection();
+  $('chart-card').style.display = ''; $('table-card').style.display = '';
+  renderLegend(); renderTable(); renderView();
+  const scored = entries.filter(e => e.n > 0).length;
+  setStatus(`Loaded ${entries.length} run${entries.length === 1 ? '' : 's'} (${scored} scored) — ${history.repoName}${history.queryLabel ? ' · ' + history.queryLabel : ''}.`);
+}
+// GitHub "blob" page URLs aren't the file itself — quietly swap in the raw equivalent
+function rawUrl(u){
+  const m = /^https?:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/(.+)$/.exec(String(u || '').trim());
+  return m ? `https://raw.githubusercontent.com/${m[1]}/${m[2]}/${m[3]}` : String(u || '').trim();
+}
+async function loadFromUrl(url){
+  const src = rawUrl(url);
+  try {
+    setStatus('Loading history…'); setProgressIndeterminate();
+    const res = await fetch(src);
+    if (!res.ok) throw new Error(`Could not load the history file (HTTP ${res.status}). Public repositories serve it via their raw URL — for a private repository, download the file and use the file picker instead.`);
+    loadHistoryObject(await res.json(), src);
+    try { const u = new URL(location.href); u.searchParams.set('src', src); window.history.replaceState({}, '', u); } catch (e){ /* non-fatal */ }
+  } catch (e){
+    console.error(e);
+    setStatus(e instanceof SyntaxError ? 'That URL did not return JSON — check it points at a useCaseHistory.json file.' : (e.message || String(e)), true);
+  } finally { hideProgress(); }
+}
+function loadFromFile(file){
+  const reader = new FileReader();
+  reader.onload = () => {
+    try { loadHistoryObject(JSON.parse(reader.result), file.name); }
+    catch (e){ console.error(e); setStatus(e instanceof SyntaxError ? `${file.name} is not valid JSON.` : (e.message || String(e)), true); }
+  };
+  reader.onerror = () => setStatus(`Could not read ${file.name}.`, true);
+  reader.readAsText(file);
+}
+
+/* ---------- rendering ---------- */
+function renderSelection(){
+  $('sel-summary').style.display = '';
+  $('sel-repo').innerHTML = `${escHtml(history.repoName)}<span class="sel-id">${escHtml(history.clientId)}${history.queryLabel ? ' · ' + escHtml(history.queryLabel) : ''}</span>`;
+  const es = history.years;
+  $('sel-years').textContent = String(es.length);
+  $('sel-records').textContent = es.reduce((a, e) => a + (e.n || 0), 0).toLocaleString();
+  $('sel-mode').textContent = `${String(es[0].year).slice(0, 10)} → ${String(es[es.length - 1].year).slice(0, 10)}`;
+  const last = es[es.length - 1];
+  const parts = [];
+  if (last.query) parts.push(`query: ${last.query}`);
+  if (last.sampling) parts.push(last.sampling);
+  $('sel-filter').textContent = parts.length ? parts.join(' · ') : '';
+  $('sel-filter').style.display = parts.length ? '' : 'none';
+}
+
+function renderLegend(){
+  $('legend').innerHTML = seriesFor(plotGroup).map(s =>
+    `<span><i style="background:${s.color};height:${s.width>2?'4px':'3px'}"></i>${s.label}</span>`).join('')
+    + '<span class="thin-note">hollow point = fewer than 10 records</span>';
+}
+
+// the run-by-run table follows the Use Cases selector: the group's total (Extras/All fall
+// back to the FAIR total, like the grid) plus one column per use case in the group
+function tableColumns(){
+  const g = PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR;
+  const gt = g.totals[0];
+  const labels = {}; seriesFor(plotGroup).forEach(sr => { labels[sr.key] = sr.label; });
+  return { totKey: gt ? gt.key : 'fair', totName: gt ? gt.label : 'FAIR Total',
+           codes: g.codes.map(c => ({ code: c, label: labels[c] || c })) };
+}
+function renderTableHead(){
+  const tc = tableColumns();
+  $('hist-head').innerHTML = `<th>Run</th><th>Records scored</th><th>Matching</th><th>${escHtml(tc.totName)}</th>`
+    + tc.codes.map(c => `<th>${escHtml(c.label)}</th>`).join('');
+}
+function addTableRow(e){
+  const tc = tableColumns();
+  const thin = e.n > 0 && e.n < THIN;
+  const cell = v => v == null ? '—' : fmtPct(v);
+  const row = e.n === 0
+    ? `<tr><td>${escHtml(String(e.year))}</td><td class="num">0</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td><td colspan="${tc.codes.length + 1}" style="text-align:left;color:var(--muted);font-style:italic">no records scored</td></tr>`
+    : `<tr><td>${escHtml(String(e.year))}${thin ? ' *' : ''}</td><td class="num${thin ? ' thin' : ''}">${e.n.toLocaleString()}</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td>`
+      + `<td class="num"><b>${cell(e.totals[tc.totKey])}</b></td>`
+      + tc.codes.map(cc => `<td class="num">${cell(e.totals[cc.code])}</td>`).join('') + '</tr>';
+  $('hist-body').insertAdjacentHTML('beforeend', row);
+}
+function renderTable(){
+  if (!history) return;
+  renderTableHead();
+  $('hist-body').innerHTML = '';
+  for (const e of history.years) addTableRow(e);
+}
+
+function drawChart(){
+  const canvas = $('chart');
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.clientWidth || 960, cssH = 360;
+  canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, cssW, cssH);
+  if (!history || !history.years.length) return;
+  const ts = history.years.map(e => e.t ?? e.year);
+  const minT = Math.min(...ts), maxT = Math.max(...ts);
+  const padL = 44, padR = 16, padT = 12, padB = 40;
+  const W = cssW - padL - padR, H = cssH - padT - padB;
+  const x = t => padL + (maxT === minT ? W/2 : (t - minT) / (maxT - minT) * W);
+  const yy = v => padT + (1 - v) * H;
+  // grid + axes
+  ctx.font = '11px Inter, sans-serif';
+  ctx.fillStyle = '#6b7280'; ctx.strokeStyle = '#e6e3ec'; ctx.lineWidth = 1;
+  for (let g = 0; g <= 100; g += 25){
+    const gy = yy(g/100);
+    ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(cssW - padR, gy); ctx.stroke();
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText(g + '%', padL - 6, gy);
+  }
+  const nP = history.years.length;
+  const step = nP > 18 ? 4 : (nP > 9 ? 2 : 1);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  history.years.forEach((e, i) => {
+    if (i % step !== 0 && i !== nP - 1) return;
+    const px = x(e.t ?? e.year);
+    ctx.fillStyle = '#6b7280'; ctx.fillText(String(e.year).slice(0, 10), px, cssH - padB + 8);
+    ctx.fillStyle = '#a99bbf'; ctx.font = '9px Inter, sans-serif'; ctx.fillText(e.n ? 'n=' + e.n : '·', px, cssH - padB + 22); ctx.font = '11px Inter, sans-serif';
+  });
+  // series
+  for (const s of seriesFor(plotGroup)){
+    const pts = history.years
+      .filter(e => e.n > 0 && e.totals && e.totals[s.key] != null)
+      .map(e => ({ px: x(e.t ?? e.year), py: yy(Math.min(1, e.totals[s.key])), thin: e.n < THIN }));
+    if (!pts.length) continue;
+    ctx.strokeStyle = s.color; ctx.lineWidth = s.width || 1.5;
+    ctx.setLineDash(s.dash || []);
+    ctx.beginPath();
+    pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.px, p.py) : ctx.lineTo(p.px, p.py));
+    ctx.stroke();
+    ctx.setLineDash([]);
+    for (const p of pts){
+      ctx.beginPath(); ctx.arc(p.px, p.py, s.width > 2 ? 4 : 3, 0, Math.PI * 2);
+      if (p.thin){ ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = s.color; ctx.lineWidth = 1.5; ctx.stroke(); }
+      else { ctx.fillStyle = s.color; ctx.fill(); }
+    }
+  }
+}
+window.addEventListener('resize', () => { if (viewMode === 'lines') drawChart(); });
+window.addEventListener('resize', () => { if (viewMode === 'lines') drawChart(); });
+
+/* radar-grid view: rows = the plot-group's use cases, columns = scored runs, each cell a
+   small radar of that use case's concepts at that run (same machinery as Repository History). */
+const CELL = 132;
+function drawGrid(){
+  const grid = $('grid');
+  if (!history){ grid.innerHTML = ''; return; }
+  const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
+  const years = history.years.filter(e => e.n > 0 && e.byCode);
+  if (!years.length){ grid.innerHTML = '<p class="card-intro">No scored runs to show yet.</p>'; return; }
+  const groupTot = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).totals[0];   // FAIR/Projects/SHARE have their own total; Extras/All fall back to FAIR
+  const totalKey = groupTot ? groupTot.key : 'fair';
+  const totalName = groupTot ? groupTot.label.replace(' Total','') : 'FAIR';
+  const head = '<tr><th class="corner"></th>' + years.map(e => {
+    const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
+    return `<th class="yr" title="${escHtml(String(e.year))}: ${e.n.toLocaleString()} records scored · ${totalName} total ${tot}">`
+      + `${escHtml(String(e.year).slice(0, 10))}<small>n=${e.n.toLocaleString()}${e.n < THIN ? ' *' : ''}</small><small class="tot">${tot}</small></th>`;
+  }).join('') + '</tr>';
+  const rows = codes.map(code => {
+    const color = SPIRAL_COLORS[code] || '#9167b0';
+    const label = CODE_STYLE[code] ? CODE_STYLE[code].label : code;
+    const cells = years.map(e => {
+      const uc = e.byCode[code];
+      if (!uc){ return '<td class="cell">—</td>'; }
+      const avg = (uc.res.average * 100).toFixed(0) + '%';
+      return `<td class="cell${e.n < THIN ? ' thin' : ''}" title="${escHtml(label)} · ${escHtml(String(e.year))} · ${avg} (${e.n} records)">`
+        + `${miniRadar(uc.res.items, color, CELL)}<div class="cell-avg">${avg}</div></td>`;
+    }).join('');
+    return `<tr><th class="rowlab">${escHtml(label)}</th>${cells}</tr>`;
+  }).join('');
+  grid.innerHTML = `<table class="grid-tbl"><thead>${head}</thead><tbody>${rows}</tbody></table>`;
+}
+
+/* ---------- grid export: one composite SVG of the whole grid, rasterized to PNG ---------- */
+const GRID_GROUP_LABEL = { FAIR:'FAIR use cases', Projects:'Project use cases', SHARE:'SHARE use cases', Extras:'Additional DataCite use cases', All:'All fourteen use cases' };
+// series label + latest sampling mode for image subtitles (empty when none)
+function selectionFilterText(){
+  const last = history.years[history.years.length - 1] || {};
+  return [history.queryLabel ? `series: ${history.queryLabel}` : (last.query ? `query: ${last.query}` : ''), last.sampling || ''].filter(Boolean).join(' · ');
+}
+function gridSvgMarkup(){
+  const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
+  const years = history.years.filter(e => e.n > 0 && e.byCode);
+  const groupTot = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).totals[0];   // FAIR/Projects/SHARE have their own total; Extras/All fall back to FAIR
+  const totalKey = groupTot ? groupTot.key : 'fair';
+  const PAD = 14, TITLE_H = 42, LABEL_W = 96, HEADER_H = 46, RAD = 132, AVG_H = 18;
+  const COL_W = RAD + 16, ROW_H = RAD + AVG_H + 8;
+  const gridLeft = PAD + LABEL_W, gridTop = PAD + TITLE_H + HEADER_H;
+  const W = gridLeft + years.length * COL_W + PAD;
+  const H = gridTop + codes.length * ROW_H + PAD;
+  const FONT = "font-family='Inter, system-ui, sans-serif'";
+  let s = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
+  s += `<text x="${PAD}" y="18" ${FONT} font-size="15" font-weight="600" fill="#673289">${escHtml(history.repoName)} (${escHtml(history.clientId)}) — use-case scores by run</text>`;
+  const gridFilt = selectionFilterText();
+  s += `<text x="${PAD}" y="34" ${FONT} font-size="11" fill="#6b7280">${escHtml(GRID_GROUP_LABEL[plotGroup] || plotGroup)}${gridFilt ? ' · ' + escHtml(gridFilt) : ''} · each run scored at its own date</text>`;
+  // column headers: run / n / total
+  years.forEach((e, j) => {
+    const cxp = gridLeft + j*COL_W + COL_W/2;
+    const top = PAD + TITLE_H;
+    const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
+    s += `<text x="${cxp}" y="${top+13}" ${FONT} font-size="13" font-weight="600" text-anchor="middle" fill="#1f2330">${escHtml(String(e.year).slice(0, 10))}</text>`;
+    s += `<text x="${cxp}" y="${top+27}" ${FONT} font-size="10" text-anchor="middle" fill="#6b7280">n=${e.n.toLocaleString()}${e.n < THIN ? ' *' : ''}</text>`;
+    s += `<text x="${cxp}" y="${top+41}" ${FONT} font-size="11" font-weight="600" text-anchor="middle" fill="#673289">${tot}</text>`;
+  });
+  // rows: label + radar cells with avg below
+  codes.forEach((code, i) => {
+    const color = SPIRAL_COLORS[code] || '#9167b0';
+    const label = CODE_STYLE[code] ? CODE_STYLE[code].label : code;
+    const y0 = gridTop + i*ROW_H;
+    s += `<text x="${gridLeft-8}" y="${y0 + RAD/2}" ${FONT} font-size="12" font-weight="600" text-anchor="end" dominant-baseline="middle" fill="#673289">${escHtml(label)}</text>`;
+    years.forEach((e, j) => {
+      const uc = e.byCode[code]; if (!uc) return;
+      const x0 = gridLeft + j*COL_W + (COL_W - RAD)/2;
+      s += `<svg x="${x0}" y="${y0}" width="${RAD}" height="${RAD}" viewBox="0 0 ${RAD} ${RAD}">${radarInner(uc.res.items, color, RAD)}</svg>`;
+      const avg = (uc.res.average * 100).toFixed(0) + '%';
+      s += `<text x="${gridLeft + j*COL_W + COL_W/2}" y="${y0 + RAD + 12}" ${FONT} font-size="11" font-weight="600" text-anchor="middle" fill="#1f2330">${avg}</text>`;
+    });
+  });
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${s}</svg>`, w: W, h: H };
+}
+function svgToPngBlob(svgString, scale){
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' }));
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.width * scale; c.height = img.height * scale;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
+      ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null')), 'image/png');
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('SVG failed to load for rasterization')); };
+    img.src = url;
+  });
+}
+async function downloadGridPng(){
+  if (!history || !history.years.some(e => e.n > 0 && e.byCode)) return;
+  try {
+    const { svg } = gridSvgMarkup();
+    const blob = await svgToPngBlob(svg, 2);
+    triggerDownload(blob, `${safeRepoId()}_historyGrid_${plotGroup}__${nowStamp()}.png`);
+  } catch (e){ console.error(e); setStatus('Could not render the grid to PNG: ' + (e.message || e), true); }
+}
+async function copyGrid(){
+  if (!history || !history.years.some(e => e.n > 0 && e.byCode)) return;
+  const btn = $('dl-grid-copy'); const label = btn.textContent;
+  try {
+    const { svg } = gridSvgMarkup();
+    const blob = await svgToPngBlob(svg, 2);
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    btn.textContent = '✓ Copied';
+  } catch (e){ console.error(e); btn.textContent = 'Copy failed'; }
+  setTimeout(() => { btn.textContent = label; }, 1600);
+}
+
+// switch between the line chart, the radar grid and the movie, keeping the buttons sensible
+function renderView(){
+  $('chart').style.display   = viewMode === 'lines' ? '' : 'none';
+  $('legend').style.display  = viewMode === 'lines' ? '' : 'none';
+  $('grid').style.display    = viewMode === 'grid'  ? '' : 'none';
+  $('movie').style.display   = viewMode === 'movie' ? '' : 'none';
+  $('dl-png').style.display  = viewMode === 'lines' ? '' : 'none';   // PNG export is the line chart
+  $('dl-lines-copy').style.display = viewMode === 'lines' ? '' : 'none';
+  $('dl-grid-copy').style.display = viewMode === 'grid' ? '' : 'none';
+  $('dl-grid-png').style.display  = viewMode === 'grid' ? '' : 'none';
+  if (viewMode !== 'movie') movieStop();
+  if (viewMode === 'grid') drawGrid();
+  else if (viewMode === 'movie') drawMovie();
+  else drawChart();
+}
+
+/* ---------- movie: one run at a time, enlarged, scrub + play across the runs ---------- */
+let movieIdx = 0, movieTimer = null;
+function scoredYears(){ return history ? history.years.filter(e => e.n > 0 && e.byCode) : []; }
+function drawMovie(){
+  const years = scoredYears();
+  if (!years.length){ $('movie-radars').innerHTML = ''; $('movie-caption').textContent = ''; $('movie-play').disabled = $('movie-prev').disabled = $('movie-next').disabled = true; return; }
+  if (movieIdx >= years.length) movieIdx = years.length - 1;
+  if (movieIdx < 0) movieIdx = 0;
+  const e = years[movieIdx];
+  const slider = $('movie-slider'); slider.max = years.length - 1; slider.value = movieIdx;
+  $('movie-play').disabled = years.length < 2;
+  $('movie-prev').disabled = movieIdx <= 0;
+  $('movie-next').disabled = movieIdx >= years.length - 1;
+  const groupTot = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).totals[0];   // FAIR/Projects/SHARE have their own total; Extras/All fall back to FAIR
+  const totalKey = groupTot ? groupTot.key : 'fair';
+  const totalName = groupTot ? groupTot.label.replace(' Total','') : 'FAIR';
+  const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
+  $('movie-caption').innerHTML = `<b>${e.year}</b> · ${e.n.toLocaleString()} record${e.n===1?'':'s'}${e.n < THIN ? ' *' : ''} · ${totalName} total ${tot}`;
+  const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
+  $('movie-radars').innerHTML = codes.map(code => {
+    const uc = e.byCode[code]; if (!uc) return '';
+    const color = SPIRAL_COLORS[code] || '#9167b0';
+    const label = CODE_STYLE[code] ? CODE_STYLE[code].label : code;
+    const avg = (uc.res.average * 100).toFixed(0) + '%';
+    return `<div class="movie-cell"><div class="mc-title">${escHtml(label)}</div>${movieRadar(uc.res.items, color)}<div class="mc-avg">${avg}</div></div>`;
+  }).join('');
+}
+function movieStop(){ if (movieTimer){ clearInterval(movieTimer); movieTimer = null; } const b = $('movie-play'); if (b) b.textContent = '▶ Play'; }
+function moviePlay(){
+  if (movieTimer){ movieStop(); return; }
+  const years = scoredYears(); if (years.length < 2) return;
+  if (movieIdx >= years.length - 1) movieIdx = 0;   // at the end → restart from the first year
+  $('movie-play').textContent = '⏸ Pause';
+  movieTimer = setInterval(() => {
+    if (movieIdx >= scoredYears().length - 1){ movieStop(); drawMovie(); return; }   // stop on the last year
+    movieIdx++; drawMovie();
+  }, 1100);
+}
+// step one year without playing (buttons and arrow keys); clamped to the scored-year range
+function movieStep(delta){
+  movieStop();
+  const years = scoredYears(); if (!years.length) return;
+  movieIdx = Math.max(0, Math.min(years.length - 1, movieIdx + delta));
+  drawMovie();
+}
+
+/* ---------- downloads ---------- */
+function nowStamp(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}`; }
+function safeRepoId(){ return (history.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_'); }
+function triggerDownload(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function downloadCsv(){
+  if (!history) return;
+  const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  // one row per run x concept, plus per-run use-case averages — long form, analysis-ready
+  const rows = [['run','recordsScored','matchingTotal','useCase','concept','completeness']];
+  for (const e of history.years){
+    if (!e.byCode) continue;
+    for (const [code, v] of Object.entries(e.byCode)){
+      rows.push([e.year, e.n, e.matching ?? '', code, '(average)', v.res.average.toFixed(4)]);
+      for (const i of v.res.items) rows.push([e.year, e.n, e.matching ?? '', code, i.concept, i.comp.toFixed(4)]);
+    }
+    rows.push([e.year, e.n, e.matching ?? '', '(FAIR total)', '', e.totals.fair.toFixed(4)]);
+    rows.push([e.year, e.n, e.matching ?? '', '(Projects total)', '', e.totals.projects.toFixed(4)]);
+    rows.push([e.year, e.n, e.matching ?? '', '(SHARE total)', '', e.totals.share.toFixed(4)]);
+  }
+  const body = rows.map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
+  triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_scoreHistory__${nowStamp()}.csv`);
+}
+// wide summary: one row per run matching the run-by-run table's columns (values as
+// fractions 0-1, rounded like the suite's other summary CSVs). Empty runs get blank scores.
+function downloadSummary(){
+  if (!history || !history.years.length) return;
+  const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const round = x => x == null ? '' : Math.round(x * 10000) / 10000;
+  const extraCodes = PLOT_GROUPS.Extras.codes;
+  const headers = ['Repository_ID','Run','Records_Scored','Matching',
+    'FAIR_Total','Text','Identifiers','Connections','Contacts',
+    'Projects_Total', ...PROJECT_CODES, 'SHARE_Total', ...SHARE_CODES, ...extraCodes];
+  const rows = [headers];
+  for (const e of history.years){
+    const t = e.totals;
+    rows.push([
+      history.clientId, e.year, e.n, e.matching ?? '',
+      t ? round(t.fair) : '', ...TOTAL_CODES.map(cc => t ? round(t[cc]) : ''),
+      t ? round(t.projects) : '', ...PROJECT_CODES.map(cc => t ? round(t[cc]) : ''),
+      t ? round(t.share) : '', ...SHARE_CODES.map(cc => t ? round(t[cc]) : ''),
+      ...extraCodes.map(cc => t ? round(t[cc]) : '')
+    ]);
+  }
+  const body = rows.map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
+  triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_scoreHistorySummary__${nowStamp()}.csv`);
+}
+
+// compose the lines chart + title + legend into a PNG blob (shared by download and copy)
+function linesPngBlob(){
+  const chart = $('chart');
+  const scale = 2;
+  const W = chart.clientWidth || 960, chartH = 360;
+  const items = seriesFor(plotGroup);
+  const out = document.createElement('canvas');
+  const meas = out.getContext('2d');
+  const legendFont = '12px Inter, sans-serif';
+  meas.font = legendFont;
+  const pad = 16, sw = 18, gapIn = 6, gapBetween = 18, lineH = 20;
+  let x = pad, lines = 1;
+  const pos = items.map(s => {
+    const w = sw + gapIn + meas.measureText(s.label).width;
+    if (x + w > W - pad){ lines++; x = pad; }
+    const p = { x, line: lines }; x += w + gapBetween; return p;
+  });
+  const titleH = 52, legendH = lines * lineH + 10;
+  const H = titleH + chartH + legendH + pad;
+  out.width = W * scale; out.height = H * scale;
+  const ctx = out.getContext('2d'); ctx.scale(scale, scale);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#673289'; ctx.font = '600 15px Inter, sans-serif'; ctx.textBaseline = 'top';
+  ctx.fillText(`${history.repoName} (${history.clientId}) — use-case scores by run`, pad, 12);
+  const groupLabel = GRID_GROUP_LABEL[plotGroup] || plotGroup;
+  ctx.fillStyle = '#6b7280'; ctx.font = '11px Inter, sans-serif';
+  const filt = selectionFilterText();
+  ctx.fillText(`${groupLabel}${filt ? ' · ' + filt : ''} · each run scored at its own date`, pad, 33);
+  ctx.drawImage(chart, 0, titleH, W, chartH);
+  ctx.font = legendFont; ctx.textBaseline = 'middle';
+  items.forEach((s, i) => {
+    const y = titleH + chartH + (pos[i].line - 0.5) * lineH + 4;
+    ctx.fillStyle = s.color; ctx.fillRect(pos[i].x, y - 2, sw, s.width > 2 ? 4 : 3);
+    ctx.fillStyle = '#374151'; ctx.fillText(s.label, pos[i].x + sw + gapIn, y);
+  });
+  return new Promise((resolve, reject) => out.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null')), 'image/png'));
+}
+async function downloadPng(){
+  if (!history || !history.years.length) return;
+  try {
+    const blob = await linesPngBlob();
+    triggerDownload(blob, `${safeRepoId()}_scoreHistory_${plotGroup}__${nowStamp()}.png`);
+  } catch (e){ console.error(e); setStatus('Could not render the plot to PNG: ' + (e.message || e), true); }
+}
+async function copyLines(){
+  if (!history || !history.years.length) return;
+  const btn = $('dl-lines-copy'); const label = btn.textContent;
+  try {
+    const blob = await linesPngBlob();
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    btn.textContent = '✓ Copied';
+  } catch (e){ console.error(e); btn.textContent = 'Copy failed'; }
+  setTimeout(() => { btn.textContent = label; }, 1600);
+}
+
+/* ---------- boot ---------- */
+$('load-go').addEventListener('click', () => { const u = $('src-input').value.trim(); if (u) loadFromUrl(u); });
+$('src-input').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); $('load-go').click(); } });
+$('file-input').addEventListener('change', () => { const f = $('file-input').files[0]; if (f) loadFromFile(f); });
+// a history file can be dropped anywhere on the page
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f) loadFromFile(f);
+});
+$('dl-png').addEventListener('click', downloadPng);
+$('dl-grid-png').addEventListener('click', downloadGridPng);
+$('dl-grid-copy').addEventListener('click', copyGrid);
+$('dl-lines-copy').addEventListener('click', copyLines);
+$('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; $('share-proto').style.display = plotGroup === 'SHARE' ? '' : 'none'; if (!history) return; renderLegend(); renderTable(); if (viewMode === 'grid') drawGrid(); else if (viewMode === 'movie') drawMovie(); else drawChart(); });
+$('view-mode').addEventListener('change', () => { viewMode = $('view-mode').value; if (history) renderView(); });
+$('movie-play').addEventListener('click', moviePlay);
+$('movie-prev').addEventListener('click', () => movieStep(-1));
+$('movie-next').addEventListener('click', () => movieStep(1));
+$('movie-slider').addEventListener('input', () => { movieStop(); movieIdx = +$('movie-slider').value; drawMovie(); });
+// arrow keys step through the runs while the Movie view is active (ignore when typing in a field)
+document.addEventListener('keydown', e => {
+  if (viewMode !== 'movie' || $('movie').style.display === 'none') return;
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || ''))) return;
+  if (e.key === 'ArrowLeft'){ e.preventDefault(); movieStep(-1); }
+  else if (e.key === 'ArrowRight'){ e.preventDefault(); movieStep(1); }
+});
+$('dl-summary').addEventListener('click', downloadSummary);
+$('dl-csv').addEventListener('click', downloadCsv);
+// deep link: ?src=<history-file URL> loads on arrival (GitHub blob URLs are converted to raw)
+(() => {
+  const src = new URLSearchParams(location.search).get('src');
+  if (src){ $('src-input').value = src; loadFromUrl(src); }
+})();
+</script>
+
+<footer style="border-top:1px solid var(--line);background:#fff;padding:1rem 2rem;margin-top:2rem;">
+  <div style="max-width:1040px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" style="height:22px;width:auto;display:block;" onerror="this.style.display='none'" />
+      </a>
+      <span style="font-size:0.72rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Metrics Viewer</a> · Created by <a href="https://metadatagamechangers.com" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Metadata Game Changers</a> · Better Documentation | Better Data | Better Science</span>
+    </div>
+    <span style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:0.65rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Report an issue ↗</a> &nbsp;·&nbsp; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none;">CC BY-NC 4.0</a> &nbsp;·&nbsp; Data from <a href="https://github.com/Metadata-Game-Changers/metrics-watch" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">metrics-watch</a> history files</span>
+  </div>
+</footer>
+<!-- Google Analytics (shared consent with the rest of the suite via localStorage 'rcw-ga') -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9JQRWY72HW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  try{ if(localStorage.getItem('rcw-ga')==='declined') window['ga-disable-G-9JQRWY72HW']=true; }catch(e){}
+  gtag('js', new Date());
+  gtag('config', 'G-9JQRWY72HW');
+</script>
+<!-- Analytics consent banner -->
+<div id="analytics-banner">
+  <span>This site uses Google Analytics for anonymous usage statistics. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy ↗</a></span>
+  <div id="analytics-banner-btns">
+    <button class="ab-btn ab-btn-ok" type="button" onclick="hideBanner('accepted')">OK</button>
+    <button class="ab-btn ab-btn-no" type="button" onclick="hideBanner('declined')">Decline</button>
+  </div>
+</div>
+<script>
+  function hideBanner(choice){
+    try{ localStorage.setItem('rcw-ga', choice); }catch(e){}
+    document.getElementById('analytics-banner').style.display='none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  }
+  (function(){
+    var choice=null; try{ choice=localStorage.getItem('rcw-ga'); }catch(e){}
+    if (choice) document.getElementById('analytics-banner').style.display='none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  })();
+</script>
+</body>
+</html>
