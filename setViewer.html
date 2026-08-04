@@ -265,6 +265,7 @@
         </label>
         <button class="dl-btn" id="dl-grid-copy" type="button" title="Copy the grid to the clipboard as an image">⧉ Copy grid</button>
         <button class="dl-btn" id="dl-grid-png" type="button" title="Download the grid as a PNG image">⬇ Grid (PNG)</button>
+        <button class="dl-btn" id="dl-csv" type="button" title="One row per member for the shown run, in the shown order: records, all group totals, and every use-case average (fractions 0–1, analysis-ready)">⬇ Set Summary (CSV)</button>
       </div>
     </div>
     <p class="card-intro">One scoring run, whole set: each column is a member, each row a use case, each cell that member&rsquo;s concept-profile radar with its average below. Columns sort by the group total, lowest first, so the row <b>builds toward the bright spots</b> — flip the Sort to lead with them instead, and click a member&rsquo;s name to open its full history in the Metrics Viewer. A dimmed column means that member wasn&rsquo;t scored in the selected run; its latest earlier run is shown (hover for the date).</p>
@@ -678,6 +679,33 @@ async function copyGrid(){
   } catch (e){ console.error(e); btn.textContent = 'Copy failed'; }
   setTimeout(() => { btn.textContent = label; }, 1600);
 }
+// one row per member for the SHOWN run, in the SHOWN order — group totals and every
+// use-case average as 0–1 fractions (the suite's summary-CSV conventions). A member shown
+// from an older run (dimmed column) carries its own run stamp in the Run column.
+function downloadCsv(){
+  if (!DATA || !DATA.members.length) return;
+  const { stamp, cols } = columns();
+  if (!cols.length) return;
+  const csv = v => { const t = String(v); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+  const round = x => x == null ? '' : Math.round(x * 10000) / 10000;
+  const extraCodes = PLOT_GROUPS.Extras.codes;
+  const rows = [['Set','Repository_ID','Label','Name','Run','Records_Scored','Matching',
+    'FAIR_Total','Text','Identifiers','Connections','Contacts',
+    'Projects_Total', ...PROJECT_CODES, 'SHARE_Total', ...SHARE_CODES, ...extraCodes]];
+  for (const { m, e } of cols){
+    const uc = code => e.byCode[code] ? e.byCode[code].res.average : null;
+    rows.push([
+      DATA.setName, m.client, m.label, m.name, e.year, e.n, e.matching ?? '',
+      round(e.totals.fair), ...TOTAL_CODES.map(c => round(uc(c))),
+      round(e.totals.projects), ...PROJECT_CODES.map(c => round(uc(c))),
+      round(e.totals.share), ...SHARE_CODES.map(c => round(uc(c))),
+      ...extraCodes.map(c => round(uc(c)))
+    ]);
+  }
+  const body = rows.map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
+  const safe = DATA.setName.replace(/[^A-Za-z0-9._-]/g, '_');
+  triggerDownload(new Blob([body], { type: 'text/csv' }), `set_${safe}_summary__${stamp}.csv`);
+}
 function triggerDownload(blob, filename){
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = filename;
@@ -701,6 +729,7 @@ $('plot-group').addEventListener('change', () => {
 });
 $('dl-grid-copy').addEventListener('click', copyGrid);
 $('dl-grid-png').addEventListener('click', downloadGridPng);
+$('dl-csv').addEventListener('click', downloadCsv);
 (async () => {
   const params = new URLSearchParams(location.search);
   const src = params.get('src');
