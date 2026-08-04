@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Metrics Viewer — use-case score history</title>
+<title>Set Viewer — compare a set of repositories</title>
 <link rel="icon" type="image/png" href="favicon_MGC.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -126,6 +126,10 @@
   table.grid-tbl th.yr{font-size:.74rem;font-weight:600;color:var(--ink);padding:.2rem .3rem;text-align:center;white-space:nowrap}
   table.grid-tbl th.yr small{display:block;font-weight:400;color:var(--muted);font-size:.62rem}
   table.grid-tbl th.yr small.tot{color:var(--accent-dk);font-weight:600;font-size:.68rem}
+  table.grid-tbl th.yr a.nm{display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--accent-dk);text-decoration:none;margin:0 auto}
+  table.grid-tbl th.yr a.nm:hover{text-decoration:underline}
+  table.grid-tbl th.yr small.cid{font-family:'IBM Plex Mono',monospace;font-size:.56rem}
+  table.grid-tbl td.cell.stale{opacity:.55}
   table.grid-tbl th.rowlab{font-size:.72rem;font-weight:600;color:var(--accent-dk);text-align:right;padding:0 .6rem 0 .2rem;white-space:nowrap;vertical-align:middle}
   table.grid-tbl td.cell{padding:.15rem;text-align:center;vertical-align:top}
   table.grid-tbl td.cell .cell-avg{font-size:.68rem;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:-.15rem}
@@ -171,7 +175,7 @@
       <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
         <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" onerror="this.style.display='none'" />
       </a>
-      <div class="brand-title-wrap"><div class="brand-tool-name">Metrics Viewer</div></div>
+      <div class="brand-title-wrap"><div class="brand-tool-name">Set Viewer</div></div>
     </div>
     <div class="topbar-links">
       <div class="topbar-col">
@@ -180,7 +184,7 @@
       <a id="connectivity-link" href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity ↗</a>
       <a id="activity-link" href="repo-activity.html" target="_blank" rel="noopener">Repository Activity ↗</a>
       <a id="history-link" href="repositoryHistory.html" target="_blank" rel="noopener">Repository History ↗</a>
-      <a href="setViewer.html" target="_blank" rel="noopener">Set Viewer ↗</a>
+      <a href="metricsViewer.html" target="_blank" rel="noopener">Metrics Viewer ↗</a>
       </div>
       <div class="topbar-col">
       <a href="useCases.html" target="_blank" rel="noopener">Use Cases ↗</a>
@@ -197,30 +201,17 @@
 <div class="hero">
   <div class="hero-inner">
     <div class="hero-text">
-      <h2 class="hero-title">Score history, run by run</h2>
-      <p class="hero-sub">Views a <b>useCaseHistory.json</b> — the accumulated use-case scores a
-      <a href="https://github.com/Metadata-Game-Changers/metrics-watch" target="_blank" rel="noopener" style="color:#5b3d7a">metrics-watch</a>
-      repository (or the MGC score archive) builds run by run — as line trends, a grid of radar plots, or a movie. Nothing is fetched from DataCite; every run was scored at its own date.</p>
+      <h2 class="hero-title">Compare a set, member by member</h2>
+      <p class="hero-sub">Reads the <b>sets.json</b> a <a href="https://github.com/Metadata-Game-Changers/metrics-watch" target="_blank" rel="noopener" style="color:#5b3d7a">metrics-watch</a>
+      fork publishes and shows one scoring run as a grid of radar plots — <b>rows are use cases, columns are the set&rsquo;s members</b> — so bright spots stand out at a glance.
+      For one member&rsquo;s history over time, open it in the <a href="metricsViewer.html" style="color:#5b3d7a">Metrics Viewer</a> (each column header links there).</p>
     </div>
     <div class="hero-search">
       <div class="hero-form">
-        <input class="hero-input" id="src-input" type="url" placeholder="https://github.com/…/reports/…/…_useCaseHistory.json" spellcheck="false" autocomplete="off" />
+        <input class="hero-input" id="src-input" type="url" placeholder="https://github.com/…/blob/main/docs/sets.json" spellcheck="false" autocomplete="off" />
         <button class="hero-go" id="load-go">Load →</button>
       </div>
-      <div class="hero-secondary">
-        <span class="hero-field grow">
-          <span class="hero-secondary-label">or open a file</span>
-          <input type="file" id="file-input" accept=".json,application/json" style="font-size:.72rem;color:#5b3d7a" />
-        </span>
-        <span class="hero-field" style="font-size:.68rem;color:#5b3d7a">…or drop a history file anywhere on this page</span>
-      </div>
-      <div class="hero-help">
-        <a href="?src=https://raw.githubusercontent.com/Metadata-Game-Changers/metrics-watch/main/example/iris.iris_useCaseHistory.json" title="A real history from the IRIS seismology repository during an active 2025 re-curation project — FAIR total climbing 11% to 37%" style="font-weight:600">Try an example: IRIS during re-curation →</a>
-        &nbsp;·&nbsp;
-        <a href="https://github.com/Metadata-Game-Changers/metrics-watch/tree/main/example" target="_blank" rel="noopener" title="What the example shows and where useCaseHistory.json files come from">About this example ↗</a>
-        &nbsp;·&nbsp;
-        <a href="https://github.com/Metadata-Game-Changers/metrics-watch#what-a-run-produces" target="_blank" rel="noopener" title="Where useCaseHistory.json files come from">Where do these files come from? ↗</a>
-      </div>
+      <div class="hero-help"><a href="https://github.com/Metadata-Game-Changers/metrics-watch#sets-different-repositories-queries-and-schedules-in-one-fork" target="_blank" rel="noopener" title="How metrics-watch sets work — including sets defined by a consortium id">What is a set? ↗</a></div>
     </div>
   </div>
 </div>
@@ -229,8 +220,8 @@
   <div class="sel-inner">
     <span class="sel-repo" id="sel-repo">—</span>
     <div class="sel-stats">
-      <span class="sel-stat"><b id="sel-years">—</b> runs</span>
-      <span class="sel-stat"><b id="sel-records">—</b> records scored</span>
+      <span class="sel-stat"><b id="sel-members">—</b> members</span>
+      <span class="sel-stat"><b id="sel-runs">—</b> runs recorded</span>
       <span class="sel-stat" id="sel-mode">—</span>
       <span class="sel-stat" id="sel-filter" style="display:none"></span>
     </div>
@@ -238,77 +229,55 @@
 </div>
 
 <div class="wrap">
-  <div id="status">Paste a useCaseHistory.json URL (a GitHub link works) or choose a local file to view its score history.</div>
+  <div id="status">Paste the sets.json URL from a metrics-watch fork (a GitHub link works) to compare its sets.</div>
   <div id="progress"><i></i></div>
   <div id="apiurl"></div>
   <div id="tips" class="tips" style="display:none"></div>
 
-  <div class="card" id="chart-card" style="display:none">
+  <div class="card" id="grid-card" style="display:none">
     <div class="card-head">
-      <h2><span id="chart-head-label">Completeness by run</span> <span class="proto-flag" id="share-proto" style="display:none">SHARE · Prototype</span></h2>
+      <h2><span id="grid-head-label">Set members, side by side</span> <span class="proto-flag" id="share-proto" style="display:none">SHARE · Prototype</span></h2>
       <div class="card-actions">
-        <label class="hero-chk" style="gap:.4rem" title="Lines: one trend line per use case over the years. Grid: a radar plot per use case per year. Movie: one year at a time, enlarged — press Play to animate across the years.">
-          <span class="hero-secondary-label">View</span>
-          <select class="hero-select" id="view-mode" style="flex:none;min-width:0">
-            <option value="lines" selected>Lines</option>
-            <option value="grid">Grid</option>
-            <option value="movie">Movie</option>
-          </select>
+        <label class="hero-chk" style="gap:.4rem"><span class="hero-secondary-label">Set</span>
+          <select class="hero-select" id="set-select" style="flex:none;min-width:0"></select>
         </label>
-        <label class="hero-chk" style="gap:.4rem" title="Which use cases to show: the four FAIR use cases, the three Project use cases, the two additional DataCite use cases, or all nine">
+        <label class="hero-chk" style="gap:.4rem" title="Which scoring run to show — every member's column comes from this run (a dimmed cell means that member's latest earlier run is shown instead)">
+          <span class="hero-secondary-label">Run</span>
+          <select class="hero-select" id="run-select" style="flex:none;min-width:0"></select>
+        </label>
+        <label class="hero-chk" style="gap:.4rem" title="Which use cases to show as rows">
           <span class="hero-secondary-label">Use Cases</span>
           <select class="hero-select" id="plot-group" style="flex:none;min-width:0">
-            <option value="FAIR" selected>FAIR (4 + total)</option>
-            <option value="Projects">Projects (3 + total)</option>
-            <option value="SHARE">SHARE (5 + total)</option>
+            <option value="FAIR" selected>FAIR (4)</option>
+            <option value="Projects">Projects (3)</option>
+            <option value="SHARE">SHARE (5)</option>
             <option value="Extras">Extras (2)</option>
             <option value="All">All (14)</option>
           </select>
         </label>
-        <button class="dl-btn" id="dl-lines-copy" type="button" title="Copy the line plot to the clipboard as an image">⧉ Copy plot</button>
-        <button class="dl-btn" id="dl-png" type="button">⬇ Plot (PNG)</button>
-        <button class="dl-btn" id="dl-grid-copy" type="button" style="display:none" title="Copy the radar grid to the clipboard as an image">⧉ Copy grid</button>
-        <button class="dl-btn" id="dl-grid-png" type="button" style="display:none" title="Download the radar grid as a PNG image">⬇ Grid (PNG)</button>
-        <button class="dl-btn" id="dl-summary" type="button" title="One row per year: records, FAIR total and the four FAIR use cases, Projects total and the three Project use cases, and the two additional DataCite use cases">⬇ Data Summary (CSV)</button>
-        <button class="dl-btn" id="dl-csv" type="button" title="Long form: one row per year × concept (analysis-ready)">⬇ Data (CSV)</button>
+        <label class="hero-chk" style="gap:.4rem" title="Column order: highest group total first (bright spots first), or alphabetical">
+          <span class="hero-secondary-label">Sort</span>
+          <select class="hero-select" id="sort-select" style="flex:none;min-width:0">
+            <option value="total" selected>Total ↓</option>
+            <option value="name">Name</option>
+          </select>
+        </label>
+        <button class="dl-btn" id="dl-grid-copy" type="button" title="Copy the grid to the clipboard as an image">⧉ Copy grid</button>
+        <button class="dl-btn" id="dl-grid-png" type="button" title="Download the grid as a PNG image">⬇ Grid (PNG)</button>
       </div>
     </div>
-    <p class="card-intro">Each point is one <b>scoring run</b> — a sample of the repository&rsquo;s records as they were <b>on that run&rsquo;s date</b> — so a rising line is re-curation you can watch happening. Thin runs (fewer than 10 records) — hollow points in <b>Lines</b>, dimmed cells in <b>Grid</b> — have noisy percentages. Switch <b>View</b> to a radar-plot <b>Grid</b> to watch each use case&rsquo;s concept profile change run to run, or to <b>Movie</b> to animate it.</p>
-
-    <canvas id="chart" width="960" height="360"></canvas>
-    <div class="legend" id="legend"></div>
-    <div id="grid" style="display:none"></div>
-    <div id="movie" style="display:none">
-      <div class="movie-bar">
-        <button class="dl-btn" id="movie-prev" type="button" title="Previous year (←)">◀ Prev</button>
-        <button class="dl-btn" id="movie-play" type="button">▶ Play</button>
-        <button class="dl-btn" id="movie-next" type="button" title="Next year (→)">Next ▶</button>
-        <input type="range" id="movie-slider" min="0" max="0" value="0" step="1" aria-label="Run" />
-        <span class="movie-caption" id="movie-caption"></span>
-      </div>
-      <div class="movie-radars" id="movie-radars"></div>
-    </div>
-  </div>
-
-  <div class="card" id="table-card" style="display:none">
-    <h2>Run by run</h2>
-    <div style="overflow-x:auto">
-    <table class="hist"><thead><tr id="hist-head">
-      <th>Run</th><th>Records scored</th><th>Matching</th><th>FAIR Total</th>
-      <th>Text</th><th>Identifiers</th><th>Connections</th><th>Contacts</th>
-    </tr></thead><tbody id="hist-body"></tbody></table>
-    </div>
+    <p class="card-intro">One scoring run, whole set: each column is a member, each row a use case, each cell that member&rsquo;s concept-profile radar with its average below. Columns sort by the group total so <b>bright spots lead</b> — click a member&rsquo;s name to open its full history in the Metrics Viewer. A dimmed column means that member wasn&rsquo;t scored in the selected run; its latest earlier run is shown (hover for the date).</p>
+    <div id="grid"></div>
   </div>
 </div>
 
-
 <script>
-/* Metrics Viewer: renders a useCaseHistory.json — the per-series score history a metrics-watch
-   repository (github.com/Metadata-Game-Changers/metrics-watch) or the MGC score archive derives
-   from useCaseReport snapshots — with the same Lines / Grid / Movie views as Repository History.
-   The viewer never fetches DataCite and never scores: every snapshot already carries each use
-   case's average and per-concept completeness, scored at that run's own date. The rendering
-   machinery below is ported from repositoryHistory.html — keep the two in sync. */
+/* Set Viewer: reads the docs/sets.json manifest a metrics-watch fork publishes, loads every
+   member's useCaseHistory.json, and shows ONE scoring run as a grid — rows = use cases,
+   columns = members — for at-a-glance bright-spot comparison. Sets may be listed
+   repositories or a whole consortium (expanded at scoring time). The per-member time
+   dimension lives in metricsViewer.html (column headers link there). Radar and scoring
+   machinery is ported from metricsViewer.html / repositoryHistory.html — keep them in sync. */
 const $ = id => document.getElementById(id);
 const statusEl = $('status');
 function setStatus(msg, isErr){ statusEl.textContent = msg; statusEl.className = isErr ? 'err' : ''; }
@@ -439,8 +408,7 @@ function movieRadar(items, color){
   }
   return `<svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
 }
-const THIN = 10;   // runs with fewer records than this are drawn hollow / italic
-let history = null;   // { clientId, queryLabel, repoName, source, years:[{year, t, n, matching, totals, byCode}] }
+const THIN = 10;   // members with fewer records than this in the shown run are marked *
 
 function yearTotals(byCode){
   const t = { fair: weightedTotal(byCode, TOTAL_CODES), projects: weightedTotal(byCode, PROJECT_CODES), share: weightedTotal(byCode, SHARE_CODES) };
@@ -448,8 +416,7 @@ function yearTotals(byCode){
   return t;
 }
 
-/* ---------- loading: history file -> entries the views understand ---------- */
-// '2026-08-01T16' -> decimal year, so runs land at true positions on the time axis
+/* ---------- loading (entry conversion ported from metricsViewer.html) ---------- */
 function tOf(stamp){
   const m = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}))?/.exec(String(stamp || ''));
   if (!m) return null;
@@ -485,242 +452,184 @@ function entryFromSnapshot(snap){
            sampling: rep.sampling || '', query: rep.query || '', repoName: rep.name || '',
            byCode, totals };
 }
-function loadHistoryObject(h, sourceLabel){
-  // a single useCaseReport snapshot is welcome too — wrap it as a one-run history
-  if (h && !h.snapshots && Array.isArray(h.useCases)){
-    h = { repository: { id: h.repository && h.repository.id },
-          snapshots: [{ dateTime: h.repository && h.repository.dateTime, repository: h.repository, useCases: h.useCases }] };
-  }
-  const snaps = (h && Array.isArray(h.snapshots)) ? h.snapshots.slice() : null;
-  if (!snaps || !snaps.length) throw new Error('That is not a useCaseHistory.json — expected a top-level "snapshots" array of useCaseReport snapshots (or a single useCaseReport).');
-  snaps.sort((a, b) => String(a.dateTime || '').localeCompare(String(b.dateTime || '')));
-  const entries = snaps.map(entryFromSnapshot);
-  const last = entries[entries.length - 1];
-  history = {
-    clientId: (h.repository && h.repository.id) || '',
-    queryLabel: (h.repository && h.repository.queryLabel) || '',
-    repoName: last.repoName || entries.map(e => e.repoName).filter(Boolean)[0] || (h.repository && h.repository.id) || 'repository',
-    source: sourceLabel || 'useCaseHistory.json',
-    years: entries,
-  };
-  movieStop(); movieIdx = 0;
-  renderSelection();
-  $('chart-card').style.display = ''; $('table-card').style.display = '';
-  renderLegend(); renderTable(); renderView();
-  const scored = entries.filter(e => e.n > 0).length;
-  setStatus(`Loaded ${entries.length} run${entries.length === 1 ? '' : 's'} (${scored} scored) — ${history.repoName}${history.queryLabel ? ' · ' + history.queryLabel : ''}.`);
-}
+
 // GitHub "blob" page URLs aren't the file itself — quietly swap in the raw equivalent
 function rawUrl(u){
   const m = /^https?:\/\/github\.com\/([^\/]+)\/([^\/]+)\/blob\/(.+)$/.exec(String(u || '').trim());
   return m ? `https://raw.githubusercontent.com/${m[1]}/${m[2]}/${m[3]}` : String(u || '').trim();
 }
-async function loadFromUrl(url){
-  const src = rawUrl(url);
+
+let DATA = null;   // { src, root, sets:[{name, schedule, series}], setName, members:[{client,label,name,url,entries}] }
+
+function memberFromHistory(h, series, url){
+  const snaps = (h && Array.isArray(h.snapshots)) ? h.snapshots.slice() : [];
+  snaps.sort((a, b) => String(a.dateTime || '').localeCompare(String(b.dateTime || '')));
+  const entries = snaps.map(entryFromSnapshot);
+  const name = entries.length ? (entries[entries.length - 1].repoName ||
+    entries.map(e => e.repoName).filter(Boolean)[0] || series.client) : series.client;
+  return { client: series.client, label: series.label || '', name, url, entries };
+}
+function manifestRoot(src){
+  // history paths in the manifest are repo-root-relative; the manifest itself lives in docs/
+  return /\/docs\/[^\/]*$/.test(src) ? src.replace(/docs\/[^\/]*$/, '') : src.replace(/[^\/]*$/, '');
+}
+async function loadManifest(url){
+  let src;
+  try { src = new URL(rawUrl(url), location.href).href; }   // absolutize relative inputs
+  catch (e){ setStatus('That does not look like a URL.', true); return false; }
   try {
-    setStatus('Loading history…'); setProgressIndeterminate();
+    setStatus('Loading sets.json…'); setProgressIndeterminate();
     const res = await fetch(src);
-    if (!res.ok) throw new Error(`Could not load the history file (HTTP ${res.status}). Public repositories serve it via their raw URL — for a private repository, download the file and use the file picker instead.`);
-    loadHistoryObject(await res.json(), src);
-    try { const u = new URL(location.href); u.searchParams.set('src', src); window.history.replaceState({}, '', u); } catch (e){ /* non-fatal */ }
+    if (!res.ok) throw new Error(`Could not load sets.json (HTTP ${res.status}) — is the fork public? The Set Viewer needs the manifest a metrics-watch run writes to docs/sets.json.`);
+    const m = await res.json();
+    const sets = (m.sets || []).filter(st => (st.series || []).length);
+    if (!sets.length) throw new Error('That sets.json has no sets with scored series yet — run the fork\u2019s workflow first.');
+    DATA = { src, root: manifestRoot(src), sets, setName: '', members: [] };
+    const sel = $('set-select');
+    sel.innerHTML = sets.map(st =>
+      `<option value="${escAttr(st.name)}">${escHtml(st.name)} (${st.series.length})</option>`).join('');
+    try { const u = new URL(location.href); u.searchParams.set('src', src); window.history.replaceState({}, '', u); } catch (e){}
+    return true;
   } catch (e){
-    console.error(e);
-    setStatus(e instanceof SyntaxError ? 'That URL did not return JSON — check it points at a useCaseHistory.json file.' : (e.message || String(e)), true);
-  } finally { hideProgress(); }
+    console.error(e); hideProgress();
+    setStatus(e instanceof SyntaxError ? 'That URL did not return JSON — check it points at a docs/sets.json.' : (e.message || String(e)), true);
+    return false;
+  }
 }
-function loadFromFile(file){
-  const reader = new FileReader();
-  reader.onload = () => {
-    try { loadHistoryObject(JSON.parse(reader.result), file.name); }
-    catch (e){ console.error(e); setStatus(e instanceof SyntaxError ? `${file.name} is not valid JSON.` : (e.message || String(e)), true); }
-  };
-  reader.onerror = () => setStatus(`Could not read ${file.name}.`, true);
-  reader.readAsText(file);
+async function loadSet(name){
+  const st = DATA.sets.find(x => x.name === name) || DATA.sets[0];
+  DATA.setName = st.name;
+  $('set-select').value = st.name;
+  setStatus(`Loading ${st.series.length} member histor${st.series.length === 1 ? 'y' : 'ies'}…`);
+  setProgressIndeterminate();
+  const members = await Promise.all(st.series.map(async series => {
+    let url = '';
+    try {
+      url = new URL(series.history, DATA.root).href;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return memberFromHistory(await res.json(), series, url);
+    } catch (e){
+      console.warn('member failed:', series.client, e);
+      return { client: series.client, label: series.label || '', name: series.client, url, entries: [] };
+    }
+  }));
+  DATA.members = members.filter(m => m.entries.length);
+  const missed = members.length - DATA.members.length;
+  hideProgress();
+  if (!DATA.members.length){ setStatus('No member histories could be loaded for this set.', true); return; }
+  const runs = allRuns();
+  $('run-select').innerHTML = runs.map((r, i) =>
+    `<option value="${escAttr(r)}"${i === 0 ? ' selected' : ''}>${escHtml(r)}${i === 0 ? ' (latest)' : ''}</option>`).join('');
+  renderSelection(st);
+  $('grid-card').style.display = '';
+  drawSetGrid();
+  try { const u = new URL(location.href); u.searchParams.set('set', st.name); window.history.replaceState({}, '', u); } catch (e){}
+  setStatus(`Loaded ${DATA.members.length} member${DATA.members.length === 1 ? '' : 's'} of set "${st.name}"`
+    + (missed ? ` (${missed} could not be loaded)` : '') + ` — ${runs.length} run${runs.length === 1 ? '' : 's'} recorded.`);
 }
-
-/* ---------- rendering ---------- */
-function renderSelection(){
+function allRuns(){
+  const stamps = new Set();
+  for (const m of DATA.members) for (const e of m.entries) stamps.add(String(e.year));
+  return [...stamps].sort().reverse();   // newest first
+}
+// the member's entry for the selected run: exact stamp, else its latest earlier one (marked stale)
+function entryAt(member, stamp){
+  let best = null;
+  for (const e of member.entries){ if (String(e.year) <= stamp && (!best || String(e.year) > String(best.year))) best = e; }
+  return best ? { entry: best, stale: String(best.year) !== stamp } : null;
+}
+function renderSelection(st){
   $('sel-summary').style.display = '';
-  $('sel-repo').innerHTML = `${escHtml(history.repoName)}<span class="sel-id">${escHtml(history.clientId)}${history.queryLabel ? ' · ' + escHtml(history.queryLabel) : ''}</span>`;
-  const es = history.years;
-  $('sel-years').textContent = String(es.length);
-  $('sel-records').textContent = es.reduce((a, e) => a + (e.n || 0), 0).toLocaleString();
-  $('sel-mode').textContent = `${String(es[0].year).slice(0, 10)} → ${String(es[es.length - 1].year).slice(0, 10)}`;
-  const last = es[es.length - 1];
-  const parts = [];
-  if (last.query) parts.push(`query: ${last.query}`);
-  if (last.sampling) parts.push(last.sampling);
-  $('sel-filter').textContent = parts.length ? parts.join(' · ') : '';
-  $('sel-filter').style.display = parts.length ? '' : 'none';
+  $('sel-repo').innerHTML = `${escHtml(st.name)}<span class="sel-id">${escHtml(DATA.src.replace(/^https?:\/\//, '').slice(0, 60))}</span>`;
+  $('sel-members').textContent = String(st.series.length);
+  $('sel-runs').textContent = String(allRuns().length);
+  $('sel-mode').textContent = `schedule: ${st.schedule || 'monthly'}`;
+  $('sel-filter').style.display = 'none';
 }
 
-function renderLegend(){
-  $('legend').innerHTML = seriesFor(plotGroup).map(s =>
-    `<span><i style="background:${s.color};height:${s.width>2?'4px':'3px'}"></i>${s.label}</span>`).join('')
-    + '<span class="thin-note">hollow point = fewer than 10 records</span>';
-}
-
-// the run-by-run table follows the Use Cases selector: the group's total (Extras/All fall
-// back to the FAIR total, like the grid) plus one column per use case in the group
-function tableColumns(){
+/* ---------- the grid: rows = use cases, columns = members, one run ---------- */
+function groupInfo(){
   const g = PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR;
   const gt = g.totals[0];
-  const labels = {}; seriesFor(plotGroup).forEach(sr => { labels[sr.key] = sr.label; });
-  return { totKey: gt ? gt.key : 'fair', totName: gt ? gt.label : 'FAIR Total',
-           codes: g.codes.map(c => ({ code: c, label: labels[c] || c })) };
+  return { codes: g.codes, totalKey: gt ? gt.key : 'fair', totalName: gt ? gt.label.replace(' Total', '') : 'FAIR' };
 }
-function renderTableHead(){
-  const tc = tableColumns();
-  $('hist-head').innerHTML = `<th>Run</th><th>Records scored</th><th>Matching</th><th>${escHtml(tc.totName)}</th>`
-    + tc.codes.map(c => `<th>${escHtml(c.label)}</th>`).join('');
+function columns(){
+  const stamp = $('run-select').value || (allRuns()[0] || '');
+  const { totalKey } = groupInfo();
+  const cols = DATA.members.map(m => {
+    const at = entryAt(m, stamp);
+    return at ? { m, e: at.entry, stale: at.stale } : null;
+  }).filter(Boolean);
+  if ($('sort-select').value === 'name') cols.sort((a, b) => a.m.name.localeCompare(b.m.name));
+  else cols.sort((a, b) => ((b.e.totals[totalKey] ?? -1) - (a.e.totals[totalKey] ?? -1)) || a.m.name.localeCompare(b.m.name));
+  return { stamp, cols };
 }
-function addTableRow(e){
-  const tc = tableColumns();
-  const thin = e.n > 0 && e.n < THIN;
-  const cell = v => v == null ? '—' : fmtPct(v);
-  const row = e.n === 0
-    ? `<tr><td>${escHtml(String(e.year))}</td><td class="num">0</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td><td colspan="${tc.codes.length + 1}" style="text-align:left;color:var(--muted);font-style:italic">no records scored</td></tr>`
-    : `<tr><td>${escHtml(String(e.year))}${thin ? ' *' : ''}</td><td class="num${thin ? ' thin' : ''}">${e.n.toLocaleString()}</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td>`
-      + `<td class="num"><b>${cell(e.totals[tc.totKey])}</b></td>`
-      + tc.codes.map(cc => `<td class="num">${cell(e.totals[cc.code])}</td>`).join('') + '</tr>';
-  $('hist-body').insertAdjacentHTML('beforeend', row);
-}
-function renderTable(){
-  if (!history) return;
-  renderTableHead();
-  $('hist-body').innerHTML = '';
-  for (const e of history.years) addTableRow(e);
-}
-
-function drawChart(){
-  const canvas = $('chart');
-  const dpr = window.devicePixelRatio || 1;
-  const cssW = canvas.clientWidth || 960, cssH = 360;
-  canvas.width = cssW * dpr; canvas.height = cssH * dpr;
-  const ctx = canvas.getContext('2d');
-  ctx.scale(dpr, dpr);
-  ctx.clearRect(0, 0, cssW, cssH);
-  if (!history || !history.years.length) return;
-  const ts = history.years.map(e => e.t ?? e.year);
-  const minT = Math.min(...ts), maxT = Math.max(...ts);
-  const padL = 44, padR = 16, padT = 12, padB = 40;
-  const W = cssW - padL - padR, H = cssH - padT - padB;
-  const x = t => padL + (maxT === minT ? W/2 : (t - minT) / (maxT - minT) * W);
-  const yy = v => padT + (1 - v) * H;
-  // grid + axes
-  ctx.font = '11px Inter, sans-serif';
-  ctx.fillStyle = '#6b7280'; ctx.strokeStyle = '#e6e3ec'; ctx.lineWidth = 1;
-  for (let g = 0; g <= 100; g += 25){
-    const gy = yy(g/100);
-    ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(cssW - padR, gy); ctx.stroke();
-    ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText(g + '%', padL - 6, gy);
-  }
-  const nP = history.years.length;
-  const step = nP > 18 ? 4 : (nP > 9 ? 2 : 1);
-  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  history.years.forEach((e, i) => {
-    if (i % step !== 0 && i !== nP - 1) return;
-    const px = x(e.t ?? e.year);
-    ctx.fillStyle = '#6b7280'; ctx.fillText(String(e.year).slice(0, 10), px, cssH - padB + 8);
-    ctx.fillStyle = '#a99bbf'; ctx.font = '9px Inter, sans-serif'; ctx.fillText(e.n ? 'n=' + e.n : '·', px, cssH - padB + 22); ctx.font = '11px Inter, sans-serif';
-  });
-  // series
-  for (const s of seriesFor(plotGroup)){
-    const pts = history.years
-      .filter(e => e.n > 0 && e.totals && e.totals[s.key] != null)
-      .map(e => ({ px: x(e.t ?? e.year), py: yy(Math.min(1, e.totals[s.key])), thin: e.n < THIN }));
-    if (!pts.length) continue;
-    ctx.strokeStyle = s.color; ctx.lineWidth = s.width || 1.5;
-    ctx.setLineDash(s.dash || []);
-    ctx.beginPath();
-    pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.px, p.py) : ctx.lineTo(p.px, p.py));
-    ctx.stroke();
-    ctx.setLineDash([]);
-    for (const p of pts){
-      ctx.beginPath(); ctx.arc(p.px, p.py, s.width > 2 ? 4 : 3, 0, Math.PI * 2);
-      if (p.thin){ ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = s.color; ctx.lineWidth = 1.5; ctx.stroke(); }
-      else { ctx.fillStyle = s.color; ctx.fill(); }
-    }
-  }
-}
-window.addEventListener('resize', () => { if (viewMode === 'lines') drawChart(); });
-window.addEventListener('resize', () => { if (viewMode === 'lines') drawChart(); });
-
-/* radar-grid view: rows = the plot-group's use cases, columns = scored runs, each cell a
-   small radar of that use case's concepts at that run (same machinery as Repository History). */
-const CELL = 132;
-function drawGrid(){
-  const grid = $('grid');
-  if (!history){ grid.innerHTML = ''; return; }
-  const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
-  const years = history.years.filter(e => e.n > 0 && e.byCode);
-  if (!years.length){ grid.innerHTML = '<p class="card-intro">No scored runs to show yet.</p>'; return; }
-  const groupTot = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).totals[0];   // FAIR/Projects/SHARE have their own total; Extras/All fall back to FAIR
-  const totalKey = groupTot ? groupTot.key : 'fair';
-  const totalName = groupTot ? groupTot.label.replace(' Total','') : 'FAIR';
-  const head = '<tr><th class="corner"></th>' + years.map(e => {
-    const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
-    return `<th class="yr" title="${escHtml(String(e.year))}: ${e.n.toLocaleString()} records scored · ${totalName} total ${tot}">`
-      + `${escHtml(String(e.year).slice(0, 10))}<small>n=${e.n.toLocaleString()}${e.n < THIN ? ' *' : ''}</small><small class="tot">${tot}</small></th>`;
+const CELL = 120;
+function memberTitle(m){ return m.label ? `${m.name} · ${m.label}` : m.name; }
+function drawSetGrid(){
+  const { codes, totalKey, totalName } = groupInfo();
+  const { stamp, cols } = columns();
+  if (!cols.length){ $('grid').innerHTML = '<p class="card-intro">No members have a run at or before the selected run.</p>'; return; }
+  const head = '<tr><th class="corner"></th>' + cols.map(({ m, e, stale }) => {
+    const tot = e.totals[totalKey] != null ? (e.totals[totalKey] * 100).toFixed(0) + '%' : '—';
+    const viewer = `metricsViewer.html?src=${encodeURIComponent(m.url)}`;
+    return `<th class="yr" title="${escAttr(memberTitle(m))} · run ${escAttr(String(e.year))}${stale ? ' (older than selected)' : ''} · ${e.n.toLocaleString()} records · ${escAttr(totalName)} total ${tot}">`
+      + `<a class="nm" href="${viewer}" target="_blank" rel="noopener" title="Open ${escAttr(memberTitle(m))} in the Metrics Viewer">${escHtml(memberTitle(m))}</a>`
+      + `<small class="cid">${escHtml(m.client)}${m.label ? ' · ' + escHtml(m.label) : ''}</small>`
+      + `<small>n=${e.n.toLocaleString()}${e.n < THIN ? ' *' : ''}${stale ? ' · ' + escHtml(String(e.year).slice(0, 10)) : ''}</small>`
+      + `<small class="tot">${tot}</small></th>`;
   }).join('') + '</tr>';
   const rows = codes.map(code => {
     const color = SPIRAL_COLORS[code] || '#9167b0';
     const label = CODE_STYLE[code] ? CODE_STYLE[code].label : code;
-    const cells = years.map(e => {
+    const cells = cols.map(({ m, e, stale }) => {
       const uc = e.byCode[code];
-      if (!uc){ return '<td class="cell">—</td>'; }
+      if (!uc) return '<td class="cell">—</td>';
       const avg = (uc.res.average * 100).toFixed(0) + '%';
-      return `<td class="cell${e.n < THIN ? ' thin' : ''}" title="${escHtml(label)} · ${escHtml(String(e.year))} · ${avg} (${e.n} records)">`
+      return `<td class="cell${stale ? ' stale' : ''}" title="${escAttr(memberTitle(m))} · ${escAttr(label)} · ${avg} (run ${escAttr(String(e.year))}, ${e.n} records)">`
         + `${miniRadar(uc.res.items, color, CELL)}<div class="cell-avg">${avg}</div></td>`;
     }).join('');
     return `<tr><th class="rowlab">${escHtml(label)}</th>${cells}</tr>`;
   }).join('');
-  grid.innerHTML = `<table class="grid-tbl"><thead>${head}</thead><tbody>${rows}</tbody></table>`;
+  $('grid').innerHTML = `<table class="grid-tbl"><thead>${head}</thead><tbody>${rows}</tbody></table>`;
+  $('grid-head-label').textContent = `Set "${DATA.setName}" — run ${stamp}`;
 }
 
-/* ---------- grid export: one composite SVG of the whole grid, rasterized to PNG ---------- */
+/* ---------- grid export: composite SVG → PNG / clipboard ---------- */
 const GRID_GROUP_LABEL = { FAIR:'FAIR use cases', Projects:'Project use cases', SHARE:'SHARE use cases', Extras:'Additional DataCite use cases', All:'All fourteen use cases' };
-// series label + latest sampling mode for image subtitles (empty when none)
-function selectionFilterText(){
-  const last = history.years[history.years.length - 1] || {};
-  return [history.queryLabel ? `series: ${history.queryLabel}` : (last.query ? `query: ${last.query}` : ''), last.sampling || ''].filter(Boolean).join(' · ');
-}
 function gridSvgMarkup(){
-  const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
-  const years = history.years.filter(e => e.n > 0 && e.byCode);
-  const groupTot = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).totals[0];   // FAIR/Projects/SHARE have their own total; Extras/All fall back to FAIR
-  const totalKey = groupTot ? groupTot.key : 'fair';
-  const PAD = 14, TITLE_H = 42, LABEL_W = 96, HEADER_H = 46, RAD = 132, AVG_H = 18;
+  const { codes, totalKey, totalName } = groupInfo();
+  const { stamp, cols } = columns();
+  const PAD = 14, TITLE_H = 42, LABEL_W = 96, HEADER_H = 58, RAD = 120, AVG_H = 18;
   const COL_W = RAD + 16, ROW_H = RAD + AVG_H + 8;
   const gridLeft = PAD + LABEL_W, gridTop = PAD + TITLE_H + HEADER_H;
-  const W = gridLeft + years.length * COL_W + PAD;
+  const W = gridLeft + cols.length * COL_W + PAD;
   const H = gridTop + codes.length * ROW_H + PAD;
   const FONT = "font-family='Inter, system-ui, sans-serif'";
+  const trunc = (t, n) => t.length > n ? t.slice(0, n - 1) + '…' : t;
   let s = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
-  s += `<text x="${PAD}" y="18" ${FONT} font-size="15" font-weight="600" fill="#673289">${escHtml(history.repoName)} (${escHtml(history.clientId)}) — use-case scores by run</text>`;
-  const gridFilt = selectionFilterText();
-  s += `<text x="${PAD}" y="34" ${FONT} font-size="11" fill="#6b7280">${escHtml(GRID_GROUP_LABEL[plotGroup] || plotGroup)}${gridFilt ? ' · ' + escHtml(gridFilt) : ''} · each run scored at its own date</text>`;
-  // column headers: run / n / total
-  years.forEach((e, j) => {
-    const cxp = gridLeft + j*COL_W + COL_W/2;
+  s += `<text x="${PAD}" y="18" ${FONT} font-size="15" font-weight="600" fill="#673289">Set "${escHtml(DATA.setName)}" — run ${escHtml(stamp)}</text>`;
+  s += `<text x="${PAD}" y="34" ${FONT} font-size="11" fill="#6b7280">${escHtml(GRID_GROUP_LABEL[plotGroup] || plotGroup)} · ${cols.length} member${cols.length === 1 ? '' : 's'} · sorted by ${$('sort-select').value === 'name' ? 'name' : escHtml(totalName) + ' total'}</text>`;
+  cols.forEach(({ m, e }, j) => {
+    const cxp = gridLeft + j * COL_W + COL_W / 2;
     const top = PAD + TITLE_H;
-    const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
-    s += `<text x="${cxp}" y="${top+13}" ${FONT} font-size="13" font-weight="600" text-anchor="middle" fill="#1f2330">${escHtml(String(e.year).slice(0, 10))}</text>`;
-    s += `<text x="${cxp}" y="${top+27}" ${FONT} font-size="10" text-anchor="middle" fill="#6b7280">n=${e.n.toLocaleString()}${e.n < THIN ? ' *' : ''}</text>`;
-    s += `<text x="${cxp}" y="${top+41}" ${FONT} font-size="11" font-weight="600" text-anchor="middle" fill="#673289">${tot}</text>`;
+    const tot = e.totals[totalKey] != null ? (e.totals[totalKey] * 100).toFixed(0) + '%' : '—';
+    s += `<text x="${cxp}" y="${top + 13}" ${FONT} font-size="11.5" font-weight="600" text-anchor="middle" fill="#1f2330">${escHtml(trunc(memberTitle(m), 20))}</text>`;
+    s += `<text x="${cxp}" y="${top + 26}" ${FONT} font-size="8.5" text-anchor="middle" fill="#6b7280">${escHtml(m.client)}</text>`;
+    s += `<text x="${cxp}" y="${top + 39}" ${FONT} font-size="9.5" text-anchor="middle" fill="#6b7280">n=${e.n.toLocaleString()}${e.n < THIN ? ' *' : ''}</text>`;
+    s += `<text x="${cxp}" y="${top + 53}" ${FONT} font-size="11" font-weight="600" text-anchor="middle" fill="#673289">${tot}</text>`;
   });
-  // rows: label + radar cells with avg below
   codes.forEach((code, i) => {
     const color = SPIRAL_COLORS[code] || '#9167b0';
     const label = CODE_STYLE[code] ? CODE_STYLE[code].label : code;
-    const y0 = gridTop + i*ROW_H;
-    s += `<text x="${gridLeft-8}" y="${y0 + RAD/2}" ${FONT} font-size="12" font-weight="600" text-anchor="end" dominant-baseline="middle" fill="#673289">${escHtml(label)}</text>`;
-    years.forEach((e, j) => {
+    const y0 = gridTop + i * ROW_H;
+    s += `<text x="${gridLeft - 8}" y="${y0 + RAD / 2}" ${FONT} font-size="12" font-weight="600" text-anchor="end" dominant-baseline="middle" fill="#673289">${escHtml(label)}</text>`;
+    cols.forEach(({ e }, j) => {
       const uc = e.byCode[code]; if (!uc) return;
-      const x0 = gridLeft + j*COL_W + (COL_W - RAD)/2;
+      const x0 = gridLeft + j * COL_W + (COL_W - RAD) / 2;
       s += `<svg x="${x0}" y="${y0}" width="${RAD}" height="${RAD}" viewBox="0 0 ${RAD} ${RAD}">${radarInner(uc.res.items, color, RAD)}</svg>`;
-      const avg = (uc.res.average * 100).toFixed(0) + '%';
-      s += `<text x="${gridLeft + j*COL_W + COL_W/2}" y="${y0 + RAD + 12}" ${FONT} font-size="11" font-weight="600" text-anchor="middle" fill="#1f2330">${avg}</text>`;
+      s += `<text x="${gridLeft + j * COL_W + COL_W / 2}" y="${y0 + RAD + 12}" ${FONT} font-size="11" font-weight="600" text-anchor="middle" fill="#1f2330">${(uc.res.average * 100).toFixed(0)}%</text>`;
     });
   });
   return { svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${s}</svg>`, w: W, h: H };
@@ -744,15 +653,17 @@ function svgToPngBlob(svgString, scale){
   });
 }
 async function downloadGridPng(){
-  if (!history || !history.years.some(e => e.n > 0 && e.byCode)) return;
+  if (!DATA || !DATA.members.length) return;
   try {
     const { svg } = gridSvgMarkup();
     const blob = await svgToPngBlob(svg, 2);
-    triggerDownload(blob, `${safeRepoId()}_historyGrid_${plotGroup}__${nowStamp()}.png`);
+    const safe = DATA.setName.replace(/[^A-Za-z0-9._-]/g, '_');
+    const d = new Date(); const p = n => String(n).padStart(2, '0');
+    triggerDownload(blob, `set_${safe}_${plotGroup}__${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(d.getHours())}.png`);
   } catch (e){ console.error(e); setStatus('Could not render the grid to PNG: ' + (e.message || e), true); }
 }
 async function copyGrid(){
-  if (!history || !history.years.some(e => e.n > 0 && e.byCode)) return;
+  if (!DATA || !DATA.members.length) return;
   const btn = $('dl-grid-copy'); const label = btn.textContent;
   try {
     const { svg } = gridSvgMarkup();
@@ -762,210 +673,36 @@ async function copyGrid(){
   } catch (e){ console.error(e); btn.textContent = 'Copy failed'; }
   setTimeout(() => { btn.textContent = label; }, 1600);
 }
-
-// switch between the line chart, the radar grid and the movie, keeping the buttons sensible
-function renderView(){
-  $('chart').style.display   = viewMode === 'lines' ? '' : 'none';
-  $('legend').style.display  = viewMode === 'lines' ? '' : 'none';
-  $('grid').style.display    = viewMode === 'grid'  ? '' : 'none';
-  $('movie').style.display   = viewMode === 'movie' ? '' : 'none';
-  $('dl-png').style.display  = viewMode === 'lines' ? '' : 'none';   // PNG export is the line chart
-  $('dl-lines-copy').style.display = viewMode === 'lines' ? '' : 'none';
-  $('dl-grid-copy').style.display = viewMode === 'grid' ? '' : 'none';
-  $('dl-grid-png').style.display  = viewMode === 'grid' ? '' : 'none';
-  if (viewMode !== 'movie') movieStop();
-  if (viewMode === 'grid') drawGrid();
-  else if (viewMode === 'movie') drawMovie();
-  else drawChart();
-}
-
-/* ---------- movie: one run at a time, enlarged, scrub + play across the runs ---------- */
-let movieIdx = 0, movieTimer = null;
-function scoredYears(){ return history ? history.years.filter(e => e.n > 0 && e.byCode) : []; }
-function drawMovie(){
-  const years = scoredYears();
-  if (!years.length){ $('movie-radars').innerHTML = ''; $('movie-caption').textContent = ''; $('movie-play').disabled = $('movie-prev').disabled = $('movie-next').disabled = true; return; }
-  if (movieIdx >= years.length) movieIdx = years.length - 1;
-  if (movieIdx < 0) movieIdx = 0;
-  const e = years[movieIdx];
-  const slider = $('movie-slider'); slider.max = years.length - 1; slider.value = movieIdx;
-  $('movie-play').disabled = years.length < 2;
-  $('movie-prev').disabled = movieIdx <= 0;
-  $('movie-next').disabled = movieIdx >= years.length - 1;
-  const groupTot = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).totals[0];   // FAIR/Projects/SHARE have their own total; Extras/All fall back to FAIR
-  const totalKey = groupTot ? groupTot.key : 'fair';
-  const totalName = groupTot ? groupTot.label.replace(' Total','') : 'FAIR';
-  const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
-  $('movie-caption').innerHTML = `<b>${e.year}</b> · ${e.n.toLocaleString()} record${e.n===1?'':'s'}${e.n < THIN ? ' *' : ''} · ${totalName} total ${tot}`;
-  const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
-  $('movie-radars').innerHTML = codes.map(code => {
-    const uc = e.byCode[code]; if (!uc) return '';
-    const color = SPIRAL_COLORS[code] || '#9167b0';
-    const label = CODE_STYLE[code] ? CODE_STYLE[code].label : code;
-    const avg = (uc.res.average * 100).toFixed(0) + '%';
-    return `<div class="movie-cell"><div class="mc-title">${escHtml(label)}</div>${movieRadar(uc.res.items, color)}<div class="mc-avg">${avg}</div></div>`;
-  }).join('');
-}
-function movieStop(){ if (movieTimer){ clearInterval(movieTimer); movieTimer = null; } const b = $('movie-play'); if (b) b.textContent = '▶ Play'; }
-function moviePlay(){
-  if (movieTimer){ movieStop(); return; }
-  const years = scoredYears(); if (years.length < 2) return;
-  if (movieIdx >= years.length - 1) movieIdx = 0;   // at the end → restart from the first year
-  $('movie-play').textContent = '⏸ Pause';
-  movieTimer = setInterval(() => {
-    if (movieIdx >= scoredYears().length - 1){ movieStop(); drawMovie(); return; }   // stop on the last year
-    movieIdx++; drawMovie();
-  }, 1100);
-}
-// step one year without playing (buttons and arrow keys); clamped to the scored-year range
-function movieStep(delta){
-  movieStop();
-  const years = scoredYears(); if (!years.length) return;
-  movieIdx = Math.max(0, Math.min(years.length - 1, movieIdx + delta));
-  drawMovie();
-}
-
-/* ---------- downloads ---------- */
-function nowStamp(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}`; }
-function safeRepoId(){ return (history.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_'); }
 function triggerDownload(blob, filename){
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = filename;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-function downloadCsv(){
-  if (!history) return;
-  const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
-  // one row per run x concept, plus per-run use-case averages — long form, analysis-ready
-  const rows = [['run','recordsScored','matchingTotal','useCase','concept','completeness']];
-  for (const e of history.years){
-    if (!e.byCode) continue;
-    for (const [code, v] of Object.entries(e.byCode)){
-      rows.push([e.year, e.n, e.matching ?? '', code, '(average)', v.res.average.toFixed(4)]);
-      for (const i of v.res.items) rows.push([e.year, e.n, e.matching ?? '', code, i.concept, i.comp.toFixed(4)]);
-    }
-    rows.push([e.year, e.n, e.matching ?? '', '(FAIR total)', '', e.totals.fair.toFixed(4)]);
-    rows.push([e.year, e.n, e.matching ?? '', '(Projects total)', '', e.totals.projects.toFixed(4)]);
-    rows.push([e.year, e.n, e.matching ?? '', '(SHARE total)', '', e.totals.share.toFixed(4)]);
-  }
-  const body = rows.map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
-  triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_scoreHistory__${nowStamp()}.csv`);
-}
-// wide summary: one row per run matching the run-by-run table's columns (values as
-// fractions 0-1, rounded like the suite's other summary CSVs). Empty runs get blank scores.
-function downloadSummary(){
-  if (!history || !history.years.length) return;
-  const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
-  const round = x => x == null ? '' : Math.round(x * 10000) / 10000;
-  const extraCodes = PLOT_GROUPS.Extras.codes;
-  const headers = ['Repository_ID','Run','Records_Scored','Matching',
-    'FAIR_Total','Text','Identifiers','Connections','Contacts',
-    'Projects_Total', ...PROJECT_CODES, 'SHARE_Total', ...SHARE_CODES, ...extraCodes];
-  const rows = [headers];
-  for (const e of history.years){
-    const t = e.totals;
-    rows.push([
-      history.clientId, e.year, e.n, e.matching ?? '',
-      t ? round(t.fair) : '', ...TOTAL_CODES.map(cc => t ? round(t[cc]) : ''),
-      t ? round(t.projects) : '', ...PROJECT_CODES.map(cc => t ? round(t[cc]) : ''),
-      t ? round(t.share) : '', ...SHARE_CODES.map(cc => t ? round(t[cc]) : ''),
-      ...extraCodes.map(cc => t ? round(t[cc]) : '')
-    ]);
-  }
-  const body = rows.map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
-  triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_scoreHistorySummary__${nowStamp()}.csv`);
-}
-
-// compose the lines chart + title + legend into a PNG blob (shared by download and copy)
-function linesPngBlob(){
-  const chart = $('chart');
-  const scale = 2;
-  const W = chart.clientWidth || 960, chartH = 360;
-  const items = seriesFor(plotGroup);
-  const out = document.createElement('canvas');
-  const meas = out.getContext('2d');
-  const legendFont = '12px Inter, sans-serif';
-  meas.font = legendFont;
-  const pad = 16, sw = 18, gapIn = 6, gapBetween = 18, lineH = 20;
-  let x = pad, lines = 1;
-  const pos = items.map(s => {
-    const w = sw + gapIn + meas.measureText(s.label).width;
-    if (x + w > W - pad){ lines++; x = pad; }
-    const p = { x, line: lines }; x += w + gapBetween; return p;
-  });
-  const titleH = 52, legendH = lines * lineH + 10;
-  const H = titleH + chartH + legendH + pad;
-  out.width = W * scale; out.height = H * scale;
-  const ctx = out.getContext('2d'); ctx.scale(scale, scale);
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = '#673289'; ctx.font = '600 15px Inter, sans-serif'; ctx.textBaseline = 'top';
-  ctx.fillText(`${history.repoName} (${history.clientId}) — use-case scores by run`, pad, 12);
-  const groupLabel = GRID_GROUP_LABEL[plotGroup] || plotGroup;
-  ctx.fillStyle = '#6b7280'; ctx.font = '11px Inter, sans-serif';
-  const filt = selectionFilterText();
-  ctx.fillText(`${groupLabel}${filt ? ' · ' + filt : ''} · each run scored at its own date`, pad, 33);
-  ctx.drawImage(chart, 0, titleH, W, chartH);
-  ctx.font = legendFont; ctx.textBaseline = 'middle';
-  items.forEach((s, i) => {
-    const y = titleH + chartH + (pos[i].line - 0.5) * lineH + 4;
-    ctx.fillStyle = s.color; ctx.fillRect(pos[i].x, y - 2, sw, s.width > 2 ? 4 : 3);
-    ctx.fillStyle = '#374151'; ctx.fillText(s.label, pos[i].x + sw + gapIn, y);
-  });
-  return new Promise((resolve, reject) => out.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null')), 'image/png'));
-}
-async function downloadPng(){
-  if (!history || !history.years.length) return;
-  try {
-    const blob = await linesPngBlob();
-    triggerDownload(blob, `${safeRepoId()}_scoreHistory_${plotGroup}__${nowStamp()}.png`);
-  } catch (e){ console.error(e); setStatus('Could not render the plot to PNG: ' + (e.message || e), true); }
-}
-async function copyLines(){
-  if (!history || !history.years.length) return;
-  const btn = $('dl-lines-copy'); const label = btn.textContent;
-  try {
-    const blob = await linesPngBlob();
-    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-    btn.textContent = '✓ Copied';
-  } catch (e){ console.error(e); btn.textContent = 'Copy failed'; }
-  setTimeout(() => { btn.textContent = label; }, 1600);
-}
 
 /* ---------- boot ---------- */
-$('load-go').addEventListener('click', () => { const u = $('src-input').value.trim(); if (u) loadFromUrl(u); });
+$('load-go').addEventListener('click', async () => {
+  const u = $('src-input').value.trim();
+  if (u && await loadManifest(u)) loadSet(new URLSearchParams(location.search).get('set') || DATA.sets[0].name);
+});
 $('src-input').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); $('load-go').click(); } });
-$('file-input').addEventListener('change', () => { const f = $('file-input').files[0]; if (f) loadFromFile(f); });
-// a history file can be dropped anywhere on the page
-document.addEventListener('dragover', e => e.preventDefault());
-document.addEventListener('drop', e => {
-  e.preventDefault();
-  const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-  if (f) loadFromFile(f);
+$('set-select').addEventListener('change', () => loadSet($('set-select').value));
+$('run-select').addEventListener('change', drawSetGrid);
+$('sort-select').addEventListener('change', drawSetGrid);
+$('plot-group').addEventListener('change', () => {
+  plotGroup = $('plot-group').value;
+  $('share-proto').style.display = plotGroup === 'SHARE' ? '' : 'none';
+  if (DATA && DATA.members.length) drawSetGrid();
 });
-$('dl-png').addEventListener('click', downloadPng);
-$('dl-grid-png').addEventListener('click', downloadGridPng);
 $('dl-grid-copy').addEventListener('click', copyGrid);
-$('dl-lines-copy').addEventListener('click', copyLines);
-$('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; $('share-proto').style.display = plotGroup === 'SHARE' ? '' : 'none'; if (!history) return; renderLegend(); renderTable(); if (viewMode === 'grid') drawGrid(); else if (viewMode === 'movie') drawMovie(); else drawChart(); });
-$('view-mode').addEventListener('change', () => { viewMode = $('view-mode').value; if (history) renderView(); });
-$('movie-play').addEventListener('click', moviePlay);
-$('movie-prev').addEventListener('click', () => movieStep(-1));
-$('movie-next').addEventListener('click', () => movieStep(1));
-$('movie-slider').addEventListener('input', () => { movieStop(); movieIdx = +$('movie-slider').value; drawMovie(); });
-// arrow keys step through the runs while the Movie view is active (ignore when typing in a field)
-document.addEventListener('keydown', e => {
-  if (viewMode !== 'movie' || $('movie').style.display === 'none') return;
-  if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || ''))) return;
-  if (e.key === 'ArrowLeft'){ e.preventDefault(); movieStep(-1); }
-  else if (e.key === 'ArrowRight'){ e.preventDefault(); movieStep(1); }
-});
-$('dl-summary').addEventListener('click', downloadSummary);
-$('dl-csv').addEventListener('click', downloadCsv);
-// deep link: ?src=<history-file URL> loads on arrival (GitHub blob URLs are converted to raw)
-(() => {
-  const src = new URLSearchParams(location.search).get('src');
-  if (src){ $('src-input').value = src; loadFromUrl(src); }
+$('dl-grid-png').addEventListener('click', downloadGridPng);
+(async () => {
+  const params = new URLSearchParams(location.search);
+  const src = params.get('src');
+  if (src){
+    $('src-input').value = src;
+    if (await loadManifest(src)) loadSet(params.get('set') || DATA.sets[0].name);
+  }
 })();
 </script>
 
