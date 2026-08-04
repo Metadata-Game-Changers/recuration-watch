@@ -255,10 +255,11 @@
             <option value="All">All (14)</option>
           </select>
         </label>
-        <label class="hero-chk" style="gap:.4rem" title="Column order: highest group total first (bright spots first), or alphabetical">
+        <label class="hero-chk" style="gap:.4rem" title="Column order: group total ascending (bright spots end the row), descending, or alphabetical">
           <span class="hero-secondary-label">Sort</span>
           <select class="hero-select" id="sort-select" style="flex:none;min-width:0">
-            <option value="total" selected>Total ↓</option>
+            <option value="total-asc" selected>Total ↑</option>
+            <option value="total-desc">Total ↓</option>
             <option value="name">Name</option>
           </select>
         </label>
@@ -266,7 +267,7 @@
         <button class="dl-btn" id="dl-grid-png" type="button" title="Download the grid as a PNG image">⬇ Grid (PNG)</button>
       </div>
     </div>
-    <p class="card-intro">One scoring run, whole set: each column is a member, each row a use case, each cell that member&rsquo;s concept-profile radar with its average below. Columns sort by the group total so <b>bright spots lead</b> — click a member&rsquo;s name to open its full history in the Metrics Viewer. A dimmed column means that member wasn&rsquo;t scored in the selected run; its latest earlier run is shown (hover for the date).</p>
+    <p class="card-intro">One scoring run, whole set: each column is a member, each row a use case, each cell that member&rsquo;s concept-profile radar with its average below. Columns sort by the group total, lowest first, so the row <b>builds toward the bright spots</b> — flip the Sort to lead with them instead, and click a member&rsquo;s name to open its full history in the Metrics Viewer. A dimmed column means that member wasn&rsquo;t scored in the selected run; its latest earlier run is shown (hover for the date).</p>
     <div id="grid"></div>
   </div>
 </div>
@@ -561,8 +562,12 @@ function columns(){
     const at = entryAt(m, stamp);
     return at ? { m, e: at.entry, stale: at.stale } : null;
   }).filter(Boolean);
-  if ($('sort-select').value === 'name') cols.sort((a, b) => a.m.name.localeCompare(b.m.name));
-  else cols.sort((a, b) => ((b.e.totals[totalKey] ?? -1) - (a.e.totals[totalKey] ?? -1)) || a.m.name.localeCompare(b.m.name));
+  const mode = $('sort-select').value;
+  if (mode === 'name') cols.sort((a, b) => a.m.name.localeCompare(b.m.name));
+  else {
+    const dir = mode === 'total-desc' ? -1 : 1;
+    cols.sort((a, b) => dir * ((a.e.totals[totalKey] ?? -1) - (b.e.totals[totalKey] ?? -1)) || a.m.name.localeCompare(b.m.name));
+  }
   return { stamp, cols };
 }
 const CELL = 120;
@@ -610,7 +615,7 @@ function gridSvgMarkup(){
   const trunc = (t, n) => t.length > n ? t.slice(0, n - 1) + '…' : t;
   let s = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
   s += `<text x="${PAD}" y="18" ${FONT} font-size="15" font-weight="600" fill="#673289">Set "${escHtml(DATA.setName)}" — run ${escHtml(stamp)}</text>`;
-  s += `<text x="${PAD}" y="34" ${FONT} font-size="11" fill="#6b7280">${escHtml(GRID_GROUP_LABEL[plotGroup] || plotGroup)} · ${cols.length} member${cols.length === 1 ? '' : 's'} · sorted by ${$('sort-select').value === 'name' ? 'name' : escHtml(totalName) + ' total'}</text>`;
+  s += `<text x="${PAD}" y="34" ${FONT} font-size="11" fill="#6b7280">${escHtml(GRID_GROUP_LABEL[plotGroup] || plotGroup)} · ${cols.length} member${cols.length === 1 ? '' : 's'} · sorted by ${$('sort-select').value === 'name' ? 'name' : escHtml(totalName) + ' total ' + ($('sort-select').value === 'total-desc' ? '\u2193' : '\u2191')}</text>`;
   cols.forEach(({ m, e }, j) => {
     const cxp = gridLeft + j * COL_W + COL_W / 2;
     const top = PAD + TITLE_H;
