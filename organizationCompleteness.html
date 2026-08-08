@@ -118,8 +118,8 @@
   table.hist td.num{font-variant-numeric:tabular-nums}
   table.hist td.repo-name{text-align:left;max-width:280px;overflow:hidden;text-overflow:ellipsis}
   table.hist td.repo-name small{display:block;font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted)}
-  table.hist td.year-open{text-align:left;white-space:nowrap}
-  table.hist td.year-open a{color:var(--accent);text-decoration:none;cursor:pointer;font-size:.72rem;font-weight:600;margin-right:.5rem}
+  table.hist td.year-open{text-align:left;white-space:normal;min-width:110px}   /* links may stack rather than clip on narrow windows */
+  table.hist td.year-open a{color:var(--accent);text-decoration:none;cursor:pointer;font-size:.72rem;font-weight:600;margin-right:.5rem;display:inline-block;white-space:nowrap}
   table.hist td.year-open a:hover{color:var(--accent-dk);text-decoration:underline}
   /* radar grid (small multiples: use cases × repositories) */
   #grid{overflow-x:auto;margin-top:.4rem}
@@ -820,16 +820,23 @@ function drawChart(){
     ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(cssW - padR, gy); ctx.stroke();
     ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText(g + '%', padL - 6, gy);
   }
-  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  const maxChars = nP > 5 ? 12 : 18;
+  ctx.textBaseline = 'top';
+  // label budget from the real column spacing (~6px/char at 11px Inter), and anchor the
+  // first/last labels inward so edge columns ("All of DataCite" is always last) don't
+  // clip at the canvas boundary
+  const colW = nP === 1 ? W : W / (nP - 1);
+  const maxChars = Math.max(10, Math.floor(colW / 6));
   study.repos.forEach((e, i) => {
     const px = x(i);
-    ctx.fillStyle = '#6b7280'; ctx.fillText(shortLabel(e.label, maxChars), px, cssH - padB + 8);
+    ctx.textAlign = i === 0 ? 'left' : (i === nP - 1 ? 'right' : 'center');
+    const ax = i === 0 ? Math.max(2, px - 20) : (i === nP - 1 ? Math.min(cssW - 2, px + 20) : px);
+    ctx.fillStyle = '#6b7280'; ctx.fillText(shortLabel(e.label, maxChars), ax, cssH - padB + 8);
     ctx.fillStyle = '#a99bbf'; ctx.font = '9px Inter, sans-serif';
-    ctx.fillText(e.n ? 'n=' + e.n : '·', px, cssH - padB + 22);
-    ctx.fillText(shortLabel(e.clientId, maxChars + 4), px, cssH - padB + 33);
+    ctx.fillText(e.n ? 'n=' + e.n : '·', ax, cssH - padB + 22);
+    ctx.fillText(shortLabel(e.clientId, maxChars + 4), ax, cssH - padB + 33);
     ctx.font = '11px Inter, sans-serif';
   });
+  ctx.textAlign = 'center';
   for (const s of seriesFor(plotGroup)){
     const pts = study.repos
       .map((e, i) => ({ e, i }))
