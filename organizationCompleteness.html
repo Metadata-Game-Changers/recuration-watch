@@ -693,7 +693,14 @@ async function run(){
       setStatus(`No records carry ${ror.url} in creators.affiliation — check the ROR (or the organization may not yet appear in DataCite affiliations).`, true);
       return;
     }
-    $('apiurl').style.display=''; $('apiurl').innerHTML = `<b>Facet query:</b> ${escHtml(facet.url)}`;
+    // the facet query, the full client facet (all repositories the API lists, not just the
+    // scored top N), and how much of the population those facet values cover
+    const facetSum  = facet.clients.reduce((a, c) => a + (c.count || 0), 0);
+    const facetList = facet.clients.map(c => `${c.id} (${(c.count || 0).toLocaleString()})`).join(', ');
+    $('apiurl').style.display='';
+    $('apiurl').innerHTML = `<b>Facet query:</b> ${escHtml(facet.url)}`
+      + (facet.clients.length ? `<br><b>Client facet:</b> ${escHtml(facetList)}` : '')
+      + (facet.total ? `<br><b>Facet coverage:</b> ${facetSum.toLocaleString()} of ${facet.total.toLocaleString()} records (${(100*facetSum/facet.total).toFixed(1)}%) are in the ${facet.clients.length} facet repositories` : '');
 
     const targets = facet.clients.slice(0, topN).map(c => ({ clientId: c.id, label: c.title || c.id, facetCount: c.count }));
     if (includeAll) targets.push({ clientId: ALL_DATACITE, label: 'All of DataCite', facetCount: facet.total });
@@ -713,7 +720,9 @@ async function run(){
       if (stopRequested) break;
       setStatus(`${t.label} — fetching records (repository ${done + 1} of ${targets.length})…`);
       setProgress(done / targets.length);
-      const { records, matching, random: usedRandom } = await fetchOrgRepo(t.clientId, query, cap, random, resourceTypeId);
+      const { records, matching, random: usedRandom, firstUrl } = await fetchOrgRepo(t.clientId, query, cap, random, resourceTypeId);
+      if (t.clientId === ALL_DATACITE && firstUrl)          // the All-of-DataCite sample fetch, like completeness.html's API call line
+        $('apiurl').innerHTML += `<br><b>API call (All of DataCite):</b> ${escHtml(firstUrl)}`;
       if (stopRequested) break;
       let entry;
       if (!records.length){
