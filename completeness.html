@@ -834,8 +834,8 @@ async function openValueDois(idx){
     $('values-body').innerHTML =
       '<div style="padding:.5rem 0 .6rem"><a href="#" id="values-back" style="font-size:.76rem;font-weight:600;color:var(--accent);text-decoration:none">← All values</a></div>'
       + '<table class="values-table"><thead><tr><th>Title</th><th>DOI</th></tr></thead><tbody>'
-      + rows.map(r => `<tr><td class="val">${escHtml(r.title)}</td>`
-        + `<td><a href="https://doi.org/${encodeURIComponent(r.id).replace(/%2F/gi, '/')}" target="_blank" rel="noopener" style="font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--accent);text-decoration:none">${escHtml(r.id)}</a></td></tr>`).join('')
+      + rows.map(r => `<tr><td class="val"><a href="https://doi.org/${encodeURIComponent(r.id).replace(/%2F/gi, '/')}" target="_blank" rel="noopener" title="Open the landing page" style="color:inherit;text-decoration:none">${escHtml(r.title)}</a></td>`
+        + `<td><a href="https://api.datacite.org/dois/${encodeURIComponent(r.id)}" target="_blank" rel="noopener" title="View this record's DataCite metadata (API)" style="font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--accent);text-decoration:none">${escHtml(r.id)}</a></td></tr>`).join('')
       + '</tbody></table>';
   } catch (e){
     console.warn('value DOI list error', e);
