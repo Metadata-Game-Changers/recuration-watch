@@ -265,11 +265,23 @@
         </label>
         <button class="dl-btn" id="dl-grid-copy" type="button" title="Copy the grid to the clipboard as an image">⧉ Copy grid</button>
         <button class="dl-btn" id="dl-grid-png" type="button" title="Download the grid as a PNG image">⬇ Grid (PNG)</button>
-        <button class="dl-btn" id="dl-csv" type="button" title="One row per member for the shown run, in the shown order: records, all group totals, and every use-case average (fractions 0–1, analysis-ready)">⬇ Set Summary (CSV)</button>
       </div>
     </div>
     <p class="card-intro">One scoring run, whole set: each column is a member, each row a use case, each cell that member&rsquo;s concept-profile radar with its average below. Columns sort by the group total, lowest first, so the row <b>builds toward the bright spots</b> — flip the Sort to lead with them instead, and click a member&rsquo;s name to open its full history in the Metrics Viewer. A dimmed column means that member wasn&rsquo;t scored in the selected run; its latest earlier run is shown (hover for the date).</p>
     <div id="grid"></div>
+  </div>
+
+  <div class="card" id="table-card" style="display:none">
+    <div class="card-head">
+      <h2>Member by member</h2>
+      <div class="card-actions">
+        <button class="dl-btn" id="dl-csv" type="button" title="This table plus every other group's totals and use-case averages (fractions 0–1, analysis-ready)">⬇ Set Summary (CSV)</button>
+      </div>
+    </div>
+    <p class="card-intro">The shown run as numbers, in the grid&rsquo;s order. The columns follow the <b>Use Cases</b> selector; the CSV carries every group&rsquo;s totals and use-case averages regardless of the selection. A member shown from an older run carries its own run stamp.</p>
+    <div style="overflow-x:auto">
+    <table class="hist"><thead><tr id="set-hist-head"></tr></thead><tbody id="set-hist-body"></tbody></table>
+    </div>
   </div>
 </div>
 
@@ -524,7 +536,7 @@ async function loadSet(name){
   $('run-select').innerHTML = runs.map((r, i) =>
     `<option value="${escAttr(r)}"${i === 0 ? ' selected' : ''}>${escHtml(r)}${i === 0 ? ' (latest)' : ''}</option>`).join('');
   renderSelection(st);
-  $('grid-card').style.display = '';
+  $('grid-card').style.display = ''; $('table-card').style.display = '';
   drawSetGrid();
   try { const u = new URL(location.href); u.searchParams.set('set', st.name); window.history.replaceState({}, '', u); } catch (e){}
   setStatus(`Loaded ${DATA.members.length} member${DATA.members.length === 1 ? '' : 's'} of set "${st.name}"`
@@ -600,6 +612,27 @@ function drawSetGrid(){
   }).join('');
   $('grid').innerHTML = `<table class="grid-tbl"><thead>${head}</thead><tbody>${rows}</tbody></table>`;
   $('grid-head-label').textContent = `Set "${DATA.setName}" — run ${stamp}`;
+  renderSetTable(stamp, cols, codes, totalKey, totalName);
+}
+
+// the numbers behind the grid: one row per member for the shown run, in the shown order
+// (the same rows the Set Summary CSV exports; the CSV adds the other groups' columns)
+function renderSetTable(stamp, cols, codes, totalKey, totalName){
+  const cell = v => v == null ? '—' : fmtPct(v);
+  $('set-hist-head').innerHTML = '<th>Member</th><th>Run</th><th>Records scored</th><th>Matching</th>'
+    + `<th>${escHtml(totalName)} Total</th>`
+    + codes.map(c => `<th>${escHtml(CODE_STYLE[c] ? CODE_STYLE[c].label : c)}</th>`).join('')
+    + '<th title="Measure this member live in another tool">Open</th>';
+  $('set-hist-body').innerHTML = cols.map(({ m, e, stale }) => {
+    const viewer = `metricsViewer.html?src=${encodeURIComponent(m.url)}`;
+    return `<tr><td style="white-space:normal"><a href="${viewer}" target="_blank" rel="noopener" title="Open ${escAttr(memberTitle(m))} in the Metrics Viewer" style="color:var(--accent-dk);text-decoration:none;font-weight:600">${escHtml(memberTitle(m))}</a>`
+      + ` <span style="font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--muted)">${escHtml(m.client)}${m.label ? ' · ' + escHtml(m.label) : ''}</span></td>`
+      + `<td class="num${stale ? ' thin' : ''}" title="${stale ? 'older than the selected run' : ''}">${escHtml(String(e.year))}${stale ? ' *' : ''}</td>`
+      + `<td class="num">${e.n.toLocaleString()}</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td>`
+      + `<td class="num"><b>${cell(e.totals[totalKey])}</b></td>`
+      + codes.map(c => `<td class="num">${cell(e.byCode[c] ? e.byCode[c].res.average : null)}</td>`).join('')
+      + `<td class="year-open"><a href="completeness.html?client=${encodeURIComponent(m.client)}${e.query ? '&query=' + encodeURIComponent(e.query) : ''}" target="_blank" rel="noopener" title="Score ${escAttr(memberTitle(m))} live in Metadata Completeness${e.query ? ' (with this series\u2019 query)' : ''}">Completeness ↗</a></td></tr>`;
+  }).join('');
 }
 
 /* ---------- grid export: composite SVG → PNG / clipboard ---------- */
