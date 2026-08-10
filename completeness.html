@@ -720,7 +720,7 @@ function renderResults(spiral, res){
 
 /* ---------- per-concept value frequencies (on-demand drill-down) ---------- */
 const VALUES_TOP_N = 50;
-let valuesState = null;   // { conceptRaw, freq:[{v,n}], spiralTitle }
+let valuesState = null;   // { conceptRaw, item, freq:[{v,n,d}], total, unique, dois, spiralTitle, view: 'values'|'dois' }
 
 // Run ONE concept's FULL query (the values projection we strip for scoring is still in the catalog)
 // and let jq tally, per unique value, both its occurrence count (n) and the number of distinct DOIs
@@ -770,18 +770,13 @@ async function openValues(spiral, conceptRaw){
   $('values-modal').style.display = 'flex';
   try {
     const { freq, total, unique, dois } = await computeValueFreq(item);
-    valuesState = { conceptRaw, freq, spiralTitle: spiral.title };
-    $('values-sub').textContent = unique === 0
-      ? `${spiral.title} · no values in this sample`
-      : `${spiral.title} · ${unique.toLocaleString()} unique value${unique===1?'':'s'} · ${total.toLocaleString()} occurrence${total===1?'':'s'} · in ${dois.toLocaleString()} DOI${dois===1?'':'s'}${unique>VALUES_TOP_N ? ` · showing top ${VALUES_TOP_N}` : ''}`;
+    valuesState = { conceptRaw, item, freq, total, unique, dois, spiralTitle: spiral.title, view: 'values' };
     if (!freq.length){
+      $('values-sub').textContent = `${spiral.title} · no values in this sample`;
       $('values-body').innerHTML = '<div style="padding:1rem;color:#6b7280;font-size:.8rem">No values found for this concept in the analyzed sample.</div>';
       return;
     }
-    const shown = freq.slice(0, VALUES_TOP_N);
-    $('values-body').innerHTML = '<table class="values-table"><thead><tr><th>Value</th><th class="num" title="total occurrences of this value across the sample">Occurrences</th><th class="num" title="distinct DOIs (records) this value appears in">DOIs</th><th class="num">%</th></tr></thead><tbody>'
-      + shown.map(e => `<tr><td class="val">${escHtml(valDisplay(e.v))}</td><td class="num">${e.n.toLocaleString()}</td><td class="num">${(e.d ?? 0).toLocaleString()}</td><td class="num">${(e.n/total*100).toFixed(1)}%</td></tr>`).join('')
-      + '</tbody></table>';
+    renderValuesTable();
     $('values-download').style.display = '';
     $('values-copy').style.display = '';
   } catch (e){
@@ -790,23 +785,92 @@ async function openValues(spiral, conceptRaw){
     $('values-body').innerHTML = `<div style="padding:1rem;color:#b4322f;font-size:.8rem">Could not compute values: ${escHtml((e && e.message) || String(e))}</div>`;
   }
 }
+// the values table (also the "back" target from a per-value DOI list)
+function renderValuesTable(){
+  const st = valuesState; if (!st) return;
+  st.view = 'values';
+  $('values-sub').textContent =
+    `${st.spiralTitle} · ${st.unique.toLocaleString()} unique value${st.unique===1?'':'s'} · ${st.total.toLocaleString()} occurrence${st.total===1?'':'s'} · in ${st.dois.toLocaleString()} DOI${st.dois===1?'':'s'}${st.unique>VALUES_TOP_N ? ` · showing top ${VALUES_TOP_N}` : ''}`;
+  const shown = st.freq.slice(0, VALUES_TOP_N);
+  $('values-body').innerHTML = '<table class="values-table"><thead><tr><th>Value</th><th class="num" title="total occurrences of this value across the sample">Occurrences</th><th class="num" title="distinct DOIs (records) this value appears in — click to list them">DOIs</th><th class="num">%</th></tr></thead><tbody>'
+    + shown.map((e, i) => `<tr><td class="val">${escHtml(valDisplay(e.v))}</td><td class="num">${e.n.toLocaleString()}</td>`
+      + `<td class="num">${(e.d ?? 0) > 0 ? `<a href="#" class="d-link" data-i="${i}" title="List the ${e.d} DOI${e.d===1?'':'s'} carrying this value">${e.d.toLocaleString()}</a>` : '0'}</td>`
+      + `<td class="num">${(e.n/st.total*100).toFixed(1)}%</td></tr>`).join('')
+    + '</tbody></table>';
+}
+// which sampled records carry ONE value — a batched jq pass over the retained sample,
+// mirroring computeValueFreq's batching (and its honest empty-output error)
+async function computeValueDois(item, value){
+  const prog = `(${JSON.stringify(value)}) as $V`
+    + ` | [ ${item.jq_query} | {id: .id, vals: (.values | (if type == "array" then . else [.] end) | map(select(. != null))) }`
+    + ` | select(.vals | index($V) != null) | .id ]`;
+  const BATCH = 500;
+  const ids = [];
+  for (let i = 0; i < lastRun.records.length; i += BATCH){
+    const inputStr = JSON.stringify({ data: lastRun.records.slice(i, i + BATCH) });
+    const out = await jq.promised.raw(inputStr, prog, ['-c']);
+    if (!out || !out.trim()) throw new Error('the jq engine returned no output — try reloading the page');
+    ids.push(...JSON.parse(out.trim()));
+  }
+  return ids;
+}
+function recordTitle(id){
+  const rec = (valuesState._titles ||= new Map(
+    lastRun.records.map(r => [r.id, r.attributes?.titles?.[0]?.title || '']))).get(id);
+  return rec || '(no title)';
+}
+async function openValueDois(idx){
+  const st = valuesState; if (!st) return;
+  const entry = st.freq[idx]; if (!entry) return;
+  const shortV = valDisplay(entry.v).length > 70 ? valDisplay(entry.v).slice(0, 69) + '…' : valDisplay(entry.v);
+  $('values-sub').textContent = `${st.spiralTitle} · ${displayConcept(st.conceptRaw)} = ${shortV} · finding DOIs…`;
+  $('values-body').innerHTML = '<div style="padding:1rem;color:#6b7280;font-size:.8rem">Finding the DOIs carrying this value…</div>';
+  try {
+    const ids = await computeValueDois(st.item, entry.v);
+    st.view = 'dois'; st.doiValue = entry.v; st.doiIds = ids;
+    const rows = ids.map(id => ({ id, title: recordTitle(id) }))
+      .sort((a, b) => a.title.localeCompare(b.title));
+    $('values-sub').textContent = `${st.spiralTitle} · ${displayConcept(st.conceptRaw)} = ${shortV} · ${ids.length.toLocaleString()} DOI${ids.length===1?'':'s'}`;
+    $('values-body').innerHTML =
+      '<div style="padding:.5rem 0 .6rem"><a href="#" id="values-back" style="font-size:.76rem;font-weight:600;color:var(--accent);text-decoration:none">← All values</a></div>'
+      + '<table class="values-table"><thead><tr><th>Title</th><th>DOI</th></tr></thead><tbody>'
+      + rows.map(r => `<tr><td class="val">${escHtml(r.title)}</td>`
+        + `<td><a href="https://doi.org/${encodeURIComponent(r.id).replace(/%2F/gi, '/')}" target="_blank" rel="noopener" style="font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--accent);text-decoration:none">${escHtml(r.id)}</a></td></tr>`).join('')
+      + '</tbody></table>';
+  } catch (e){
+    console.warn('value DOI list error', e);
+    $('values-body').innerHTML = `<div style="padding:1rem;color:#b4322f;font-size:.8rem">Could not list the DOIs: ${escHtml((e && e.message) || String(e))}</div>`;
+  }
+}
+$('values-body').addEventListener('click', e => {
+  const d = e.target.closest('a.d-link');
+  if (d){ e.preventDefault(); openValueDois(+d.dataset.i); return; }
+  if (e.target.closest('#values-back')){ e.preventDefault(); renderValuesTable(); }
+});
 function closeValues(){ $('values-modal').style.display = 'none'; valuesState = null; }
 function downloadValuesCsv(){
   if (!valuesState || !valuesState.freq.length) return;
   const csv = v => { const s = valDisplay(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
-  const body = [['Value','Occurrences','DOIs'], ...valuesState.freq.map(e => [csv(e.v), e.n, e.d ?? 0])].map(r => r.join(',')).join('\r\n') + '\r\n';
+  const doiView = valuesState.view === 'dois';
+  const body = (doiView
+    ? [['Value','DOI','Title'], ...valuesState.doiIds.map(id => [csv(valuesState.doiValue), id, csv(recordTitle(id))])]
+    : [['Value','Occurrences','DOIs'], ...valuesState.freq.map(e => [csv(e.v), e.n, e.d ?? 0])]
+  ).map(r => r.join(',')).join('\r\n') + '\r\n';
   const url = URL.createObjectURL(new Blob([body], { type: 'text/csv' }));
   const safeId = (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_');
   const safeConcept = valuesState.conceptRaw.replace(/[^A-Za-z0-9._-]+/g, '_');
   const a = document.createElement('a');
-  a.href = url; a.download = `${safeId}_${safeConcept}_values.csv`;
+  a.href = url; a.download = `${safeId}_${safeConcept}_${doiView ? 'value_dois' : 'values'}.csv`;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 async function copyValues(){
   if (!valuesState || !valuesState.freq.length) return;
   // tab-separated so it pastes straight into a spreadsheet; full (uncapped) list, like the CSV
-  const tsv = ['Value\tOccurrences\tDOIs', ...valuesState.freq.map(e => `${valDisplay(e.v).replace(/[\t\n\r]/g, ' ')}\t${e.n}\t${e.d ?? 0}`)].join('\n');
+  const clean = t => String(t).replace(/[\t\n\r]/g, ' ');
+  const tsv = valuesState.view === 'dois'
+    ? ['Value\tDOI\tTitle', ...valuesState.doiIds.map(id => `${clean(valDisplay(valuesState.doiValue))}\t${id}\t${clean(recordTitle(id))}`)].join('\n')
+    : ['Value\tOccurrences\tDOIs', ...valuesState.freq.map(e => `${clean(valDisplay(e.v))}\t${e.n}\t${e.d ?? 0}`)].join('\n');
   const btn = $('values-copy');
   try {
     await navigator.clipboard.writeText(tsv);
