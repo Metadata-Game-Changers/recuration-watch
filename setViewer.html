@@ -584,7 +584,8 @@ function columns(){
   return { stamp, cols };
 }
 const CELL = 120;
-function memberTitle(m){ return m.label ? `${m.name} · ${m.label}` : m.name; }
+function memberTitle(m){ return m.label || m.name; }                       // what the column shows
+function memberFull(m){ return m.label ? `${m.name} · ${m.label}` : m.name; }   // tooltips / exports
 function drawSetGrid(){
   const { codes, totalKey, totalName } = groupInfo();
   const { stamp, cols } = columns();
@@ -592,9 +593,9 @@ function drawSetGrid(){
   const head = '<tr><th class="corner"></th>' + cols.map(({ m, e, stale }) => {
     const tot = e.totals[totalKey] != null ? (e.totals[totalKey] * 100).toFixed(0) + '%' : '—';
     const viewer = `metricsViewer.html?src=${encodeURIComponent(m.url)}`;
-    return `<th class="yr" title="${escAttr(memberTitle(m))} · run ${escAttr(String(e.year))}${stale ? ' (older than selected)' : ''} · ${e.n.toLocaleString()} records · ${escAttr(totalName)} total ${tot}">`
-      + `<a class="nm" href="${viewer}" target="_blank" rel="noopener" title="Open ${escAttr(memberTitle(m))} in the Metrics Viewer">${escHtml(memberTitle(m))}</a>`
-      + `<small class="cid">${escHtml(m.client)}${m.label ? ' · ' + escHtml(m.label) : ''}</small>`
+    return `<th class="yr" title="${escAttr(memberFull(m))} · run ${escAttr(String(e.year))}${stale ? ' (older than selected)' : ''} · ${e.n.toLocaleString()} records · ${escAttr(totalName)} total ${tot}">`
+      + `<a class="nm" href="${viewer}" target="_blank" rel="noopener" title="Open ${escAttr(memberFull(m))} in the Metrics Viewer">${escHtml(memberTitle(m))}</a>`
+      + `<small class="cid">${escHtml(m.client)}</small>`
       + `<small>n=${e.n.toLocaleString()}${e.n < THIN ? ' *' : ''}${stale ? ' · ' + escHtml(String(e.year).slice(0, 10)) : ''}</small>`
       + `<small class="tot">${tot}</small></th>`;
   }).join('') + '</tr>';
@@ -605,7 +606,7 @@ function drawSetGrid(){
       const uc = e.byCode[code];
       if (!uc) return '<td class="cell">—</td>';
       const avg = (uc.res.average * 100).toFixed(0) + '%';
-      return `<td class="cell${stale ? ' stale' : ''}" title="${escAttr(memberTitle(m))} · ${escAttr(label)} · ${avg} (run ${escAttr(String(e.year))}, ${e.n} records)">`
+      return `<td class="cell${stale ? ' stale' : ''}" title="${escAttr(memberFull(m))} · ${escAttr(label)} · ${avg} (run ${escAttr(String(e.year))}, ${e.n} records)">`
         + `${miniRadar(uc.res.items, color, CELL)}<div class="cell-avg">${avg}</div></td>`;
     }).join('');
     return `<tr><th class="rowlab">${escHtml(label)}</th>${cells}</tr>`;
@@ -625,13 +626,13 @@ function renderSetTable(stamp, cols, codes, totalKey, totalName){
     + '<th title="Measure this member live in another tool">Open</th>';
   $('set-hist-body').innerHTML = cols.map(({ m, e, stale }) => {
     const viewer = `metricsViewer.html?src=${encodeURIComponent(m.url)}`;
-    return `<tr><td style="white-space:normal"><a href="${viewer}" target="_blank" rel="noopener" title="Open ${escAttr(memberTitle(m))} in the Metrics Viewer" style="color:var(--accent-dk);text-decoration:none;font-weight:600">${escHtml(memberTitle(m))}</a>`
-      + ` <span style="font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--muted)">${escHtml(m.client)}${m.label ? ' · ' + escHtml(m.label) : ''}</span></td>`
+    return `<tr><td style="white-space:normal"><a href="${viewer}" target="_blank" rel="noopener" title="Open ${escAttr(memberFull(m))} in the Metrics Viewer" style="color:var(--accent-dk);text-decoration:none;font-weight:600">${escHtml(memberTitle(m))}</a>`
+      + ` <span style="font-family:'IBM Plex Mono',monospace;font-size:.64rem;color:var(--muted)">${escHtml(m.client)}${m.label ? ' · ' + escHtml(m.name) : ''}</span></td>`
       + `<td class="num${stale ? ' thin' : ''}" title="${stale ? 'older than the selected run' : ''}">${escHtml(String(e.year))}${stale ? ' *' : ''}</td>`
       + `<td class="num">${e.n.toLocaleString()}</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td>`
       + `<td class="num"><b>${cell(e.totals[totalKey])}</b></td>`
       + codes.map(c => `<td class="num">${cell(e.byCode[c] ? e.byCode[c].res.average : null)}</td>`).join('')
-      + `<td class="year-open"><a href="completeness.html?client=${encodeURIComponent(m.client)}${e.query ? '&query=' + encodeURIComponent(e.query) : ''}" target="_blank" rel="noopener" title="Score ${escAttr(memberTitle(m))} live in Metadata Completeness${e.query ? ' (with this series\u2019 query)' : ''}">Completeness ↗</a></td></tr>`;
+      + `<td class="year-open"><a href="completeness.html?client=${encodeURIComponent(m.client)}${e.query ? '&query=' + encodeURIComponent(e.query) : ''}" target="_blank" rel="noopener" title="Score ${escAttr(memberFull(m))} live in Metadata Completeness${e.query ? ' (with this series\u2019 query)' : ''}">Completeness ↗</a></td></tr>`;
   }).join('');
 }
 
