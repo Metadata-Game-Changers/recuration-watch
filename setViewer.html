@@ -275,6 +275,7 @@
     <div class="card-head">
       <h2>Member by member</h2>
       <div class="card-actions">
+        <button class="dl-btn" id="dl-group-copy" type="button" title="Copy the shown group's full data to the clipboard as CSV: one row per member with the group total, each use case's average, and every concept's completeness">⧉ Copy FAIR Data</button>
         <button class="dl-btn" id="dl-csv" type="button" title="This table plus every other group's totals and use-case averages (fractions 0–1, analysis-ready)">⬇ Set Summary (CSV)</button>
       </div>
     </div>
@@ -740,6 +741,50 @@ function downloadCsv(){
   const safe = DATA.setName.replace(/[^A-Za-z0-9._-]/g, '_');
   triggerDownload(new Blob([body], { type: 'text/csv' }), `set_${safe}_summary__${stamp}.csv`);
 }
+// concept-level export of the SHOWN group: one row per member (shown run, shown order)
+// with the group total, each use case's average, and every concept's completeness,
+// copied to the clipboard as CSV.
+async function copyGroupData(){
+  if (!DATA || !DATA.members.length) return;
+  const { stamp, cols } = columns();
+  if (!cols.length) return;
+  const { codes, totalKey, totalName } = groupInfo();
+  // concept order per use case: from the first member carrying that use case
+  const conceptsOf = {};
+  for (const code of codes){
+    const src = cols.find(({ e }) => e.byCode[code]);
+    conceptsOf[code] = src ? src.e.byCode[code].res.items.map(i => i.concept) : [];
+  }
+  // In All, short labels collide (Project_Relations and DataCite_Relations are both
+  // "Relations") — use the qualified form there, like the legend does.
+  const ucLabel = code => plotGroup === 'All'
+    ? code.replace('_', ' · ').replace(/_/g, ' ')
+    : (CODE_STYLE[code] ? CODE_STYLE[code].label : code);
+  const csv = v => { const t = String(v); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+  const round = x => x == null ? '' : Math.round(x * 10000) / 10000;
+  const head = ['Set', 'Repository_ID', 'Label', 'Name', 'Run', 'Records_Scored', 'Matching', `${totalName}_Total`];
+  for (const code of codes){
+    head.push(`${ucLabel(code)}_Average`);
+    for (const c of conceptsOf[code]) head.push(`${ucLabel(code)}: ${c}`);
+  }
+  const lines = [head.map(csv).join(',')];
+  for (const { m, e } of cols){
+    const row = [DATA.setName, m.client, m.label, m.name, e.year, e.n, e.matching ?? '', round(e.totals[totalKey])];
+    for (const code of codes){
+      const uc = e.byCode[code];
+      row.push(uc ? round(uc.res.average) : '');
+      const byConcept = uc ? new Map(uc.res.items.map(i => [i.concept, i.comp])) : new Map();
+      for (const c of conceptsOf[code]) row.push(uc ? round(byConcept.get(c)) : '');
+    }
+    lines.push(row.map(csv).join(','));
+  }
+  const btn = $('dl-group-copy');
+  try {
+    await navigator.clipboard.writeText(lines.join('\r\n') + '\r\n');
+    btn.textContent = '✓ Copied';
+  } catch (e){ console.error(e); btn.textContent = 'Copy failed'; }
+  setTimeout(() => { btn.textContent = `⧉ Copy ${plotGroup} Data`; }, 1600);
+}
 function triggerDownload(blob, filename){
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = filename;
@@ -759,8 +804,10 @@ $('sort-select').addEventListener('change', drawSetGrid);
 $('plot-group').addEventListener('change', () => {
   plotGroup = $('plot-group').value;
   $('share-proto').style.display = plotGroup === 'SHARE' ? '' : 'none';
+  $('dl-group-copy').textContent = `⧉ Copy ${plotGroup} Data`;
   if (DATA && DATA.members.length) drawSetGrid();
 });
+$('dl-group-copy').addEventListener('click', copyGroupData);
 $('dl-grid-copy').addEventListener('click', copyGrid);
 $('dl-grid-png').addEventListener('click', downloadGridPng);
 $('dl-csv').addEventListener('click', downloadCsv);
