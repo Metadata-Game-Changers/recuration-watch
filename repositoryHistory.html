@@ -890,9 +890,13 @@ function drawChart(){
   ctx.textAlign = 'center'; ctx.textBaseline = 'top';
   history.years.forEach((e, i) => {
     if (i % step !== 0 && i !== nP - 1) return;
-    const px = x(e.t ?? e.year);
-    ctx.fillStyle = '#6b7280'; ctx.fillText(String(e.year), px, cssH - padB + 8);
-    ctx.fillStyle = '#a99bbf'; ctx.font = '9px Inter, sans-serif'; ctx.fillText(e.n ? 'n=' + e.n : '·', px, cssH - padB + 22); ctx.font = '11px Inter, sans-serif';
+    // centre the label on its point, but keep it inside the canvas — the last period sits
+    // padR from the right edge, so a wide label (e.g. "2026-08") would be clipped
+    const label = String(e.year), nLabel = e.n ? 'n=' + e.n : '·';
+    const half = Math.max(ctx.measureText(label).width, ctx.measureText(nLabel).width) / 2;
+    const px = Math.min(Math.max(x(e.t ?? e.year), half + 2), cssW - half - 2);
+    ctx.fillStyle = '#6b7280'; ctx.fillText(label, px, cssH - padB + 8);
+    ctx.fillStyle = '#a99bbf'; ctx.font = '9px Inter, sans-serif'; ctx.fillText(nLabel, px, cssH - padB + 22); ctx.font = '11px Inter, sans-serif';
   });
   // series
   for (const s of seriesFor(plotGroup)){
