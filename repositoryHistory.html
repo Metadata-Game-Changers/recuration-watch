@@ -397,6 +397,22 @@ const escHtml = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;',
 const escAttr = s => escHtml(s);
 function fmtPct(x){ return (x*100).toFixed(0) + '%'; }
 
+// Greedy word wrap of an export title to a pixel width, measured with the real font via
+// canvas measureText (exact, unlike a character-width estimate). Long repository names —
+// e.g. nihnichd.dash's 116-character name — would otherwise run off the PNG canvas.
+const _titleMeas = document.createElement('canvas').getContext('2d');
+function wrapToWidth(text, maxWidth, font){
+  _titleMeas.font = font;
+  const lines = []; let line = '';
+  for (const w of String(text).split(/\s+/)){
+    const test = line ? line + ' ' + w : w;
+    if (!line || _titleMeas.measureText(test).width <= maxWidth) line = test;
+    else { lines.push(line); line = w; }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
 /* ---------- jq readiness (ported from completeness.html) ---------- */
 function whenJqReady(){
   return new Promise((resolve, reject) => {
@@ -966,16 +982,20 @@ function gridSvgMarkup(){
   const groupTot = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).totals[0];   // FAIR/Projects/SHARE have their own total; Extras/All fall back to FAIR
   const totalKey = groupTot ? groupTot.key : 'fair';
   const totalName = groupTot ? groupTot.label.replace(' Total','') : 'FAIR';
-  const PAD = 14, TITLE_H = 42, LABEL_W = 96, HEADER_H = 46, RAD = 132, AVG_H = 18;
+  const PAD = 14, LABEL_W = 96, HEADER_H = 46, RAD = 132, AVG_H = 18, TITLE_LH = 18;
   const COL_W = RAD + 16, ROW_H = RAD + AVG_H + 8;
-  const gridLeft = PAD + LABEL_W, gridTop = PAD + TITLE_H + HEADER_H;
+  const gridLeft = PAD + LABEL_W;
   const W = gridLeft + years.length * COL_W + PAD;
+  const titleText = `${history.repoName} (${history.clientId}) — completeness by ${dateFieldName()} year`;
+  const titleLines = wrapToWidth(titleText, W - PAD*2, '600 15px Inter, sans-serif');   // long names wrap
+  const TITLE_H = 42 + (titleLines.length - 1) * TITLE_LH;
+  const gridTop = PAD + TITLE_H + HEADER_H;
   const H = gridTop + codes.length * ROW_H + PAD;
   const FONT = "font-family='Inter, system-ui, sans-serif'";
   let s = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
-  s += `<text x="${PAD}" y="18" ${FONT} font-size="15" font-weight="600" fill="#673289">${escHtml(history.repoName)} (${escHtml(history.clientId)}) — completeness by ${dateFieldName()} year</text>`;
+  s += titleLines.map((ln, i) => `<text x="${PAD}" y="${18 + i*TITLE_LH}" ${FONT} font-size="15" font-weight="600" fill="#673289">${escHtml(ln)}</text>`).join('');
   const gridFilt = selectionFilterText();
-  s += `<text x="${PAD}" y="34" ${FONT} font-size="11" fill="#6b7280">${escHtml(GRID_GROUP_LABEL[plotGroup] || plotGroup)} · up to ${history.cap} records/year${gridFilt ? ' · ' + escHtml(gridFilt) : ''} · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. re-curation)</text>`;
+  s += `<text x="${PAD}" y="${34 + (titleLines.length - 1)*TITLE_LH}" ${FONT} font-size="11" fill="#6b7280">${escHtml(GRID_GROUP_LABEL[plotGroup] || plotGroup)} · up to ${history.cap} records/year${gridFilt ? ' · ' + escHtml(gridFilt) : ''} · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. re-curation)</text>`;
   // column headers: year / n / total
   years.forEach((e, j) => {
     const cxp = gridLeft + j*COL_W + COL_W/2;
@@ -1192,17 +1212,20 @@ function linesPngBlob(){
     if (x + w > W - pad){ lines++; x = pad; }
     const p = { x, line: lines }; x += w + gapBetween; return p;
   });
-  const titleH = 52, legendH = lines * lineH + 10;
+  const titleText = `${history.repoName} (${history.clientId}) — completeness by ${dateFieldName()} year`;
+  const TITLE_LH = 18;
+  const titleLines = wrapToWidth(titleText, W - pad*2, '600 15px Inter, sans-serif');   // long names wrap
+  const titleH = 52 + (titleLines.length - 1) * TITLE_LH, legendH = lines * lineH + 10;
   const H = titleH + chartH + legendH + pad;
   out.width = W * scale; out.height = H * scale;
   const ctx = out.getContext('2d'); ctx.scale(scale, scale);
   ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = '#673289'; ctx.font = '600 15px Inter, sans-serif'; ctx.textBaseline = 'top';
-  ctx.fillText(`${history.repoName} (${history.clientId}) — completeness by ${dateFieldName()} year`, pad, 12);
+  titleLines.forEach((ln, i) => ctx.fillText(ln, pad, 12 + i*TITLE_LH));
   const groupLabel = { FAIR: 'FAIR use cases', Projects: 'Project use cases', SHARE: 'SHARE use cases', Extras: 'Additional DataCite use cases', All: 'All fourteen use cases' }[plotGroup] || plotGroup;
   ctx.fillStyle = '#6b7280'; ctx.font = '11px Inter, sans-serif';
   const filt = selectionFilterText();
-  ctx.fillText(`${groupLabel} · up to ${history.cap} records/year${filt ? ' · ' + filt : ''} · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. re-curation)`, pad, 33);
+  ctx.fillText(`${groupLabel} · up to ${history.cap} records/year${filt ? ' · ' + filt : ''} · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. re-curation)`, pad, 33 + (titleLines.length - 1)*TITLE_LH);
   ctx.drawImage(chart, 0, titleH, W, chartH);
   ctx.font = legendFont; ctx.textBaseline = 'middle';
   items.forEach((s, i) => {

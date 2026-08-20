@@ -673,6 +673,22 @@ function wrapLabel(text, width){
   return lines;
 }
 
+// Wrap a repository name for a PNG/SVG title: greedy word wrap to the pixel width available,
+// sizing the character budget from the font (bold Inter averages ≈ 0.55em/char). Long names
+// — e.g. "Eunice Kennedy Shriver National Institute of Child Health and Human Development
+// (NICHD) Data and Specimen Hub (DASH)" — would otherwise run off the canvas. Caps at
+// maxLines, ellipsizing the last line so the header can't grow without bound.
+function wrapTitle(text, pxWidth, fontSize, maxLines = 3){
+  const chars = Math.max(8, Math.floor(pxWidth / (fontSize * 0.55)));
+  let lines = wrapLabel(text, chars);
+  if (lines.length > maxLines){
+    lines = lines.slice(0, maxLines);
+    const last = lines[maxLines - 1];
+    lines[maxLines - 1] = (last.length > chars - 1 ? last.slice(0, chars - 1) : last) + '…';
+  }
+  return lines;
+}
+
 // per-spiral shading colors (from the Python config)
 const SPIRAL_COLORS = {
   'FAIR_Text':         '#E97131',
@@ -1363,14 +1379,17 @@ function stripFilterText(){
 // active group — name, score, radar (nested scaled <svg>) — and rasterize at 2x for the clipboard.
 function stripSvgMarkup(){
   const codes = GROUPS[activeTab];
-  const CELL = 240, RAD = 200, PAD = 18, TITLE_H = 56, HEAD_H = 46;
-  const W = PAD*2 + CELL*codes.length, H = TITLE_H + HEAD_H + RAD + PAD;
+  const CELL = 240, RAD = 200, PAD = 18, HEAD_H = 46, NAME_LH = 19;
+  const W = PAD*2 + CELL*codes.length;
+  const nameLines = wrapTitle(lastRun.repoName || lastRun.clientId, W - PAD*2, 16);   // long names wrap instead of running off the canvas
+  const TITLE_H = 56 + (nameLines.length - 1) * NAME_LH;
+  const H = TITLE_H + HEAD_H + RAD + PAD;
   const d = new Date(), p = n => String(n).padStart(2,'0');
   const date = `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}`;
   const esc = escHtml;
   let g = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`
-    + `<text x="${PAD}" y="24" font-size="16" font-weight="700" fill="#673289">${esc(lastRun.repoName || lastRun.clientId)}</text>`
-    + `<text x="${PAD}" y="42" font-size="11" fill="#6b7280">${esc(lastRun.clientId)} · ${esc(TAB_TITLE[activeTab])}${GROUP_TOTAL[activeTab] ? ` · ${esc(GROUP_TOTAL[activeTab].label)} ${fmtPct(weightedTotal(lastRun.byCode, GROUPS[activeTab]))}` : ''}${esc(stripFilterText())} · ${date}</text>`;
+    + nameLines.map((ln, i) => `<text x="${PAD}" y="${24 + i*NAME_LH}" font-size="16" font-weight="700" fill="#673289">${esc(ln)}</text>`).join('')
+    + `<text x="${PAD}" y="${42 + (nameLines.length - 1)*NAME_LH}" font-size="11" fill="#6b7280">${esc(lastRun.clientId)} · ${esc(TAB_TITLE[activeTab])}${GROUP_TOTAL[activeTab] ? ` · ${esc(GROUP_TOTAL[activeTab].label)} ${fmtPct(weightedTotal(lastRun.byCode, GROUPS[activeTab]))}` : ''}${esc(stripFilterText())} · ${date}</text>`;
   codes.forEach((code, i) => {
     const sIdx = CODE_INDEX[code], sp = SPIRALS[sIdx], r = lastRun.byCode[code];
     if (!r) return;
@@ -1564,11 +1583,13 @@ function downloadMetadata(){
 function radarToPngBlob(scale){
   scale = scale || 2;
   return new Promise((resolve, reject) => {
-    const W = 460, radarH = 460, headerH = 46;
+    const W = 460, radarH = 460, NAME_LH = 18;
     const idx = selectedSpiralIdx;
     const sp = SPIRALS[idx];
     const res = (sp && lastRun.byCode[sp.code]) ? lastRun.byCode[sp.code].res : null;
     const name = (lastRun && lastRun.repoName) ? lastRun.repoName : (lastRun ? lastRun.clientId : '');
+    const nameLines = wrapTitle(name, W - 24, 15);            // long names wrap; header grows to fit
+    const headerH = 46 + (nameLines.length - 1) * NAME_LH;
     const subParts = [ lastRun.clientId, `${lastRun.records.length} records`, lastRun.random ? 'random sample' : 'sequential sample' ];
     if (lastRun.resourceTypeId) subParts.push(`type: ${lastRun.resourceTypeId}`);
     if (lastRun.query) subParts.push(`query: ${lastRun.query}`);
@@ -1583,8 +1604,8 @@ function radarToPngBlob(scale){
     const str =
       `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif">` +
       `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>` +
-      `<text x="${W/2}" y="20" text-anchor="middle" font-size="15" font-weight="700" fill="#673289">${escHtml(name)}</text>` +
-      (sub ? `<text x="${W/2}" y="37" text-anchor="middle" font-size="10" fill="#6b7280">${escHtml(sub)}</text>` : '') +
+      nameLines.map((ln, i) => `<text x="${W/2}" y="${20 + i*NAME_LH}" text-anchor="middle" font-size="15" font-weight="700" fill="#673289">${escHtml(ln)}</text>`).join('') +
+      (sub ? `<text x="${W/2}" y="${37 + (nameLines.length - 1)*NAME_LH}" text-anchor="middle" font-size="10" fill="#6b7280">${escHtml(sub)}</text>` : '') +
       `<g transform="translate(0 ${headerH})">${radarInner}</g>` +
       (stats ? `<text x="${W/2}" y="${headerH + radarH + 22}" text-anchor="middle" font-size="12" fill="#1f2330">${escHtml(stats)}</text>` : '') +
       `</svg>`;
