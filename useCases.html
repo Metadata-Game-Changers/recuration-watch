@@ -98,6 +98,7 @@
     <li><a href="https://doi.org/10.59350/49wm0-n8797" target="_blank" rel="noopener">DataCite Project Use Cases</a></li>
   </ul>
   <p><em>Note:</em> these results measure completeness with respect to a known recommendation. They should not be construed as a measure of metadata quality. They could be a small part of an assessment of metadata quality, but we should be careful not to use that term to describe them.</p>
+  <p><em>Methodology note (strict since 2026-08-24):</em> a concept counts only when it has at least one <strong>non-empty</strong> value — empty strings (<code>""</code>) are treated as absent. Before this date, any non-null value counted, so a repository emitting empty fields could score on concepts that documented nothing. Scores computed before and after this date can differ for such repositories (measured impact was small and pipeline-specific); everywhere else scores are unchanged.</p>
   </div>
 
   <h3 class="about-h3">Concepts mapped to DataCite paths</h3>
