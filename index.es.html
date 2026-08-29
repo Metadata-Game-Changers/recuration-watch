@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Metadata Game Changers — Herramientas de Metadatos</title>
+<meta name="description" content="Herramientas gratuitas que funcionan en el navegador para medir y mejorar los metadatos de investigación: puntuación de completitud y conectividad, historial de curación y recuperación de identificadores ROR / ORCID." />
+<link rel="icon" type="image/png" href="favicon_MGC.png" />
+<link rel="alternate" hreflang="en" href="index.html" />
+<link rel="alternate" hreflang="es" href="index.es.html" />
+<link rel="alternate" hreflang="x-default" href="index.html" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --accent:#9167b0; --accent-dk:#673289; --tint:#f0eaf5;
+    --ink:#1f2330; --muted:#6b7280; --line:#e6e3ec; --bg:#fbfafe;
+    --green:#3a9d6e; --amber:#d4910b; --red:#c0392b;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:0}
+
+  /* ── Brand top bar ── */
+  .topbar{border-bottom:2px solid var(--ink);padding:0 2rem}
+  .topbar-inner{max-width:1040px;margin:0 auto;display:flex;align-items:stretch;gap:0}
+  .topbar-brand{padding:.5rem 2rem .3rem 0;display:flex;flex-direction:row;align-items:flex-end;gap:1rem}
+  .brand-logo{height:64px;width:auto;display:block;flex-shrink:0}
+  .brand-title-wrap{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:.15rem}
+  .brand-tool-name{font-family:'Montserrat',sans-serif;font-size:2rem;font-weight:400;letter-spacing:.02em;color:#673289;line-height:1;white-space:nowrap;text-transform:uppercase}
+  .topbar-links{padding:0 0 0 1.5rem;display:flex;flex-direction:column;justify-content:center;gap:.25rem;margin-left:auto}
+  .topbar-links a{font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4}
+  .topbar-links a:hover{color:var(--accent-dk)}
+  @media(max-width:820px){.topbar{padding:0 1rem}.topbar-inner{flex-direction:column}.topbar-brand{padding-right:0}.brand-tool-name{font-size:1.5rem}.topbar-links{flex-direction:row;flex-wrap:wrap;gap:.75rem;padding:.25rem 0 .5rem}}
+
+  /* ── Hero ── */
+  .hero{background:var(--tint);border-bottom:2px solid var(--accent);padding:1.6rem 2rem}
+  .hero-inner{max-width:1040px;margin:0 auto}
+  .hero-title{font-size:1.5rem;font-weight:600;color:#5b3d7a;line-height:1.25;margin:0 0 .45rem;letter-spacing:-.01em;max-width:820px}
+  .hero-sub{font-size:.88rem;color:var(--ink);line-height:1.6;max-width:820px;margin:0}
+  .hero-sub b{color:var(--accent-dk)}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:1.4rem 1.25rem 2.5rem}
+
+  /* ── Facts bar ── */
+  .facts{display:flex;gap:.6rem 2rem;flex-wrap:wrap;margin:.2rem 0 1.4rem;font-size:.78rem;color:var(--muted)}
+  .facts b{color:var(--accent-dk);font-weight:600}
+  .facts span::before{content:"✓";color:var(--green);font-weight:700;margin-right:.4rem}
+
+  /* ── Guide row: the two guides, side by side above the tools ── */
+  .guides{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin:0 0 .9rem}
+  .guide{background:var(--tint);border:1px solid var(--accent);border-radius:12px;padding:.75rem 1.1rem;display:flex;flex-direction:column;gap:.3rem}
+  .guide h3{margin:0;font-size:.95rem;color:var(--accent-dk)}
+  .guide h3 a{color:inherit;text-decoration:none}
+  .guide h3 a:hover{text-decoration:underline}
+  .guide .kicker{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)}
+  .guide p{margin:0;font-size:.78rem;color:var(--ink);line-height:1.55}
+  .guide .go{margin-top:auto;padding-top:.35rem;font-size:.74rem;font-weight:600}
+  .guide .go a{color:var(--accent-dk);text-decoration:none}
+  .guide .go a:hover{text-decoration:underline}
+  @media(max-width:640px){.guides{grid-template-columns:1fr}}
+
+  /* ── Tool cards ── */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:.9rem}
+  .tool{background:#fff;border:1px solid var(--line);border-radius:12px;padding:.95rem 1.1rem;display:flex;flex-direction:column;gap:.35rem}
+  .tool h3{margin:0;font-size:.95rem;color:var(--accent-dk)}
+  .tool h3 a{color:inherit;text-decoration:none}
+  .tool h3 a:hover{text-decoration:underline}
+  .tool .kicker{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)}
+  .tool p{margin:0;font-size:.78rem;color:var(--ink);line-height:1.55}
+  .tool ul{margin:.15rem 0 0 1rem;padding:0;font-size:.74rem;color:var(--muted);line-height:1.5}
+  .tool li{margin:.12rem 0}
+  .tool .go{margin-top:auto;padding-top:.4rem;font-size:.74rem;font-weight:600}
+  .tool .go a{color:var(--accent);text-decoration:none}
+  .tool .go a:hover{color:var(--accent-dk)}
+
+  /* ── Pipeline strip ── */
+  .pipe{background:#fff;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:.85rem 1.1rem;margin:1.3rem 0 0;font-size:.8rem;line-height:1.65;color:var(--ink);max-width:100%}
+  .pipe b{color:var(--accent-dk)}
+  .pipe .arrow{color:var(--accent);font-weight:700;margin:0 .25rem}
+  .pipe a{color:var(--accent-dk);font-weight:600;text-decoration:none}
+  .pipe a:hover{text-decoration:underline}
+
+  /* ── CTA ── */
+  .cta{margin:1.4rem 0 0;background:var(--tint);border:1px solid var(--accent);border-radius:10px;padding:.9rem 1.1rem;font-size:.84rem;line-height:1.6}
+  .cta b{color:var(--accent-dk)}
+  .cta a{color:var(--accent-dk);font-weight:600;text-decoration:none}
+  .cta a:hover{text-decoration:underline}
+  .cta .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.78rem}
+
+  @media print{
+    body{background:#fff}
+    .topbar-links,#analytics-banner{display:none !important}
+    .hero{padding:1rem 2rem}
+    .wrap{padding:.8rem 1.25rem 1rem}
+    .tool,.guide,.pipe,.cta{break-inside:avoid}
+    .grid{grid-template-columns:repeat(2,1fr);gap:.6rem}
+    a{text-decoration:none !important}
+  }
+  /* analytics consent banner */
+  #analytics-banner{position:fixed;bottom:0;left:0;right:0;background:var(--ink);color:#fff;padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;z-index:500;font-size:.75rem;border-top:2px solid #444}
+  #analytics-banner a{color:#93c5fd}
+  #analytics-banner-btns{display:flex;gap:.5rem}
+  .ab-btn{padding:.35rem .85rem;font-size:.72rem;cursor:pointer;border:1px solid #666;font-family:inherit;background:none;color:#fff;border-radius:6px}
+  .ab-btn-ok{background:#fff;color:var(--ink);border-color:#fff}
+  .ab-btn-ok:hover{background:var(--tint)}
+  .ab-btn-no:hover{background:rgba(255,255,255,.1)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" onerror="this.style.display='none'" />
+      </a>
+      <div class="brand-title-wrap"><div class="brand-tool-name">Herramientas para Repositorios</div></div>
+    </div>
+    <div class="topbar-links">
+      <a href="index.html">English ↗</a>
+      <a href="guide.es.html">Guía para Repositorios ↗</a>
+      <a href="consortiumGuide.es.html">Guía para Consorcios ↗</a>
+      <a href="reading.html">Lecturas Relacionadas ↗ (EN)</a>
+      <a href="tips.html">Consejos de Metadatos ↗ (EN)</a>
+      <a href="https://github.com/Metadata-Game-Changers/recuration-watch" target="_blank" rel="noopener">Código en GitHub ↗</a>
+      <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Comentarios ↗</a>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-inner">
+    <h1 class="hero-title">Vea qué tan completos son los metadatos de su repositorio — y mejórelos.</h1>
+    <p class="hero-sub">Ocho herramientas gratuitas que funcionan en el navegador, creadas por <b>Metadata Game Changers</b>,
+    que miden la completitud, la conectividad y el historial de curación de cualquier repositorio de DataCite con datos
+    en vivo — y convierten lo que encuentran en acciones concretas, vinculando las personas y organizaciones de sus
+    metadatos con los identificadores <b>ORCID</b> y <b>ROR</b> que conectan la investigación.</p>
+    <p class="hero-sub" style="margin-top:.5rem;font-size:.78rem;color:var(--muted)">Las guías están en español; la
+    interfaz de las herramientas está en inglés.</p>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="facts">
+    <span><b>100 % en su navegador</b> — no se sube nada, sin registro</span>
+    <span><b>Datos en vivo</b> de las API de DataCite, ROR y ORCID</span>
+    <span><b>Funciona con cualquiera</b> de los más de 3500 repositorios de DataCite</span>
+    <span><b>Abierto</b> — CC BY-NC 4.0, código fuente en GitHub</span>
+  </div>
+
+  <div class="guides">
+    <div class="guide">
+      <span class="kicker">¿Primera vez? · Para gestores de repositorios</span>
+      <h3><a href="guide.es.html">Guía para Repositorios</a></h3>
+      <p>Una primera sesión práctica con su propio repositorio: medir, desglosar, recuperar identificadores y recurar, de principio a fin.</p>
+      <div class="go"><a href="guide.es.html">Abrir la Guía para Repositorios →</a></div>
+    </div>
+    <div class="guide">
+      <span class="kicker">¿Dirige un programa? · Para líderes de consorcios</span>
+      <h3><a href="consortiumGuide.es.html">Guía para Consorcios</a></h3>
+      <p>Encuentre sus puntos brillantes, aprenda de ellos y difunda sus prácticas entre sus miembros — con un PDF para compartir.</p>
+      <div class="go"><a href="consortiumGuide.es.html">Abrir la Guía para Consorcios →</a></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="tool">
+      <span class="kicker">Observar · Tendencias</span>
+      <h3><a href="repositoryHistory.html">Repository History</a></h3>
+      <p>Puntúa la completitud de los metadatos de un repositorio para cada año de registro y muestra cómo evoluciona: como líneas de tendencia, una cuadrícula de gráficos radiales o una animación.</p>
+      <ul>
+        <li>Tendencias de completitud por año de registro, cohorte por cohorte</li>
+        <li>Vistas en cuadrícula radial y en animación de los perfiles de casos de uso</li>
+        <li>Envíe la muestra de cualquier año a Completeness o Connectivity</li>
+      </ul>
+      <div class="go"><a href="repositoryHistory.html">Abrir Repository History →</a></div>
+    </div>
+
+    <div class="tool">
+      <span class="kicker">Medir · FAIR y Proyectos</span>
+      <h3><a href="completeness.html">Metadata Completeness</a></h3>
+      <p>Mide la completitud de los metadatos usando los casos de uso FAIR y de Proyecto de MGC, un concepto a la vez.</p>
+      <ul>
+        <li>Completitud concepto por concepto, con desgloses para ver los valores reales</li>
+        <li>Informes en HTML / PDF / JSON para compartir y analizar después</li>
+        <li>Filtre por tipo de recurso, consulta o muestra aleatoria</li>
+      </ul>
+      <div class="go"><a href="completeness.html">Abrir Metadata Completeness →</a></div>
+    </div>
+
+    <div class="tool">
+      <span class="kicker">Medir · Identificadores</span>
+      <h3><a href="metadataConnectivity.html">Metadata Connectivity</a></h3>
+      <p>Mide en qué medida creadores, contribuyentes, financiadores, editores y derechos llevan los identificadores que los conectan — y encuentra logros rápidos.</p>
+      <ul>
+        <li>Cobertura de ORCID, ROR, financiadores, editores y derechos de un vistazo</li>
+        <li>Los desgloses listan cada nombre sin identificar, empezando por los logros rápidos</li>
+        <li>Un clic los envía a los recuperadores ROR / ORCID junto con informes de datos tabulares</li>
+      </ul>
+      <div class="go"><a href="metadataConnectivity.html">Abrir Metadata Connectivity →</a></div>
+    </div>
+
+    <div class="tool">
+      <span class="kicker">Observar · Actividad</span>
+      <h3><a href="repo-activity.html">Repository Activity</a></h3>
+      <p>Explore toda la actividad de curación de un repositorio a lo largo del tiempo — creaciones, actualizaciones y publicaciones — para demostrar y comprender la curación activa de la colección.</p>
+      <ul>
+        <li>Líneas de tiempo de actividad para cualquier repositorio de DataCite</li>
+        <li>Compare el esfuerzo de curación entre colecciones y años</li>
+      </ul>
+      <div class="go"><a href="repo-activity.html">Abrir Repository Activity →</a></div>
+    </div>
+
+    <div class="tool">
+      <span class="kicker">Observar · Curación</span>
+      <h3><a href="recurationWatch.html">Re-Curation Watch</a></h3>
+      <p>Recorre las actualizaciones más recientes de un repositorio — o el historial completo de curación de un solo DOI — para ver la recuración a medida que ocurre.</p>
+      <ul>
+        <li>Cambios versión por versión para cualquier DOI de DataCite</li>
+        <li>Detecte mejoras (y retrocesos) en los metadatos con el paso del tiempo</li>
+        <li>Haga visible su trabajo invisible de curación de metadatos</li>
+      </ul>
+      <div class="go"><a href="recurationWatch.html">Abrir Re-Curation Watch →</a></div>
+    </div>
+
+    <div class="tool">
+      <span class="kicker">Recuperar · Organizaciones</span>
+      <h3><a href="rorRetriever.html">ROR Retriever</a></h3>
+      <p>Vincula nombres de afiliaciones, financiadores y editores con identificadores ROR usando las mismas estrategias de coincidencia de afiliaciones que emplean DataCite, Crossref y ROR.</p>
+      <ul>
+        <li>Primero una coincidencia algorítmica cuidadosa; búsqueda completa como alternativa</li>
+        <li>Confianza codificada por colores, con todos los detalles de cada candidato</li>
+        <li>Resultados en CSV listos para analizar y recurar</li>
+      </ul>
+      <div class="go"><a href="rorRetriever.html">Abrir ROR Retriever →</a></div>
+    </div>
+
+    <div class="tool">
+      <span class="kicker">Recuperar · Personas</span>
+      <h3><a href="orcidRetriever.html">ORCID Retriever</a></h3>
+      <p>Encuentra ORCID iD para listas de personas y muestra el empleo y la revista más recientes de cada candidato, para que sea fácil elegir a la persona correcta.</p>
+      <ul>
+        <li>Admite los formatos &ldquo;Nombre Apellido&rdquo; y &ldquo;Apellido, Nombre&rdquo;</li>
+        <li>Desambiguación integrada para nombres comunes</li>
+        <li>Resultados en CSV listos para analizar y recurar</li>
+      </ul>
+      <div class="go"><a href="orcidRetriever.html">Abrir ORCID Retriever →</a></div>
+    </div>
+
+    <div class="tool">
+      <span class="kicker">Observar · Automatización</span>
+      <h3><a href="metricsViewer.html">Metrics Viewer</a></h3>
+      <p>Muestra los historiales de puntuación que <b>metrics-watch</b> genera automáticamente: una GitHub Action de bifurcar y olvidar que puntúa los metadatos de su repositorio cada mes.</p>
+      <ul>
+        <li>Líneas de tendencia, cuadrículas radiales y animaciones de sus ejecuciones de puntuación</li>
+        <li>Carga cualquier historial de metrics-watch por URL o desde un archivo local</li>
+        <li>El <a href="setViewer.html">Set Viewer</a> compara todos los miembros de un conjunto lado a lado</li>
+        <li>Puntuación mensual automática: bifurque un repositorio, edite un archivo de configuración</li>
+      </ul>
+      <div class="go"><a href="metricsViewer.html">Abrir Metrics Viewer →</a></div>
+      <div class="go" style="margin-top:0"><a href="https://github.com/Metadata-Game-Changers/metrics-watch" target="_blank" rel="noopener">Configurar metrics-watch en GitHub →</a></div>
+    </div>
+  </div>
+
+  <div class="pipe">
+    <b>Las herramientas funcionan como un flujo de trabajo.</b> <b>Mida</b> la completitud y la conectividad de un repositorio
+    <span class="arrow">→</span> <b>desglose</b> hasta las personas y organizaciones concretas a las que les faltan identificadores
+    <span class="arrow">→</span> <b>recupere</b> sus ROR y ORCID con un solo clic
+    <span class="arrow">→</span> <b>recure</b> sus metadatos y vea cómo mejora la completitud.
+    Cada traspaso conserva su contexto, así que siempre sabe qué conjunto de datos está mejorando.
+    La <a href="guide.es.html">Guía para Repositorios</a> lo acompaña por todo el ciclo, y la
+    <a href="consortiumGuide.es.html">Guía para Consorcios</a> muestra cómo aplicarlo a todos los miembros.
+  </div>
+
+  <div class="cta">
+    <b>Pruébelas ahora, sin instalación y sin cuenta:</b>
+    <a href="https://metadata-game-changers.github.io/recuration-watch/completeness.html" target="_blank" rel="noopener" class="mono">metadata-game-changers.github.io/recuration-watch/completeness.html</a><br />
+    ¿Preguntas, ideas o un repositorio con el que le gustaría recibir ayuda? Escriba a
+    <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers</a> —
+    Better Documentation | Better Data | Better Science.
+  </div>
+</div>
+
+<footer style="border-top:1px solid var(--line);background:#fff;padding:1rem 2rem;margin-top:1.5rem;">
+  <div style="max-width:1040px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" style="height:22px;width:auto;display:block;" onerror="this.style.display='none'" />
+      </a>
+      <span style="font-size:0.72rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Herramientas para Repositorios</a> · Creado por <a href="https://metadatagamechangers.com" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Metadata Game Changers</a> · Better Documentation | Better Data | Better Science</span>
+    </div>
+    <span style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:0.65rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Reportar un problema ↗</a> &nbsp;·&nbsp; <a href="https://doi.org/10.60872/recurationWatch" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none;" title="Citar como: doi.org/10.60872/recurationWatch">DOI: 10.60872/recurationWatch</a> &nbsp;·&nbsp; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none;">CC BY-NC 4.0</a> &nbsp;·&nbsp; Datos en vivo de <a href="https://api.datacite.org" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">DataCite</a>, <a href="https://api.ror.org" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">ROR</a> &amp; <a href="https://pub.orcid.org" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">ORCID</a></span>
+  </div>
+</footer>
+<!-- Google Analytics (shared consent with the rest of the suite via localStorage 'rcw-ga') -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9JQRWY72HW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  try{ if(localStorage.getItem('rcw-ga')==='declined') window['ga-disable-G-9JQRWY72HW']=true; }catch(e){}
+  gtag('js', new Date());
+  gtag('config', 'G-9JQRWY72HW');
+</script>
+<!-- Analytics consent banner -->
+<div id="analytics-banner">
+  <span>Este sitio usa Google Analytics para obtener estadísticas de uso anónimas. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Política de Privacidad de Google ↗</a></span>
+  <div id="analytics-banner-btns">
+    <button class="ab-btn ab-btn-ok" type="button" onclick="hideBanner('accepted')">Aceptar</button>
+    <button class="ab-btn ab-btn-no" type="button" onclick="hideBanner('declined')">Rechazar</button>
+  </div>
+</div>
+<script>
+  function hideBanner(choice){
+    try{ localStorage.setItem('rcw-ga', choice); }catch(e){}
+    document.getElementById('analytics-banner').style.display='none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  }
+  (function(){
+    var choice=null; try{ choice=localStorage.getItem('rcw-ga'); }catch(e){}
+    if (choice) document.getElementById('analytics-banner').style.display='none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  })();
+</script>
+</body>
+</html>
