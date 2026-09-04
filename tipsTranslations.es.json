@@ -1,0 +1,229 @@
+{
+ "_comment": "Spanish translations of the while-you-wait tips, keyed by tool file and the ENGLISH tip label (the key ties each translation to its source tip in the tool page). makeTipsPage.py combines these with the English arrays to generate tips.es.html; a tip with no entry here falls back to English and makeTipsPage.py warns. An optional 'link' overrides the English link (e.g. to point at a Spanish page).",
+ "recurationWatch.html": {
+  "Re-Curation": {
+   "label": "Re-curación",
+   "text": "La <strong>re-curación</strong> consiste en volver a los registros ya publicados para mejorar su conectividad — añadiendo ORCIDs, RORs e identificadores relacionados."
+  },
+  "FAIR Principles": {
+   "label": "Principios FAIR",
+   "text": "Los <strong>metadatos FAIR</strong> son un continuo, no una lista de verificación. El historial de actividad muestra cómo los repositorios avanzan a lo largo de él con el tiempo."
+  },
+  "Funder Metadata": {
+   "label": "Metadatos de financiadores",
+   "text": "<strong>Las siglas de los financiadores no bastan.</strong> Los identificadores persistentes como ROR permiten rastrear los productos de investigación hasta las agencias que los financiaron."
+  },
+  "DataCite Provenance": {
+   "label": "Procedencia en DataCite",
+   "text": "<strong>Cada actualización de un DOI</strong> desde marzo de 2019 queda registrada por DataCite como un evento de procedencia — eso es lo que Re-Curation Watch visualiza."
+  },
+  "MGC Mission": {
+   "label": "Misión de MGC",
+   "text": "<strong>Mejor documentación</strong> conduce a mejor descubrimiento de datos, más reutilización y mayor integridad de la investigación."
+  },
+  "Connectivity": {
+   "label": "Conectividad",
+   "text": "<strong>Los identificadores conectan la investigación.</strong> ORCIDs para las personas, RORs para las organizaciones, DOIs para los productos — juntos hacen posible el grafo global de la investigación."
+  }
+ },
+ "completeness.html": {
+  "Completeness": {
+   "label": "Completitud",
+   "text": "La <strong>completitud</strong> aquí mide <em>presencia</em> — la proporción de registros que contienen cada concepto — no si el valor es correcto o rico."
+  },
+  "FAIR use cases": {
+   "label": "Casos de uso FAIR",
+   "text": "Los cuatro <strong>casos de uso FAIR</strong> agrupan los conceptos por propósito: <strong>Texto</strong> para el descubrimiento, <strong>Identificadores</strong>, <strong>Conexiones</strong> y <strong>Contactos</strong>."
+  },
+  "Mandatory fields": {
+   "label": "Campos obligatorios",
+   "text": "DataCite exige unos pocos campos (título, creador, editor, tipo, año), así que algunos conceptos rondan el <strong>100% por diseño</strong> — la señal interesante está en todo lo demás."
+  },
+  "Total index": {
+   "label": "Índice total",
+   "text": "El <strong>Total FAIR</strong> es un promedio ponderado por conceptos de los cuatro casos de uso FAIR. Projects y Extras se puntúan por separado y no lo afectan."
+  },
+  "Sampling": {
+   "label": "Muestreo",
+   "text": "Para repositorios grandes, una <strong>muestra aleatoria</strong> de unos cientos de registros da una puntuación de completitud representativa en segundos."
+  },
+  "Connectivity": {
+   "label": "Conectividad",
+   "text": "Las <strong>afiliaciones estructuradas (ROR)</strong> y los <strong>identificadores (ORCID, DOI)</strong> conectan el grafo de la investigación mucho mejor que los nombres y títulos en texto libre."
+  },
+  "Relations": {
+   "label": "Relaciones",
+   "text": "<strong>relatedIdentifiers</strong> — Cites, IsPartOf, IsSupplementTo… — convierten registros aislados en una red conectada. Vea el caso de uso DataCite Relations."
+  },
+  "In your browser": {
+   "label": "En su navegador",
+   "text": "Cada puntuación se calcula <strong>en su navegador</strong> con las mismas consultas jq que usa Metadata Game Changers — nada se sube ni se almacena."
+  },
+  "Retrieve ROR subset": {
+   "label": "Subconjunto por ROR",
+   "text": "Para recuperar de un repositorio los registros <strong>asociados a una organización</strong>, ponga el \"ROR\" entre comillas en la consulta."
+  }
+ },
+ "metadataConnectivity.html": {
+  "Connectivity": {
+   "label": "Conectividad",
+   "text": "La <strong>conectividad</strong> mide si los elementos de sus metadatos llevan los identificadores que los <em>conectan</em> — ORCIDs en las personas, RORs en las organizaciones."
+  },
+  "Distinct entities": {
+   "label": "Entidades distintas",
+   "text": "Las barras cuentan <strong>entidades distintas</strong>, no ocurrencias — un creador que aparece en 50 registros es una sola persona que identificar una vez."
+  },
+  "Quick wins": {
+   "label": "Logros rápidos",
+   "text": "Los segmentos <strong>amarillos</strong> son logros rápidos: un identificador ya conocido para una entidad que solo hay que <em>copiar</em> a los registros que carecen de él — sin necesidad de buscarlo."
+  },
+  "ORCID": {
+   "label": "ORCID",
+   "text": "Un <strong>ORCID</strong> en un creador o colaborador enlaza todos sus productos entre repositorios — el identificador de mayor impacto que se puede añadir."
+  },
+  "ROR": {
+   "label": "ROR",
+   "text": "Los identificadores <strong>ROR</strong> en las afiliaciones desambiguan las organizaciones mucho mejor que los nombres en texto libre como “Univ. of Colorado”."
+  },
+  "Duplicates": {
+   "label": "Duplicados",
+   "text": "La misma persona u organización aparece con muchas grafías. El panel de <strong>posibles duplicados</strong> agrupa las coincidencias probables — incluso entre creadores y colaboradores."
+  },
+  "Click a bar": {
+   "label": "Haga clic en una barra",
+   "text": "<strong>Haga clic en cualquier barra</strong> para listar sus entidades distintas — primero los logros rápidos (un identificador conocido que copiar a los registros que lo omiten), después las que aún carecen de identificador."
+  },
+  "In your browser": {
+   "label": "En su navegador",
+   "text": "Todo se calcula <strong>en su navegador</strong> con datos en vivo de DataCite — nada se sube ni se almacena."
+  }
+ },
+ "rorRetriever.html": {
+  "Affiliation strategy": {
+   "label": "Estrategia de afiliación",
+   "text": "Cada nombre se empareja con la <strong>estrategia de afiliación</strong> de ROR — prueba subcadenas de su texto contra los nombres registrados y solo <em>elige</em> una coincidencia cuando está segura."
+  },
+  "Why the pace?": {
+   "label": "¿Por qué este ritmo?",
+   "text": "Cada afiliación es una petición independiente a la API, dosificada para mantenerse dentro del límite de ROR — los resultados aparecen <strong>a medida que llegan</strong>, y puede pulsar Stop en cualquier momento y conservar lo ya hecho."
+  },
+  "Colors": {
+   "label": "Colores",
+   "text": "<strong>Verde</strong> = elegido por el algoritmo (fiable). <strong>Ámbar</strong> = una sugerencia — mejor puntuación o búsqueda por palabras clave — verifíquela a ojo. <strong>Rojo</strong> = nada utilizable."
+  },
+  "QUERY fallback": {
+   "label": "Alternativa QUERY",
+   "text": "Los nombres que el algoritmo no puede ubicar se reintentan con la <strong>búsqueda por palabras clave</strong> de ror.org; su mejor resultado aparece en ámbar con <strong>QUERY</strong> en la columna Match."
+  },
+  "“(Country)” names": {
+   "label": "Nombres con “(País)”",
+   "text": "Algunos nombres registrados llevan un sufijo como “Metadata Game Changers <strong>(United States)</strong>” sin alias corto — una <strong>solicitud de curación a ROR</strong> lo corrige para todos."
+  },
+  "Beyond affiliations": {
+   "label": "Más allá de las afiliaciones",
+   "text": "ROR absorbió el Open Funder Registry, así que los RORs también identifican <strong>financiadores</strong> y <strong>editores</strong> — no solo afiliaciones de autores."
+  },
+  "Candidates": {
+   "label": "Candidatos",
+   "text": "Haga clic en una <strong>afiliación o en su número de resultados</strong> para ver todos los candidatos que devolvió la API — puntuaciones, tipos de coincidencia y cuál fue elegido."
+  },
+  "In your browser": {
+   "label": "En su navegador",
+   "text": "El emparejamiento se ejecuta <strong>en su navegador</strong> contra la API pública de ROR — nada se sube ni se almacena, y el CSV coincide con RORRetriever.py."
+  },
+  "Curation Required": {
+   "label": "Curación necesaria",
+   "text": "Las búsquedas en ROR funcionan muy bien en la mayoría de los casos, pero a veces hace falta curación manual. Use las casillas Valid para los resultados correctos; se guardan como True en el archivo CSV."
+  }
+ },
+ "orcidRetriever.html": {
+  "No Public Data?": {
+   "label": "¿Sin datos públicos?",
+   "text": "Avise a sus colegas — tener un ORCID es estupendo, pero hacer públicos los datos es necesario para que sean visibles y localizables."
+  },
+  "The search": {
+   "label": "La búsqueda",
+   "text": "Cada nombre se separa en <strong>apellidos y nombre</strong> y se busca en el registro público de ORCID — la misma búsqueda que usa getORCIDs.py de MGC."
+  },
+  "Why the pace?": {
+   "label": "¿Por qué este ritmo?",
+   "text": "Cada iD candidato es una <strong>consulta de registro</strong> independiente (de ahí salen el empleo y la revista), dosificada para respetar la API pública de ORCID — los resultados aparecen a medida que llegan."
+  },
+  "Pick one": {
+   "label": "Elija uno",
+   "text": "Las <strong>filas ámbar</strong> indican que varias personas comparten el nombre — una fila por candidato. Use las columnas de <strong>empleo</strong> y <strong>revista</strong> para elegir a la persona correcta."
+  },
+  "Empty columns?": {
+   "label": "¿Columnas vacías?",
+   "text": "Los datos de un perfil ORCID solo aparecen si el investigador los hizo <strong>públicos</strong> — una columna de empleo vacía no significa desempleo, solo un dato privado o sin rellenar."
+  },
+  "Common names": {
+   "label": "Nombres comunes",
+   "text": "<strong>Max matches / name</strong> limita cuántos candidatos se consultan — la columna Matches sigue mostrando el total real, p. ej. “first 5 of 137”."
+  },
+  "Name forms": {
+   "label": "Formas del nombre",
+   "text": "“Nombre Apellido” y “Apellido, Nombre” funcionan por igual — los sufijos (Jr, III) y los apodos los maneja el analizador portado de getORCIDs.py."
+  },
+  "Why ORCIDs?": {
+   "label": "¿Por qué ORCIDs?",
+   "text": "Un <strong>ORCID</strong> en un creador o colaborador enlaza todos sus productos entre repositorios — el identificador de mayor impacto que se puede añadir."
+  },
+  "In your browser": {
+   "label": "En su navegador",
+   "text": "Todo se ejecuta <strong>en su navegador</strong> contra la API pública y anónima de ORCID — sin token, nada se sube ni se almacena."
+  },
+  "Curation Required": {
+   "label": "Curación necesaria",
+   "text": "Las búsquedas en ORCID funcionan muy bien en la mayoría de los casos, pero a veces hace falta curación manual. Use las casillas Valid para los resultados correctos; se guardan como True en el archivo CSV."
+  }
+ },
+ "repositoryHistory.html": {
+  "Cohorts, not a time machine": {
+   "label": "Cohortes, no una máquina del tiempo",
+   "text": "Cada año puntúa los registros <strong>registrados</strong> ese año <em>tal como están hoy</em> — un buen año temprano puede significar buenos metadatos entonces, o <strong>re-curación</strong> posterior. Compare con Re-Curation Watch para distinguirlos."
+  },
+  "Registered year": {
+   "label": "Año de registro",
+   "text": "<strong>Registered</strong> es cuando DataCite vio el DOI por primera vez — lo asigna el sistema, a diferencia de <strong>publicationYear</strong>, que los autores pueden rellenar retroactivamente a voluntad."
+  },
+  "Thin years": {
+   "label": "Años con pocos datos",
+   "text": "Los primeros años suelen tener solo un puñado de registros, así que sus porcentajes oscilan mucho — los <strong>puntos huecos</strong> marcan años con menos de 10 registros. Lea las tendencias en los puntos sólidos."
+  },
+  "Rising lines": {
+   "label": "Líneas ascendentes",
+   "text": "Una línea ascendente significa que los registros más recientes están <strong>mejor documentados</strong> — o que las cohortes antiguas nunca se revisaron. Las líneas descendentes son más raras y merecen investigarse: ¿cambió algún flujo de trabajo?"
+  },
+  "Focus with a query": {
+   "label": "Enfoque con una consulta",
+   "text": "El filtro <strong>Query</strong> se combina con cada año — p. ej. <strong>types.resourceTypeGeneral:Dataset</strong> sigue solo los metadatos de datasets, excluyendo registros de texto o software."
+  },
+  "In your browser": {
+   "label": "En su navegador",
+   "text": "Cada año se obtiene de DataCite y se puntúa <strong>en su navegador</strong> con las mismas consultas jq de casos de uso que Metadata Completeness — nada se sube ni se almacena."
+  }
+ },
+ "organizationCompleteness.html": {
+  "Where the records live": {
+   "label": "Dónde viven los registros",
+   "text": "La mayoría de los datos de investigación de una organización vive en los <strong>grandes repositorios generalistas</strong> — figshare, Zenodo, Dryad, OSF — no en el repositorio institucional. Esta herramienta mide los metadatos en cada uno de esos lugares."
+  },
+  "The well-identified subset": {
+   "label": "El subconjunto bien identificado",
+   "text": "Seleccionar registros por <strong>ROR</strong> encuentra los que ya llevan el identificador de la organización — un <strong>subconjunto bien curado</strong>. Las poblaciones por nombre son mayores; las basadas en ROR, más limpias."
+  },
+  "Repository, not virtue": {
+   "label": "Repositorio, no virtud",
+   "text": "Los registros de una misma organización puntúan <strong>distinto en repositorios distintos</strong> — sobre todo porque los formularios de depósito y los flujos de cada plataforma difieren, no porque difieran los depositantes."
+  },
+  "In your browser": {
+   "label": "En su navegador",
+   "text": "Cada repositorio se obtiene de DataCite y se puntúa <strong>en su navegador</strong> con las mismas consultas jq de casos de uso que Metadata Completeness — nada se sube ni se almacena."
+  },
+  "Dig deeper per repository": {
+   "label": "Profundice por repositorio",
+   "text": "Los enlaces <strong>Completeness</strong> y <strong>Connectivity</strong> de cada fila abren la muestra exacta de ese repositorio en las herramientas hermanas — los mismos registros, medidos más a fondo."
+  }
+ }
+}
