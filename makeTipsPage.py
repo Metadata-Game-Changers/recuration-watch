@@ -2,11 +2,13 @@
 """Regenerate tips.html from the tips arrays embedded in the tool pages.
 
 The while-you-wait tips live in each tool (the source of truth):
-    recurationWatch.html      RCW_TIPS
-    completeness.html         COMPLETENESS_TIPS
-    metadataConnectivity.html CONNECTIVITY_TIPS
-    rorRetriever.html         TIPS
-    orcidRetriever.html       TIPS
+    recurationWatch.html         RCW_TIPS
+    completeness.html            COMPLETENESS_TIPS
+    metadataConnectivity.html    CONNECTIVITY_TIPS
+    rorRetriever.html            TIPS
+    orcidRetriever.html          TIPS
+    repositoryHistory.html       HISTORY_TIPS
+    organizationCompleteness.html ORG_TIPS
 
 tips.html is a generated collection of all of them. After adding or editing a tip
 in a tool, re-run:
@@ -29,6 +31,7 @@ TOOLS = [
     ("rorRetriever.html", "TIPS", "ROR Retriever"),
     ("orcidRetriever.html", "TIPS", "ORCID Retriever"),
     ("repositoryHistory.html", "HISTORY_TIPS", "Repository History"),
+    ("organizationCompleteness.html", "ORG_TIPS", "Organization Completeness"),
 ]
 
 TIP_RE = re.compile(
@@ -145,7 +148,8 @@ FOOT = '''
     These tips rotate inside the tools while data loads; here they are all at once. Collected from
     <a href="recurationWatch.html">Re-Curation Watch</a>, <a href="completeness.html">Metadata Completeness</a>,
     <a href="metadataConnectivity.html">Metadata Connectivity</a>, <a href="rorRetriever.html">ROR Retriever</a>,
-    <a href="orcidRetriever.html">ORCID Retriever</a>, and <a href="repositoryHistory.html">Repository History</a>.
+    <a href="orcidRetriever.html">ORCID Retriever</a>, <a href="repositoryHistory.html">Repository History</a>,
+    and <a href="organizationCompleteness.html">Organization Completeness</a>.
     A <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers</a> prototype
     &copy; Metadata Game Changers, licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a> · DOI: pending.
   </footer>

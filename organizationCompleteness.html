@@ -163,14 +163,18 @@
       </a>
       <div class="brand-title-wrap"><div class="brand-tool-name">Organization Completeness</div></div>
     </div>
-    <!-- Deliberately no sibling-tool links here: this tool is unadvertised, and its only
-         links to other tools are the per-repository Completeness/Connectivity handoffs
-         in the results table. -->
+    <!-- No sibling-tool links here: the per-repository Completeness/Connectivity handoffs
+         in the results table are the links to the other tools. -->
     <div class="topbar-links">
       <div class="topbar-col">
       <a href="useCases.html" target="_blank" rel="noopener">Use Cases ↗</a>
       <a href="https://support.datacite.org/docs/queries" target="_blank" rel="noopener">DataCite Queries ↗</a>
       <a href="https://ror.org" target="_blank" rel="noopener">About ROR ↗</a>
+      </div>
+      <div class="topbar-col">
+      <a href="guide.html">Repository Guide ↗</a>
+      <a href="consortiumGuide.html">Consortium Guide ↗</a>
+      <a href="tips.html#organizationCompleteness">Metadata Tips ↗</a>
       <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
       </div>
     </div>
@@ -1253,7 +1257,7 @@ $('ror-input').addEventListener('keydown', e => {
 });
 document.addEventListener('click', e => { if (!e.target.closest('.hero-search')) closeAutocomplete(); });
 
-/* ---------- loading tips (this page is not in tips.html — unadvertised) ---------- */
+/* ---------- loading tips (collected into tips.html by makeTipsPage.py) ---------- */
 const ORG_TIPS = [
   { label:'Where the records live', text:'Most organizations&rsquo; research data lives in the <strong>big generalist repositories</strong> — figshare, Zenodo, Dryad, OSF — not the institutional repository. This tool measures the metadata in each of those places.', link:'https://metadatagamechangers.com/blog' },
   { label:'The well-identified subset', text:'Selecting records by <strong>ROR</strong> finds the records that already carry the organization&rsquo;s identifier — a <strong>well-curated subset</strong>. Name-based populations are bigger; ROR-based ones are cleaner.', link:'https://ror.org' },
