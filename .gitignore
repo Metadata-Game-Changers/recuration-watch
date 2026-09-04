@@ -3,3 +3,6 @@
 
 # macOS
 .DS_Store
+
+# Python bytecode (makeTipsPage.py imports)
+__pycache__/
