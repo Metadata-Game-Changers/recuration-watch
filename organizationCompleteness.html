@@ -121,7 +121,7 @@
   table.hist td.year-open{text-align:left;white-space:normal;min-width:110px}   /* links may stack rather than clip on narrow windows */
   table.hist td.year-open a{color:var(--accent);text-decoration:none;cursor:pointer;font-size:.72rem;font-weight:600;margin-right:.5rem;display:inline-block;white-space:nowrap}
   table.hist td.year-open a:hover{color:var(--accent-dk);text-decoration:underline}
-  /* radar grid (small multiples: use cases × repositories) */
+  /* radar grid (small multiples: use cases × clients) */
   #grid{overflow-x:auto;margin-top:.4rem}
   table.grid-tbl{border-collapse:collapse}
   table.grid-tbl th.corner{background:#fff}
@@ -133,7 +133,7 @@
   table.grid-tbl td.cell .cell-avg{font-size:.68rem;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:-.15rem}
   table.grid-tbl td.cell.thin{opacity:.5}
   table.grid-tbl td.cell svg{display:block;margin:0 auto}
-  /* movie: one repository at a time, enlarged, with a play/scrub control */
+  /* movie: one client at a time, enlarged, with a play/scrub control */
   .movie-bar{display:flex;align-items:center;gap:1rem;margin:.4rem 0 1rem;flex-wrap:wrap}
   .movie-bar input[type=range]{flex:1;min-width:180px;accent-color:var(--accent);cursor:pointer}
   .movie-caption{font-size:.95rem;font-weight:600;color:var(--accent-dk);white-space:nowrap}
@@ -163,7 +163,7 @@
       </a>
       <div class="brand-title-wrap"><div class="brand-tool-name">Organization Completeness</div></div>
     </div>
-    <!-- No sibling-tool links here: the per-repository Completeness/Connectivity handoffs
+    <!-- No sibling-tool links here: the per-client Completeness/Connectivity handoffs
          in the results table are the links to the other tools. -->
     <div class="topbar-links">
       <div class="topbar-col">
@@ -185,7 +185,7 @@
   <div class="hero-inner">
     <div class="hero-text">
       <h2 class="hero-title">Where an organization&rsquo;s records live <span class="proto-flag">Prototype</span></h2>
-      <p class="hero-sub">Queries <b>all of DataCite</b> for records carrying an organization&rsquo;s <b>ROR</b>, finds the repositories that hold them, then scores the organization&rsquo;s records <b>within each repository</b> against the MGC FAIR use cases — how complete is the metadata in each of the places researchers publish?</p>
+      <p class="hero-sub">Queries <b>all of DataCite</b> for records carrying an organization&rsquo;s <b>ROR</b>, finds the DataCite clients that hold them, then scores the organization&rsquo;s records <b>within each client</b> against the MGC FAIR use cases — how complete is the metadata in each of the places researchers publish?</p>
     </div>
     <div class="hero-search">
       <div class="hero-form">
@@ -259,7 +259,7 @@
     <span class="sel-repo" id="sel-org">—</span>
     <div class="sel-stats">
       <span class="sel-stat"><b id="sel-total">—</b> ROR-identified records</span>
-      <span class="sel-stat"><b id="sel-repos">—</b> repositories</span>
+      <span class="sel-stat"><b id="sel-repos">—</b> clients</span>
       <span class="sel-stat"><b id="sel-records">—</b> records scored</span>
       <span class="sel-stat" id="sel-mode">—</span>
       <span class="sel-stat" id="sel-filter" style="display:none"></span>
@@ -275,9 +275,9 @@
 
   <div class="card" id="chart-card" style="display:none">
     <div class="card-head">
-      <h2><span id="chart-head-label">Completeness by repository</span> <span class="proto-flag" id="share-proto" style="display:none">SHARE · Prototype</span></h2>
+      <h2><span id="chart-head-label">Completeness by client</span> <span class="proto-flag" id="share-proto" style="display:none">SHARE · Prototype</span></h2>
       <div class="card-actions">
-        <label class="hero-chk" style="gap:.4rem" title="Lines: one line per use case across the repositories. Grid: a radar plot per use case per repository. Movie: one repository at a time, enlarged — press Play to step across the repositories.">
+        <label class="hero-chk" style="gap:.4rem" title="Lines: one line per use case across the clients. Grid: a radar plot per use case per client. Movie: one client at a time, enlarged — press Play to step across the clients.">
           <span class="hero-secondary-label">View</span>
           <select class="hero-select" id="view-mode" style="flex:none;min-width:0">
             <option value="lines" selected>Lines</option>
@@ -300,20 +300,20 @@
         <button class="dl-btn" id="dl-grid-copy" type="button" style="display:none" title="Copy the radar grid to the clipboard as an image">⧉ Copy grid</button>
         <button class="dl-btn" id="dl-grid-png" type="button" style="display:none" title="Download the radar grid as a PNG image">⬇ Grid (PNG)</button>
         <button class="dl-btn" id="dl-json" type="button">⬇ Data (JSON)</button>
-        <button class="dl-btn" id="dl-summary" type="button" title="One row per repository: records, FAIR total and the four FAIR use cases, Projects total, SHARE total, and the two additional DataCite use cases">⬇ Data Summary (CSV)</button>
-        <button class="dl-btn" id="dl-csv" type="button" title="Long form: one row per repository × concept (analysis-ready)">⬇ Data (CSV)</button>
+        <button class="dl-btn" id="dl-summary" type="button" title="One row per client: records, FAIR total and the four FAIR use cases, Projects total, SHARE total, and the two additional DataCite use cases">⬇ Data Summary (CSV)</button>
+        <button class="dl-btn" id="dl-csv" type="button" title="Long form: one row per client × concept (analysis-ready)">⬇ Data (CSV)</button>
       </div>
     </div>
-    <p class="card-intro">Each column scores a sample of the organization&rsquo;s <b>ROR-identified</b> records in one repository, as those records are <b>today</b>. The <b>All of DataCite</b> column is the same population with no repository filter — the ecosystem reference. Because the query selects records that already carry the ROR, these scores describe the <b>well-identified subset</b> of the organization&rsquo;s output; repositories differ mostly because their forms and pipelines differ, not because one institution&rsquo;s researchers are better documentarians. Thin columns (fewer than 10 records) — hollow points in <b>Lines</b>, dimmed cells in <b>Grid</b> — have noisy percentages.</p>
+    <p class="card-intro">Each column scores a sample of the organization&rsquo;s <b>ROR-identified</b> records in one client, as those records are <b>today</b>. The <b>All of DataCite</b> column is the same population with no client filter — the ecosystem reference. Because the query selects records that already carry the ROR, these scores describe the <b>well-identified subset</b> of the organization&rsquo;s output; clients differ mostly because their forms and pipelines differ, not because one institution&rsquo;s researchers are better documentarians. Thin columns (fewer than 10 records) — hollow points in <b>Lines</b>, dimmed cells in <b>Grid</b> — have noisy percentages.</p>
     <canvas id="chart" width="960" height="360"></canvas>
     <div class="legend" id="legend"></div>
     <div id="grid" style="display:none"></div>
     <div id="movie" style="display:none">
       <div class="movie-bar">
-        <button class="dl-btn" id="movie-prev" type="button" title="Previous repository (←)">◀ Prev</button>
+        <button class="dl-btn" id="movie-prev" type="button" title="Previous client (←)">◀ Prev</button>
         <button class="dl-btn" id="movie-play" type="button">▶ Play</button>
-        <button class="dl-btn" id="movie-next" type="button" title="Next repository (→)">Next ▶</button>
-        <input type="range" id="movie-slider" min="0" max="0" value="0" step="1" aria-label="Repository" />
+        <button class="dl-btn" id="movie-next" type="button" title="Next client (→)">Next ▶</button>
+        <input type="range" id="movie-slider" min="0" max="0" value="0" step="1" aria-label="Client" />
         <span class="movie-caption" id="movie-caption"></span>
       </div>
       <div class="movie-radars" id="movie-radars"></div>
@@ -321,12 +321,12 @@
   </div>
 
   <div class="card" id="table-card" style="display:none">
-    <h2>Repository by repository</h2>
+    <h2>Client by client</h2>
     <div style="overflow-x:auto">
     <table class="hist"><thead><tr id="hist-head">
-      <th>Repository</th><th>Records scored</th><th>Matching</th><th>FAIR Total</th>
+      <th>Client</th><th>Records scored</th><th>Matching</th><th>FAIR Total</th>
       <th>Text</th><th>Identifiers</th><th>Connections</th><th>Contacts</th>
-      <th title="Open this repository's exact sample in another tool — both then measure the same records">Open this repository</th>
+      <th title="Open this client's exact sample in another tool — both then measure the same records">Open this client</th>
     </tr></thead><tbody id="hist-body"></tbody></table>
     </div>
   </div>
@@ -352,13 +352,14 @@
 
 <script>
 /* Organization Completeness: queries all of DataCite for an organization's ROR, reads the
-   client facet to find the repositories that hold the records, then scores the organization's
-   records WITHIN each repository — the Repository History pattern with repositories on the
-   x-axis instead of years. The scoring engine (whenJqReady / countExpr / scoreAllSpirals /
-   weightedTotal) is ported from completeness.html; the use-case catalog is FETCHED from
-   FAIR_spirals.json at boot (deliberately not embedded; see CLAUDE.md).
-   Unadvertised: no other tool links here; the per-repository Completeness/Connectivity
-   handoffs in the table are this tool's only links out. */
+   client facet to find the DataCite clients that hold the records, then scores the
+   organization's records WITHIN each client — the Repository History pattern with clients on
+   the x-axis instead of years. ("Client" is the user-facing term throughout this page;
+   "repository" was retired as overloaded.) The scoring engine (whenJqReady / countExpr /
+   scoreAllSpirals / weightedTotal) is ported from completeness.html; the use-case catalog is
+   FETCHED from FAIR_spirals.json at boot (deliberately not embedded; see CLAUDE.md).
+   No sibling-tool links in the topbar; the per-client Completeness/Connectivity
+   handoffs in the table are this tool's links to the other tools. */
 const API_BASE = 'https://api.datacite.org';
 const ROR_API  = 'https://api.ror.org/v2/organizations';
 const ALL_DATACITE = 'datacite.all';
@@ -516,7 +517,7 @@ function weightedTotal(byCode, codes){
   return totalCount > 0 ? totalScore / totalCount : 0;
 }
 
-/* ---------- facet: the repositories that hold the organization's records ---------- */
+/* ---------- facet: the clients that hold the organization's records ---------- */
 async function fetchRepositoryFacet(query, resourceTypeId){
   const filter = (resourceTypeId ? `&resource-type-id=${encodeURIComponent(resourceTypeId)}` : '')
                + `&query=${encodeURIComponent(query)}`;
@@ -556,7 +557,7 @@ async function fetchOrgRepo(clientId, query, cap, random, resourceTypeId){
       : `${base}&page[number]=${page}`;
     if (!firstUrl) firstUrl = url;
     const res = await fetch(url);
-    if (!res.ok) throw new Error(`DataCite returned ${res.status} for repository "${clientId}"`);
+    if (!res.ok) throw new Error(`DataCite returned ${res.status} for client "${clientId}"`);
     const json = await res.json();
     const batch = json.data || [];
     let added = 0;
@@ -577,7 +578,7 @@ async function fetchOrgRepo(clientId, query, cap, random, resourceTypeId){
   return { records: records.slice(0, cap), matching, random: effectiveRandom, firstUrl };
 }
 
-/* ---------- run: facet, then harvest repository by repository ---------- */
+/* ---------- run: facet, then harvest client by client ---------- */
 const CODE_STYLE = {
   FAIR_Text:                 { label: 'Text',         color: '#E97131' },
   FAIR_Identifiers:          { label: 'Identifiers',  color: '#0070C0' },
@@ -675,7 +676,7 @@ function movieRadar(items, color){
   }
   return `<svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
 }
-const THIN = 10;   // repositories with fewer records than this are drawn hollow / dimmed
+const THIN = 10;   // clients with fewer records than this are drawn hollow / dimmed
 let study = null;   // { rorId, rorUrl, orgName, resourceTypeId, query, cap, random, total, repos:[{clientId, label, n, matching, totals, byCode, records}] }
 let stopRequested = false;
 
@@ -704,7 +705,7 @@ async function run(){
   stopRequested = false;
   startTips();
   try {
-    setStatus('Looking up the organization and its repositories…');
+    setStatus('Looking up the organization and its clients…');
     setProgressIndeterminate();
     const query = rorQuery(ror.url, userQuery);
     const [orgName, facet] = await Promise.all([fetchOrgName(ror.url), fetchRepositoryFacet(query, resourceTypeId)]);
@@ -713,14 +714,14 @@ async function run(){
       setStatus(`No records carry ${ror.url} in creators.affiliation — check the ROR (or the organization may not yet appear in DataCite affiliations).`, true);
       return;
     }
-    // the facet query, the full client facet (all repositories the API lists, not just the
+    // the facet query, the full client facet (all clients the API lists, not just the
     // scored top N), and how much of the population those facet values cover
     const facetSum  = facet.clients.reduce((a, c) => a + (c.count || 0), 0);
     const facetList = facet.clients.map(c => `${c.id} (${(c.count || 0).toLocaleString()})`).join(', ');
     $('apiurl').style.display='';
     $('apiurl').innerHTML = `<b>Facet query:</b> ${escHtml(facet.url)}`
       + (facet.clients.length ? `<br><b>Client facet:</b> ${escHtml(facetList)}` : '')
-      + (facet.total ? `<br><b>Facet coverage:</b> ${facetSum.toLocaleString()} of ${facet.total.toLocaleString()} records (${(100*facetSum/facet.total).toFixed(1)}%) are in the ${facet.clients.length} facet repositories` : '');
+      + (facet.total ? `<br><b>Facet coverage:</b> ${facetSum.toLocaleString()} of ${facet.total.toLocaleString()} records (${(100*facetSum/facet.total).toFixed(1)}%) are in the ${facet.clients.length} facet clients` : '');
 
     const targets = facet.clients.slice(0, topN).map(c => ({ clientId: c.id, label: c.title || c.id, facetCount: c.count }));
     if (includeAll) targets.push({ clientId: ALL_DATACITE, label: 'All of DataCite', facetCount: facet.total });
@@ -738,7 +739,7 @@ async function run(){
     let done = 0, scoredRecords = 0;
     for (const t of targets){
       if (stopRequested) break;
-      setStatus(`${t.label} — fetching records (repository ${done + 1} of ${targets.length})…`);
+      setStatus(`${t.label} — fetching records (client ${done + 1} of ${targets.length})…`);
       setProgress(done / targets.length);
       const { records, matching, random: usedRandom, firstUrl } = await fetchOrgRepo(t.clientId, query, cap, random, resourceTypeId);
       if (t.clientId === ALL_DATACITE && firstUrl)          // the All-of-DataCite sample fetch, like completeness.html's API call line
@@ -748,7 +749,7 @@ async function run(){
       if (!records.length){
         entry = { clientId: t.clientId, label: t.label, n: 0, matching: matching || 0, totals: null, byCode: null };
       } else {
-        setStatus(`${t.label} — scoring ${records.length} record${records.length===1?'':'s'} (repository ${done + 1} of ${targets.length})…`);
+        setStatus(`${t.label} — scoring ${records.length} record${records.length===1?'':'s'} (client ${done + 1} of ${targets.length})…`);
         const byCode = await scoreAllSpirals(records, f => setProgress((done + f) / targets.length));
         entry = { clientId: t.clientId, label: t.label, n: records.length, matching, random: usedRandom, totals: repoTotals(byCode), byCode, records };
         scoredRecords += records.length;
@@ -762,8 +763,8 @@ async function run(){
     hideProgress();
     const scored = study.repos.filter(e => e.n > 0).length;
     setStatus(stopRequested
-      ? `Stopped — ${scored} repositor${scored===1?'y':'ies'} scored (${scoredRecords.toLocaleString()} records).`
-      : `Done — ${scored} repositor${scored===1?'y':'ies'} scored, ${scoredRecords.toLocaleString()} records for ${study.orgName}.`);
+      ? `Stopped — ${scored} client${scored===1?'':'s'} scored (${scoredRecords.toLocaleString()} records).`
+      : `Done — ${scored} client${scored===1?'':'s'} scored, ${scoredRecords.toLocaleString()} records for ${study.orgName}.`);
   } catch (e){
     console.error(e); hideProgress(); setStatus(e.message || String(e), true);
   } finally {
@@ -779,7 +780,7 @@ function renderSelection(facet, nTargets){
   $('sel-total').textContent = facet.total != null ? facet.total.toLocaleString() : '—';
   $('sel-repos').textContent = nTargets;
   $('sel-records').textContent = '0';
-  $('sel-mode').textContent = `${study.random ? 'random sample' : 'sequential sample'} · up to ${study.cap}/repository`;
+  $('sel-mode').textContent = `${study.random ? 'random sample' : 'sequential sample'} · up to ${study.cap}/client`;
   const parts = [];
   if (study.resourceTypeId) parts.push(`type: ${study.resourceTypeId}`);
   if (study.query) parts.push(`query: ${study.query}`);
@@ -803,9 +804,9 @@ function tableColumns(){
 }
 function renderTableHead(){
   const tc = tableColumns();
-  $('hist-head').innerHTML = `<th>Repository</th><th>Records scored</th><th>Matching</th><th>${escHtml(tc.totName)}</th>`
+  $('hist-head').innerHTML = `<th>Client</th><th>Records scored</th><th>Matching</th><th>${escHtml(tc.totName)}</th>`
     + tc.codes.map(c => `<th>${escHtml(c.label)}</th>`).join('')
-    + `<th title="Open this repository's exact sample in another tool — both then measure the same records">Open this repository</th>`;
+    + `<th title="Open this client's exact sample in another tool — both then measure the same records">Open this client</th>`;
 }
 function addTableRow(e){
   const tc = tableColumns();
@@ -885,14 +886,14 @@ function drawChart(){
 }
 window.addEventListener('resize', () => { if (viewMode === 'lines') drawChart(); });
 
-/* radar-grid view: rows = the plot-group's use cases, columns = repositories */
+/* radar-grid view: rows = the plot-group's use cases, columns = clients */
 const CELL = 132;
 function drawGrid(){
   const grid = $('grid');
   if (!study){ grid.innerHTML = ''; return; }
   const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
   const repos = study.repos.filter(e => e.n > 0 && e.byCode);
-  if (!repos.length){ grid.innerHTML = '<p class="card-intro">No scored repositories to show yet.</p>'; return; }
+  if (!repos.length){ grid.innerHTML = '<p class="card-intro">No scored clients to show yet.</p>'; return; }
   const groupTot = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).totals[0];
   const totalKey = groupTot ? groupTot.key : 'fair';
   const totalName = groupTot ? groupTot.label.replace(' Total','') : 'FAIR';
@@ -930,7 +931,7 @@ function gridSvgMarkup(){
   const COL_W = RAD + 16, ROW_H = RAD + AVG_H + 8;
   const gridLeft = PAD + LABEL_W;
   const W = gridLeft + repos.length * COL_W + PAD;
-  const titleText = `${study.orgName} (${study.rorUrl}) — completeness by repository`;
+  const titleText = `${study.orgName} (${study.rorUrl}) — completeness by client`;
   const titleLines = wrapToWidth(titleText, W - PAD*2, '600 15px Inter, sans-serif');   // long org names wrap
   const TITLE_H = 42 + (titleLines.length - 1) * TITLE_LH;
   const gridTop = PAD + TITLE_H + HEADER_H;
@@ -939,7 +940,7 @@ function gridSvgMarkup(){
   let s = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
   s += titleLines.map((ln, i) => `<text x="${PAD}" y="${18 + i*TITLE_LH}" ${FONT} font-size="15" font-weight="600" fill="#673289">${escHtml(ln)}</text>`).join('');
   const gridFilt = selectionFilterText();
-  s += `<text x="${PAD}" y="${34 + (titleLines.length - 1)*TITLE_LH}" ${FONT} font-size="11" fill="#6b7280">${escHtml(GRID_GROUP_LABEL[plotGroup] || plotGroup)} · ROR-identified records · up to ${study.cap} records/repository${gridFilt ? ' · ' + escHtml(gridFilt) : ''} · as of ${new Date().toISOString().slice(0,10)}</text>`;
+  s += `<text x="${PAD}" y="${34 + (titleLines.length - 1)*TITLE_LH}" ${FONT} font-size="11" fill="#6b7280">${escHtml(GRID_GROUP_LABEL[plotGroup] || plotGroup)} · ROR-identified records · up to ${study.cap} records/client${gridFilt ? ' · ' + escHtml(gridFilt) : ''} · as of ${new Date().toISOString().slice(0,10)}</text>`;
   repos.forEach((e, j) => {
     const cxp = gridLeft + j*COL_W + COL_W/2;
     const top = PAD + TITLE_H;
@@ -1017,7 +1018,7 @@ function renderView(){
   else drawChart();
 }
 
-/* ---------- movie: one repository at a time, enlarged, scrub + play ---------- */
+/* ---------- movie: one client at a time, enlarged, scrub + play ---------- */
 let movieIdx = 0, movieTimer = null;
 function scoredRepos(){ return study ? study.repos.filter(e => e.n > 0 && e.byCode) : []; }
 function drawMovie(){
@@ -1077,9 +1078,9 @@ function downloadJson(){
     organization: { ror: study.rorUrl, name: study.orgName },
     generated: new Date().toISOString(),
     selection: { resourceTypeId: study.resourceTypeId || '', query: study.query || '',
-                 maxPerRepository: study.cap, random: study.random, totalRorRecords: study.total },
-    note: 'Each repository scores a sample of the organization\'s ROR-identified records in that repository, as those records are at the generated time. The population is records that already carry the ROR — the well-identified subset of the organization\'s output.',
-    repositories: study.repos.map(e => ({
+                 maxPerClient: study.cap, random: study.random, totalRorRecords: study.total },
+    note: 'Each client scores a sample of the organization\'s ROR-identified records in that DataCite client, as those records are at the generated time. The population is records that already carry the ROR — the well-identified subset of the organization\'s output.',
+    clients: study.repos.map(e => ({
       clientId: e.clientId, name: e.label, recordsScored: e.n, matchingTotal: e.matching,
       totals: e.totals ? { fairTotal: e.totals.fair, projectsTotal: e.totals.projects, shareTotal: e.totals.share,
         text: e.totals.FAIR_Text, identifiers: e.totals.FAIR_Identifiers,
@@ -1096,7 +1097,7 @@ function downloadJson(){
 function downloadCsv(){
   if (!study) return;
   const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
-  const rows = [['repository','repositoryName','recordsScored','matchingTotal','useCase','concept','completeness']];
+  const rows = [['client','clientName','recordsScored','matchingTotal','useCase','concept','completeness']];
   for (const e of study.repos){
     if (!e.byCode) continue;
     for (const [code, v] of Object.entries(e.byCode)){
@@ -1115,7 +1116,7 @@ function downloadSummary(){
   const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
   const round = x => x == null ? '' : Math.round(x * 10000) / 10000;
   const extraCodes = PLOT_GROUPS.Extras.codes;
-  const headers = ['ROR','Organization','Repository','Repository_Name','Records_Scored','Matching',
+  const headers = ['ROR','Organization','Client','Client_Name','Records_Scored','Matching',
     'FAIR_Total','Text','Identifiers','Connections','Contacts',
     'Projects_Total', ...PROJECT_CODES, 'SHARE_Total', ...SHARE_CODES, ...extraCodes];
   const rows = [headers];
@@ -1149,7 +1150,7 @@ function linesPngBlob(){
     if (x + w > W - pad){ lines++; x = pad; }
     const p = { x, line: lines }; x += w + gapBetween; return p;
   });
-  const titleText = `${study.orgName} (${study.rorUrl}) — completeness by repository`;
+  const titleText = `${study.orgName} (${study.rorUrl}) — completeness by client`;
   const TITLE_LH = 18;
   const titleLines = wrapToWidth(titleText, W - pad*2, '600 15px Inter, sans-serif');   // long org names wrap
   const titleH = 52 + (titleLines.length - 1) * TITLE_LH, legendH = lines * lineH + 10;
@@ -1162,7 +1163,7 @@ function linesPngBlob(){
   const groupLabel = { FAIR: 'FAIR use cases', Projects: 'Project use cases', SHARE: 'SHARE use cases', Extras: 'Additional DataCite use cases', All: 'All fourteen use cases' }[plotGroup] || plotGroup;
   ctx.fillStyle = '#6b7280'; ctx.font = '11px Inter, sans-serif';
   const filt = selectionFilterText();
-  ctx.fillText(`${groupLabel} · ROR-identified records · up to ${study.cap} records/repository${filt ? ' · ' + filt : ''} · as of ${new Date().toISOString().slice(0,10)}`, pad, 33 + (titleLines.length - 1)*TITLE_LH);
+  ctx.fillText(`${groupLabel} · ROR-identified records · up to ${study.cap} records/client${filt ? ' · ' + filt : ''} · as of ${new Date().toISOString().slice(0,10)}`, pad, 33 + (titleLines.length - 1)*TITLE_LH);
   ctx.drawImage(chart, 0, titleH, W, chartH);
   ctx.font = legendFont; ctx.textBaseline = 'middle';
   items.forEach((s, i) => {
@@ -1259,11 +1260,11 @@ document.addEventListener('click', e => { if (!e.target.closest('.hero-search'))
 
 /* ---------- loading tips (collected into tips.html by makeTipsPage.py) ---------- */
 const ORG_TIPS = [
-  { label:'Where the records live', text:'Most organizations&rsquo; research data lives in the <strong>big generalist repositories</strong> — figshare, Zenodo, Dryad, OSF — not the institutional repository. This tool measures the metadata in each of those places.', link:'https://metadatagamechangers.com/blog' },
+  { label:'Where the records live', text:'Most organizations&rsquo; research data lives with the <strong>big generalist DataCite clients</strong> — figshare, Zenodo, Dryad, OSF — not the institutional repository. This tool measures the metadata in each of those places.', link:'https://metadatagamechangers.com/blog' },
   { label:'The well-identified subset', text:'Selecting records by <strong>ROR</strong> finds the records that already carry the organization&rsquo;s identifier — a <strong>well-curated subset</strong>. Name-based populations are bigger; ROR-based ones are cleaner.', link:'https://ror.org' },
-  { label:'Repository, not virtue', text:'The same organization&rsquo;s records score <strong>differently in different repositories</strong> — mostly because each platform&rsquo;s deposit forms and pipelines differ, not because depositors differ.', link:'https://metadatagamechangers.com/blog' },
-  { label:'In your browser', text:'Every repository is fetched from DataCite and scored <strong>in your browser</strong> with the same jq use-case queries as Metadata Completeness — nothing is uploaded or stored.', link:'https://metadatagamechangers.com' },
-  { label:'Dig deeper per repository', text:'Each table row&rsquo;s <strong>Completeness</strong> and <strong>Connectivity</strong> links open that repository&rsquo;s exact sample in the sibling tools — the same records, measured further.', link:'https://metadatagamechangers.com' },
+  { label:'Client, not virtue', text:'The same organization&rsquo;s records score <strong>differently in different clients</strong> — mostly because each platform&rsquo;s deposit forms and pipelines differ, not because depositors differ.', link:'https://metadatagamechangers.com/blog' },
+  { label:'In your browser', text:'Every client is fetched from DataCite and scored <strong>in your browser</strong> with the same jq use-case queries as Metadata Completeness — nothing is uploaded or stored.', link:'https://metadatagamechangers.com' },
+  { label:'Dig deeper per client', text:'Each table row&rsquo;s <strong>Completeness</strong> and <strong>Connectivity</strong> links open that client&rsquo;s exact sample in the sibling tools — the same records, measured further.', link:'https://metadatagamechangers.com' },
 ];
 const TIPS = ORG_TIPS;
 let tipTimer = null, tipDelay = null, tipIndex = 0;
@@ -1309,7 +1310,7 @@ $('dl-json').addEventListener('click', downloadJson);
 $('dl-summary').addEventListener('click', downloadSummary);
 $('dl-csv').addEventListener('click', downloadCsv);
 /* ---------- cross-tool sample mailbox (same protocol as repositoryHistory) ----------
-   Hands a repository's exact sample to Completeness/Connectivity so both measure the SAME
+   Hands a client's exact sample to Completeness/Connectivity so both measure the SAME
    records. These per-row links are this tool's only links to the other tools. */
 const MAILBOX_DB = 'mgc-handoff', MAILBOX_STORE = 'samples';
 function mailboxIdb(){

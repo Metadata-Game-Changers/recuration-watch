@@ -207,23 +207,23 @@
  "organizationCompleteness.html": {
   "Where the records live": {
    "label": "Dónde viven los registros",
-   "text": "La mayoría de los datos de investigación de una organización vive en los <strong>grandes repositorios generalistas</strong> — figshare, Zenodo, Dryad, OSF — no en el repositorio institucional. Esta herramienta mide los metadatos en cada uno de esos lugares."
+   "text": "La mayoría de los datos de investigación de una organización vive con los <strong>grandes clientes generalistas de DataCite</strong> — figshare, Zenodo, Dryad, OSF — no en el repositorio institucional. Esta herramienta mide los metadatos en cada uno de esos lugares."
   },
   "The well-identified subset": {
    "label": "El subconjunto bien identificado",
    "text": "Seleccionar registros por <strong>ROR</strong> encuentra los que ya llevan el identificador de la organización — un <strong>subconjunto bien curado</strong>. Las poblaciones por nombre son mayores; las basadas en ROR, más limpias."
   },
-  "Repository, not virtue": {
-   "label": "Repositorio, no virtud",
-   "text": "Los registros de una misma organización puntúan <strong>distinto en repositorios distintos</strong> — sobre todo porque los formularios de depósito y los flujos de cada plataforma difieren, no porque difieran los depositantes."
+  "Client, not virtue": {
+   "label": "Cliente, no virtud",
+   "text": "Los registros de una misma organización puntúan <strong>distinto en clientes distintos</strong> — sobre todo porque los formularios de depósito y los flujos de cada plataforma difieren, no porque difieran los depositantes."
   },
   "In your browser": {
    "label": "En su navegador",
-   "text": "Cada repositorio se obtiene de DataCite y se puntúa <strong>en su navegador</strong> con las mismas consultas jq de casos de uso que Metadata Completeness — nada se sube ni se almacena."
+   "text": "Cada cliente se obtiene de DataCite y se puntúa <strong>en su navegador</strong> con las mismas consultas jq de casos de uso que Metadata Completeness — nada se sube ni se almacena."
   },
-  "Dig deeper per repository": {
-   "label": "Profundice por repositorio",
-   "text": "Los enlaces <strong>Completeness</strong> y <strong>Connectivity</strong> de cada fila abren la muestra exacta de ese repositorio en las herramientas hermanas — los mismos registros, medidos más a fondo."
+  "Dig deeper per client": {
+   "label": "Profundice por cliente",
+   "text": "Los enlaces <strong>Completeness</strong> y <strong>Connectivity</strong> de cada fila abren la muestra exacta de ese cliente en las herramientas hermanas — los mismos registros, medidos más a fondo."
   }
  }
 }
