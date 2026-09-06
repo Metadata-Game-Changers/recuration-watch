@@ -1,0 +1,2055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Crossref Connectivity — identifier connectivity for Crossref works</title>
+<link rel="icon" type="image/png" href="favicon_MGC.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --accent:#9167b0; --accent-dk:#673289; --tint:#f0eaf5;
+    --ink:#1f2330; --muted:#6b7280; --line:#e6e3ec; --bg:#fbfafe;
+    --green:#3a9d6e; --amber:#d4910b; --red:#c0392b;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:0}
+
+  /* ── Brand top bar ── */
+  .topbar{border-bottom:2px solid var(--ink);padding:0 2rem}
+  .topbar-inner{max-width:1040px;margin:0 auto;display:flex;align-items:stretch;gap:0}
+  .topbar-brand{padding:.5rem 2rem .3rem 0;display:flex;flex-direction:row;align-items:flex-end;gap:1rem}
+  .brand-logo{height:64px;width:auto;display:block;flex-shrink:0}
+  .brand-title-wrap{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:.15rem}
+  .brand-tool-name{font-family:'Montserrat',sans-serif;font-size:2rem;font-weight:400;letter-spacing:.02em;color:#673289;line-height:1;white-space:nowrap;text-transform:uppercase}
+  .topbar-links{padding:0 0 0 1.5rem;display:flex;gap:1.6rem;margin-left:auto}
+  .topbar-col{display:flex;flex-direction:column;justify-content:center;gap:.25rem}
+  .topbar-links a{font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4}
+  .topbar-links a:hover{color:var(--accent-dk)}
+
+  /* ── Selection summary strip ── */
+  .sel-summary{background:#fff;border-bottom:1px solid var(--line)}
+  .sel-inner{max-width:1040px;margin:0 auto;padding:.7rem 2rem;display:flex;align-items:baseline;gap:1.5rem;flex-wrap:wrap}
+  .sel-repo{font-size:.95rem;font-weight:600;color:var(--accent-dk)}
+  .sel-shared{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--accent-dk);background:var(--tint);border:1px solid var(--accent);border-radius:4px;padding:.15rem .5rem;white-space:nowrap;align-self:center}
+  .sel-repo .sel-id{font-family:'IBM Plex Mono',monospace;font-size:.7rem;font-weight:400;color:var(--muted);margin-left:.5rem}
+  .sel-stats{display:flex;gap:1.4rem;flex-wrap:wrap;margin-left:auto}
+  .sel-stat{font-size:.78rem;color:var(--muted)}
+  .sel-stat b{color:var(--ink);font-weight:600}
+  @media(max-width:820px){.topbar{padding:0 1rem}.topbar-inner{flex-direction:column}.topbar-brand{padding-right:0}.brand-tool-name{font-size:1.5rem}.topbar-links{flex-wrap:wrap;gap:.75rem;padding:.25rem 0 .5rem}.topbar-col{flex-direction:row;flex-wrap:wrap;gap:.75rem}.sel-inner{padding:.7rem 1rem}.sel-stats{margin-left:0}}
+  .wrap{max-width:1080px;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+  .proto-flag{display:inline-block;background:#fff;color:var(--accent-dk);font-size:.62rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:.12rem .45rem;border-radius:4px;margin-left:.5rem;vertical-align:middle;border:1px solid var(--accent)}
+
+  /* ── Hero bar ── */
+  .hero{background:#f0eaf5;border-bottom:2px solid #9167b0;padding:1.75rem 2rem}
+  .hero-inner{max-width:1040px;margin:0 auto;display:flex;align-items:center;gap:2.5rem;flex-wrap:wrap}
+  .hero-text{flex:1;min-width:200px}
+  .hero-title{font-size:1.15rem;font-weight:600;color:#5b3d7a;line-height:1.2;margin:0 0 .3rem;letter-spacing:-.01em}
+  .hero-sub{font-size:.78rem;color:var(--muted);line-height:1.5;max-width:380px;margin:0}
+  .hero-search{flex:1;min-width:280px;position:relative}
+  .hero-form{display:flex;border:2px solid #9167b0;background:#fff}
+  .hero-input{flex:1;border:none;padding:.6rem .85rem;font-size:.85rem;outline:none;font-family:Inter,sans-serif;color:var(--ink);background:transparent}
+  .hero-input::placeholder{color:#a99bbf}
+  .hero-go{border:none;border-left:2px solid #9167b0;background:#9167b0;color:#fff;padding:.6rem 1.1rem;font-size:.82rem;font-weight:500;cursor:pointer;white-space:nowrap;font-family:Inter,sans-serif}
+  .hero-go:hover{background:#7a52a0}
+  .hero-go:disabled{opacity:.5;cursor:default}
+  .hero-secondary{display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap;align-items:center}
+  .hero-secondary-label{font-size:.65rem;font-weight:600;color:#5b3d7a;text-transform:uppercase;letter-spacing:.03em}
+  .hero-select,.hero-num{border:1px solid rgba(145,103,176,.4);background:rgba(255,255,255,.85);padding:.32rem .6rem;font-family:Inter,sans-serif;font-size:.75rem;color:var(--ink);outline:none}
+  .hero-select{cursor:pointer;flex:1;min-width:150px}
+  .hero-num{width:74px}
+  .hero-query{border:1px solid rgba(145,103,176,.4);background:rgba(255,255,255,.85);padding:.32rem .6rem;font-family:Inter,sans-serif;font-size:.75rem;color:var(--ink);outline:none;flex:1;min-width:160px}
+  .hero-query::placeholder{color:#a99bbf}
+  .hero-select:focus,.hero-num:focus,.hero-query:focus{border-color:#9167b0}
+  .hero-chk{display:flex;align-items:center;gap:.3rem;font-size:.72rem;color:#5b3d7a;cursor:pointer}
+  .hero-sample{display:flex;align-items:center;gap:1rem;flex-basis:100%}   /* Max + Random sample together on their own row */
+  /* keep each label with its control so they wrap as one unit */
+  .hero-field{display:flex;align-items:center;gap:.4rem}
+  .hero-field.grow{flex:1;min-width:180px}
+  .hero-help{margin-top:.35rem;text-align:right}
+  .hero-help a{font-size:.68rem;color:#5b3d7a;text-decoration:none}
+  .hero-help a:hover{color:var(--accent-dk);text-decoration:underline}
+  .repo-autocomplete{position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--ink);border-top:none;z-index:200;display:none;max-height:260px;overflow-y:auto}
+  .repo-autocomplete.open{display:block}
+  .repo-ac-item{padding:.55rem .75rem;cursor:pointer;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:.1rem}
+  .repo-ac-item:last-child{border-bottom:none}
+  .repo-ac-item:hover,.repo-ac-item.highlighted{background:var(--bg)}
+  .repo-ac-name{font-size:.78rem;font-weight:500;color:var(--ink)}
+  .repo-ac-id{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted)}
+  .repo-ac-count{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:#0070C0}
+  .repo-ac-loading{padding:.6rem .75rem;font-size:.75rem;color:var(--muted);font-style:italic}
+  @media(max-width:820px){.hero{padding:1.25rem 1rem}.hero-inner{flex-direction:column;gap:1rem;align-items:stretch}.hero-text{min-width:0}.hero-search{min-width:0;width:100%}}
+
+  #status{font-size:.82rem;color:var(--muted);min-height:1.2em;margin:.2rem 0 .5rem}
+  #status.err{color:var(--red)}
+  #progress{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin:0 0 1rem;display:none}
+  #progress.on{display:block}
+  #progress>i{display:block;height:100%;width:0;background:var(--accent);border-radius:3px;transition:width .18s ease}
+  #progress.indet>i{width:40%;animation:indet 1.1s ease-in-out infinite}
+  @keyframes indet{0%{margin-left:-40%}100%{margin-left:100%}}
+  #apiurl{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;color:var(--muted);background:#f3f1f8;border-radius:6px;padding:.45rem .6rem;margin:0 0 1rem;word-break:break-all;line-height:1.5}
+  #apiurl b{color:var(--ink);font-weight:600}
+  .tips{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;background:#fff;padding:.7rem .9rem;margin:0 0 1rem;max-width:560px}
+  .tips .tips-head{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.35rem}
+  .tips .tips-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-dk);font-weight:600;margin-bottom:.2rem}
+  .tips .tips-text{font-size:.82rem;color:var(--ink);line-height:1.5}
+  .tips .tips-text strong{color:var(--accent-dk)}
+  .tips .tips-link{display:inline-block;margin-top:.4rem;font-size:.68rem;color:var(--accent);text-decoration:none}
+  .tips .tips-link:hover{text-decoration:underline}
+
+  /* ── Connectivity card ── */
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:1rem}
+  .card h2{font-size:1rem;margin:0 0 .4rem;color:var(--accent-dk)}
+  .conn-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:.2rem}
+  .conn-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+  .conn-intro{font-size:.78rem;color:var(--muted);margin:0 0 1rem;line-height:1.5;max-width:760px}
+  .conn-legend{display:flex;gap:1.3rem;flex-wrap:wrap;font-size:.72rem;color:var(--muted);margin-bottom:1.1rem}
+  .conn-legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:.4rem;vertical-align:middle}
+  .conn-group{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:1.3rem 0 .55rem;border-bottom:1px solid var(--line);padding-bottom:.3rem}
+  .conn-row{margin:.6rem 0}
+  .conn-label{font-size:.82rem;font-weight:500;margin-bottom:.28rem;display:flex;justify-content:space-between;gap:1rem;align-items:baseline}
+  .conn-meta{font-size:.72rem;color:var(--muted);font-weight:400;white-space:nowrap}
+  .conn-meta b{color:var(--accent-dk)}
+  .conn-meta b.conn-qw{color:var(--green);cursor:help}
+  .conn-bar{display:flex;height:18px;border-radius:5px;overflow:hidden;background:#eef0f4}
+  .conn-bar .seg{height:100%}
+  .seg.green{background:var(--green)} .seg.yellow{background:var(--amber)} .seg.red{background:var(--red)}
+  .conn-empty{font-size:.76rem;color:var(--muted);font-style:italic}
+  .conn-pct{font-variant-numeric:tabular-nums}
+  /* ── potential-duplicates panel ── */
+  .dup-th{font-size:.72rem;color:#5b3d7a;display:flex;align-items:center;gap:.35rem}
+  .dup-th select{border:1px solid rgba(145,103,176,.4);background:#fff;padding:.3rem .5rem;font-family:inherit;font-size:.72rem;color:var(--ink);border-radius:6px;cursor:pointer}
+  details.dup-cl{border:1px solid var(--line);border-radius:8px;margin:.4rem 0;background:#fff;overflow:hidden}
+  details.dup-cl>summary{list-style:none;cursor:pointer;padding:.5rem .7rem;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+  details.dup-cl>summary::-webkit-details-marker{display:none}
+  details.dup-cl>summary::before{content:"▸";color:var(--muted);font-size:.7rem}
+  details.dup-cl[open]>summary::before{content:"▾"}
+  details.dup-cl[open]>summary{border-bottom:1px solid var(--line)}
+  .dup-canon{font-size:.84rem;font-weight:600;color:var(--ink)}
+  .dup-count{font-size:.72rem;color:var(--muted)}
+  .dup-badge{font-size:.62rem;font-weight:600;text-transform:uppercase;letter-spacing:.03em;padding:.12rem .4rem;border-radius:4px;white-space:nowrap}
+  .dup-badge.hi{background:#e6f4ec;color:var(--green)}
+  .dup-badge.med{background:#fbf0d8;color:var(--amber)}
+  .dup-badge.warn{background:#fae3e0;color:var(--red)}
+  .dup-badge.prop{background:var(--tint);color:var(--accent-dk)}
+  details.dup-cl table.cd-table{margin:.2rem .2rem .4rem}
+  .note{font-size:.78rem;color:var(--muted);background:var(--tint);border-radius:8px;padding:.7rem .85rem;line-height:1.5}
+  .note code{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.82em;background:#fff;padding:.05rem .3rem;border-radius:4px}
+  /* clickable bar + drill-down modal */
+  .conn-bar.clickable{cursor:pointer}
+  .conn-bar.clickable:hover{outline:2px solid var(--accent);outline-offset:1px}
+  .dl-btn{appearance:none;border:1px solid var(--accent);background:#fff;color:var(--accent-dk);font:inherit;font-size:.75rem;font-weight:600;padding:.42rem .85rem;border-radius:6px;cursor:pointer}
+  .dl-btn:hover{background:var(--tint)}
+  .modal-overlay{position:fixed;inset:0;background:rgba(31,35,48,.45);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:5vh 1rem}
+  .modal-card{background:#fff;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.25);max-width:600px;width:100%;max-height:88vh;display:flex;flex-direction:column;overflow:hidden}
+  #cd-modal .modal-card{max-width:960px}
+  .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;padding:.9rem 1.1rem;border-bottom:1px solid var(--line)}
+  .modal-title{font-size:1rem;font-weight:600;color:var(--accent-dk)}
+  .modal-sub{font-size:.74rem;color:var(--muted);margin-top:.15rem}
+  .modal-head-actions{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+  .modal-x{appearance:none;border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:.85rem;line-height:1}
+  .modal-x:hover{border-color:var(--accent);color:var(--accent-dk)}
+  .modal-body{padding:.4rem 1.1rem 1.1rem;overflow:auto}
+  table.cd-table{border-collapse:collapse;width:100%;font-size:.8rem}
+  table.cd-table th,table.cd-table td{text-align:left;padding:.32rem .5rem;border-bottom:1px solid #f0eef5;vertical-align:top}
+  table.cd-table th{font-size:.66rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:600;position:sticky;top:0;background:#fff}
+  table.cd-table td.num,table.cd-table th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  table.cd-table td.val{word-break:break-word}
+  table.cd-table td.val a{color:var(--accent-dk);text-decoration:none}
+  table.cd-table td.val a:hover{text-decoration:underline}
+  a.dup-doc-link{color:var(--accent-dk);cursor:pointer;border-bottom:1px dotted var(--accent);font-variant-numeric:tabular-nums}
+  a.dup-doc-link:hover{color:var(--accent);border-bottom-style:solid}
+  td.pc-red{color:var(--red);font-weight:600} td.pc-amber{color:var(--amber);font-weight:600} td.pc-green{color:var(--green)}
+  table.cd-table tr.row-qw td{background:#fbf1d6}       /* quick win — light amber, matches the bar's yellow */
+  table.cd-table tr.row-missing td{background:#fbecea}  /* none — light red */
+  table.cd-table tr.row-complete td{background:#ecf6f0} /* every — light green */
+  .qw-tag{display:inline-block;font-size:.58rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:#8a5a00;background:#f4e2b0;border-radius:4px;padding:.05rem .35rem;margin-left:.4rem;vertical-align:middle}
+  /* cite-this-tool popover */
+  .cite-link{background:none;border:none;cursor:pointer;font:inherit;font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4;padding:0;text-align:left}
+  .cite-link:hover{color:var(--accent-dk)}
+  .cite-pop{display:none;position:fixed;inset:0;z-index:300;background:rgba(31,35,48,.35);align-items:flex-start;justify-content:flex-end;padding:4rem 1.5rem 0 0}
+  .cite-pop.open{display:flex}
+  .cite-card{background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.25);max-width:480px;width:100%;padding:1.3rem}
+  .cite-card .cite-head{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent);margin-bottom:.5rem}
+  .cite-card .cite-text{font-size:.82rem;color:var(--ink);line-height:1.6;margin-bottom:1rem}
+  .cite-card .cite-row{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+  .cite-card .cite-copy{font-size:.72rem;font-weight:600;background:var(--accent);color:#fff;border:none;padding:.4rem .8rem;border-radius:6px;cursor:pointer}
+  .cite-card .cite-doi{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.68rem;color:var(--accent);text-decoration:none}
+  .cite-card .cite-close{margin-left:auto;background:none;border:1px solid var(--line);border-radius:6px;padding:.3rem .6rem;cursor:pointer;font-size:.7rem;color:var(--muted)}
+  /* analytics consent banner */
+  #analytics-banner{position:fixed;bottom:0;left:0;right:0;background:var(--ink);color:#fff;padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;z-index:500;font-size:.75rem;border-top:2px solid #444}
+  #analytics-banner a{color:#93c5fd}
+  #analytics-banner-btns{display:flex;gap:.5rem}
+  .ab-btn{padding:.35rem .85rem;font-size:.72rem;cursor:pointer;border:1px solid #666;font-family:inherit;background:none;color:#fff;border-radius:6px}
+  .ab-btn-ok{background:#fff;color:var(--ink);border-color:#fff}
+  .ab-btn-ok:hover{background:var(--tint)}
+  .ab-btn-no:hover{background:rgba(255,255,255,.1)}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js" defer></script>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" onerror="this.style.display='none'" />
+      </a>
+      <div class="brand-title-wrap"><div class="brand-tool-name">Crossref Connectivity</div></div>
+    </div>
+    <div class="topbar-links">
+      <div class="topbar-col">
+      <a href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity (DataCite) ↗</a>
+      <a href="rorRetriever.html" target="_blank" rel="noopener">ROR Retriever ↗</a>
+      <a href="orcidRetriever.html" target="_blank" rel="noopener">ORCID Retriever ↗</a>
+      </div>
+      <div class="topbar-col">
+      <a href="connectivityAbout.html" target="_blank" rel="noopener">Connectivity Concepts ↗</a>
+      <a href="https://api.crossref.org/swagger-ui/index.html" target="_blank" rel="noopener">Crossref API ↗</a>
+      <a href="tips.html#metadataConnectivity" target="_blank" rel="noopener">Metadata Tips ↗</a>
+      <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h2 class="hero-title">Explore any Crossref journal or publisher <span class="proto-flag">Prototype</span></h2>
+      <p class="hero-sub">Search by journal or publisher name — or enter an ISSN, a <b>member:ID</b>, an organization&rsquo;s ROR, or a DOI — to measure identifier connectivity in Crossref metadata: how many authors, editors, affiliations, and funders carry the identifiers that could connect them.</p>
+    </div>
+    <div class="hero-search">
+      <div class="hero-form">
+        <input class="hero-input" id="repo-input" type="text" placeholder="Journal, publisher, ISSN, member:ID, ROR, or DOI…" spellcheck="false" autocomplete="off" value="" />
+        <button class="hero-go" id="repo-go">Explore →</button>
+      </div>
+      <div class="repo-autocomplete" id="repo-autocomplete"></div>
+      <div class="hero-secondary">
+        <span class="hero-field grow">
+        <span class="hero-secondary-label">Type</span>
+        <select class="hero-select" id="resource-type">
+          <option value="">All work types</option>
+          <option value="book">Book</option>
+          <option value="book-chapter">Book Chapter</option>
+          <option value="dataset">Dataset</option>
+          <option value="dissertation">Dissertation</option>
+          <option value="edited-book">Edited Book</option>
+          <option value="grant">Grant</option>
+          <option value="journal-article">Journal Article</option>
+          <option value="monograph">Monograph</option>
+          <option value="other">Other</option>
+          <option value="peer-review">Peer Review</option>
+          <option value="posted-content">Posted Content (preprints)</option>
+          <option value="proceedings-article">Proceedings Article</option>
+          <option value="reference-entry">Reference Entry</option>
+          <option value="report">Report</option>
+          <option value="standard">Standard</option>
+        </select>
+        </span>
+        <span class="hero-field grow">
+        <span class="hero-secondary-label">Query</span>
+        <input class="hero-query" id="query-input" type="text" placeholder="free-text search, e.g. climate" spellcheck="false" autocomplete="off" />
+        </span>
+        <span class="hero-sample">
+          <span class="hero-field">
+          <span class="hero-secondary-label">Max</span>
+          <input class="hero-num" id="cap" type="number" value="200" min="1" max="10000" />
+          </span>
+          <label class="hero-chk"><input type="checkbox" id="random" checked /> Random sample</label>
+        </span>
+      </div>
+      <div class="hero-help"><a href="https://api.crossref.org/swagger-ui/index.html#/Works/get_works" target="_blank" rel="noopener" title="The Crossref /works endpoint — queries, filters, and sampling">Crossref /works API ↗</a></div>
+    </div>
+  </div>
+</div>
+
+<div class="sel-summary" id="sel-summary" style="display:none">
+  <div class="sel-inner">
+    <span class="sel-repo" id="sel-repo">—</span>
+    <span class="sel-shared" id="sel-shared" style="display:none" title="Another tool retrieved these records; both tools are measuring exactly the same sample">—</span>
+    <div class="sel-stats">
+      <span class="sel-stat"><b id="sel-records">—</b> <span id="sel-records-label">records analyzed</span></span>
+      <span class="sel-stat" id="sel-mode">—</span>
+      <span class="sel-stat" id="sel-total"></span>
+      <span class="sel-stat" id="sel-filter" style="display:none"></span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="status">Search for a journal or publisher (or enter an ISSN, member:ID, ROR, or DOI) and click Explore.</div>
+  <div id="progress"><i></i></div>
+  <div id="apiurl" style="display:none"></div>
+  <div id="tips" class="tips" style="display:none"></div>
+
+  <div class="card" id="conn-card" style="display:none">
+    <div class="conn-head">
+      <h2 id="conn-title">Identifier connectivity</h2>
+      <div class="conn-actions">
+        <button class="dl-btn" id="dl-json" type="button">⬇ Data (JSON)</button>
+        <button class="dl-btn" id="dl-html" type="button">⬇ Report (HTML)</button>
+        <button class="dl-btn" id="dl-pdf" type="button">⬇ Report (PDF)</button>
+        <button class="dl-btn" id="dl-png" type="button">⬇ Bars (PNG)</button>
+        <button class="dl-btn" id="dl-summary" type="button">⬇ Data Summary (CSV)</button>
+        <button class="dl-btn" id="dl-metadata" type="button">⬇ Metadata (JSON)</button>
+      </div>
+    </div>
+    <p class="conn-intro">Connectivity is the share of entities that carry the identifier that could connect them — e.g. of the authors in a journal, how many have an ORCID. The <b>%</b> is occurrence-based (identified occurrences ÷ all occurrences). The bar counts <b>distinct</b> entities (a person or affiliation that appears in many records is one entity): green = identified in <b>every</b> occurrence, yellow = identified in <b>some</b> (these are the quick wins — a known identifier to copy to the records that are missing it), red = <b>never</b> identified. <b>Click any bar</b> to list them, color-coded to match the bars — <b>quick wins first</b> (a known identifier to copy to the records that are missing it), then the ones still missing an identifier.</p>
+    <div class="conn-legend">
+      <span><i style="background:var(--green)"></i>Complete — identified in every occurrence</span>
+      <span><i style="background:var(--amber)"></i>Some — identified in some occurrences</span>
+      <span><i style="background:var(--red)"></i>None — never identified</span>
+    </div>
+    <div id="conn-body"></div>
+  </div>
+
+  <div class="card" id="dup-card" style="display:none">
+    <div class="conn-head">
+      <h2>Potential duplicates<span class="proto-flag">advisory</span></h2>
+      <div class="conn-actions">
+        <label class="dup-th">Match
+          <select id="dup-threshold">
+            <option value="strict">strict</option>
+            <option value="balanced" selected>balanced</option>
+            <option value="loose">loose</option>
+          </select>
+        </label>
+        <label class="dup-th">Sort
+          <select id="dup-sort" title="A–Z sorts by name (to find an entity). Impact sorts by ‘can copy’ — occurrences that could take an identifier already present on another spelling — then how widespread the entity is.">
+            <option value="name" selected>A–Z</option>
+            <option value="impact">impact</option>
+          </select>
+        </label>
+        <button class="dl-btn" id="dup-copy" type="button" title="Copy all clusters to the clipboard">⧉ Copy</button>
+        <button class="dl-btn" id="dup-csv" type="button">⬇ Duplicates (CSV)</button>
+      </div>
+    </div>
+    <p class="conn-intro">Likely-same people, organizations, and rights statements that appear under more than one spelling — to review and reconcile. This <b>does not change the bars above</b>. <b>High confidence</b> clusters share an identifier (the same ORCID/ROR under different names); <b>review</b> clusters are fuzzy string matches. “Can copy” counts occurrences that could take a known identifier already present on another spelling. Acronyms vs full names (e.g. “MIT” vs the spelled-out name) only match when they share an identifier.</p>
+    <div id="dup-body"></div>
+  </div>
+
+  <div class="note">
+    <b>About:</b> This tool measures <b>identifier connectivity</b> for Crossref metadata — a journal (ISSN), a publisher (Crossref member), or an organization&rsquo;s ROR-identified works. It is the Crossref port of <a href="metadataConnectivity.html" style="color:var(--accent-dk);font-weight:600;text-decoration:none">Metadata Connectivity</a>: same engine, Crossref connectors. Connectors: authors (ORCIDs, affiliations, affiliation RORs), editors &amp; translators (the contributor roles Crossref has), and funders (Funder Registry IDs / RORs). Crossref has no publisher-identifier or typed-rights fields, so those DataCite bars have no analog here; affiliation RORs are young in Crossref (publisher-asserted, &lt;1% of works so far). All computation runs in your browser against live Crossref data — nothing is uploaded or stored. <a href="connectivityAbout.html" target="_blank" rel="noopener" style="color:var(--accent-dk);font-weight:600;text-decoration:none">Learn more about connectivity ↗</a>
+  </div>
+</div>
+
+<!-- Drill-down: distinct entities and their connectivity (worst first) -->
+<div id="cd-modal" class="modal-overlay" style="display:none">
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="cd-title">—</div>
+        <div class="modal-sub" id="cd-sub"></div>
+      </div>
+      <div class="modal-head-actions">
+        <button class="dl-btn" id="cd-ror" type="button" style="display:none" title="Send every name that is not identified in all of its occurrences (missing + quick wins) to the ROR Retriever, which looks each one up with the ROR affiliation-matching strategy">Find RORs ↗</button>
+        <button class="dl-btn" id="cd-orcid" type="button" style="display:none" title="Send every person that is not identified in all of their occurrences (missing + quick wins) to the ORCID Retriever, which searches the public ORCID registry and shows each candidate iD with its most recent employment and journal">Find ORCIDs ↗</button>
+        <button class="dl-btn" id="cd-copy" type="button" title="Copy the full list to the clipboard">⧉ Copy</button>
+        <button class="dl-btn" id="cd-download" type="button">⬇ CSV</button>
+        <button class="modal-x" id="cd-close" type="button" aria-label="Close">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="cd-body"></div>
+  </div>
+</div>
+
+<!-- Duplicates drill-down: the DOIs where a variant spelling occurs -->
+<div id="dd-modal" class="modal-overlay" style="display:none">
+  <div class="modal-card" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="dd-title">—</div>
+        <div class="modal-sub" id="dd-sub"></div>
+      </div>
+      <div class="modal-head-actions">
+        <button class="dl-btn" id="dd-copy" type="button" title="Copy the DOI list to the clipboard">⧉ Copy</button>
+        <button class="modal-x" id="dd-close" type="button" aria-label="Close">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="dd-body"></div>
+  </div>
+</div>
+
+<script>
+const API_BASE = 'https://api.crossref.org';
+
+/* ---------- targets: what population to analyze ----------
+   A target is { kind: 'journal'|'member'|'ror'|'all', id, token, label } where token is the
+   canonical input form ('1932-6203', 'member:340', 'ror:04qw24q55', 'crossref.all') used in
+   the URL, filenames, and the selection strip. 'crossref.all' (unadvertised, mirroring
+   datacite.all) omits the population filter and samples the whole of Crossref. */
+const ALL_CROSSREF = 'crossref.all';
+const ISSN_RE   = /^\d{4}-\d{3}[\dX]$/i;
+const MEMBER_RE = /^member:(\d+)$/i;
+const ROR_RE    = /^(?:ror:|(?:https?:\/\/)?ror\.org\/)(0[a-hj-km-np-tv-z0-9]{6}\d{2})$/i;
+function parseTarget(input){
+  const v = String(input || '').trim();
+  if (!v) return null;
+  if (v.toLowerCase() === ALL_CROSSREF) return { kind:'all', id:'', token: ALL_CROSSREF, label:'All of Crossref' };
+  if (ISSN_RE.test(v)) return { kind:'journal', id: v.toUpperCase(), token: v.toUpperCase(), label: v.toUpperCase() };
+  const m = MEMBER_RE.exec(v); if (m) return { kind:'member', id: m[1], token: `member:${m[1]}`, label: `member:${m[1]}` };
+  const r = ROR_RE.exec(v);    if (r) return { kind:'ror', id: r[1], token: `ror:${r[1]}`, label: `ror:${r[1]}` };
+  return null;
+}
+function targetFilter(t){
+  if (!t || t.kind === 'all') return '';
+  if (t.kind === 'journal') return 'issn:' + t.id;
+  if (t.kind === 'member')  return 'member:' + t.id;
+  return 'ror-id:https://ror.org/' + t.id;
+}
+
+/* ---------- Crossref work → DataCite-shaped record ----------
+   The whole connectivity engine below (bars, quick wins, drill-downs, duplicates, retriever
+   handoffs) reads DataCite-shaped records; this transform is the entire Crossref adaptation.
+   ORCID → nameIdentifiers, affiliation id[] (ROR) → affiliationIdentifier, editor/translator/
+   chair → contributors with contributorType, funder DOI/id[] → funderIdentifier (ROR preferred),
+   license URL → rightsUri. */
+const CR_SELECT = 'DOI,title,author,editor,translator,chair,funder,license,publisher,container-title,issued,type,member';
+function crPerson(p){
+  const name = p.name || [p.given, p.family].filter(Boolean).join(' ');
+  const aff = (Array.isArray(p.affiliation) ? p.affiliation : []).filter(a => a && a.name).map(a => {
+    const ids = Array.isArray(a.id) ? a.id.filter(x => x && x.id) : [];
+    const ror = ids.find(x => String(x['id-type']).toUpperCase() === 'ROR');
+    const use = ror || ids[0];
+    return { name: a.name,
+             affiliationIdentifier: use ? use.id : undefined,
+             affiliationIdentifierScheme: use ? use['id-type'] : undefined };
+  });
+  return { name, givenName: p.given, familyName: p.family,
+           nameType: p.family ? 'Personal' : (p.name ? 'Organizational' : undefined),
+           nameIdentifiers: p.ORCID ? [{ nameIdentifier: p.ORCID, nameIdentifierScheme: 'ORCID' }] : [],
+           affiliation: aff };
+}
+function crToRecord(w){
+  const contributors = [];
+  for (const [key, type] of [['editor','Editor'], ['translator','Translator'], ['chair','Chair']])
+    for (const p of (Array.isArray(w[key]) ? w[key] : []))
+      if (p && (p.family || p.name)) contributors.push({ ...crPerson(p), contributorType: type });
+  const funding = (Array.isArray(w.funder) ? w.funder : []).filter(f => f && f.name).map(f => {
+    const ids = Array.isArray(f.id) ? f.id.filter(x => x && x.id) : [];
+    const ror = ids.find(x => String(x['id-type']).toUpperCase() === 'ROR');
+    const idv = (ror && ror.id) || (f.DOI ? 'https://doi.org/' + f.DOI : (ids[0] && ids[0].id));
+    return { funderName: f.name, funderIdentifier: idv || undefined,
+             funderIdentifierType: ror ? 'ROR' : (f.DOI ? 'Crossref Funder ID' : (ids[0] ? ids[0]['id-type'] : undefined)) };
+  });
+  const year = w.issued && Array.isArray(w.issued['date-parts']) && Array.isArray(w.issued['date-parts'][0])
+    ? w.issued['date-parts'][0][0] : undefined;
+  return {
+    id: w.DOI,
+    attributes: {
+      doi: w.DOI,
+      titles: (Array.isArray(w.title) && w.title.length ? w.title : ['(untitled)']).map(t => ({ title: t })),
+      publicationYear: typeof year === 'number' ? year : undefined,
+      publisher: w.publisher,
+      creators: (Array.isArray(w.author) ? w.author : []).filter(p => p && (p.family || p.name)).map(crPerson),
+      contributors,
+      fundingReferences: funding,
+      rightsList: (Array.isArray(w.license) ? w.license : []).filter(l => l && l.URL)
+        .map(l => ({ rights: l.URL, rightsUri: l.URL }))
+    }
+  };
+}
+
+const $ = id => document.getElementById(id);
+const statusEl = $('status');
+function setStatus(msg, isErr){ statusEl.textContent = msg; statusEl.className = isErr ? 'err' : ''; }
+function setProgress(frac){ const p=$('progress'); p.classList.add('on'); p.classList.remove('indet'); p.firstElementChild.style.width = Math.max(0,Math.min(1,frac))*100 + '%'; }
+function setProgressIndeterminate(){ const p=$('progress'); p.classList.add('on','indet'); p.firstElementChild.style.width=''; }
+function hideProgress(){ const p=$('progress'); p.classList.remove('on','indet'); p.firstElementChild.style.width='0'; }
+const escHtml = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const escAttr = s => escHtml(s);
+
+/* ---------- Crossref fetch ----------
+   Random sampling uses the API's native `sample=` (true random draws, max 100 per call),
+   repeated and deduplicated by DOI — the same pattern the DataCite tools use with random=true.
+   Sequential fetches use cursor paging. `select=` trims each work to the fields the transform
+   reads. */
+async function fetchWorks(target, cap, random, typeId, query){
+  const records = [];
+  const seen = new Set();
+  let requests = 0, firstUrl = '', repoTotal = null, cursor = '*';
+  setStatus('Fetching works…');
+  setProgressIndeterminate();
+  const filters = [targetFilter(target), typeId ? 'type:' + typeId : ''].filter(Boolean).join(',');
+  const common = (filters ? `filter=${encodeURIComponent(filters)}&` : '')
+               + (query ? `query=${encodeURIComponent(query)}&` : '')
+               + `select=${encodeURIComponent(CR_SELECT)}`;
+  // peek at the matching total: random draws only help when the set is larger than the cap
+  let effectiveRandom = random;
+  try {
+    const peek = await fetch(`${API_BASE}/works?${common}&rows=0`);
+    if (peek.ok){
+      const pj = await peek.json();
+      const t = pj.message && typeof pj.message['total-results'] === 'number' ? pj.message['total-results'] : null;
+      if (t != null){ repoTotal = t; if (t <= cap) effectiveRandom = false; }
+    }
+  } catch { /* best-effort */ }
+  if (!effectiveRandom) setProgress(0);
+  while (records.length < cap) {
+    requests++;
+    const url = effectiveRandom
+      ? `${API_BASE}/works?${common}&sample=${Math.min(100, cap)}`
+      : `${API_BASE}/works?${common}&rows=${Math.min(1000, cap)}&cursor=${encodeURIComponent(cursor)}`;
+    if (!firstUrl) firstUrl = url;
+    let res;
+    try { res = await fetch(url); }
+    catch (netErr){
+      const hint = location.protocol === 'file:'
+        ? 'The page is open as a local file (file://); browsers block outbound requests there. Serve it over http — e.g. run "python3 -m http.server" and open http://localhost:8000/crossrefConnectivity.html'
+        : 'Could not reach api.crossref.org — check your network connection, VPN, or any request-blocking extension.';
+      throw new Error('Failed to fetch works. ' + hint);
+    }
+    if (!res.ok) throw new Error(`Crossref returned ${res.status} for "${target.token}"`);
+    const json = await res.json();
+    const msg = json.message || {};
+    const batch = msg.items || [];
+    let added = 0;
+    for (const w of batch){ if (w && w.DOI && !seen.has(w.DOI)){ seen.add(w.DOI); records.push(crToRecord(w)); added++; } }
+    if (!effectiveRandom) setProgress(Math.min(records.length / cap, 1));
+    if (typeof msg['total-results'] === 'number') repoTotal = msg['total-results'];
+    if (effectiveRandom){
+      if (records.length >= cap) break;
+      if (repoTotal != null && records.length >= repoTotal) break;
+      if (added === 0) break;
+      if (requests >= 30) break;
+    } else {
+      cursor = msg['next-cursor'] || '';
+      if (batch.length === 0 || !cursor || records.length >= cap || requests >= 10) break;
+    }
+  }
+  showApiUrl(firstUrl, requests, effectiveRandom);
+  return { records: records.slice(0, cap), repoTotal, random: effectiveRandom };
+}
+function showApiUrl(url, requests, random){
+  const el = $('apiurl');
+  el.style.display = '';
+  const extra = random && requests > 1 ? ` · ${requests} random draws, deduplicated by DOI` : (requests > 1 ? ` · ${requests} pages` : '');
+  el.innerHTML = `<b>API call:</b> ${url}${extra}`;
+}
+async function fetchTargetMeta(target){
+  try {
+    if (target.kind === 'all') return { name: 'All of Crossref', doiCount: null };
+    if (target.kind === 'journal'){
+      const res = await fetch(`${API_BASE}/journals/${encodeURIComponent(target.id)}`);
+      if (!res.ok) return null;
+      const m = (await res.json()).message;
+      return { name: m?.title ?? target.token, doiCount: m?.counts?.['total-dois'] ?? null };
+    }
+    if (target.kind === 'member'){
+      const res = await fetch(`${API_BASE}/members/${encodeURIComponent(target.id)}`);
+      if (!res.ok) return null;
+      const m = (await res.json()).message;
+      return { name: m?.['primary-name'] ?? target.token, doiCount: m?.counts?.['total-dois'] ?? null };
+    }
+    // ror: resolve the organization name at the ROR API
+    const res = await fetch(`https://api.ror.org/v2/organizations/${encodeURIComponent(target.id)}`);
+    if (!res.ok) return null;
+    const j = await res.json();
+    const display = (j.names || []).find(n => (n.types || []).includes('ror_display')) || (j.names || [])[0];
+    return { name: display ? display.value : target.token, doiCount: null };
+  } catch { return null; }
+}
+function renderSelection(clientId, meta, recordCount, random, repoTotal, resourceTypeId, query, sharedFrom, singleDoi){
+  $('sel-summary').style.display = '';
+  const name = (meta && meta.name) ? meta.name : (clientId || 'DOI');
+  $('sel-repo').innerHTML = `${escHtml(name)}<span class="sel-id">${escHtml(clientId)}</span>`;
+  $('sel-records').textContent = recordCount.toLocaleString();
+  $('sel-records-label').textContent = (recordCount === 1 ? 'record' : 'records') + ' analyzed';
+  $('sel-mode').textContent = singleDoi ? `single DOI · ${singleDoi}` : (random ? 'random sample' : 'sequential sample');
+  const sh = $('sel-shared');
+  if (sharedFrom){ sh.textContent = `Shared sample · from ${sharedFrom}`; sh.style.display = ''; }
+  else sh.style.display = 'none';
+  const filtered = !!(resourceTypeId || query);
+  const repo = (repoTotal != null) ? repoTotal : (filtered ? null : (meta && meta.doiCount != null ? meta.doiCount : null));
+  $('sel-total').textContent = repo != null ? `of ${repo.toLocaleString()} ${filtered ? 'matching' : 'in selection'}` : '';
+  const parts = [];
+  if (resourceTypeId) parts.push(`type: ${resourceTypeId}`);
+  if (query) parts.push(`query: ${query}`);
+  $('sel-filter').textContent = parts.length ? `filter — ${parts.join(' · ')}` : '';
+  $('sel-filter').style.display = parts.length ? '' : 'none';
+}
+
+/* ---------- connectivity computation ----------
+   Each connector is grouped by distinct entity name across all records (connDetail): for an entity,
+   occ = total occurrences, id = occurrences carrying the identifier. The bar counts entities:
+   COMPLETE (id >= occ, every occurrence identified), MISSING (id == 0), else PARTIAL. The overall %
+   is occurrence-based (total identified / total occurrences). Quick wins = the propagatable gap
+   (occ − id) summed over partial entities. */
+/* Crossref connectors: authors (Crossref's creators), editors/translators/chairs (the only
+   contributor roles Crossref has), and funders. No publisher bar (Crossref identifies the
+   depositing member, not a publisher ROR) and no rights bars (licenses are always URLs, so
+   the URI question is trivially complete and there is no SPDX identifier field). */
+const CONNECTORS = [
+  { group:'Authors',                 label:'How many identifiers do authors have? (ORCID)',                    source:'creators',          kind:'nameId', entity:'Author' },
+  { group:'Authors',                 label:'How many affiliations do authors have?',                           source:'creators',          kind:'aff',    entity:'Author' },
+  { group:'Authors',                 label:'How many identifiers do author affiliations have? (ROR)',          source:'creators',          kind:'affId',  entity:'Affiliation' },
+  { group:'Editors & translators',   label:'How many identifiers do editors & translators have? (ORCID)',      source:'contributors',      kind:'nameId', entity:'Contributor' },
+  { group:'Editors & translators',   label:'How many affiliations do editors & translators have?',             source:'contributors',      kind:'aff',    entity:'Contributor' },
+  { group:'Editors & translators',   label:'How many identifiers do their affiliations have? (ROR)',           source:'contributors',      kind:'affId',  entity:'Affiliation' },
+  { group:'Funders',                 label:'How many identifiers do funders have? (Funder ID / ROR)',          source:'fundingReferences', kind:'funder', entity:'Funder' },
+];
+function computeConnectivity(records){
+  return CONNECTORS.map((c, idx) => {
+    const detail = connDetail(records, c);             // distinct entity -> {occ, id}
+    let complete = 0, partial = 0, missing = 0, sumConn = 0, sumId = 0, quickWins = 0;
+    for (const e of detail.values()){
+      sumConn += e.occ; sumId += e.id;
+      if (e.id === 0) missing++;
+      else if (e.id >= e.occ) complete++;
+      else { partial++; quickWins += (e.occ - e.id); }   // partial entity → propagatable known identifier(s)
+    }
+    return { idx, group: c.group, label: c.label, entity: c.entity, kind: c.kind,
+             complete, partial, missing, total: detail.size,
+             overall: sumConn ? sumId / sumConn : 0, items: sumConn, identified: sumId, quickWins, detail };
+  });
+}
+function renderConnectivity(results){
+  const groups = [];
+  for (const res of results){
+    let g = groups.find(x => x.name === res.group);
+    if (!g){ g = { name: res.group, items: [] }; groups.push(g); }
+    g.items.push(res);
+  }
+  const seg = (cls, w) => w > 0 ? `<div class="seg ${cls}" style="width:${w.toFixed(1)}%"></div>` : '';
+  $('conn-body').innerHTML = groups.map(g => {
+    const rows = g.items.map(res => {
+      const ent = res.entity.toLowerCase();
+      if (res.total === 0){
+        return `<div class="conn-row"><div class="conn-label">${escHtml(res.label)} <span class="conn-meta">not present in any analyzed record</span></div><div class="conn-empty">— no ${escHtml(ent)}s in the analyzed sample —</div></div>`;
+      }
+      const c = res.complete / res.total * 100,
+            p = res.partial  / res.total * 100,
+            m = res.missing  / res.total * 100;
+      return `<div class="conn-row">
+        <div class="conn-label">${escHtml(res.label)}
+          <span class="conn-meta">${res.total.toLocaleString()} distinct ${escHtml(ent)}${res.total===1?'':'s'} · ${res.items.toLocaleString()} occurrence${res.items===1?'':'s'} · ${res.identified.toLocaleString()} ${res.kind==='aff' ? 'affiliated' : 'identified'} — <b class="conn-pct">${(res.overall*100).toFixed(0)}%</b>${res.quickWins>0 ? ` · <b class="conn-qw" title="Known identifiers that could be copied to the records that are missing them — no lookup needed">${res.quickWins.toLocaleString()} quick win${res.quickWins===1?'':'s'}</b>` : ''}</span>
+        </div>
+        <div class="conn-bar clickable" data-idx="${res.idx}" title="${res.complete} complete · ${res.partial} partial · ${res.missing} missing ${escHtml(ent)}s — click for the list">${seg('green',c)}${seg('yellow',p)}${seg('red',m)}</div>
+      </div>`;
+    }).join('');
+    return `<div class="conn-group">${escHtml(g.name)}</div>${rows}`;
+  }).join('');
+  $('conn-body').querySelectorAll('.conn-bar[data-idx]').forEach(el => el.addEventListener('click', () => openConnDetail(+el.dataset.idx)));
+}
+
+/* ---------- drill-down: distinct people / affiliations / funders / publishers and their connectivity ---------- */
+// Group by name across all records (occurrence-based, like the bar %): e.g. "University of Colorado"
+// appearing 8 times with 4 affiliationIdentifiers → 4/8 = 50%. Surfaces the items to go fix.
+// Detail maps track {occ, id, docs} per distinct entity — docs is a Map(doi -> title) of the records it
+// appears in (deduped by DOI), so the drill-down can link each entity to its DOIs. (noteDoc is defined below.)
+// Route each creator/contributor to the right registry: organizations → ROR, people → ORCID.
+// DataCite's nameType is authoritative when set ("Organizational"/"Personal"), but many records
+// leave it null — so fall back to an organization-name heuristic for those. A repository can carry
+// both types (personal + organizational authors), so this is decided per entity, not per repo.
+const ORG_NAME_RE = /(\buniversit|université|\binstitut|\bcollege\b|\bschool\b|\bacademy\b|\blaborator|\bmuseum\b|\bobservatory\b|\bsurvey\b|\bministry\b|\bdepartment\b|\bagency\b|\bfoundation\b|\bsociety\b|\bassociation\b|\bcouncil\b|\bcommittee\b|\bcommission\b|\bcent(er|re)\b|\bhospital\b|\blibrary\b|\bbureau\b|\bconsortium\b|\bnetwork\b|\badministration\b|\bcorporation\b|\bcompany\b|\b(inc|ltd|llc|gmbh)\b|\bnational\b|\binternational\b|\borgani[sz]ation)/i;
+function looksOrgName(name){ return typeof name === 'string' && ORG_NAME_RE.test(name); }
+function isOrgEntity(nameType, name){
+  if (nameType === 'Organizational') return true;
+  if (nameType === 'Personal') return false;
+  return looksOrgName(name);   // nameType unset → guess from the name
+}
+function personDetail(records, source, kind){
+  const map = new Map();   // name -> {occ, id, docs, orgN}
+  const bump = (name, has, r, org) => { if (name == null || name === '') return; let e = map.get(name); if (!e){ e = { occ:0, id:0, docs:new Map(), orgN:0 }; map.set(name, e); } e.occ++; if (has){ e.id++; noteIdDoc(e, r); } else noteFixDoc(e, r); if (org) e.orgN++; noteDoc(e, r); };
+  for (const r of records){
+    const arr = (r.attributes && Array.isArray(r.attributes[source])) ? r.attributes[source] : [];
+    for (const p of arr){
+      if (!p || typeof p !== 'object') continue;
+      if (kind === 'affId'){
+        for (const a of (Array.isArray(p.affiliation) ? p.affiliation : [])){ if (a && a.name) bump(a.name, !!a.affiliationIdentifier, r, true); }   // affiliations are always organizations
+      } else {
+        const name = p.name || [p.givenName, p.familyName].filter(Boolean).join(' ');
+        if (!name) continue;
+        const org = isOrgEntity(p.nameType, name);
+        if (kind === 'nameId') bump(name, Array.isArray(p.nameIdentifiers) && p.nameIdentifiers.some(n => n && n.nameIdentifier), r, org);
+        else {
+          const affs = Array.isArray(p.affiliation) ? p.affiliation.filter(a => a && a.name) : [];
+          bump(name, affs.length > 0, r, org);
+          // the 'aff' drill-down shows each person's affiliation history: distinct strings (never
+          // fuzzy-merged), their RORs when asserted, and publication-year ranges
+          const e = map.get(name);
+          if (e){
+            if (!e.affs) e.affs = new Map();
+            const y = r.attributes && typeof r.attributes.publicationYear === 'number' ? r.attributes.publicationYear : null;
+            for (const a of affs){
+              let ae = e.affs.get(a.name);
+              if (!ae){ ae = { n: 0, ids: new Set(), y0: null, y1: null }; e.affs.set(a.name, ae); }
+              ae.n++;
+              if (a.affiliationIdentifier) ae.ids.add(a.affiliationIdentifier);
+              if (y != null){ ae.y0 = ae.y0 == null ? y : Math.min(ae.y0, y); ae.y1 = ae.y1 == null ? y : Math.max(ae.y1, y); }
+            }
+          }
+        }
+      }
+    }
+  }
+  return map;
+}
+function funderDetail(records){
+  const map = new Map();
+  for (const r of records){
+    for (const f of ((r.attributes && Array.isArray(r.attributes.fundingReferences)) ? r.attributes.fundingReferences : [])){
+      if (!f || !f.funderName) continue;
+      let e = map.get(f.funderName); if (!e){ e = { occ:0, id:0, docs:new Map() }; map.set(f.funderName, e); }
+      e.occ++; if (f.funderIdentifier){ e.id++; noteIdDoc(e, r); } else noteFixDoc(e, r); noteDoc(e, r);
+    }
+  }
+  return map;
+}
+function publisherDetail(records){
+  const map = new Map();
+  for (const r of records){
+    const p = r.attributes && r.attributes.publisher; if (!p) continue;
+    const name = typeof p === 'string' ? p : p.name; if (!name) continue;
+    let e = map.get(name); if (!e){ e = { occ:0, id:0, docs:new Map() }; map.set(name, e); }
+    e.occ++; if (typeof p === 'object' && p.publisherIdentifier){ e.id++; noteIdDoc(e, r); } else noteFixDoc(e, r); noteDoc(e, r);
+  }
+  return map;
+}
+// Group by the distinct rights statement (its name, falling back to the URI/identifier), counting
+// how many occurrences carry a rightsUri or a rightsIdentifier — same shape as the other detail maps.
+function rightsDetail(records, kind){
+  const map = new Map();
+  for (const r of records){
+    for (const x of ((r.attributes && Array.isArray(r.attributes.rightsList)) ? r.attributes.rightsList : [])){
+      if (!x || typeof x !== 'object') continue;
+      const name = x.rights || x.rightsUri || x.rightsIdentifier; if (!name) continue;
+      let e = map.get(name); if (!e){ e = { occ:0, id:0, docs:new Map() }; map.set(name, e); }
+      e.occ++; if (kind === 'rightsUri' ? !!x.rightsUri : !!x.rightsIdentifier){ e.id++; noteIdDoc(e, r); } else noteFixDoc(e, r); noteDoc(e, r);
+    }
+  }
+  return map;
+}
+function connDetail(records, c){
+  if (c.kind === 'funder') return funderDetail(records);
+  if (c.kind === 'publisher') return publisherDetail(records);
+  if (c.kind === 'rightsUri' || c.kind === 'rightsId') return rightsDetail(records, c.kind);
+  return personDetail(records, c.source, c.kind);
+}
+let connDetailState = null;   // { entries:[{name,occ,id,pct}], c }
+function openConnDetail(idx){
+  if (!lastRun) return;
+  const c = CONNECTORS[idx];
+  const map = (lastRun.results && lastRun.results[idx] && lastRun.results[idx].detail) || connDetail(lastRun.records, c);
+  const isQw = e => e.id > 0 && e.id < e.occ;               // a known identifier that can be propagated
+  const isAff = c.kind === 'aff';
+  // aff view: distinct institutions = distinct by ROR when asserted, else by exact string (never fuzzy)
+  const instCount = a => { const seen = new Set(); for (const x of a.affs) seen.add(x.ids[0] || x.name); return seen.size; };
+  const rank = e => isAff
+    ? (isQw(e) && e.inst === 1 ? 0                          // safe to propagate: gaps + a single institution
+       : isQw(e) ? 1                                        // multi-affiliation partials — need review
+       : e.id === 0 ? 2 : 3)                                // no affiliation anywhere, then complete
+    : (isQw(e) ? 0 : (e.id === 0 ? 1 : 2));                 // other drills: quick wins, missing, complete
+  const entries = [...map.entries()]
+    .map(([name, e]) => { const o = { name, occ: e.occ, id: e.id, pct: e.occ ? e.id / e.occ : 0,
+      org: (e.orgN || 0) * 2 > e.occ,   // majority of occurrences look organizational → ROR, else person → ORCID
+      affs: e.affs ? [...e.affs.entries()].map(([an, ae]) => ({ name: an, n: ae.n, ids: [...ae.ids], y0: ae.y0, y1: ae.y1 })).sort((x, y) => y.n - x.n) : [],
+      docs: [...(e.docs || [])].map(([doi, title]) => ({ doi, title })),
+      idd: [...(e.idDocs || [])].map(([doi, title]) => ({ doi, title })),
+      fix: [...(e.fixDocs || [])].map(([doi, title]) => ({ doi, title })) };
+      o.inst = instCount(o);
+      // possible variants: two strings, no shared ROR, same conservative normalization — flag, never merge
+      o.variants = o.affs.length > o.inst || (o.affs.length > 1 && new Set(o.affs.map(x => normName(x.name))).size < o.affs.length);
+      return o; })
+    .sort((a, b) => rank(a) - rank(b)
+      || (isQw(a) && isQw(b) ? (b.occ - b.id) - (a.occ - a.id) : 0)    // within a tier, biggest propagatable gap first
+      || b.occ - a.occ || a.name.localeCompare(b.name));
+  connDetailState = { entries, c };
+  const missing = entries.filter(e => e.id === 0).length;
+  const partial = entries.filter(e => isQw(e)).length;
+  const complete = entries.filter(e => e.id >= e.occ).length;
+  const ent = c.entity.toLowerCase();
+  $('cd-title').textContent = `${c.group} · ${c.label.split(' (')[0]}`;
+  if (c.kind === 'aff'){
+    const safe = entries.filter(e => isQw(e) && e.inst === 1).length;
+    const review = entries.filter(e => isQw(e) && e.inst > 1).length;
+    $('cd-sub').textContent = `${entries.length.toLocaleString()} distinct ${ent}${entries.length===1?'':'s'} · ${safe.toLocaleString()} single (one institution, gaps to fill — shown first) · ${review.toLocaleString()} multi-affiliation (review) · ${missing.toLocaleString()} with no affiliation · ${complete.toLocaleString()} complete — within the analyzed sample`;
+  } else {
+    $('cd-sub').textContent = `${entries.length.toLocaleString()} distinct ${ent}${entries.length===1?'':'s'} · ${partial.toLocaleString()} quick win${partial===1?'':'s'} (shown first) · ${missing.toLocaleString()} missing · ${complete.toLocaleString()} complete`;
+  }
+  // drill-downs can send every name identified < 100% (never identified + quick wins) to a
+  // retriever: affiliations/funders/publishers → ROR Retriever, people → ORCID Retriever
+  const rorBtn = $('cd-ror'), orcidBtn = $('cd-orcid'), incomplete = missing + partial;
+  const incOrgs = entries.filter(e => e.id < e.occ && e.org).length;      // organizations → ROR
+  const incPeople = entries.filter(e => e.id < e.occ && !e.org).length;   // people → ORCID
+  if (c.kind === 'aff'){
+    // the interesting question here is each person's affiliation history, not their ORCID —
+    // but ORCID employment IS how you research an affiliation for people who have none anywhere
+    rorBtn.style.display = 'none';
+    const noAff = entries.filter(e => e.id === 0 && !e.org).length;
+    if (noAff > 0){ orcidBtn.style.display = ''; orcidBtn.textContent = `Find affiliations via ORCID (${noAff.toLocaleString()}) ↗`; orcidBtn.title = 'Send the people with no affiliation in any record to the ORCID Retriever — each candidate iD shows its most recent employment, a starting point for the missing affiliation'; }
+    else orcidBtn.style.display = 'none';
+  } else if (c.kind === 'nameId'){
+    // name-identifier lists hold the same creators/contributors — a mix of people
+    // and organizations, so send each to its own registry
+    if (incOrgs > 0){ rorBtn.style.display = ''; rorBtn.textContent = `Find RORs (${incOrgs.toLocaleString()}) ↗`; } else rorBtn.style.display = 'none';
+    if (incPeople > 0){ orcidBtn.style.display = ''; orcidBtn.textContent = `Find ORCIDs (${incPeople.toLocaleString()}) ↗`; } else orcidBtn.style.display = 'none';
+  } else {
+    if ((c.kind === 'affId' || c.kind === 'funder' || c.kind === 'publisher') && incomplete > 0){
+      rorBtn.style.display = ''; rorBtn.textContent = `Find RORs (${incomplete.toLocaleString()}) ↗`;
+    } else rorBtn.style.display = 'none';
+    orcidBtn.style.display = 'none';
+  }
+  const cls = e => e.id === 0 ? 'pc-red' : (e.id >= e.occ ? 'pc-green' : 'pc-amber');
+  const rowCls = e => isQw(e) ? 'row-qw' : (e.id === 0 ? 'row-missing' : 'row-complete');   // color-code rows to match the bars
+  // Name-identifier and affiliation rows list creators/contributors, so link people to an ORCID
+  // search and organizations to a ROR search (the list can mix both); affiliation-identifier,
+  // funder, and publisher rows always link to a ROR search (RORs identify organizations in all
+  // three roles).
+  const orcidUrl = n => `https://orcid.org/orcid-search/search?searchQuery=${encodeURIComponent(n)}`;
+  const rorUrl = n => `https://ror.org/search?query=${encodeURIComponent(n)}`;
+  const linkFor = e => {
+    if (c.kind === 'nameId' || c.kind === 'aff') return e.org
+      ? { url: rorUrl(e.name), title: 'Search ROR for this organization' }
+      : { url: orcidUrl(e.name), title: 'Search ORCID for this name' };
+    if (c.kind === 'affId' || c.kind === 'funder' || c.kind === 'publisher')
+      return { url: rorUrl(e.name), title: `Search ROR for this ${c.entity.toLowerCase()}` };
+    return null;
+  };
+  const nameCell = e => { const l = linkFor(e); return l
+    ? `<a href="${escAttr(l.url)}" target="_blank" rel="noopener" title="${l.title}">${escHtml(e.name)}</a>`
+    : escHtml(e.name); };
+  const affCell = e => {
+    if (!e.affs.length) return '<span style="color:#9aa0ab">—</span>';
+    const parts = e.affs.map(a => {
+      const yrs = a.y0 != null ? ` (${a.y0}${a.y1 !== a.y0 ? '–' + a.y1 : ''})` : '';
+      const ror = a.ids.length ? ` <a href="${escAttr(a.ids[0])}" target="_blank" rel="noopener" title="${escAttr(a.ids[0])}" style="text-decoration:none">✓</a>` : '';
+      return `${escHtml(a.name)} ×${a.n}${yrs}${ror}`;
+    });
+    const flag = e.variants ? ' <span class="qw-tag" title="Two or more of these strings may be the same institution (shared ROR or matching normalized name) — counts are kept separate">variants?</span>' : '';
+    return parts.join(' · ') + flag;
+  };
+  $('cd-body').innerHTML = entries.length === 0
+    ? '<div style="padding:1rem;color:#6b7280;font-size:.8rem">No items found in the analyzed sample.</div>'
+    : `<table class="cd-table"><thead><tr><th>${escHtml(c.entity)}</th>${c.kind === 'aff' ? '<th title="Each distinct affiliation string (never fuzzy-merged), its occurrence count and publication-year range. Strings sharing a ROR are one institution.">Affiliations (years)</th>' : ''}<th class="num">Occurrences</th><th class="num">${c.kind === 'aff' ? 'Affiliated' : 'Identified'}</th><th class="num" title="Records where this ${escAttr(ent)} occurs WITHOUT its ${c.kind === 'aff' ? 'affiliation' : 'identifier'} — the records to find and fix">To fix</th><th class="num">%</th></tr></thead><tbody>`
+      + entries.map((e, ei) => `<tr class="${rowCls(e)}"><td class="val">${nameCell(e)}${c.kind === 'aff' ? (isQw(e) && e.inst === 1 ? ' <span class="qw-tag" title="One institution, affiliation missing in some occurrences — safe to propagate to the records without it">single</span>' : isQw(e) ? ' <span class="qw-tag" style="background:#f4d7d0;color:#8a3a2a">review</span>' : '') : (isQw(e) ? ' <span class="qw-tag">quick win</span>' : '')}</td>`
+        + (c.kind === 'aff' ? `<td class="val" style="font-size:.72rem">${affCell(e)}</td>` : '')
+        + `<td class="num">${e.docs.length ? `<a class="dup-doc-link" data-ei="${ei}" title="List the DOIs where this ${escAttr(ent)} occurs">${e.occ.toLocaleString()}</a>` : e.occ.toLocaleString()}</td>`
+        + `<td class="num">${e.idd.length ? `<a class="dup-doc-link" data-id="${ei}" title="List the records where this ${escAttr(ent)} occurs WITH its identifier">${e.id.toLocaleString()}</a>` : e.id.toLocaleString()}</td>`
+        + `<td class="num">${e.fix.length ? `<a class="dup-doc-link" data-fix="${ei}" title="List the records where this ${escAttr(ent)} occurs without its identifier — the ones to fix">${e.fix.length.toLocaleString()}</a>` : '—'}</td>`
+        + `<td class="num ${cls(e)}">${(e.pct*100).toFixed(0)}%</td></tr>`).join('')
+      + '</tbody></table>';
+  $('cd-body').querySelectorAll('.dup-doc-link[data-ei]').forEach(el => el.addEventListener('click', () => {
+    const e = connDetailState.entries[+el.dataset.ei];
+    openDocsModal(e.name, e.docs, `${c.group} · ${c.label.split(' (')[0]}`);
+  }));
+  $('cd-body').querySelectorAll('.dup-doc-link[data-id]').forEach(el => el.addEventListener('click', () => {
+    const e = connDetailState.entries[+el.dataset.id];
+    openDocsModal(e.name, e.idd, `${c.group} · ${c.label.split(' (')[0]} · records with identifier`);
+  }));
+  $('cd-body').querySelectorAll('.dup-doc-link[data-fix]').forEach(el => el.addEventListener('click', () => {
+    const e = connDetailState.entries[+el.dataset.fix];
+    openDocsModal(e.name, e.fix, `${c.group} · ${c.label.split(' (')[0]} · records to fix (no identifier)`);
+  }));
+  $('cd-modal').style.display = 'flex';
+}
+function closeConnDetail(){ $('cd-modal').style.display = 'none'; connDetailState = null; }
+function connDetailFilename(ext){
+  const safeId = (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_');
+  const tag = `${connDetailState.c.group}_${connDetailState.c.label.split(' (')[0]}`.replace(/[^A-Za-z0-9._-]+/g, '_');
+  return `${safeId}_${tag}_connectivity.${ext}`;
+}
+function connDetailDownloadCsv(){
+  if (!connDetailState) return;
+  const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const isAff = connDetailState.c.kind === 'aff';
+  const affTxt = e => e.affs.map(a => `${a.name} x${a.n}${a.y0 != null ? ` (${a.y0}${a.y1 !== a.y0 ? '-' + a.y1 : ''})` : ''}${a.ids.length ? ` [${a.ids[0]}]` : ''}`).join('; ');
+  const head = [connDetailState.c.entity, ...(isAff ? ['DistinctAffiliations', 'DistinctInstitutions', 'Affiliations'] : []), 'Occurrences', isAff ? 'Affiliated' : 'Identified', 'RecordsToFix', 'Percent'];
+  const body = [head, ...connDetailState.entries.map(e => [csv(e.name), ...(isAff ? [e.affs.length, e.inst, csv(affTxt(e))] : []), e.occ, e.id, e.fix.length, (e.pct*100).toFixed(0)])].map(r => r.join(',')).join('\r\n') + '\r\n';
+  const url = URL.createObjectURL(new Blob([body], { type: 'text/csv' }));
+  const a = document.createElement('a'); a.href = url; a.download = connDetailFilename('csv');
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+async function connDetailCopy(){
+  if (!connDetailState) return;
+  const tsv = [`${connDetailState.c.entity}\tOccurrences\tIdentified\tRecordsToFix\tPercent`,
+    ...connDetailState.entries.map(e => `${String(e.name).replace(/[\t\n\r]/g, ' ')}\t${e.occ}\t${e.id}\t${e.fix.length}\t${(e.pct*100).toFixed(0)}`)].join('\n');
+  const btn = $('cd-copy');
+  try { await navigator.clipboard.writeText(tsv); btn.textContent = '✓ Copied'; }
+  catch (e){ btn.textContent = 'Copy failed'; }
+  setTimeout(() => { btn.textContent = '⧉ Copy'; }, 1600);
+}
+
+/* ---------- reports (JSON + HTML) and PNG export ---------- */
+function nowStamp(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}`; }
+function safeRepoId(){ return (lastRun.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_'); }
+function triggerDownload(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function runMeta(){
+  const analyzed  = lastRun.records.length;
+  const repoTotal = (lastRun.repoTotal != null) ? lastRun.repoTotal : analyzed;
+  const sampling  = (repoTotal > analyzed) ? (lastRun.random ? 'random sample' : 'sequential sample') : 'all records';
+  return { analyzed, repoTotal, sampling };
+}
+// Split a connector's distinct entities into complete / partial / missing name lists (worst lists matter most).
+function connEntityLists(res){
+  const complete=[], partial=[], missing=[];
+  if (res.detail) for (const [name, e] of res.detail){
+    if (e.id === 0) missing.push(name);
+    else if (e.id >= e.occ) complete.push(name);
+    else partial.push(name);
+  }
+  const byName = (a,b) => String(a).localeCompare(String(b));
+  return { complete: complete.sort(byName), partial: partial.sort(byName), missing: missing.sort(byName) };
+}
+
+/* JSON report: { repository, connectors }. Mirrors completeness.html's shape (no FAIR/Projects totals —
+   connectivity has no headline index). Entity name lists are joined with "; " because names commonly
+   contain commas (e.g. "University of Technology, Sydney"). */
+function buildConnReport(){
+  const round = x => Math.round(x*10000)/10000;
+  const { analyzed, repoTotal, sampling } = runMeta();
+  const SEP = '; ';
+  const connectors = lastRun.results.map(res => {
+    const lists = connEntityLists(res);
+    return {
+      group: res.group,
+      connector: res.label,
+      entity: res.entity,
+      distinctEntities: res.total,
+      complete: res.complete,
+      partial: res.partial,
+      missing: res.missing,
+      occurrences: res.items,
+      identified: res.identified,
+      connectivity: round(res.overall),
+      quickWins: res.quickWins,
+      completeList: lists.complete.join(SEP),
+      partialList: lists.partial.join(SEP),
+      missingList: lists.missing.join(SEP)
+    };
+  });
+  const dup = lastRun.duplicates || findDuplicates(lastRun.records, dupThreshold());
+  const serializeClusters = arr => arr.map(c => ({
+    canonical: c.canonical, confidence: c.confidence, basis: c.basis, conflict: !!c.conflict,
+    totalOccurrences: c.totalOcc, identifiedOccurrences: c.totalId, propagatable: c.propagatable,
+    variants: c.variants.map(v => ({ name: v.name, occurrences: v.occ, identified: v.id, sources: v.sources, identifier: v.identifier, dois: (v.docs || []).map(d => d.doi) }))
+  }));
+  return {
+    repository: {
+      id:                lastRun.clientId,
+      name:              lastRun.repoName || lastRun.clientId,
+      dateTime:          nowStamp(),
+      records:           analyzed,
+      totalInRepository: repoTotal,
+      sampling,
+      resourceType:      lastRun.resourceTypeId || '',
+      query:             lastRun.query || ''
+    },
+    connectors,
+    potentialDuplicates: {
+      threshold:    dup.threshold,
+      people:       serializeClusters(dup.people),
+      affiliations: serializeClusters(dup.affiliations),
+      rights:       serializeClusters(dup.rights)
+    }
+  };
+}
+function downloadConnReport(){
+  if (!lastRun){ setStatus('Run an exploration first, then download the report.', true); return; }
+  triggerDownload(new Blob([JSON.stringify(buildConnReport(), null, 2)], { type:'application/json' }),
+    `${safeRepoId()}_connectivityReport__${nowStamp()}.json`);
+}
+
+/* Self-contained HTML report: the grouped bars (print-friendly) + a per-group stats table.
+   Full entity name lists live in the JSON report; here we keep it to visuals + counts. */
+function buildConnReportHtml(){
+  const created = nowStamp();
+  const d = new Date();
+  const { analyzed, repoTotal, sampling } = runMeta();
+  const filtered = !!(lastRun.resourceTypeId || lastRun.query);
+  const pct = x => `${(x*100).toFixed(0)}%`;
+  const seg = (cls, w) => w > 0 ? `<span class="seg ${cls}" style="width:${w.toFixed(1)}%"></span>` : '';
+  // group the flat results list
+  const groups = [];
+  for (const res of lastRun.results){
+    let g = groups.find(x => x.name === res.group);
+    if (!g){ g = { name: res.group, items: [] }; groups.push(g); }
+    g.items.push(res);
+  }
+  const groupBlock = g => {
+    const bars = g.items.map(res => {
+      const ent = res.entity.toLowerCase();
+      if (res.total === 0)
+        return `<div class="rrow"><div class="rlabel">${escHtml(res.label)} <span class="rmeta">not present in any analyzed record</span></div><div class="rempty">— no ${escHtml(ent)}s in the analyzed sample —</div></div>`;
+      const c = res.complete/res.total*100, p = res.partial/res.total*100, m = res.missing/res.total*100;
+      return `<div class="rrow">
+        <div class="rlabel">${escHtml(res.label)} <span class="rmeta">${res.total.toLocaleString()} distinct ${escHtml(ent)}${res.total===1?'':'s'} · ${res.items.toLocaleString()} occurrence${res.items===1?'':'s'} · ${res.identified.toLocaleString()} ${res.kind==='aff' ? 'affiliated' : 'identified'} — <b>${pct(res.overall)}</b>${res.quickWins>0?` · <b class="qw">${res.quickWins.toLocaleString()} quick win${res.quickWins===1?'':'s'}</b>`:''}</span></div>
+        <div class="rbar">${seg('green',c)}${seg('yellow',p)}${seg('red',m)}</div>
+      </div>`;
+    }).join('');
+    const trows = g.items.filter(r => r.total > 0).map(res => `<tr>
+        <td>${escHtml(res.label)}</td>
+        <td class="num">${res.total.toLocaleString()}</td>
+        <td class="num gc">${res.complete.toLocaleString()}</td>
+        <td class="num ac">${res.partial.toLocaleString()}</td>
+        <td class="num rc">${res.missing.toLocaleString()}</td>
+        <td class="num">${pct(res.overall)}</td>
+        <td class="num qw">${res.quickWins ? res.quickWins.toLocaleString() : '—'}</td>
+      </tr>`).join('');
+    return `<section class="grp">
+      <h2>${escHtml(g.name)}</h2>
+      ${bars}
+      <table class="stats"><thead><tr><th>Connector</th><th class="num">Distinct</th><th class="num">Complete</th><th class="num">Some</th><th class="num">None</th><th class="num">Connectivity</th><th class="num">Quick wins</th></tr></thead><tbody>${trows}</tbody></table>
+    </section>`;
+  };
+  const filterParts = [];
+  if (lastRun.resourceTypeId) filterParts.push(`resource type: <b>${escHtml(lastRun.resourceTypeId)}</b>`);
+  if (lastRun.query) filterParts.push(`query: <b>${escHtml(lastRun.query)}</b>`);
+  const filterLine = filterParts.length ? `<div class="meta-row">Filter — ${filterParts.join(' · ')}</div>` : '';
+  const repoLine = `${repoTotal.toLocaleString()} ${filtered ? 'matching' : 'in selection'} · ${analyzed.toLocaleString()} analyzed · ${sampling}`;
+  const css = `
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#1f2330;margin:0 auto;padding:2rem;max-width:1000px;line-height:1.5}
+    h1{font-size:1.5rem;color:#673289;margin:0 0 .25rem}
+    h2{font-size:1.05rem;color:#673289;border-bottom:1px solid #e6e3ec;padding-bottom:.3rem;margin:1.6rem 0 .9rem;text-transform:uppercase;letter-spacing:.03em;font-size:.85rem}
+    .report-head{border-bottom:2px solid #673289;padding-bottom:1rem;margin-bottom:1rem}
+    .meta-row{font-size:.82rem;color:#4b4f5e;margin-top:.2rem}
+    .meta-row .id{font-family:'IBM Plex Mono',monospace;font-size:.75rem;color:#6b7280}
+    .legend{display:flex;gap:1.3rem;flex-wrap:wrap;font-size:.74rem;color:#6b7280;margin:.9rem 0 0}
+    .legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:.4rem;vertical-align:middle}
+    section.grp{page-break-inside:auto}
+    .rrow{margin:.6rem 0;page-break-inside:avoid;break-inside:avoid}
+    .rlabel{font-size:.82rem;font-weight:500;margin-bottom:.28rem}
+    .rmeta{font-size:.72rem;color:#6b7280;font-weight:400}
+    .rmeta b{color:#673289} .rmeta b.qw{color:#3a9d6e}
+    .rbar{display:flex;height:18px;border-radius:5px;overflow:hidden;background:#eef0f4}
+    .rbar .seg{height:100%}
+    .seg.green{background:#3a9d6e}.seg.yellow{background:#d4910b}.seg.red{background:#c0392b}
+    .rempty{font-size:.76rem;color:#6b7280;font-style:italic}
+    table.stats{border-collapse:collapse;width:100%;font-size:.76rem;margin:.9rem 0 .4rem;page-break-inside:avoid}
+    table.stats th,table.stats td{text-align:left;padding:.3rem .45rem;border-bottom:1px solid #f0eef5}
+    table.stats th{color:#6b7280;font-weight:600;font-size:.66rem;text-transform:uppercase;letter-spacing:.03em}
+    td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+    td.gc{color:#3a9d6e}td.ac{color:#d4910b}td.rc{color:#c0392b}td.qw{color:#3a9d6e}
+    footer{margin-top:2rem;font-size:.72rem;color:#6b7280;border-top:1px solid #e6e3ec;padding-top:.8rem}
+    .dups{margin-top:1.6rem;page-break-inside:auto}
+    .dups h3{font-size:.92rem;color:#1f2330;margin:1rem 0 .4rem}
+    .dups-sub{font-size:.72rem;font-weight:400;color:#6b7280}
+    .dups-note{font-weight:400;text-transform:none;letter-spacing:0;color:#6b7280;font-size:.7rem}
+    .dups-empty{font-size:.78rem;color:#6b7280;font-style:italic;margin:.2rem 0 .6rem}
+    @media print{body{padding:0} .topbar-links,#analytics-banner{display:none !important}}
+  `;
+  return `<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<title>Connectivity Report: ${escHtml(lastRun.repoName)} (${escHtml(lastRun.clientId)})</title>
+<style>${css}</style></head>
+<body>
+  <div class="report-head">
+    <h1>Identifier Connectivity Report</h1>
+    <div class="meta-row"><a href="${escAttr(location.href)}" style="color:#9167b0;text-decoration:none;font-size:.78rem">Generated by Metadata Game Changers ↗</a></div>
+    <div class="meta-row"><b>${escHtml(lastRun.repoName)}</b> <span class="id">${escHtml(lastRun.clientId)}</span></div>
+    <div class="meta-row">${repoLine} · ${d.toISOString()}</div>
+    ${filterLine}
+    <div class="legend">
+      <span><i style="background:#3a9d6e"></i>Complete — identified in every occurrence</span>
+      <span><i style="background:#d4910b"></i>Some — identified in some occurrences</span>
+      <span><i style="background:#c0392b"></i>None — never identified</span>
+    </div>
+  </div>
+  ${groups.map(groupBlock).join('')}
+  ${dupReportSection()}
+  <footer>
+    <p>Connectivity = the share of entities that carry the identifier that could connect them. The bar counts distinct entities (complete / some / none identified); the percentage is occurrence-based (identified occurrences ÷ all occurrences). "Quick wins" are known identifiers that could be copied to the records that are missing them.</p>
+    <p>Generated by the Metadata Game Changers Crossref Connectivity tool against live Crossref data (api.crossref.org). Report created ${created} © by Metadata Game Changers is licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a></p>
+  </footer>
+</body></html>`;
+}
+// Compact "Potential duplicates" section for the shareable HTML report (counts + per-pool table).
+function dupReportSection(){
+  const dup = lastRun.duplicates || findDuplicates(lastRun.records, dupThreshold());
+  const confLabel = c => c.confidence === 'conflict' ? '⚠ Shared id · diff names' : c.confidence === 'high' ? 'High · identifier' : 'Review · fuzzy';
+  const pool = (title, clusters) => {
+    const hi = clusters.filter(c => c.confidence === 'high').length;
+    const cf = clusters.filter(c => c.confidence === 'conflict').length;
+    const tags = [hi ? `${hi} identifier-confirmed` : '', cf ? `${cf} shared-id conflict${cf === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · ');
+    const sub = `${clusters.length} ${clusters.length === 1 ? 'cluster' : 'clusters'}${tags ? ` · ${tags}` : ''}`;
+    if (!clusters.length) return `<h3>${escHtml(title)} <span class="dups-sub">${sub}</span></h3><p class="dups-empty">None found at the “${escHtml(dup.threshold)}” match level.</p>`;
+    const rows = clusters.map(c => `<tr><td>${escHtml(c.canonical)}</td><td class="num">${c.variants.length}</td><td>${confLabel(c)}</td><td class="num">${c.totalOcc.toLocaleString()}</td><td class="num">${c.propagatable ? c.propagatable.toLocaleString() : '—'}</td></tr>`).join('');
+    return `<h3>${escHtml(title)} <span class="dups-sub">${sub}</span></h3>
+      <table class="stats"><thead><tr><th>Canonical</th><th class="num">Spellings</th><th>Confidence</th><th class="num">Occurrences</th><th class="num">Can copy</th></tr></thead><tbody>${rows}</tbody></table>`;
+  };
+  return `<section class="dups">
+    <h2>Potential duplicates <span class="dups-note">advisory — does not affect the bars above</span></h2>
+    ${pool('People (authors + editors)', dup.people)}
+    ${pool('Affiliations', dup.affiliations)}
+    ${pool('Rights statements', dup.rights)}
+  </section>`;
+}
+function downloadConnReportHtml(){
+  if (!lastRun){ setStatus('Run an exploration first, then download the report.', true); return; }
+  triggerDownload(new Blob([buildConnReportHtml()], { type:'text/html' }),
+    `${safeRepoId()}_connectivityReport__${nowStamp()}.html`);
+}
+
+/* One-row CSV summary: repository id, datetime, records analyzed, each connector's connectivity
+   (0–1, 4 dp, in card order) and the total quick wins. Easy to append across repositories. */
+function buildConnSummaryCsv(){
+  const round = x => Math.round(x*10000)/10000;
+  const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const shortLabel = res => `${res.group}: ${res.label.split(' (')[0]}`;
+  const totalQuickWins = lastRun.results.reduce((s, res) => s + res.quickWins, 0);
+  const headers = ['Repository_ID', 'DateTime', 'Records', ...lastRun.results.map(shortLabel), 'Total_Quick_Wins'];
+  const row = [
+    lastRun.clientId, nowStamp(), lastRun.records.length,
+    ...lastRun.results.map(res => res.total ? round(res.overall) : ''),
+    totalQuickWins
+  ];
+  return headers.map(csv).join(',') + '\r\n' + row.map(csv).join(',') + '\r\n';
+}
+function downloadConnSummary(){
+  if (!lastRun){ setStatus('Run an exploration first, then download the summary.', true); return; }
+  triggerDownload(new Blob([buildConnSummaryCsv()], { type:'text/csv' }),
+    `${safeRepoId()}_connectivitySummary__${nowStamp()}.csv`);
+}
+
+/* Raw metadata: the fetched works, transformed to DataCite shape, as { data: [...] } — the shape
+   every MGC tool reads. Timestamp is YYYYMMDDThh (no dashes). */
+function downloadConnMetadata(){
+  if (!lastRun){ setStatus('Run an exploration first, then download the metadata.', true); return; }
+  const d = new Date(); const p = n => String(n).padStart(2, '0');
+  const stamp = `${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}T${p(d.getHours())}`;
+  triggerDownload(new Blob([JSON.stringify({ data: lastRun.records }, null, 2)], { type:'application/json' }),
+    `${safeRepoId()}__${stamp}.json`);
+}
+
+/* PNG of the connectivity bars — drawn directly to a canvas (no external dependency), so the visual
+   can be dropped into slides/docs. Mirrors the on-screen grouping, labels, meta line and legend. */
+function roundRectPath(ctx, x, y, w, h, r){
+  r = Math.min(r, w/2, h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.arcTo(x+w, y,   x+w, y+h, r);
+  ctx.arcTo(x+w, y+h, x,   y+h, r);
+  ctx.arcTo(x,   y+h, x,   y,   r);
+  ctx.arcTo(x,   y,   x+w, y,   r);
+  ctx.closePath();
+}
+async function downloadConnPng(){
+  if (!lastRun){ setStatus('Run an exploration first, then download the bars.', true); return; }
+  try { if (document.fonts && document.fonts.ready) await document.fonts.ready; } catch {}
+  const C = { ink:'#1f2330', muted:'#6b7280', accentDk:'#673289', line:'#e6e3ec',
+              track:'#eef0f4', green:'#3a9d6e', amber:'#d4910b', red:'#c0392b' };
+  const { analyzed, repoTotal, sampling } = runMeta();
+  const filtered = !!(lastRun.resourceTypeId || lastRun.query);
+  const groups = [];
+  for (const res of lastRun.results){
+    let g = groups.find(x => x.name === res.group);
+    if (!g){ g = { name: res.group, items: [] }; groups.push(g); }
+    g.items.push(res);
+  }
+  const scale = 2, W = 940, padX = 36;
+  const headH = 96, legendH = 30, footH = 40, groupH = 32, rowH = 56, barH = 16;
+  let H = 24 + headH + legendH;
+  for (const g of groups) H += groupH + g.items.length * rowH;
+  H += footH + 24;
+
+  const cv = document.createElement('canvas');
+  cv.width = W * scale; cv.height = H * scale;
+  const ctx = cv.getContext('2d'); ctx.scale(scale, scale);
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  const FONT = "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif";
+  const MONO = "'IBM Plex Mono', ui-monospace, monospace";
+  const ellip = (text, font, maxW) => {
+    ctx.font = font;
+    if (ctx.measureText(text).width <= maxW) return text;
+    let t = text;
+    while (t.length > 1 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+    return t + '…';
+  };
+  let y = 24;
+  // ── header ──
+  ctx.fillStyle = C.accentDk; ctx.font = `700 22px ${FONT}`; ctx.textAlign = 'left';
+  ctx.fillText(ellip(lastRun.repoName || lastRun.clientId, `700 22px ${FONT}`, W - padX*2), padX, y + 22);
+  ctx.fillStyle = C.muted; ctx.font = `12px ${MONO}`;
+  ctx.fillText(lastRun.clientId, padX, y + 42);
+  ctx.font = `13px ${FONT}`;
+  const sub = `${analyzed.toLocaleString()} of ${repoTotal.toLocaleString()} ${filtered ? 'matching' : 'records'} · ${sampling} · ${nowStamp()}`;
+  ctx.fillText(sub, padX, y + 62);
+  ctx.fillStyle = C.accentDk; ctx.font = `600 13px ${FONT}`;
+  ctx.fillText('Identifier connectivity', padX, y + 84);
+  ctx.strokeStyle = C.line; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(padX, y + headH - 4); ctx.lineTo(W - padX, y + headH - 4); ctx.stroke();
+  y += headH;
+  // ── legend ──
+  const legend = [['Complete', C.green], ['Some', C.amber], ['None', C.red]];
+  let lx = padX;
+  ctx.font = `12px ${FONT}`;
+  for (const [text, col] of legend){
+    ctx.fillStyle = col; roundRectPath(ctx, lx, y + 4, 11, 11, 2); ctx.fill();
+    ctx.fillStyle = C.muted; ctx.textAlign = 'left'; ctx.fillText(text, lx + 17, y + 14);
+    lx += 17 + ctx.measureText(text).width + 22;
+  }
+  y += legendH;
+  // ── groups & bars ──
+  for (const g of groups){
+    ctx.fillStyle = C.muted; ctx.font = `600 11px ${FONT}`; ctx.textAlign = 'left';
+    ctx.fillText(g.name.toUpperCase(), padX, y + 16);
+    ctx.strokeStyle = C.line; ctx.beginPath(); ctx.moveTo(padX, y + 24); ctx.lineTo(W - padX, y + 24); ctx.stroke();
+    y += groupH;
+    for (const res of g.items){
+      const ent = res.entity.toLowerCase();
+      const barW = W - padX*2;
+      // meta line (right) + label (left), label truncates to leave room for meta
+      const metaFont = `11px ${FONT}`;
+      const meta = res.total === 0
+        ? 'not present in any analyzed record'
+        : `${(res.overall*100).toFixed(0)}% · ${res.total.toLocaleString()} ${ent}${res.total===1?'':'s'}${res.quickWins>0?` · ${res.quickWins.toLocaleString()} quick win${res.quickWins===1?'':'s'}`:''}`;
+      ctx.font = metaFont; const metaW = ctx.measureText(meta).width;
+      ctx.fillStyle = C.ink; ctx.font = `500 13px ${FONT}`; ctx.textAlign = 'left';
+      ctx.fillText(ellip(res.label, `500 13px ${FONT}`, barW - metaW - 14), padX, y + 12);
+      ctx.fillStyle = res.quickWins > 0 ? C.green : C.muted; ctx.font = metaFont; ctx.textAlign = 'right';
+      ctx.fillText(meta, W - padX, y + 12);
+      // bar
+      const by = y + 22;
+      if (res.total === 0){
+        ctx.fillStyle = C.track; roundRectPath(ctx, padX, by, barW, barH, 5); ctx.fill();
+        ctx.fillStyle = C.muted; ctx.font = `italic 11px ${FONT}`; ctx.textAlign = 'left';
+        ctx.fillText(`— no ${ent}s in the analyzed sample —`, padX + 8, by + 12);
+      } else {
+        ctx.save();
+        roundRectPath(ctx, padX, by, barW, barH, 5); ctx.fillStyle = C.track; ctx.fill(); ctx.clip();
+        let sx = padX;
+        const widths = [[res.complete, C.green], [res.partial, C.amber], [res.missing, C.red]];
+        for (const [n, col] of widths){
+          const w = n / res.total * barW;
+          if (w > 0){ ctx.fillStyle = col; ctx.fillRect(sx, by, w + 0.5, barH); sx += w; }
+        }
+        ctx.restore();
+      }
+      ctx.textAlign = 'left';
+      y += rowH;
+    }
+  }
+  // ── footer ──
+  ctx.strokeStyle = C.line; ctx.beginPath(); ctx.moveTo(padX, y + 6); ctx.lineTo(W - padX, y + 6); ctx.stroke();
+  ctx.fillStyle = C.muted; ctx.font = `11px ${FONT}`; ctx.textAlign = 'left';
+  ctx.fillText('Metadata Game Changers · Crossref identifier connectivity · live Crossref data', padX, y + 24);
+
+  cv.toBlob(blob => {
+    if (!blob){ setStatus('Could not render the PNG.', true); return; }
+    triggerDownload(blob, `${safeRepoId()}_connectivity__${nowStamp()}.png`);
+  }, 'image/png');
+}
+
+/* PDF report — drawn with jsPDF so the bars are real vector fills (they survive where browser
+   print drops CSS backgrounds), and each bar row is placed atomically so it never splits a page. */
+function downloadConnPdf(){
+  if (!lastRun){ setStatus('Run an exploration first, then download the report.', true); return; }
+  const JsPDF = window.jspdf && window.jspdf.jsPDF;
+  if (!JsPDF){ setStatus('PDF library not loaded yet — check your connection and try again.', true); return; }
+  const C = { ink:[31,35,48], muted:[107,114,128], accentDk:[103,50,137], accent:[145,103,176],
+              line:[230,227,236], track:[238,240,244], green:[58,157,110], amber:[212,145,11], red:[192,57,43] };
+  const { analyzed, repoTotal, sampling } = runMeta();
+  const filtered = !!(lastRun.resourceTypeId || lastRun.query);
+  const groups = [];
+  for (const res of lastRun.results){
+    let g = groups.find(x => x.name === res.group);
+    if (!g){ g = { name: res.group, items: [] }; groups.push(g); }
+    g.items.push(res);
+  }
+  const doc = new JsPDF({ unit:'pt', format:'letter', compress:true });
+  const pageW = doc.internal.pageSize.getWidth(), pageH = doc.internal.pageSize.getHeight();
+  const margin = 40, x0 = margin, contentW = pageW - margin*2, barH = 12;
+  let y = margin;
+  const fill = c => doc.setFillColor(c[0],c[1],c[2]);
+  const ink  = c => doc.setTextColor(c[0],c[1],c[2]);
+  const draw = c => doc.setDrawColor(c[0],c[1],c[2]);
+  const ensure = h => { if (y + h > pageH - margin){ doc.addPage(); y = margin; } };
+  // jsPDF's built-in Helvetica is WinAnsi only — map common typographic chars so they render (and aren't hex-encoded)
+  const T = s => String(s).replace(/[↗→←↘]/g,'').replace(/[—–]/g,'-').replace(/[‘’]/g,"'").replace(/[“”]/g,'"').replace(/…/g,'...').trim();
+  const ellip = (s, maxW) => { s = T(s); if (doc.getTextWidth(s) <= maxW) return s;
+    while (s.length > 1 && doc.getTextWidth(s + '…') > maxW) s = s.slice(0, -1); return s + '…'; };
+
+  // ── header ──
+  doc.setFont('helvetica','bold'); doc.setFontSize(16); ink(C.accentDk);
+  doc.text(ellip(lastRun.repoName || lastRun.clientId, contentW), x0, y + 14);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); ink(C.muted);
+  doc.text(T(lastRun.clientId), x0, y + 29);
+  doc.setFontSize(9.5);
+  doc.text(T(`${analyzed.toLocaleString()} of ${repoTotal.toLocaleString()} ${filtered?'matching':'records'} · ${sampling} · ${nowStamp()}`), x0, y + 43);
+  doc.setFontSize(8.5); ink(C.accent);
+  doc.textWithLink('Generated by Metadata Game Changers »', x0, y + 56, { url: location.href });
+  doc.setFont('helvetica','bold'); doc.setFontSize(11); ink(C.accentDk);
+  doc.text('Identifier connectivity', x0, y + 72);
+  draw(C.line); doc.setLineWidth(0.7); doc.line(x0, y + 80, x0 + contentW, y + 80);
+  y += 90;
+
+  // ── legend ──
+  doc.setFont('helvetica','normal'); doc.setFontSize(9);
+  let lx = x0;
+  for (const [text, col] of [['Complete',C.green],['Some',C.amber],['None',C.red]]){
+    fill(col); doc.roundedRect(lx, y - 7, 8, 8, 1.5, 1.5, 'F');
+    ink(C.muted); doc.text(text, lx + 12, y);
+    lx += 12 + doc.getTextWidth(text) + 18;
+  }
+  y += 16;
+
+  // ── groups & bars (each row atomic) ──
+  for (const g of groups){
+    ensure(28);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); ink(C.muted);
+    doc.text(g.name.toUpperCase(), x0, y + 8);
+    draw(C.line); doc.line(x0, y + 13, x0 + contentW, y + 13);
+    y += 22;
+    for (const res of g.items){
+      const rowH = 34;
+      ensure(rowH);
+      const ent = res.entity.toLowerCase();
+      const meta = res.total === 0 ? 'not present in any analyzed record'
+        : `${(res.overall*100).toFixed(0)}% · ${res.total.toLocaleString()} ${ent}${res.total===1?'':'s'}${res.quickWins>0?` · ${res.quickWins.toLocaleString()} quick win${res.quickWins===1?'':'s'}`:''}`;
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+      const metaW = doc.getTextWidth(meta);
+      doc.setFontSize(10); ink(C.ink);
+      doc.text(ellip(res.label, contentW - metaW - 10), x0, y + 9);
+      doc.setFontSize(8.5); ink(res.quickWins > 0 ? C.green : C.muted);
+      doc.text(T(meta), x0 + contentW, y + 9, { align:'right' });
+      const by = y + 16;
+      fill(C.track); doc.roundedRect(x0, by, contentW, barH, 3, 3, 'F');
+      if (res.total === 0){
+        ink(C.muted); doc.setFont('helvetica','italic'); doc.setFontSize(8);
+        doc.text(T(`- no ${ent}s in the analyzed sample -`), x0 + 6, by + 8.5);
+        doc.setFont('helvetica','normal');
+      } else {
+        let sx = x0;
+        for (const [n, col] of [[res.complete,C.green],[res.partial,C.amber],[res.missing,C.red]]){
+          const w = n / res.total * contentW;
+          if (w > 0){ fill(col); doc.rect(sx, by, w + 0.4, barH, 'F'); sx += w; }
+        }
+      }
+      y += rowH;
+    }
+  }
+
+  // ── potential duplicates (advisory) — mirrors the panel / HTML report ──
+  const dup = lastRun.duplicates || findDuplicates(lastRun.records, dupThreshold());
+  const pools = [['People (authors + editors)', dup.people], ['Affiliations', dup.affiliations], ['Rights statements', dup.rights]];
+  if (pools.some(([, c]) => c.length)){
+    ensure(44);
+    y += 12;
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); ink(C.accentDk);
+    doc.text('Potential duplicates (advisory)', x0, y + 8);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); ink(C.muted);
+    doc.text(T('Likely-same entities under more than one spelling - does not affect the bars above.'), x0, y + 20);
+    y += 30;
+    const confLabel = c => c.confidence === 'conflict' ? 'shared id / different names' : c.confidence === 'high' ? 'identifier match' : 'fuzzy match';
+    for (const [title, clusters] of pools){
+      const hi = clusters.filter(c => c.confidence === 'high').length;
+      const cf = clusters.filter(c => c.confidence === 'conflict').length;
+      const tags = [hi ? `${hi} identifier-confirmed` : '', cf ? `${cf} shared-id conflict${cf===1?'':'s'}` : ''].filter(Boolean).join(' · ');
+      ensure(22);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.5); ink(C.muted);
+      doc.text(T(`${title.toUpperCase()} - ${clusters.length} ${clusters.length===1?'cluster':'clusters'}${tags?' · '+tags:''}`), x0, y + 8);
+      draw(C.line); doc.line(x0, y + 12, x0 + contentW, y + 12);
+      y += 18;
+      if (!clusters.length){
+        doc.setFont('helvetica','italic'); doc.setFontSize(8); ink(C.muted);
+        doc.text('none found at this match level', x0 + 4, y + 4); y += 16; continue;
+      }
+      for (const c of clusters){
+        ensure(13);
+        const meta = `${c.variants.length} spellings · ${confLabel(c)}${c.propagatable>0?` · ${c.propagatable.toLocaleString()} can copy`:''}`;
+        doc.setFont('helvetica','normal'); doc.setFontSize(8.5);
+        const metaW = doc.getTextWidth(T(meta));
+        ink(C.ink); doc.text(ellip(c.canonical, contentW - metaW - 12), x0, y + 7);
+        ink(c.confidence === 'conflict' ? C.red : C.muted); doc.setFontSize(8.5);
+        doc.text(T(meta), x0 + contentW, y + 7, { align:'right' });
+        y += 12;
+      }
+      y += 6;
+    }
+  }
+
+  // ── footer ──
+  ensure(30);
+  draw(C.line); doc.line(x0, y + 4, x0 + contentW, y + 4);
+  ink(C.muted); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+  doc.text('Metadata Game Changers · Crossref identifier connectivity · live Crossref data', x0, y + 18);
+
+  doc.save(`${safeRepoId()}_connectivityReport__${nowStamp()}.pdf`);
+}
+
+/* ---------- potential-duplicate detection (advisory; does NOT change the bars) ----------
+   Two signals, layered by confidence:
+   • identifier-anchored (high): distinct-name entities sharing an ORCID (people) or ROR
+     (affiliations) are the same — unioned regardless of threshold (~0 false positives).
+   • fuzzy (medium/review): remaining entities linked by normalized string similarity above a
+     tunable threshold. All advisory: the connectivity bars/percentages above are untouched. */
+const DUP_THRESHOLDS = { strict:{ jw:0.95, jac:0.80 }, balanced:{ jw:0.90, jac:0.60 }, loose:{ jw:0.85, jac:0.50 } };
+const AFFIL_STOP = new Set(['of','the','and','for','at','in','de','la','le','el','und','von','der','di','da','do','des','du','a','an','on']);
+const DUP_MAX_FUZZY = 4000;   // skip the O(n²)-within-block pass above this many entities (identifier-only)
+
+function stripDiacritics(s){ return String(s).normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+function normName(s){ return stripDiacritics(s).toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim(); }
+function normAffil(s){ return normName(s); }
+// "Last, First" → "First Last"; returns normalized token array (family token ends up last)
+function nameParts(raw){
+  raw = String(raw);
+  const s = raw.includes(',') ? (raw.split(',').slice(1).join(' ') + ' ' + raw.split(',')[0]) : raw;
+  return normName(s).split(' ').filter(Boolean);
+}
+// Matching key vs display: "https://orcid.org/0000-0003-3585-6733", "0000-0003-3585-6733" and
+// "0000000335856733" all share one key (alphanumerics only) but display the readable host-stripped form.
+function idKey(v){ return String(v).toLowerCase().replace(/^https?:\/\/[^/]+\//, '').replace(/[^a-z0-9]/g, ''); }
+function idDisplay(v){ return String(v).replace(/^https?:\/\/[^/]+\//, '').replace(/\/+$/, '').trim(); }
+
+function jaroWinkler(s1, s2){
+  if (s1 === s2) return 1;
+  const l1 = s1.length, l2 = s2.length;
+  if (!l1 || !l2) return 0;
+  const md = Math.max(0, Math.floor(Math.max(l1, l2) / 2) - 1);
+  const m1 = new Array(l1).fill(false), m2 = new Array(l2).fill(false);
+  let m = 0;
+  for (let i = 0; i < l1; i++){
+    const lo = Math.max(0, i - md), hi = Math.min(i + md + 1, l2);
+    for (let j = lo; j < hi; j++){ if (!m2[j] && s1[i] === s2[j]){ m1[i] = m2[j] = true; m++; break; } }
+  }
+  if (!m) return 0;
+  let t = 0, k = 0;
+  for (let i = 0; i < l1; i++){ if (m1[i]){ while (!m2[k]) k++; if (s1[i] !== s2[k]) t++; k++; } }
+  t /= 2;
+  const jaro = (m / l1 + m / l2 + (m - t) / m) / 3;
+  let p = 0; const maxP = Math.min(4, l1, l2);
+  while (p < maxP && s1[p] === s2[p]) p++;
+  return jaro + p * 0.1 * (1 - jaro);
+}
+function jaccard(a, b){
+  if (!a.length || !b.length) return 0;
+  const sb = new Set(b); let inter = 0;
+  for (const x of new Set(a)) if (sb.has(x)) inter++;
+  return inter / new Set([...a, ...b]).size;
+}
+// people: shared surname (equal or high JW) + compatible first given (full / initial / high JW)
+function givenCompat(ga, gb, jw){
+  if (!ga.length || !gb.length) return false;     // surname-only is too ambiguous to fuzzy-link
+  const a = ga[0], b = gb[0];
+  if (a === b) return true;
+  if (a.length === 1 || b.length === 1) return a[0] === b[0];
+  return jaroWinkler(a, b) >= jw;
+}
+function personSimilar(A, B, jw){
+  const sa = A.tokens[A.tokens.length - 1], sb = B.tokens[B.tokens.length - 1];
+  if (!sa || !sb) return false;
+  const surnameOk = sa === sb || (sa.length > 1 && sb.length > 1 && jaroWinkler(sa, sb) >= jw);
+  if (!surnameOk) return false;
+  return givenCompat(A.tokens.slice(0, -1), B.tokens.slice(0, -1), jw);
+}
+function affilSimilar(A, B, jw, jac){
+  return jaccard(A.tokenSet, B.tokenSet) >= jac || jaroWinkler(A.norm, B.norm) >= jw;
+}
+
+function makeUF(n){
+  const p = Array.from({ length: n }, (_, i) => i);
+  const find = i => { while (p[i] !== i){ p[i] = p[p[i]]; i = p[i]; } return i; };
+  return { find, union: (a, b) => { p[find(a)] = find(b); } };
+}
+// Pool people across creators + contributors (distinct by exact name, enriched with identifiers/sources).
+// The DOI and first title of a record — used to note which records a distinct entity appears in.
+function recDoi(r){ return (r && r.id) || (r && r.attributes && r.attributes.doi) || null; }
+function recTitle(r){ const t = r && r.attributes && Array.isArray(r.attributes.titles) && r.attributes.titles[0]; return (t && t.title) || '(untitled)'; }
+function noteDoc(e, r){ const doi = recDoi(r); if (doi && !e.docs.has(doi)) e.docs.set(doi, recTitle(r)); }
+// Records where the entity occurs WITHOUT its identifier — the ones to find and fix.
+function noteFixDoc(e, r){ if (!e.fixDocs) e.fixDocs = new Map(); const doi = recDoi(r); if (doi && !e.fixDocs.has(doi)) e.fixDocs.set(doi, recTitle(r)); }
+// Records where the entity occurs WITH its identifier — the complement of the fix list.
+function noteIdDoc(e, r){ if (!e.idDocs) e.idDocs = new Map(); const doi = recDoi(r); if (doi && !e.idDocs.has(doi)) e.idDocs.set(doi, recTitle(r)); }
+
+function collectPeople(records){
+  const map = new Map();
+  const add = (name, idvals, source, r) => {
+    if (!name) return;
+    let e = map.get(name);
+    if (!e){ e = { name, occ:0, id:0, ids:new Map(), sources:new Set(), docs:new Map() }; map.set(name, e); }
+    e.occ++; if (idvals.length){ e.id++; noteIdDoc(e, r); }
+    for (const v of idvals) e.ids.set(idKey(v), idDisplay(v));
+    e.sources.add(source); noteDoc(e, r);
+  };
+  for (const r of records){
+    for (const [source, key] of [['Creator','creators'], ['Contributor','contributors']]){
+      const arr = (r.attributes && Array.isArray(r.attributes[key])) ? r.attributes[key] : [];
+      for (const p of arr){
+        if (!p || typeof p !== 'object') continue;
+        const name = p.name || [p.givenName, p.familyName].filter(Boolean).join(' ');
+        if (!name) continue;
+        const idvals = (Array.isArray(p.nameIdentifiers) ? p.nameIdentifiers : [])
+          .map(n => n && n.nameIdentifier).filter(Boolean);
+        add(name, idvals, source, r);
+      }
+    }
+  }
+  return [...map.values()];
+}
+function collectAffiliations(records){
+  const map = new Map();
+  const add = (name, idval, source, r) => {
+    if (!name) return;
+    let e = map.get(name);
+    if (!e){ e = { name, occ:0, id:0, ids:new Map(), sources:new Set(), docs:new Map() }; map.set(name, e); }
+    e.occ++; if (idval){ e.id++; e.ids.set(idKey(idval), idDisplay(idval)); noteIdDoc(e, r); }
+    e.sources.add(source); noteDoc(e, r);
+  };
+  for (const r of records){
+    for (const [source, key] of [['Creator','creators'], ['Contributor','contributors']]){
+      const arr = (r.attributes && Array.isArray(r.attributes[key])) ? r.attributes[key] : [];
+      for (const p of arr){
+        if (!p || typeof p !== 'object') continue;
+        for (const a of (Array.isArray(p.affiliation) ? p.affiliation : [])){
+          if (a && a.name) add(a.name, a.affiliationIdentifier, source, r);
+        }
+      }
+    }
+  }
+  return [...map.values()];
+}
+// Pool distinct rights statements; their connecting identifiers are the rightsUri and rightsIdentifier
+// (e.g. an SPDX id). Keep the full URL in the match key (host included) — unlike ORCID/ROR the whole URI
+// is the identifier — so different rights schemes don't collide.
+// Dedup targets license *names* ("CC BY 4.0" vs "Creative Commons Attribution 4.0 International"),
+// so skip per-record copyright statements ("Copyright (c) 2025 …") and long free-text usage agreements —
+// those legitimately differ per record and aren't name variants of one license.
+function isLicenseLike(name){
+  if (!name || name.length > 120) return false;
+  return !/^\s*(copyright\b|\(c\)|\(p\)|©|all rights reserved)/i.test(name);
+}
+function collectRights(records){
+  const ridKey = v => String(v).toLowerCase().replace(/^https?:\/\//, '').replace(/[^a-z0-9]/g, '');
+  const ridDisplay = v => String(v).replace(/\/+$/, '').trim();
+  const map = new Map();
+  const add = (name, idvals, r) => {
+    if (!name || !isLicenseLike(name)) return;
+    let e = map.get(name);
+    if (!e){ e = { name, occ:0, id:0, ids:new Map(), sources:new Set(), docs:new Map() }; map.set(name, e); }
+    e.occ++; if (idvals.length){ e.id++; noteIdDoc(e, r); }
+    for (const v of idvals) e.ids.set(ridKey(v), ridDisplay(v));
+    noteDoc(e, r);
+  };
+  for (const r of records){
+    for (const x of ((r.attributes && Array.isArray(r.attributes.rightsList)) ? r.attributes.rightsList : [])){
+      if (!x || typeof x !== 'object') continue;
+      const name = x.rights || x.rightsUri || x.rightsIdentifier; if (!name) continue;
+      add(name, [x.rightsUri, x.rightsIdentifier].filter(Boolean), r);
+    }
+  }
+  return [...map.values()];
+}
+// Precompute the affiliation/rights matching fields: normalized form, token set, and a block key
+// (alphabetically-first content word, shared across abbreviation variants), ignoring stopwords.
+function prepTextEntity(e){
+  e.norm = normAffil(e.name);
+  e.tokenSet = [...new Set(e.norm.split(' ').filter(Boolean))];
+  const content = e.tokenSet.filter(t => t.length > 1 && !AFFIL_STOP.has(t)).sort();
+  e.block = ((content[0] || e.tokenSet.slice().sort()[0]) || '').slice(0, 3) || '#';
+}
+// Two entities whose identifier sets are both non-empty and share nothing are authoritatively
+// distinct (different ORCIDs/RORs/SPDX ids) — they must never be merged on name similarity alone.
+function idsDisjoint(a, b){
+  if (!a.ids.size || !b.ids.size) return false;
+  for (const k of a.ids.keys()) if (b.ids.has(k)) return false;
+  return true;
+}
+// Are all members of a cluster mutually linkable by name alone? (single component under `sim`)
+function nameCoherent(members, sim){
+  const k = members.length;
+  if (k < 2) return true;
+  const uf = makeUF(k);
+  for (let a = 0; a < k; a++) for (let b = a + 1; b < k; b++) if (sim(members[a], members[b])) uf.union(a, b);
+  const root = uf.find(0);
+  return members.every((_, i) => uf.find(i) === root);
+}
+// sim may be null — then clustering is identifier-anchored only (used for rights, where the SPDX id /
+// URI is the license's identity and name similarity is unreliable across CC-BY vs CC-BY-NC etc.).
+function clusterEntities(entities, sim){
+  const n = entities.length, uf = makeUF(n);
+  // 1) identifier-anchored unions (always)
+  const byId = new Map();
+  entities.forEach((e, i) => { for (const v of e.ids.keys()){ if (byId.has(v)) uf.union(i, byId.get(v)); else byId.set(v, i); } });
+  // 2) fuzzy unions within blocks (skipped when sim is null, or for very large entity counts)
+  if (sim && n <= DUP_MAX_FUZZY){
+    const blocks = new Map();
+    entities.forEach((e, i) => { const k = e.block || '#'; if (!blocks.has(k)) blocks.set(k, []); blocks.get(k).push(i); });
+    for (const idxs of blocks.values()){
+      for (let a = 0; a < idxs.length; a++) for (let b = a + 1; b < idxs.length; b++){
+        const i = idxs[a], j = idxs[b];
+        if (uf.find(i) === uf.find(j)) continue;
+        if (idsDisjoint(entities[i], entities[j])) continue;   // distinct identifiers ⇒ never fuzzy-merge
+        if (sim(entities[i], entities[j])) uf.union(i, j);
+      }
+    }
+  }
+  // 3) collect clusters of size >= 2
+  const groups = new Map();
+  entities.forEach((e, i) => { const r = uf.find(i); if (!groups.has(r)) groups.set(r, []); groups.get(r).push(e); });
+  const clusters = [];
+  for (const members of groups.values()){
+    if (members.length < 2) continue;
+    members.sort((a, b) => b.occ - a.occ || a.name.localeCompare(b.name));
+    const idCount = new Map();
+    members.forEach(m => { for (const v of m.ids.keys()) idCount.set(v, (idCount.get(v) || 0) + 1); });
+    const shared = [...idCount.values()].some(c => c >= 2);   // same identifier on ≥2 spellings
+    const conflict = sim ? (shared && !nameCoherent(members, sim)) : false;   // needs name similarity to judge
+    const totalOcc = members.reduce((s, m) => s + m.occ, 0);
+    const totalId  = members.reduce((s, m) => s + m.id, 0);
+    const canonical = members.reduce((best, m) => (m.occ > best.occ || (m.occ === best.occ && m.name.length > best.name.length)) ? m : best, members[0]);
+    clusters.push({
+      canonical: canonical.name,
+      confidence: conflict ? 'conflict' : (shared ? 'high' : 'medium'),
+      basis: shared ? 'identifier' : 'fuzzy',
+      conflict,
+      totalOcc, totalId,
+      propagatable: totalId > 0 ? totalOcc - totalId : 0,
+      variants: members.map(m => ({ name: m.name, occ: m.occ, id: m.id, sources: [...m.sources], identifier: [...m.ids.values()].join('; '),
+                                    docs: [...m.docs].map(([doi, title]) => ({ doi, title })),
+                                    idDocs: [...(m.idDocs || [])].map(([doi, title]) => ({ doi, title })) }))
+    });
+  }
+  clusters.sort((a, b) => a.canonical.localeCompare(b.canonical, undefined, { sensitivity:'base' }));   // A–Z by name, for findability
+  return clusters;
+}
+function findDuplicates(records, threshold){
+  const t = DUP_THRESHOLDS[threshold] || DUP_THRESHOLDS.balanced;
+  const people = collectPeople(records);
+  people.forEach(e => { e.tokens = nameParts(e.name); e.block = (e.tokens[e.tokens.length - 1] || '').slice(0, 1) || '#'; });
+  const affils = collectAffiliations(records); affils.forEach(prepTextEntity);
+  const rights = collectRights(records);   // identifier-anchored only — no name precompute needed
+  return {
+    threshold,
+    people:       clusterEntities(people, (a, b) => personSimilar(a, b, t.jw)),
+    affiliations: clusterEntities(affils, (a, b) => affilSimilar(a, b, t.jw, t.jac)),
+    rights:       clusterEntities(rights, null)
+  };
+}
+
+/* ---------- duplicates: render + export ---------- */
+let dupState = null;
+function dupThreshold(){ const el = $('dup-threshold'); return el ? el.value : 'balanced'; }
+function dupBadges(cl){
+  const conf = cl.confidence === 'conflict'
+    ? '<span class="dup-badge warn">⚠ shared identifier · different names</span>'
+    : cl.confidence === 'high'
+      ? '<span class="dup-badge hi">high · identifier match</span>'
+      : '<span class="dup-badge med">review · fuzzy match</span>';
+  const prop = cl.propagatable > 0 ? `<span class="dup-badge prop" title="Occurrences that could take an identifier already present on another spelling in this cluster — the count used by the Impact sort">${cl.propagatable.toLocaleString()} can copy</span>` : '';
+  return conf + prop;
+}
+// Render an identifier value as a link to its home page when recognizable (ORCID, ROR, a URL, or an SPDX id).
+function idLinkOne(v){
+  v = String(v).trim(); if (!v) return '';
+  const esc = escHtml(v), a = url => `<a href="${escAttr(url)}" target="_blank" rel="noopener">${esc}</a>`;
+  if (/^https?:\/\//i.test(v)) return a(v);
+  if (/^\d{4}-\d{4}-\d{4}-\d{3}[\dxX]$/.test(v)) return a('https://orcid.org/' + v);
+  if (/^0[a-hj-km-np-tv-z0-9]{6}\d{2}$/.test(v)) return a('https://ror.org/' + v);
+  if (v.length <= 40 && /^[a-z0-9][a-z0-9.+-]*$/i.test(v)) return a('https://spdx.org/licenses/' + v + '.html');  // SPDX-ish rights id
+  return esc;
+}
+function idHtml(joined){
+  const parts = String(joined || '').split(';').map(s => s.trim()).filter(Boolean).map(idLinkOne);
+  return parts.length ? parts.join('; ') : '—';
+}
+function dupClusterMarkup(cl, entLabel, pool, ci){
+  const rows = cl.variants.map((v, vi) =>
+    `<tr><td class="val">${escHtml(v.name)}</td>` +
+    `<td class="num">${v.docs && v.docs.length ? `<a class="dup-doc-link" data-set="docs" data-pool="${pool}" data-ci="${ci}" data-vi="${vi}" title="List the DOIs where this spelling occurs">${v.occ.toLocaleString()}</a>` : v.occ.toLocaleString()}</td>` +
+    `<td class="num">${v.idDocs && v.idDocs.length ? `<a class="dup-doc-link" data-set="idDocs" data-pool="${pool}" data-ci="${ci}" data-vi="${vi}" title="List the records where this spelling carries an identifier — inspect these for incorrect identifiers">${v.id.toLocaleString()}</a>` : v.id.toLocaleString()}</td>` +
+    `<td class="val">${escHtml(v.sources.join(', '))}</td><td class="val">${idHtml(v.identifier)}</td></tr>`).join('');
+  return `<details class="dup-cl"><summary><span class="dup-canon">${escHtml(cl.canonical)}</span> <span class="dup-count">${cl.variants.length} spellings · ${cl.totalOcc.toLocaleString()} occ</span> ${dupBadges(cl)}</summary>
+    <table class="cd-table"><thead><tr><th>${escHtml(entLabel)}</th><th class="num">Occurrences</th><th class="num">Identified</th><th>Source</th><th>Identifier</th></tr></thead><tbody>${rows}</tbody></table></details>`;
+}
+function dupSortMode(){ const el = $('dup-sort'); return el ? el.value : 'name'; }
+function sortClusters(clusters, mode){
+  if (mode === 'impact')   // biggest identifier-propagation opportunity first, then most widespread, then most spellings
+    clusters.sort((a, b) => b.propagatable - a.propagatable || b.totalOcc - a.totalOcc || b.variants.length - a.variants.length);
+  else                     // A–Z by name, for finding a specific entity
+    clusters.sort((a, b) => a.canonical.localeCompare(b.canonical, undefined, { sensitivity:'base' }));
+}
+function renderDuplicates(){   // recompute (initial run / threshold change), then render
+  if (!lastRun) return;
+  lastRun.duplicates = findDuplicates(lastRun.records, dupThreshold());
+  dupState = lastRun.duplicates;
+  renderDupBody();
+}
+function renderDupBody(){      // sort by the current toggle and build the DOM (no recompute — used on sort change)
+  if (!lastRun || !lastRun.duplicates) return;
+  const dup = lastRun.duplicates, mode = dupSortMode();
+  for (const k of ['people', 'affiliations', 'rights']) sortClusters(dup[k], mode);
+  const section = (title, clusters, entLabel, poolKey) => {
+    const hi = clusters.filter(c => c.confidence === 'high').length;
+    const cf = clusters.filter(c => c.confidence === 'conflict').length;
+    const tags = [hi ? `${hi} identifier-confirmed` : '', cf ? `${cf} ⚠ shared-id conflict${cf === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · ');
+    const head = `<div class="conn-group">${escHtml(title)} — ${clusters.length} potential ${clusters.length === 1 ? 'cluster' : 'clusters'}${tags ? ` · ${tags}` : ''}</div>`;
+    return head + (clusters.length ? clusters.map((c, ci) => dupClusterMarkup(c, entLabel, poolKey, ci)).join('') : '<div class="conn-empty">— none found at this match level —</div>');
+  };
+  $('dup-body').innerHTML = section('People (authors + editors)', dup.people, 'Person', 'people')
+                          + section('Affiliations', dup.affiliations, 'Affiliation', 'affiliations')
+                          + section('Rights statements', dup.rights, 'Rights statement', 'rights');
+  $('dup-body').querySelectorAll('.dup-doc-link').forEach(el =>
+    el.addEventListener('click', () => openDupDocs(el.dataset.pool, +el.dataset.ci, +el.dataset.vi, el.dataset.set || 'docs')));
+  $('dup-card').style.display = '';
+}
+
+/* Drill-down: the DOIs (with titles) where an entity/spelling occurs — shared by the duplicates panel and
+   the connectivity bar drill-down. Each DOI links to its DataCite API metadata (JSON). */
+let dupDocsState = null;
+const DUP_DOC_CAP = 20;   // cap the DOI list for a cluster's most-common spelling (the consistent one)
+function openDocsModal(name, docs, subContext, cap){
+  const allDocs = (docs || []).slice().sort((a, b) => String(a.title).localeCompare(String(b.title)));
+  const capped = cap && allDocs.length > cap;
+  const shown = capped ? allDocs.slice(0, cap) : allDocs;
+  dupDocsState = { name, docs: allDocs };   // Copy always exports the full list
+  const rowHtml = d => `<tr><td class="val"><a href="https://doi.org/${escAttr(d.doi)}" target="_blank" rel="noopener">${escHtml(d.title)}</a></td>`
+      + `<td class="val"><a href="https://api.crossref.org/works/${escAttr(d.doi)}" target="_blank" rel="noopener" title="Open the work metadata (JSON) at the Crossref API">${escHtml(d.doi)}</a></td></tr>`;
+  $('dd-title').textContent = name;
+  $('dd-sub').textContent = `${allDocs.length.toLocaleString()} DOI${allDocs.length === 1 ? '' : 's'}${subContext ? ' · ' + subContext : ''}`
+    + (capped ? ` · showing the first ${cap} — ⧉ Copy for all` : '')
+    + ' · click a DOI for its metadata (JSON)';
+  $('dd-body').innerHTML = allDocs.length
+    ? '<table class="cd-table"><thead><tr><th>Title</th><th>DOI Metadata (JSON)</th></tr></thead><tbody>'
+      + shown.map(rowHtml).join('')
+      + (capped ? `<tr><td colspan="2" style="color:#6b7280;font-style:italic;padding-top:.5rem">…and ${(allDocs.length - cap).toLocaleString()} more — use ⧉ Copy to get the full list</td></tr>` : '')
+      + '</tbody></table>'
+    : '<div style="padding:1rem;color:#6b7280;font-size:.8rem">No DOIs recorded.</div>';
+  $('dd-modal').style.display = 'flex';
+}
+function openDupDocs(pool, ci, vi, set){
+  const dup = lastRun && lastRun.duplicates;
+  const v = dup && dup[pool] && dup[pool][ci] && dup[pool][ci].variants[vi];
+  if (!v) return;
+  const poolLabel = { people:'people', affiliations:'affiliations', rights:'rights statements' }[pool] || pool;
+  const idSet = set === 'idDocs';
+  const docs = idSet ? v.idDocs : v.docs;
+  const ctx = idSet ? `${poolLabel} · records with identifier` : poolLabel;
+  // variants are sorted by occurrence descending — cap only the dominant (index 0) spelling; the point is
+  // drilling into the *less* common spellings (the inconsistencies), which stay uncapped.
+  openDocsModal(v.name, docs, ctx, vi === 0 ? DUP_DOC_CAP : 0);
+}
+function closeDupDocs(){ $('dd-modal').style.display = 'none'; dupDocsState = null; }
+async function dupDocsCopy(){
+  if (!dupDocsState) return;
+  const tsv = ['DOI\tTitle', ...dupDocsState.docs.map(d => `${d.doi}\t${String(d.title).replace(/[\t\n\r]/g, ' ')}`)].join('\n');
+  const btn = $('dd-copy');
+  try { await navigator.clipboard.writeText(tsv); btn.textContent = '✓ Copied'; }
+  catch { btn.textContent = 'Copy failed'; }
+  setTimeout(() => { btn.textContent = '⧉ Copy'; }, 1600);
+}
+function duplicateRows(){
+  const dup = dupState || findDuplicates(lastRun.records, dupThreshold());
+  const rows = [['Pool', 'ClusterID', 'Canonical', 'Confidence', 'Basis', 'Variant', 'Occurrences', 'Identified', 'Sources', 'Identifier']];
+  const addPool = (pool, clusters) => clusters.forEach((c, i) => { const cid = `${pool[0]}${i + 1}`;
+    c.variants.forEach(v => rows.push([pool, cid, c.canonical, c.confidence, c.basis, v.name, v.occ, v.id, v.sources.join('; '), v.identifier])); });
+  addPool('People', dup.people); addPool('Affiliation', dup.affiliations); addPool('Rights', dup.rights);
+  return rows;
+}
+function buildDuplicatesCsv(){
+  const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  return duplicateRows().map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
+}
+function downloadDuplicatesCsv(){
+  if (!lastRun){ setStatus('Run an exploration first, then download duplicates.', true); return; }
+  triggerDownload(new Blob([buildDuplicatesCsv()], { type:'text/csv' }), `${safeRepoId()}_connectivityDuplicates__${nowStamp()}.csv`);
+}
+async function dupCopy(){
+  if (!lastRun) return;
+  const tsv = duplicateRows().map(r => r.map(c => String(c).replace(/[\t\n\r]/g, ' ')).join('\t')).join('\n');
+  const btn = $('dup-copy');
+  try { await navigator.clipboard.writeText(tsv); btn.textContent = '✓ Copied'; }
+  catch { btn.textContent = 'Copy failed'; }
+  setTimeout(() => { btn.textContent = '⧉ Copy'; }, 1600);
+}
+
+/* ---------- loading tips (shown while records fetch / connectivity computes) ---------- */
+const CONNECTIVITY_TIPS = [
+  { label:'Connectivity', text:'<strong>Connectivity</strong> measures whether the things in your metadata carry the identifiers that <em>connect</em> them — ORCIDs on people, RORs on organizations.', link:'https://metadatagamechangers.com' },
+  { label:'Distinct entities', text:'The bars count <strong>distinct entities</strong>, not occurrences — a creator who appears in 50 records is one person to identify once.', link:'https://metadatagamechangers.com/blog' },
+  { label:'Quick wins', text:'<strong>Yellow</strong> segments are quick wins: an identifier already known for an entity that just needs to be <em>copied</em> to the records that are missing it — no lookup required.', link:'https://metadatagamechangers.com/blog' },
+  { label:'ORCID', text:'An <strong>ORCID</strong> on a creator or contributor links every one of their outputs across repositories — the single highest-leverage identifier to add.', link:'https://orcid.org' },
+  { label:'ROR', text:'<strong>ROR</strong> identifiers on affiliations disambiguate organizations far better than free-text names like “Univ. of Colorado”.', link:'https://ror.org' },
+  { label:'Duplicates', text:'The same person or org shows up under many spellings. The <strong>potential-duplicates</strong> panel groups likely matches — even across creators and contributors.', link:'https://metadatagamechangers.com/blog' },
+  { label:'Click a bar', text:'<strong>Click any bar</strong> to list its distinct entities — quick wins first (a known identifier to copy to the records that are missing it), then the ones still missing an identifier.', link:'https://metadatagamechangers.com' },
+  { label:'In your browser', text:'Everything is computed <strong>in your browser</strong> against live Crossref data — nothing is uploaded or stored.', link:'https://metadatagamechangers.com' },
+  { label:'Young RORs', text:'Publisher-asserted <strong>ROR</strong> identifiers on affiliations are new in Crossref — under 1% of works carry one so far, so red affiliation bars are the ecosystem norm, not a local failing.', link:'https://ror.org' },
+];
+let tipTimer = null, tipDelay = null, tipIndex = 0;
+function renderTip(){
+  const t = CONNECTIVITY_TIPS[tipIndex];
+  $('tips').innerHTML =
+    '<div class="tips-head">While you wait…</div>' +
+    '<div class="tips-label">' + t.label + '</div>' +
+    '<div class="tips-text">' + t.text + '</div>' +
+    (t.link ? '<a class="tips-link" href="' + t.link + '" target="_blank" rel="noopener">Learn more at Metadata Game Changers ↗</a>' : '');
+}
+function startTips(){
+  stopTips();
+  // small delay so quick runs don't flash a tip
+  tipDelay = setTimeout(() => {
+    tipIndex = Math.floor(Math.random() * CONNECTIVITY_TIPS.length);
+    renderTip();
+    $('tips').style.display = '';
+    tipTimer = setInterval(() => { tipIndex = (tipIndex + 1) % CONNECTIVITY_TIPS.length; renderTip(); }, 4500);
+  }, 1200);
+}
+function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay = tipTimer = null; $('tips').style.display = 'none'; }
+
+/* ---------- deep-link: keep the target (and filters) in the URL ---------- */
+function syncUrl(target, typeId, query, cap, random){
+  try {
+    const url = new URL(location.href);
+    ['issn','member','ror','client','doi','input'].forEach(k => url.searchParams.delete(k));
+    if (target.kind === 'journal') url.searchParams.set('issn', target.id);
+    else if (target.kind === 'member') url.searchParams.set('member', target.id);
+    else if (target.kind === 'ror') url.searchParams.set('ror', target.id);
+    else url.searchParams.set('client', ALL_CROSSREF);
+    if (typeId) url.searchParams.set('type', typeId); else url.searchParams.delete('type');
+    if (query) url.searchParams.set('query', query); else url.searchParams.delete('query');
+    if (cap && cap !== 200) url.searchParams.set('max', cap); else url.searchParams.delete('max');
+    if (random === false) url.searchParams.set('random', '0'); else url.searchParams.delete('random');
+    history.replaceState({}, '', url);
+  } catch (e) { /* non-fatal */ }
+}
+
+/* ---------- run ---------- */
+let lastRun = null;
+// analyze a set of (transformed) records — shared by run() and the single-DOI path
+async function analyze(target, records, repoTotal, usedRandom, typeId, query, singleDoi){
+  const meta = await fetchTargetMeta(target);
+  renderSelection(target.token, meta, records.length, usedRandom, repoTotal, typeId, query, null, singleDoi);
+  setStatus('Computing connectivity…');
+  const results = computeConnectivity(records);
+  lastRun = { records, clientId: target.token, target, resourceTypeId: typeId, query,
+              repoName: (meta && meta.name) ? meta.name : target.label, results, repoTotal, random: usedRandom, singleDoi };
+  $('conn-card').style.display = '';
+  renderConnectivity(results);
+  renderDuplicates();
+  hideProgress();
+  const sampleNote = singleDoi ? `DOI ${singleDoi}` : (usedRandom ? `random sample of ${records.length}` : `${records.length} sequential`);
+  setStatus(`Done — connectivity over ${sampleNote}${singleDoi ? '' : ` work${records.length===1?'':'s'}`}.`);
+}
+// A single DOI can be analysed on its own — fetch just that work and measure its connectivity.
+const isDOI = v => /^(https?:\/\/(dx\.)?doi\.org\/)?10\.\d{4,}\/\S+$/i.test(String(v || '').trim());
+const parseDOI = v => String(v || '').trim().replace(/^https?:\/\/(dx\.)?doi\.org\//i, '');
+async function runSingleDoi(doi){
+  closeAutocomplete();
+  try { const u = new URL(location.href); u.searchParams.set('doi', doi); ['issn','member','ror','client','type','query','max','random','input'].forEach(k => u.searchParams.delete(k)); history.replaceState({}, '', u); } catch (e){ /* non-fatal */ }
+  $('repo-go').disabled = true; startTips();
+  try {
+    setStatus('Fetching one DOI…'); setProgressIndeterminate();
+    const apiUrl = `${API_BASE}/works/${encodeURIComponent(doi)}`;
+    showApiUrl(apiUrl, 1, false);
+    const res = await fetch(apiUrl);
+    if (!res.ok) throw new Error(res.status === 404 ? `DOI not found in Crossref: ${doi}` : `Crossref returned ${res.status} for ${doi}`);
+    const w = (await res.json()).message;
+    if (!w || !w.DOI) throw new Error(`No work returned for ${doi}.`);
+    const target = w.member
+      ? { kind:'member', id: String(w.member), token: `member:${w.member}`, label: `member:${w.member}` }
+      : { kind:'all', id:'', token: ALL_CROSSREF, label:'All of Crossref' };
+    await analyze(target, [crToRecord(w)], null, false, '', '', doi);
+  } catch (e){ console.error(e); hideProgress(); setStatus(e.message || String(e), true); }
+  finally { stopTips(); $('repo-go').disabled = false; }
+}
+async function run(){
+  const input = $('repo-input').value.trim();
+  if (!input) return;
+  if (isDOI(input)){ await runSingleDoi(parseDOI(input)); return; }   // a single DOI → measure just that work
+  const target = parseTarget(input);
+  if (!target){
+    setStatus('Pick a journal or publisher from the search results, or enter an ISSN (1234-5678), member:ID, ROR (ror.org/…), or DOI.', true);
+    return;
+  }
+  const cap = Math.max(1, Math.min(10000, parseInt($('cap').value,10) || 200));
+  const random = $('random').checked;
+  const typeId = $('resource-type').value;
+  const query = $('query-input').value.trim();
+  syncUrl(target, typeId, query, cap, random);
+  closeAutocomplete();
+  $('repo-go').disabled = true;
+  startTips();
+  try {
+    const { records, repoTotal, random: usedRandom } = await fetchWorks(target, cap, random, typeId, query);
+    if (!records.length){ hideProgress(); setStatus('No works returned for that selection.', true); return; }
+    await analyze(target, records, repoTotal, usedRandom, typeId, query);
+  } catch (e){
+    console.error(e); hideProgress(); setStatus(e.message || String(e), true);
+  } finally {
+    stopTips();
+    $('repo-go').disabled = false;
+  }
+}
+
+/* ---------- journal + publisher autocomplete ----------
+   One box searches both Crossref /journals and /members; a row's id is the canonical input
+   token (an ISSN for journals, member:ID for publishers) that parseTarget understands. */
+let acTimer, acHighlight = -1, acItems = [];
+async function searchClients(q){
+  const journals = fetch(`${API_BASE}/journals?query=${encodeURIComponent(q)}&rows=5`)
+    .then(r => r.ok ? r.json() : null)
+    .then(j => (j?.message?.items ?? [])
+      .filter(it => Array.isArray(it.ISSN) && it.ISSN.length)
+      .map(it => ({ id: it.ISSN[0], name: (it.title || it.ISSN[0]) + ' — journal', count: it.counts?.['total-dois'] ?? null })))
+    .catch(() => []);
+  const members = fetch(`${API_BASE}/members?query=${encodeURIComponent(q)}&rows=5`)
+    .then(r => r.ok ? r.json() : null)
+    .then(j => (j?.message?.items ?? [])
+      .map(it => ({ id: `member:${it.id}`, name: (it['primary-name'] || `member ${it.id}`) + ' — publisher', count: it.counts?.['total-dois'] ?? null })))
+    .catch(() => []);
+  const [js, ms] = await Promise.all([journals, members]);
+  return [...js, ...ms];
+}
+function showAutocomplete(items){
+  const box = $('repo-autocomplete');
+  acItems = items; acHighlight = -1;
+  if (!items.length){ box.classList.remove('open'); return; }
+  box.innerHTML = items.map((it,i) =>
+    `<div class="repo-ac-item" data-id="${escAttr(it.id)}" data-idx="${i}">
+      <span class="repo-ac-name">${escHtml(it.name)}</span>
+      <span class="repo-ac-id">${escHtml(it.id)}</span>
+      ${it.count != null ? `<span class="repo-ac-count">${it.count.toLocaleString()} DOIs</span>` : ''}
+    </div>`).join('');
+  box.classList.add('open');
+  box.querySelectorAll('.repo-ac-item').forEach(el => {
+    el.addEventListener('mousedown', e => { e.preventDefault(); $('repo-input').value = el.dataset.id; box.classList.remove('open'); run(); });
+  });
+}
+function closeAutocomplete(){ $('repo-autocomplete').classList.remove('open'); acHighlight = -1; }
+$('repo-input').addEventListener('input', () => {
+  const q = $('repo-input').value.trim();
+  clearTimeout(acTimer);
+  if (q.length < 2 || isDOI(q)){ closeAutocomplete(); return; }   // a DOI is analysed directly, not searched as a repo
+  $('repo-autocomplete').innerHTML = '<div class="repo-ac-loading">Searching…</div>';
+  $('repo-autocomplete').classList.add('open');
+  acTimer = setTimeout(async () => showAutocomplete(await searchClients(q)), 300);
+});
+$('repo-input').addEventListener('keydown', e => {
+  const box = $('repo-autocomplete');
+  const open = box.classList.contains('open');
+  if (e.key === 'ArrowDown'){ e.preventDefault();
+    if (open && acHighlight < acItems.length - 1){ acHighlight++; box.querySelectorAll('.repo-ac-item').forEach((el,i)=>el.classList.toggle('highlighted', i===acHighlight)); }
+  } else if (e.key === 'ArrowUp'){ e.preventDefault();
+    if (open && acHighlight > 0){ acHighlight--; box.querySelectorAll('.repo-ac-item').forEach((el,i)=>el.classList.toggle('highlighted', i===acHighlight)); }
+  } else if (e.key === 'Enter'){ e.preventDefault();
+    if (open && acHighlight >= 0 && acItems[acHighlight]){ $('repo-input').value = acItems[acHighlight].id; closeAutocomplete(); run(); }
+    else { closeAutocomplete(); run(); }
+  } else if (e.key === 'Escape'){ closeAutocomplete(); }
+});
+document.addEventListener('click', e => { if (!e.target.closest('.hero-search')) closeAutocomplete(); });
+
+/* ---------- boot ---------- */
+$('repo-go').addEventListener('click', run);
+$('dl-json').addEventListener('click', downloadConnReport);
+$('dl-html').addEventListener('click', downloadConnReportHtml);
+$('dl-pdf').addEventListener('click', downloadConnPdf);
+$('dl-png').addEventListener('click', downloadConnPng);
+$('dl-summary').addEventListener('click', downloadConnSummary);
+$('dl-metadata').addEventListener('click', downloadConnMetadata);
+$('dup-threshold').addEventListener('change', () => { if (lastRun) renderDuplicates(); });
+$('dup-sort').addEventListener('change', () => { if (lastRun && lastRun.duplicates) renderDupBody(); });
+$('dup-copy').addEventListener('click', dupCopy);
+$('dup-csv').addEventListener('click', downloadDuplicatesCsv);
+$('cd-close').addEventListener('click', closeConnDetail);
+$('cd-copy').addEventListener('click', connDetailCopy);
+$('cd-download').addEventListener('click', connDetailDownloadCsv);
+// hand every affiliation identified < 100% to the ROR Retriever (localStorage, falling back to the URL hash)
+// hand every name identified < 100% to a retriever tool, with the source run described so
+// the tool can show what dataset the names came from (localStorage, falling back to the URL hash)
+function retrieverHandoff(page, storageKey, listKey, filter){
+  if (!connDetailState) return;
+  const names = connDetailState.entries.filter(e => e.id < e.occ && (!filter || filter(e))).map(e => e.name);
+  if (!names.length) return;
+  let url = `${page}?input=stored&auto=1`;
+  try {
+    const payload = { source: 'metadataConnectivity',
+      clientId: lastRun.clientId, repoName: lastRun.repoName,
+      records: lastRun.records.length, repoTotal: lastRun.repoTotal, random: lastRun.random,
+      resourceTypeId: lastRun.resourceTypeId, query: lastRun.query,
+      context: `${connDetailState.c.group} · ${connDetailState.c.label.split(' (')[0]}` };
+    payload[listKey] = names;
+    localStorage.setItem(storageKey, JSON.stringify(payload));
+  } catch (e){
+    url = `${page}#${listKey}=` + encodeURIComponent(names.join('\n')) + '&auto=1';
+  }
+  window.open(url, '_blank', 'noopener');
+}
+// On a name-identifier list the ROR button carries only the organizations and the ORCID button
+// only the people; on affiliation/funder/publisher lists every entity is an organization → ROR.
+$('cd-ror').addEventListener('click', () => retrieverHandoff('rorRetriever.html', 'ror-retriever-input', 'affiliations', connDetailState && (connDetailState.c.kind === 'nameId' || connDetailState.c.kind === 'aff') ? (e => e.org) : null));
+$('cd-orcid').addEventListener('click', () => retrieverHandoff('orcidRetriever.html', 'orcid-retriever-input', 'names',
+  connDetailState && connDetailState.c.kind === 'aff' ? (e => !e.org && e.id === 0) : (e => !e.org)));
+$('cd-modal').addEventListener('click', e => { if (e.target.id === 'cd-modal') closeConnDetail(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('cd-modal').style.display !== 'none' && $('dd-modal').style.display === 'none') closeConnDetail(); });
+$('dd-close').addEventListener('click', closeDupDocs);
+$('dd-copy').addEventListener('click', dupDocsCopy);
+$('dd-modal').addEventListener('click', e => { if (e.target.id === 'dd-modal') closeDupDocs(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('dd-modal').style.display !== 'none') closeDupDocs(); });
+if (location.protocol === 'file:') {
+  setStatus('This page is open as a local file (file://). Crossref requests will be blocked — serve it over http (e.g. "python3 -m http.server" → http://localhost:8000/crossrefConnectivity.html).', true);
+}
+// optional URL parameters (deep-link a target):
+//   ?issn=1932-6203 | ?member=340 | ?ror=04qw24q55 | ?client=crossref.all | ?doi=10.…
+//   plus &type=…&query=…&max=…&random=0 to override the form defaults (max 200, random on).
+(() => {
+  const params = new URLSearchParams(location.search);
+  const doiParam = params.get('doi');
+  if (doiParam){ $('repo-input').value = doiParam; runSingleDoi(parseDOI(doiParam)); return; }
+  const token = params.get('issn') ? params.get('issn')
+              : params.get('member') ? 'member:' + params.get('member')
+              : params.get('ror') ? 'ror:' + params.get('ror')
+              : params.get('client');   // crossref.all
+  if (token){
+    $('repo-input').value = token;
+    const rt = params.get('type');
+    if (rt && [...$('resource-type').options].some(o => o.value === rt)) $('resource-type').value = rt;
+    const q = params.get('query'); if (q) $('query-input').value = q;
+    const max = parseInt(params.get('max'), 10);
+    if (max > 0) $('cap').value = Math.min(10000, max);
+    const rand = params.get('random');
+    if (rand != null) $('random').checked = !/^(0|false|no)$/i.test(rand);
+    run();
+  }
+})();
+</script>
+
+<footer style="border-top:1px solid var(--line);background:#fff;padding:1rem 2rem;margin-top:2rem;">
+  <div style="max-width:1040px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" style="height:22px;width:auto;display:block;" onerror="this.style.display='none'" />
+      </a>
+      <span style="font-size:0.72rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Crossref Connectivity</a> (prototype) · Created by <a href="https://metadatagamechangers.com" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Metadata Game Changers</a> · Better Documentation | Better Data | Better Science</span>
+    </div>
+    <span style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:0.65rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Report an issue ↗</a> &nbsp;·&nbsp; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none;">CC BY-NC 4.0</a> &nbsp;·&nbsp; Live data from <a href="https://api.crossref.org" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">api.crossref.org</a> &amp; <a href="https://api.ror.org" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">ROR</a></span>
+  </div>
+</footer>
+<!-- Google Analytics (shared consent with the rest of the suite via localStorage 'rcw-ga') -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9JQRWY72HW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  try{ if(localStorage.getItem('rcw-ga')==='declined') window['ga-disable-G-9JQRWY72HW']=true; }catch(e){}
+  gtag('js', new Date());
+  gtag('config', 'G-9JQRWY72HW');
+</script>
+<!-- Analytics consent banner -->
+<div id="analytics-banner">
+  <span>This site uses Google Analytics for anonymous usage statistics. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy ↗</a></span>
+  <div id="analytics-banner-btns">
+    <button class="ab-btn ab-btn-ok" type="button" onclick="hideBanner('accepted')">OK</button>
+    <button class="ab-btn ab-btn-no" type="button" onclick="hideBanner('declined')">Decline</button>
+  </div>
+</div>
+<script>
+  function hideBanner(choice){
+    try{ localStorage.setItem('rcw-ga', choice); }catch(e){}
+    document.getElementById('analytics-banner').style.display='none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  }
+  (function(){
+    var choice=null; try{ choice=localStorage.getItem('rcw-ga'); }catch(e){}
+    if (choice) document.getElementById('analytics-banner').style.display='none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  })();
+</script>
+</body>
+</html>
