@@ -41,6 +41,15 @@ self-contained HTML file with inline CSS + vanilla JS — no framework, no bundl
   are ports from completeness.html — keep them in sync.
 - `FAIR_spirals.json` — readable catalog of the use cases (also **embedded** inside
   `completeness.html`; keep the two in sync).
+- `crossrefConnectivity.html` / `crossrefCompleteness.html` — **Crossref ports** (prototypes,
+  unadvertised): targets are journal ISSN / `member:ID` / `ror:…` / DOI / `crossref.all`
+  (unadvertised sentinel); a work→DataCite-record transform (`crToRecord`) lets the engines
+  and jq queries run verbatim; all API calls go through `crFetch` (polite pool `mailto=` +
+  retries — Crossref's anonymous pool intermittently drops CORS headers). Completeness embeds
+  a **reduced catalog** (3 FAIR use cases, 27 Crossref-expressible concepts, filtered from
+  `FAIR_spirals.json` with a per-use-case exclusions note) — regenerate that embed when the
+  catalog changes; its About tab documents every concept's Crossref field and the four
+  approximations. Crossref scores are **not comparable** to DataCite scores.
 - `tips.html` / `tips.es.html` — **generated** collections of every tool's while-you-wait
   tips (English / Spanish). Never edit by hand: edit the tips array in the tool page (and
   its Spanish text in `tipsTranslations.es.json`, keyed by tool file + English label), then
