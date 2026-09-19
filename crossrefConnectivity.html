@@ -331,7 +331,7 @@
   </div>
 
   <div class="note">
-    <b>About:</b> This tool measures <b>identifier connectivity</b> for Crossref metadata — a journal (ISSN), a publisher (Crossref member), or an organization&rsquo;s ROR-identified works. It is the Crossref port of <a href="metadataConnectivity.html" style="color:var(--accent-dk);font-weight:600;text-decoration:none">Metadata Connectivity</a>: same engine, Crossref connectors. Connectors: authors (ORCIDs, affiliations, affiliation RORs), editors &amp; translators (the contributor roles Crossref has), and funders (Funder Registry IDs / RORs). Crossref has no publisher-identifier or typed-rights fields, so those DataCite bars have no analog here; affiliation RORs are young in Crossref (publisher-asserted, &lt;1% of works so far). All computation runs in your browser against live Crossref data — nothing is uploaded or stored. <a href="connectivityAbout.html" target="_blank" rel="noopener" style="color:var(--accent-dk);font-weight:600;text-decoration:none">Learn more about connectivity ↗</a>
+    <b>About:</b> This tool measures <b>identifier connectivity</b> for Crossref metadata — a journal (ISSN), a publisher (Crossref member), or an organization&rsquo;s ROR-identified works. It is the Crossref port of <a href="metadataConnectivity.html" style="color:var(--accent-dk);font-weight:600;text-decoration:none">Metadata Connectivity</a>: same engine, Crossref connectors. Connectors: authors (ORCIDs, affiliations, affiliation RORs), editors &amp; translators (the contributor roles Crossref has), and funders (Funder Registry IDs / RORs). Crossref has no publisher-identifier or typed-rights fields, so those DataCite bars have no analog here; affiliation RORs are young in Crossref (publisher-asserted, &lt;1% of works so far). All computation runs in your browser against live Crossref data — nothing is uploaded or stored; requests join Crossref&rsquo;s polite pool (<code>mailto=ted@metadatagamechangers.com</code>) and transient API errors are retried automatically. <a href="connectivityAbout.html" target="_blank" rel="noopener" style="color:var(--accent-dk);font-weight:600;text-decoration:none">Learn more about connectivity ↗</a>
   </div>
 </div>
 
@@ -398,6 +398,30 @@ function targetFilter(t){
   if (t.kind === 'journal') return 'issn:' + t.id;
   if (t.kind === 'member')  return 'member:' + t.id;
   return 'ror-id:https://ror.org/' + t.id;
+}
+
+/* ---------- Crossref fetch with polite pool + retries ----------
+   Crossref's anonymous pool intermittently answers with an error response that lacks CORS
+   headers, which the browser surfaces as a hard "failed to fetch" — so every Crossref call
+   goes through crFetch: it joins the POLITE pool (mailto=, Crossref's ask of integrations;
+   the same public MGC contact metrics-watch sends) and retries transient failures
+   (network/CORS throws, 429, 5xx) with backoff before giving up. */
+const CR_MAILTO = 'ted@metadatagamechangers.com';
+function withMailto(url){
+  if (!url.startsWith(API_BASE) || url.includes('mailto=')) return url;
+  return url + (url.includes('?') ? '&' : '?') + 'mailto=' + encodeURIComponent(CR_MAILTO);
+}
+async function crFetch(url, retries = 3){
+  let lastErr = null;
+  for (let i = 0; i < retries; i++){
+    try {
+      const res = await fetch(withMailto(url));
+      if (res.status !== 429 && res.status < 500) return res;   // ok AND non-retryable errors go to the caller
+      lastErr = new Error(`Crossref returned ${res.status}`);
+    } catch (e){ lastErr = e; }
+    if (i < retries - 1) await new Promise(r => setTimeout(r, 1500 * (i + 1)));
+  }
+  throw lastErr || new Error('Crossref request failed');
 }
 
 /* ---------- Crossref work → DataCite-shaped record ----------
@@ -479,7 +503,7 @@ async function fetchWorks(target, cap, random, typeId, query){
   // peek at the matching total: random draws only help when the set is larger than the cap
   let effectiveRandom = random;
   try {
-    const peek = await fetch(`${API_BASE}/works?${common}&rows=0`);
+    const peek = await crFetch(`${API_BASE}/works?${common}&rows=0`);
     if (peek.ok){
       const pj = await peek.json();
       const t = pj.message && typeof pj.message['total-results'] === 'number' ? pj.message['total-results'] : null;
@@ -494,11 +518,11 @@ async function fetchWorks(target, cap, random, typeId, query){
       : `${API_BASE}/works?${common}&rows=${Math.min(1000, cap)}&cursor=${encodeURIComponent(cursor)}`;
     if (!firstUrl) firstUrl = url;
     let res;
-    try { res = await fetch(url); }
+    try { res = await crFetch(url); }
     catch (netErr){
       const hint = location.protocol === 'file:'
         ? 'The page is open as a local file (file://); browsers block outbound requests there. Serve it over http — e.g. run "python3 -m http.server" and open http://localhost:8000/crossrefConnectivity.html'
-        : 'Could not reach api.crossref.org — check your network connection, VPN, or any request-blocking extension.';
+        : 'api.crossref.org did not answer after several tries — Crossref may be busy or rate-limiting; wait a moment and press Explore again (also check your connection, VPN, or request-blocking extensions).';
       throw new Error('Failed to fetch works. ' + hint);
     }
     if (!res.ok) throw new Error(`Crossref returned ${res.status} for "${target.token}"`);
@@ -532,13 +556,13 @@ async function fetchTargetMeta(target){
   try {
     if (target.kind === 'all') return { name: 'All of Crossref', doiCount: null };
     if (target.kind === 'journal'){
-      const res = await fetch(`${API_BASE}/journals/${encodeURIComponent(target.id)}`);
+      const res = await crFetch(`${API_BASE}/journals/${encodeURIComponent(target.id)}`);
       if (!res.ok) return null;
       const m = (await res.json()).message;
       return { name: m?.title ?? target.token, doiCount: m?.counts?.['total-dois'] ?? null };
     }
     if (target.kind === 'member'){
-      const res = await fetch(`${API_BASE}/members/${encodeURIComponent(target.id)}`);
+      const res = await crFetch(`${API_BASE}/members/${encodeURIComponent(target.id)}`);
       if (!res.ok) return null;
       const m = (await res.json()).message;
       return { name: m?.['primary-name'] ?? target.token, doiCount: m?.counts?.['total-dois'] ?? null };
@@ -1839,7 +1863,7 @@ async function runSingleDoi(doi){
     setStatus('Fetching one DOI…'); setProgressIndeterminate();
     const apiUrl = `${API_BASE}/works/${encodeURIComponent(doi)}`;
     showApiUrl(apiUrl, 1, false);
-    const res = await fetch(apiUrl);
+    const res = await crFetch(apiUrl);
     if (!res.ok) throw new Error(res.status === 404 ? `DOI not found in Crossref: ${doi}` : `Crossref returned ${res.status} for ${doi}`);
     const w = (await res.json()).message;
     if (!w || !w.DOI) throw new Error(`No work returned for ${doi}.`);
@@ -1884,13 +1908,13 @@ async function run(){
    token (an ISSN for journals, member:ID for publishers) that parseTarget understands. */
 let acTimer, acHighlight = -1, acItems = [];
 async function searchClients(q){
-  const journals = fetch(`${API_BASE}/journals?query=${encodeURIComponent(q)}&rows=5`)
+  const journals = crFetch(`${API_BASE}/journals?query=${encodeURIComponent(q)}&rows=5`, 1)
     .then(r => r.ok ? r.json() : null)
     .then(j => (j?.message?.items ?? [])
       .filter(it => Array.isArray(it.ISSN) && it.ISSN.length)
       .map(it => ({ id: it.ISSN[0], name: (it.title || it.ISSN[0]) + ' — journal', count: it.counts?.['total-dois'] ?? null })))
     .catch(() => []);
-  const members = fetch(`${API_BASE}/members?query=${encodeURIComponent(q)}&rows=5`)
+  const members = crFetch(`${API_BASE}/members?query=${encodeURIComponent(q)}&rows=5`, 1)
     .then(r => r.ok ? r.json() : null)
     .then(j => (j?.message?.items ?? [])
       .map(it => ({ id: `member:${it.id}`, name: (it['primary-name'] || `member ${it.id}`) + ' — publisher', count: it.counts?.['total-dois'] ?? null })))
