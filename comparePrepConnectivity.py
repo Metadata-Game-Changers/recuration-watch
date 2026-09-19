@@ -193,12 +193,13 @@ def main():
     # a family's Average = plain mean of its five check values (missing values excluded)
     avg = lambda vals: (lambda xs: sum(xs) / len(xs) if xs else None)([v for v in vals if v is not None])
     rows = []
-    for mid in dict.fromkeys(ids):
+    todo = list(dict.fromkeys(ids))
+    for i, mid in enumerate(todo, 1):
         msg = (api_get(f'/members/{mid}').get('message') or {})
         name = msg.get('primary-name') or f'member {mid}'
         checked = msg.get('last-status-check-time')
         checked = datetime.fromtimestamp(checked / 1000).strftime('%Y-%m-%d') if checked else ''
-        print(f'{mid}: {name}', flush=True)
+        print(f'[{i}/{len(todo)}] {mid}: {name}', flush=True)
         for era in eras:
             prep = ((msg.get('coverage-type') or {}).get(era) or {}).get(args.type) or {}
             prep_n = ((msg.get('counts-type') or {}).get(era) or {}).get(args.type)
