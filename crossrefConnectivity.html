@@ -248,6 +248,14 @@
           <option value="standard">Standard</option>
         </select>
         </span>
+        <span class="hero-field">
+        <span class="hero-secondary-label">Era</span>
+        <select class="hero-select" id="era" style="flex:none;min-width:0" title="Participation Report eras — current: published in the current calendar year or the two previous ones; backfile: published earlier">
+          <option value="">All time</option>
+          <option value="current">Current (this + 2 prior years)</option>
+          <option value="backfile">Backfile (earlier)</option>
+        </select>
+        </span>
         <span class="hero-field grow">
         <span class="hero-secondary-label">Query</span>
         <input class="hero-query" id="query-input" type="text" placeholder="free-text search, e.g. climate" spellcheck="false" autocomplete="off" />
@@ -410,6 +418,16 @@ function targetFilter(t){
   if (t.kind === 'member')  return 'member:' + t.id;
   return 'ror-id:https://ror.org/' + t.id;
 }
+/* Participation Report eras (Crossref's definition): CURRENT = records published or issued in
+   the current calendar year or up to two years previously (in 2026: 2024, 2025, 2026);
+   BACKFILE = anything published earlier. */
+function eraFilter(era){
+  const y = new Date().getFullYear();
+  if (era === 'current')  return `from-pub-date:${y - 2}-01-01`;
+  if (era === 'backfile') return `until-pub-date:${y - 3}-12-31`;
+  return '';
+}
+const ERA_LABEL = { current: 'current (last 3 calendar years)', backfile: 'backfile' };
 
 /* ---------- Crossref fetch with polite pool + retries ----------
    Crossref's anonymous pool intermittently answers with an error response that lacks CORS
@@ -501,14 +519,14 @@ const escAttr = s => escHtml(s);
    repeated and deduplicated by DOI — the same pattern the DataCite tools use with random=true.
    Sequential fetches use cursor paging. `select=` trims each work to the fields the transform
    reads. */
-async function fetchWorks(target, cap, random, typeId, query){
+async function fetchWorks(target, cap, random, typeId, query, era){
   const records = [];
   const seen = new Set();
   const memberCounts = {};   // raw works carry their Crossref member id — tallied for the Participation Report card
   let requests = 0, firstUrl = '', repoTotal = null, cursor = '*';
   setStatus('Fetching works…');
   setProgressIndeterminate();
-  const filters = [targetFilter(target), typeId ? 'type:' + typeId : ''].filter(Boolean).join(',');
+  const filters = [targetFilter(target), typeId ? 'type:' + typeId : '', eraFilter(era)].filter(Boolean).join(',');
   const common = (filters ? `filter=${encodeURIComponent(filters)}&` : '')
                + (query ? `query=${encodeURIComponent(query)}&` : '')
                + `select=${encodeURIComponent(CR_SELECT)}`;
@@ -588,7 +606,7 @@ async function fetchTargetMeta(target){
     return { name: display ? display.value : target.token, doiCount: null };
   } catch { return null; }
 }
-function renderSelection(clientId, meta, recordCount, random, repoTotal, resourceTypeId, query, sharedFrom, singleDoi){
+function renderSelection(clientId, meta, recordCount, random, repoTotal, resourceTypeId, query, sharedFrom, singleDoi, era){
   $('sel-summary').style.display = '';
   const name = (meta && meta.name) ? meta.name : (clientId || 'DOI');
   $('sel-repo').innerHTML = `${escHtml(name)}<span class="sel-id">${escHtml(clientId)}</span>`;
@@ -598,11 +616,12 @@ function renderSelection(clientId, meta, recordCount, random, repoTotal, resourc
   const sh = $('sel-shared');
   if (sharedFrom){ sh.textContent = `Shared sample · from ${sharedFrom}`; sh.style.display = ''; }
   else sh.style.display = 'none';
-  const filtered = !!(resourceTypeId || query);
+  const filtered = !!(resourceTypeId || query || era);
   const repo = (repoTotal != null) ? repoTotal : (filtered ? null : (meta && meta.doiCount != null ? meta.doiCount : null));
   $('sel-total').textContent = repo != null ? `of ${repo.toLocaleString()} ${filtered ? 'matching' : 'in selection'}` : '';
   const parts = [];
   if (resourceTypeId) parts.push(`type: ${resourceTypeId}`);
+  if (era) parts.push(`era: ${ERA_LABEL[era] || era}`);
   if (query) parts.push(`query: ${query}`);
   $('sel-filter').textContent = parts.length ? `filter — ${parts.join(' · ')}` : '';
   $('sel-filter').style.display = parts.length ? '' : 'none';
@@ -978,6 +997,7 @@ function buildConnReport(){
       totalInRepository: repoTotal,
       sampling,
       resourceType:      lastRun.resourceTypeId || '',
+      era:               lastRun.era || 'all',
       query:             lastRun.query || ''
     },
     connectors,
@@ -1001,7 +1021,7 @@ function buildConnReportHtml(){
   const created = nowStamp();
   const d = new Date();
   const { analyzed, repoTotal, sampling } = runMeta();
-  const filtered = !!(lastRun.resourceTypeId || lastRun.query);
+  const filtered = !!(lastRun.resourceTypeId || lastRun.query || lastRun.era);
   const pct = x => `${(x*100).toFixed(0)}%`;
   const seg = (cls, w) => w > 0 ? `<span class="seg ${cls}" style="width:${w.toFixed(1)}%"></span>` : '';
   // group the flat results list
@@ -1039,6 +1059,7 @@ function buildConnReportHtml(){
   };
   const filterParts = [];
   if (lastRun.resourceTypeId) filterParts.push(`resource type: <b>${escHtml(lastRun.resourceTypeId)}</b>`);
+  if (lastRun.era) filterParts.push(`era: <b>${escHtml(ERA_LABEL[lastRun.era] || lastRun.era)}</b>`);
   if (lastRun.query) filterParts.push(`query: <b>${escHtml(lastRun.query)}</b>`);
   const filterLine = filterParts.length ? `<div class="meta-row">Filter — ${filterParts.join(' · ')}</div>` : '';
   const repoLine = `${repoTotal.toLocaleString()} ${filtered ? 'matching' : 'in selection'} · ${analyzed.toLocaleString()} analyzed · ${sampling}`;
@@ -1174,7 +1195,7 @@ async function downloadConnPng(){
   const C = { ink:'#1f2330', muted:'#6b7280', accentDk:'#673289', line:'#e6e3ec',
               track:'#eef0f4', green:'#3a9d6e', amber:'#d4910b', red:'#c0392b' };
   const { analyzed, repoTotal, sampling } = runMeta();
-  const filtered = !!(lastRun.resourceTypeId || lastRun.query);
+  const filtered = !!(lastRun.resourceTypeId || lastRun.query || lastRun.era);
   const groups = [];
   for (const res of lastRun.results){
     let g = groups.find(x => x.name === res.group);
@@ -1285,7 +1306,7 @@ function downloadConnPdf(){
   const C = { ink:[31,35,48], muted:[107,114,128], accentDk:[103,50,137], accent:[145,103,176],
               line:[230,227,236], track:[238,240,244], green:[58,157,110], amber:[212,145,11], red:[192,57,43] };
   const { analyzed, repoTotal, sampling } = runMeta();
-  const filtered = !!(lastRun.resourceTypeId || lastRun.query);
+  const filtered = !!(lastRun.resourceTypeId || lastRun.query || lastRun.era);
   const groups = [];
   for (const res of lastRun.results){
     let g = groups.find(x => x.name === res.group);
@@ -1832,7 +1853,7 @@ function startTips(){
 function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay = tipTimer = null; $('tips').style.display = 'none'; }
 
 /* ---------- deep-link: keep the target (and filters) in the URL ---------- */
-function syncUrl(target, typeId, query, cap, random){
+function syncUrl(target, typeId, query, cap, random, era){
   try {
     const url = new URL(location.href);
     ['issn','member','ror','client','doi','input'].forEach(k => url.searchParams.delete(k));
@@ -1841,6 +1862,7 @@ function syncUrl(target, typeId, query, cap, random){
     else if (target.kind === 'ror') url.searchParams.set('ror', target.id);
     else url.searchParams.set('client', ALL_CROSSREF);
     if (typeId) url.searchParams.set('type', typeId); else url.searchParams.delete('type');
+    if (era) url.searchParams.set('era', era); else url.searchParams.delete('era');
     if (query) url.searchParams.set('query', query); else url.searchParams.delete('query');
     if (cap && cap !== 200) url.searchParams.set('max', cap); else url.searchParams.delete('max');
     if (random === false) url.searchParams.set('random', '0'); else url.searchParams.delete('random');
@@ -1901,12 +1923,12 @@ async function maybeRenderPrep(memberCounts, analyzed){
 /* ---------- run ---------- */
 let lastRun = null;
 // analyze a set of (transformed) records — shared by run() and the single-DOI path
-async function analyze(target, records, repoTotal, usedRandom, typeId, query, singleDoi, memberCounts){
+async function analyze(target, records, repoTotal, usedRandom, typeId, query, era, singleDoi, memberCounts){
   const meta = await fetchTargetMeta(target);
-  renderSelection(target.token, meta, records.length, usedRandom, repoTotal, typeId, query, null, singleDoi);
+  renderSelection(target.token, meta, records.length, usedRandom, repoTotal, typeId, query, null, singleDoi, era);
   setStatus('Computing connectivity…');
   const results = computeConnectivity(records);
-  lastRun = { records, clientId: target.token, target, resourceTypeId: typeId, query,
+  lastRun = { records, clientId: target.token, target, resourceTypeId: typeId, query, era,
               repoName: (meta && meta.name) ? meta.name : target.label, results, repoTotal, random: usedRandom, singleDoi };
   $('conn-card').style.display = '';
   renderConnectivity(results);
@@ -1934,7 +1956,7 @@ async function runSingleDoi(doi){
     const target = w.member
       ? { kind:'member', id: String(w.member), token: `member:${w.member}`, label: `member:${w.member}` }
       : { kind:'all', id:'', token: ALL_CROSSREF, label:'All of Crossref' };
-    await analyze(target, [crToRecord(w)], null, false, '', '', doi, w.member ? { [w.member]: 1 } : null);
+    await analyze(target, [crToRecord(w)], null, false, '', '', '', doi, w.member ? { [w.member]: 1 } : null);
   } catch (e){ console.error(e); hideProgress(); setStatus(e.message || String(e), true); }
   finally { stopTips(); $('repo-go').disabled = false; }
 }
@@ -1950,15 +1972,16 @@ async function run(){
   const cap = Math.max(1, Math.min(10000, parseInt($('cap').value,10) || 200));
   const random = $('random').checked;
   const typeId = $('resource-type').value;
+  const era = $('era').value;
   const query = $('query-input').value.trim();
-  syncUrl(target, typeId, query, cap, random);
+  syncUrl(target, typeId, query, cap, random, era);
   closeAutocomplete();
   $('repo-go').disabled = true;
   startTips();
   try {
-    const { records, repoTotal, random: usedRandom, memberCounts } = await fetchWorks(target, cap, random, typeId, query);
+    const { records, repoTotal, random: usedRandom, memberCounts } = await fetchWorks(target, cap, random, typeId, query, era);
     if (!records.length){ hideProgress(); setStatus('No works returned for that selection.', true); return; }
-    await analyze(target, records, repoTotal, usedRandom, typeId, query, null, memberCounts);
+    await analyze(target, records, repoTotal, usedRandom, typeId, query, era, null, memberCounts);
   } catch (e){
     console.error(e); hideProgress(); setStatus(e.message || String(e), true);
   } finally {
@@ -2092,6 +2115,8 @@ if (location.protocol === 'file:') {
     const q = params.get('query'); if (q) $('query-input').value = q;
     const max = parseInt(params.get('max'), 10);
     if (max > 0) $('cap').value = Math.min(10000, max);
+    const eraParam = params.get('era');
+    if (eraParam && [...$('era').options].some(o => o.value === eraParam)) $('era').value = eraParam;
     const rand = params.get('random');
     if (rand != null) $('random').checked = !/^(0|false|no)$/i.test(rand);
     run();
