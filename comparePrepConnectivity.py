@@ -188,7 +188,10 @@ def main():
     headers = (['Member_ID', 'Member_Name', 'Era', 'Content_Type',
                 'PReP_Records', 'PReP_Last_Checked', 'Matching', 'Sample_N',
                 'Author_Occurrences', 'Affiliation_Occurrences', 'Funder_Occurrences']
-               + [f'{fam}_{c}' for c in CHECKS for fam in ('PReP', 'Record', 'Occurrence')])
+               + [f'{fam}_{c}' for c in CHECKS for fam in ('PReP', 'Record', 'Occurrence')]
+               + ['PReP_Average', 'Record_Average', 'Occurrence_Average'])
+    # a family's Average = plain mean of its five check values (missing values excluded)
+    avg = lambda vals: (lambda xs: sum(xs) / len(xs) if xs else None)([v for v in vals if v is not None])
     rows = []
     for mid in dict.fromkeys(ids):
         msg = (api_get(f'/members/{mid}').get('message') or {})
@@ -211,6 +214,9 @@ def main():
                    m['denominators']['authors'], m['denominators']['affiliations'], m['denominators']['funders']]
             for c in CHECKS:
                 row += [rnd(prep.get(PREP_KEY[c])), rnd(m['record'][c]), rnd(m['occurrence'][c])]
+            row += [rnd(avg([prep.get(PREP_KEY[c]) for c in CHECKS])),
+                    rnd(avg([m['record'][c] for c in CHECKS])),
+                    rnd(avg([m['occurrence'][c] for c in CHECKS]))]
             rows.append(row)
 
     if not rows:
