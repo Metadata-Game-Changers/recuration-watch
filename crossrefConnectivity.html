@@ -305,6 +305,17 @@
     <div id="conn-body"></div>
   </div>
 
+  <div class="card" id="prep-card" style="display:none">
+    <div class="conn-head">
+      <h2 id="prep-title">Crossref Participation Report</h2>
+      <div class="conn-actions">
+        <a class="dl-btn" id="prep-link" href="#" target="_blank" rel="noopener" style="text-decoration:none">Open at crossref.org ↗</a>
+      </div>
+    </div>
+    <p class="conn-intro" id="prep-intro"></p>
+    <div style="overflow-x:auto"><table class="cd-table" id="prep-table"></table></div>
+  </div>
+
   <div class="card" id="dup-card" style="display:none">
     <div class="conn-head">
       <h2>Potential duplicates<span class="proto-flag">advisory</span></h2>
@@ -493,6 +504,7 @@ const escAttr = s => escHtml(s);
 async function fetchWorks(target, cap, random, typeId, query){
   const records = [];
   const seen = new Set();
+  const memberCounts = {};   // raw works carry their Crossref member id — tallied for the Participation Report card
   let requests = 0, firstUrl = '', repoTotal = null, cursor = '*';
   setStatus('Fetching works…');
   setProgressIndeterminate();
@@ -530,7 +542,8 @@ async function fetchWorks(target, cap, random, typeId, query){
     const msg = json.message || {};
     const batch = msg.items || [];
     let added = 0;
-    for (const w of batch){ if (w && w.DOI && !seen.has(w.DOI)){ seen.add(w.DOI); records.push(crToRecord(w)); added++; } }
+    for (const w of batch){ if (w && w.DOI && !seen.has(w.DOI)){ seen.add(w.DOI); records.push(crToRecord(w)); added++;
+      if (w.member) memberCounts[w.member] = (memberCounts[w.member] || 0) + 1; } }
     if (!effectiveRandom) setProgress(Math.min(records.length / cap, 1));
     if (typeof msg['total-results'] === 'number') repoTotal = msg['total-results'];
     if (effectiveRandom){
@@ -544,7 +557,7 @@ async function fetchWorks(target, cap, random, typeId, query){
     }
   }
   showApiUrl(firstUrl, requests, effectiveRandom);
-  return { records: records.slice(0, cap), repoTotal, random: effectiveRandom };
+  return { records: records.slice(0, cap), repoTotal, random: effectiveRandom, memberCounts };
 }
 function showApiUrl(url, requests, random){
   const el = $('apiurl');
@@ -1835,10 +1848,60 @@ function syncUrl(target, typeId, query, cap, random){
   } catch (e) { /* non-fatal */ }
 }
 
+/* ---------- Crossref Participation Report card ----------
+   Crossref precomputes coverage over ALL of a member's records (the numbers behind
+   crossref.org/members/prep/<id>) and serves them on /members/<id> as coverage-type:
+   era (current = last two calendar years / backfile / all) × content type × check.
+   After a run we show the checks comparable to the bars above, as an independent,
+   record-level cross-check of the sampled, entity-level measurements. The card appears
+   when the target IS a member, or when one member holds ≥90% of the analyzed sample
+   (a journal, or a single DOI); mixed-member samples (ROR targets) skip it. */
+const PREP_CHECKS = [['orcids','ORCIDs'], ['affiliations','Affiliations'],
+                     ['affiliation-ror-ids','Affiliation RORs'], ['funders','Funders'],
+                     ['funder-ror-ids','Funder RORs']];
+async function maybeRenderPrep(memberCounts, analyzed){
+  const card = $('prep-card'); card.style.display = 'none';
+  let memberId = null, share = 1;
+  if (lastRun.target && lastRun.target.kind === 'member') memberId = lastRun.target.id;
+  else if (memberCounts && analyzed > 0){
+    const top = Object.entries(memberCounts).sort((a, b) => b[1] - a[1])[0];
+    if (top && top[1] / analyzed >= 0.9){ memberId = top[0]; share = top[1] / analyzed; }
+  }
+  if (!memberId) return;
+  let msg = null;
+  try { const res = await crFetch(`${API_BASE}/members/${encodeURIComponent(memberId)}`, 2); if (res.ok) msg = (await res.json()).message; }
+  catch (e){ /* the card is a bonus — never fail the run for it */ }
+  if (!msg || !msg['coverage-type']) return;
+  const ct = msg['coverage-type'], counts = msg['counts-type'] || {};
+  // content types with any signal in the shown checks first (components etc. sink), then by size
+  const signal = t => Object.values(ct).some(o => o[t] && PREP_CHECKS.some(([k]) => o[t][k] > 0)) ? 1 : 0;
+  const types = [...new Set([].concat(...Object.values(ct).map(o => Object.keys(o))))]
+    .sort((a, b) => signal(b) - signal(a) || ((counts.all || {})[b] || 0) - ((counts.all || {})[a] || 0));
+  const pct = v => (v == null || isNaN(v)) ? '—' : (v * 100).toFixed(0) + '%';
+  let rows = '';
+  for (const t of types){
+    for (const era of ['current', 'backfile', 'all']){
+      const c = ct[era] && ct[era][t]; if (!c) continue;
+      const n = (counts[era] || {})[t];
+      rows += `<tr><td class="val">${escHtml(t)}</td><td class="val">${era}</td><td class="num">${n != null ? n.toLocaleString() : '—'}</td>`
+        + PREP_CHECKS.map(([k]) => `<td class="num">${pct(c[k])}</td>`).join('') + '</tr>';
+    }
+  }
+  $('prep-table').innerHTML =
+    `<thead><tr><th>Content type</th><th>Era</th><th class="num">Records</th>${PREP_CHECKS.map(([, l]) => `<th class="num">${l}</th>`).join('')}</tr></thead><tbody>${rows}</tbody>`;
+  $('prep-title').textContent = `Crossref Participation Report — ${msg['primary-name'] || 'member ' + memberId}`;
+  $('prep-link').href = `https://www.crossref.org/members/prep/${memberId}`;
+  const checked = msg['last-status-check-time'] ? new Date(msg['last-status-check-time']).toISOString().slice(0, 10) : null;
+  $('prep-intro').innerHTML = `Crossref&rsquo;s <b>own coverage</b> for this member — computed by Crossref over <b>all</b> the member&rsquo;s records (not the sample above), by content type and era (<b>current</b> = the last two calendar years)${checked ? `, last checked ${checked}` : ''}. `
+    + (share < 1 ? `Shown because ${(share * 100).toFixed(0)}% of the analyzed sample belongs to this member. ` : '')
+    + 'Use it as a cross-check: the bars above count <b>distinct entities</b> in a sample across all content types; these are <b>record-level</b> percentages per content type.';
+  card.style.display = '';
+}
+
 /* ---------- run ---------- */
 let lastRun = null;
 // analyze a set of (transformed) records — shared by run() and the single-DOI path
-async function analyze(target, records, repoTotal, usedRandom, typeId, query, singleDoi){
+async function analyze(target, records, repoTotal, usedRandom, typeId, query, singleDoi, memberCounts){
   const meta = await fetchTargetMeta(target);
   renderSelection(target.token, meta, records.length, usedRandom, repoTotal, typeId, query, null, singleDoi);
   setStatus('Computing connectivity…');
@@ -1851,6 +1914,7 @@ async function analyze(target, records, repoTotal, usedRandom, typeId, query, si
   hideProgress();
   const sampleNote = singleDoi ? `DOI ${singleDoi}` : (usedRandom ? `random sample of ${records.length}` : `${records.length} sequential`);
   setStatus(`Done — connectivity over ${sampleNote}${singleDoi ? '' : ` work${records.length===1?'':'s'}`}.`);
+  maybeRenderPrep(memberCounts, records.length);   // async; the card appears when the member's report arrives
 }
 // A single DOI can be analysed on its own — fetch just that work and measure its connectivity.
 const isDOI = v => /^(https?:\/\/(dx\.)?doi\.org\/)?10\.\d{4,}\/\S+$/i.test(String(v || '').trim());
@@ -1870,7 +1934,7 @@ async function runSingleDoi(doi){
     const target = w.member
       ? { kind:'member', id: String(w.member), token: `member:${w.member}`, label: `member:${w.member}` }
       : { kind:'all', id:'', token: ALL_CROSSREF, label:'All of Crossref' };
-    await analyze(target, [crToRecord(w)], null, false, '', '', doi);
+    await analyze(target, [crToRecord(w)], null, false, '', '', doi, w.member ? { [w.member]: 1 } : null);
   } catch (e){ console.error(e); hideProgress(); setStatus(e.message || String(e), true); }
   finally { stopTips(); $('repo-go').disabled = false; }
 }
@@ -1892,9 +1956,9 @@ async function run(){
   $('repo-go').disabled = true;
   startTips();
   try {
-    const { records, repoTotal, random: usedRandom } = await fetchWorks(target, cap, random, typeId, query);
+    const { records, repoTotal, random: usedRandom, memberCounts } = await fetchWorks(target, cap, random, typeId, query);
     if (!records.length){ hideProgress(); setStatus('No works returned for that selection.', true); return; }
-    await analyze(target, records, repoTotal, usedRandom, typeId, query);
+    await analyze(target, records, repoTotal, usedRandom, typeId, query, null, memberCounts);
   } catch (e){
     console.error(e); hideProgress(); setStatus(e.message || String(e), true);
   } finally {
