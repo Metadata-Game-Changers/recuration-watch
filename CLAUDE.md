@@ -50,6 +50,12 @@ self-contained HTML file with inline CSS + vanilla JS — no framework, no bundl
   `FAIR_spirals.json` with a per-use-case exclusions note) — regenerate that embed when the
   catalog changes; its About tab documents every concept's Crossref field and the four
   approximations. Crossref scores are **not comparable** to DataCite scores.
+- `comparePrepConnectivity.py` — desktop companion to the Crossref tools (stdlib only, no
+  jq): samples members' works and writes one CSV comparing, per member × era, Crossref's
+  Participation Report coverage (`PReP_*`), the sampled record-level/completeness counting
+  (`Record_*`), and the occurrence-level/connectivity counting (`Occurrence_*`). Eras use
+  the PReP definition (current = published in the current or two previous calendar years) —
+  keep its `era_filter` in sync with the pages' `eraFilter`.
 - `tips.html` / `tips.es.html` — **generated** collections of every tool's while-you-wait
   tips (English / Spanish). Never edit by hand: edit the tips array in the tool page (and
   its Spanish text in `tipsTranslations.es.json`, keyed by tool file + English label), then
