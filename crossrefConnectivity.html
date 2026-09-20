@@ -342,8 +342,9 @@
     <div class="prep-radar">
       <div id="prep-radar-svg"></div>
       <div class="prep-radar-note">The fourteen Participation Report checks — backfile records vs current
-        (last three calendar years). Where the current line reaches beyond the backfile line, this member&rsquo;s
-        recent metadata is richer than its older records. All fourteen checks are in the table below.</div>
+        (last three calendar years). Each axis runs 0% at the center to 100% at the outer ring;
+        where the current line reaches beyond the backfile line, this member&rsquo;s recent metadata is richer
+        than its older records. All fourteen checks are in the table below.</div>
     </div>
     <div style="overflow-x:auto"><table class="cd-table" id="prep-table"></table></div>
   </div>
@@ -1939,7 +1940,6 @@ function prepRadarSvg(type, W, labels){
       s += `<text x="${lx.toFixed(1)}" y="${(ly + 3).toFixed(1)}" text-anchor="${anchor}" font-size="8.5" fill="#6b7280" font-family="Inter,sans-serif">${escHtml(label)}</text>`;
     }
   });
-  if (labels) s += `<text x="${cx + 3}" y="${cy - R - 2}" font-size="7.5" fill="#9aa0ab" font-family="Inter,sans-serif">100%</text>`;
   const eras = [['backfile', '#9aa0ab', '4 3'], ['current', '#673289', '']];   // backfile under current
   const drawn = [];
   for (const [era, color, dash] of eras){
