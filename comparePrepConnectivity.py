@@ -29,7 +29,9 @@ Usage:
   python3 comparePrepConnectivity.py --file members.txt --max 200
   python3 comparePrepConnectivity.py --member 4374 --era all --era current --era backfile
 
-Output: comparePrepConnectivity__YYYY-MM-DDThh.csv (override with --csv).
+Output: comparePrepConnectivity__YYYY-MM-DDThh.csv (override with --csv). Rows are
+written and flushed as they are produced, and rerunning the same command with the
+same --csv RESUMES an interrupted run (completed member x era rows are skipped).
 """
 
 import argparse
@@ -192,15 +194,47 @@ def main():
                + ['PReP_Average', 'Record_Average', 'Occurrence_Average'])
     # a family's Average = plain mean of its five check values (missing values excluded)
     avg = lambda vals: (lambda xs: sum(xs) / len(xs) if xs else None)([v for v in vals if v is not None])
-    rows = []
+
+    # Incremental, resumable output: every row is written and flushed as it is produced,
+    # so a crash or Ctrl-C loses nothing. If the target CSV already exists (same layout),
+    # completed member x era rows are skipped — rerun the SAME command with the SAME
+    # --csv to continue an interrupted run. (The stamped default filename changes each
+    # hour, so pass an explicit --csv for runs you may need to resume.)
+    stamp = datetime.now().strftime('%Y-%m-%dT%H')
+    out = Path(args.csv) if args.csv else Path(f'comparePrepConnectivity__{stamp}.csv')
+    done = set()
+    mode = 'w'
+    if out.exists() and out.stat().st_size:
+        with open(out, newline='', encoding='utf-8') as fh:
+            r = csv.reader(fh)
+            if next(r, None) != headers:
+                sys.exit(f'{out} exists with a different column layout — move it aside or pass a fresh --csv')
+            for row in r:
+                if row:
+                    done.add((row[0], row[2]))   # (Member_ID, Era)
+        mode = 'a'
+        print(f'Resuming into {out}: {len(done)} member × era rows already present', flush=True)
+    outfh = open(out, mode, newline='', encoding='utf-8')
+    w = csv.writer(outfh)
+    if mode == 'w':
+        w.writerow(headers)
+        outfh.flush()
+
+    written = 0
     todo = list(dict.fromkeys(ids))
     for i, mid in enumerate(todo, 1):
+        if all((mid, era) in done for era in eras):
+            print(f'[{i}/{len(todo)}] {mid}: already in CSV — skipped', flush=True)
+            continue
         msg = (api_get(f'/members/{mid}').get('message') or {})
         name = msg.get('primary-name') or f'member {mid}'
         checked = msg.get('last-status-check-time')
         checked = datetime.fromtimestamp(checked / 1000).strftime('%Y-%m-%d') if checked else ''
         print(f'[{i}/{len(todo)}] {mid}: {name}', flush=True)
         for era in eras:
+            if (mid, era) in done:
+                print(f'  {era}: already in CSV — skipped', flush=True)
+                continue
             prep = ((msg.get('coverage-type') or {}).get(era) or {}).get(args.type) or {}
             prep_n = ((msg.get('counts-type') or {}).get(era) or {}).get(args.type)
             works, matching = sample_works(mid, args.type, era, args.max)
@@ -221,17 +255,15 @@ def main():
             row += [rnd(avg([prep.get(PREP_KEY[c]) for c in CHECKS])),
                     rnd(avg([m['record'][c] for c in CHECKS])),
                     rnd(avg([m['occurrence'][c] for c in CHECKS]))]
-            rows.append(row)
+            w.writerow(row)
+            outfh.flush()   # every row lands on disk immediately — interruptions lose nothing
+            written += 1
 
-    if not rows:
+    outfh.close()
+    if not written and not done:
         sys.exit('no rows produced')
-    stamp = datetime.now().strftime('%Y-%m-%dT%H')
-    out = Path(args.csv) if args.csv else Path(f'comparePrepConnectivity__{stamp}.csv')
-    with open(out, 'w', newline='', encoding='utf-8') as fh:
-        w = csv.writer(fh)
-        w.writerow(headers)
-        w.writerows(rows)
-    print(f'Wrote {out} ({len(rows)} rows)', flush=True)
+    print(f'Wrote {out} ({written} new row{"" if written == 1 else "s"}'
+          + (f', {len(done)} carried over' if done else '') + ')', flush=True)
 
 
 if __name__ == '__main__':
