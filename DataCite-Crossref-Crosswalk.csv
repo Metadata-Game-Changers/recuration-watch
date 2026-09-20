@@ -1,0 +1,235 @@
+Use_Case,Concept,DataCite_Field,Status,Crossref_Field,Note
+FAIR_Text,Abstract,descriptions,direct,abstract,JATS-XML markup; ~27% of works (44.8M)
+FAIR_Text,Date Created,dates,partial,created,"Registration timestamp, not a depositor-supplied content date"
+FAIR_Text,Keyword,subjects,none,—,subject[] was retired in 2024 and now returns empty
+FAIR_Text,Keyword Vocabulary,subjects,none,—,No keywords
+FAIR_Text,Resource Author Affiliation,creators,direct,author[].affiliation[].name,~20% of works (33.3M)
+FAIR_Text,Resource Author,creators,direct,author[].family / .given / .name,Universal on Crossref works
+FAIR_Text,Resource Identifier,identifiers,direct,DOI,
+FAIR_Text,Resource Publication Date,publicationYear,direct,issued.date-parts,Also published / published-print / published-online
+FAIR_Text,Resource Publisher,publisher,direct,publisher,
+FAIR_Text,Resource Title,titles,direct,title[],
+FAIR_Text,Resource Type General,types,direct,type,30-value vocabulary; needs a crosswalk to resourceTypeGeneral
+FAIR_Text,Project Funder,fundingReferences,direct,funder[].name,~9% of works (15.6M)
+FAIR_Text,Award Title,fundingReferences,partial,grant records (type=grant),Works carry award numbers only; titles live on Crossref grant DOIs
+FAIR_Text,Temporal Extent,dates,none,—,No coverage dates
+FAIR_Text,Spatial Extent,geoLocations,none,—,No geolocation
+FAIR_Identifiers,Date Submitted,dates,partial,accepted / posted,"Closest equivalents, on some record types"
+FAIR_Identifiers,Keyword Value URI,subjects,none,—,No keywords
+FAIR_Identifiers,Keyword Vocabulary URI,subjects,none,—,No keywords
+FAIR_Identifiers,Resource Author Type,creators,partial,author[] shape,Person vs organization inferable (given/family vs name); no explicit nameType
+FAIR_Identifiers,Resource Author Identifier,creators,direct,author[].ORCID,ORCID only; ~13% of works (22.0M)
+FAIR_Identifiers,Resource Author Identifier Type,creators,partial,(implicit),Always ORCID when present
+FAIR_Identifiers,Publisher Identifier,publisher,partial,member,"Crossref member ID (the depositor), not a publisher ROR"
+FAIR_Identifiers,Publisher Identifier Type,publisher,none,—,
+FAIR_Identifiers,Publisher Identifier Scheme URI,publisher,none,—,
+FAIR_Identifiers,Resource Author Affiliation Identifier,creators,direct,author[].affiliation[].id[].id,"ROR; ~0.7% of works (1.15M), growing"
+FAIR_Identifiers,Resource Author Affiliation Identifier Type,creators,direct,author[].affiliation[].id[].id-type,"""ROR"""
+FAIR_Identifiers,Resource Author Affiliation Identifier Scheme URI,creators,none,—,No schemeUri field; derivable from id-type
+FAIR_Identifiers,Resource Identifier Type,identifiers,partial,(implicit),Always DOI
+FAIR_Identifiers,Resource Type,types,partial,type,No free-text resourceType
+FAIR_Identifiers,Funder Identifier,fundingReferences,direct,funder[].DOI / funder[].id[],Funder Registry DOI today; RORs arriving as the registry merges into ROR
+FAIR_Identifiers,Funder Identifier Type,fundingReferences,direct,funder[].id[].id-type,"""DOI"" (Funder Registry), ""ROR"""
+FAIR_Identifiers,Award URI,fundingReferences,none,—,
+FAIR_Identifiers,Award Number,fundingReferences,direct,funder[].award[],
+FAIR_Connections,CitedBy,relatedIdentifiers,partial,is-referenced-by-count,Count only
+FAIR_Connections,Date Available,dates,partial,license[].start,License start / embargo delay approximates availability
+FAIR_Connections,DescribedBy,relatedIdentifiers,none,—,Not in the vocabulary
+FAIR_Connections,Distribution Contact,contributors,none,—,No Distributor role
+FAIR_Connections,DocumentedBy,relatedIdentifiers,partial,relation.is-documented-by,In the relation schema; essentially undeposited
+FAIR_Connections,Resource Contact,contributors,none,—,No ContactPerson role
+FAIR_Connections,HasMetadata,relatedIdentifiers,none,—,Not in the vocabulary
+FAIR_Connections,Resource Format,formats,partial,link[].content-type,MIME types of full-text links only
+FAIR_Connections,Resource Size,sizes,none,—,
+FAIR_Connections,Resource URL,url,direct,resource.primary.URL,Landing page URL
+FAIR_Connections,Rights,rightsList,partial,license[].URL,URL only — no rights name; derivable from the URL
+FAIR_Connections,RightsHolder,contributors,none,—,No RightsHolder role; copyright lines occasionally in assertion[]
+FAIR_Connections,Methods,descriptions,none,—,No typed descriptions
+FAIR_Connections,Technical Information,descriptions,none,—,No typed descriptions
+FAIR_Connections,ReferencedBy,relatedIdentifiers,partial,is-referenced-by-count,Count only
+FAIR_Connections,ReviewedBy,relatedIdentifiers,direct,relation.has-review,
+FAIR_Connections,SourceOf,relatedIdentifiers,partial,relation.has-derivation / is-basis-for,Rarely deposited
+FAIR_Connections,SupplementTo,relatedIdentifiers,direct,relation.is-supplement-to,
+FAIR_Contacts,Resource Contact Identifier,contributors,none,—,Role does not exist
+FAIR_Contacts,Resource Contact Identifier Scheme,contributors,none,—,Role does not exist
+FAIR_Contacts,Resource Contact Identifier Scheme URI,contributors,none,—,Role does not exist
+FAIR_Contacts,Distribution Contact Identifier,contributors,none,—,Role does not exist
+FAIR_Contacts,Distribution Contact Identifier Scheme,contributors,none,—,Role does not exist
+FAIR_Contacts,Distribution Contact Identifier Scheme URI,contributors,none,—,Role does not exist
+FAIR_Contacts,Rights Holder Identifier,contributors,none,—,Role does not exist
+FAIR_Contacts,Rights Holder Identifier Scheme,contributors,none,—,Role does not exist
+FAIR_Contacts,Rights Holder Identifier Scheme URI,contributors,none,—,Role does not exist
+FAIR_Contacts,Rights URI,rightsList,direct,license[].URL,~50% of works (83.9M)
+DataCite_Relations,Related Identifier,relatedIdentifiers,direct,relation.*[].id + reference[].DOI,Typed relations plus the reference list
+DataCite_Relations,Related Identifier Type,relatedIdentifiers,direct,relation.*[].id-type,doi / issn / isbn / uri
+DataCite_Relations,Related Item Type,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+DataCite_Relations,Cites,relatedIdentifiers,direct,reference[],Citations are the reference list; ~48% of works (81.4M)
+DataCite_Relations,IsCitedBy,relatedIdentifiers,partial,is-referenced-by-count,Count only; citing DOIs not in the work record
+DataCite_Relations,Collects,relatedIdentifiers,none,—,Not in the Crossref relation vocabulary
+DataCite_Relations,IsCollectedBy,relatedIdentifiers,none,—,Not in the Crossref relation vocabulary
+DataCite_Relations,IsSupplementTo,relatedIdentifiers,direct,relation.is-supplement-to,
+DataCite_Relations,IsSupplementedBy,relatedIdentifiers,direct,relation.is-supplemented-by,
+DataCite_Relations,IsTranslationOf,relatedIdentifiers,direct,relation.is-translation-of,
+DataCite_Relations,HasTranslation,relatedIdentifiers,direct,relation.has-translation,
+DataCite_Relations,Continues,relatedIdentifiers,partial,relation.continues,In the relation schema; essentially undeposited
+DataCite_Relations,IsContinuedBy,relatedIdentifiers,partial,relation.is-continued-by,In the relation schema; essentially undeposited
+DataCite_Relations,IsNewVersionOf,relatedIdentifiers,partial,relation.is-version-of / replaces,No new-vs-previous distinction
+DataCite_Relations,IsPreviousVersionOf,relatedIdentifiers,partial,relation.has-version / is-replaced-by,No new-vs-previous distinction
+DataCite_Relations,IsPartOf,relatedIdentifiers,direct,relation.is-part-of,Also structural: container-title / ISSN for articles
+DataCite_Relations,HasPart,relatedIdentifiers,direct,relation.has-part,"Components (figures, supplements) via is-component-of are common"
+DataCite_Relations,IsPublishedIn,relatedIdentifiers,partial,container-title / ISSN,"Structural in Crossref, not a relation"
+DataCite_Relations,IsReferencedBy,relatedIdentifiers,partial,is-referenced-by-count,Count only
+DataCite_Relations,References,relatedIdentifiers,direct,reference[],Crossref does not distinguish Cites from References
+DataCite_Relations,Documents,relatedIdentifiers,partial,relation.documents,In the relation schema; essentially undeposited
+DataCite_Relations,IsDocumentedBy,relatedIdentifiers,partial,relation.is-documented-by,In the relation schema; essentially undeposited
+DataCite_Relations,IsCompiledBy,relatedIdentifiers,none,—,Not in the Crossref relation vocabulary
+DataCite_Relations,Compiles,relatedIdentifiers,none,—,Not in the Crossref relation vocabulary
+DataCite_Relations,IsVariantFormOf,relatedIdentifiers,partial,relation.is-variant-form-of,In the relation schema; essentially undeposited
+DataCite_Relations,IsOriginalFormOf,relatedIdentifiers,partial,relation.is-original-form-of,In the relation schema; essentially undeposited
+DataCite_Relations,IsIdenticalTo,relatedIdentifiers,direct,relation.is-identical-to,Used for mirrored / duplicate deposits
+DataCite_Relations,HasMetadata,relatedIdentifiers,none,—,Not in the vocabulary
+DataCite_Relations,IsMetadataFor,relatedIdentifiers,none,—,Not in the vocabulary
+DataCite_Relations,Reviews,relatedIdentifiers,direct,relation.is-review-of,Peer-review records carry these
+DataCite_Relations,IsReviewedBy,relatedIdentifiers,direct,relation.has-review,
+DataCite_Relations,IsDerivedFrom,relatedIdentifiers,partial,relation.is-derived-from / is-based-on,Derivation vocabulary differs; rarely deposited
+DataCite_Relations,IsSourceOf,relatedIdentifiers,partial,relation.has-derivation / is-basis-for,Rarely deposited
+DataCite_Relations,Describes,relatedIdentifiers,none,—,Not in the vocabulary
+DataCite_Relations,IsDescribedBy,relatedIdentifiers,none,—,Not in the vocabulary
+DataCite_Relations,HasVersion,relatedIdentifiers,direct,relation.has-version,
+DataCite_Relations,IsVersionOf,relatedIdentifiers,direct,relation.is-version-of,
+DataCite_Relations,Requires,relatedIdentifiers,partial,relation.requires,In the relation schema; essentially undeposited
+DataCite_Relations,IsRequiredBy,relatedIdentifiers,partial,relation.is-required-by,In the relation schema; essentially undeposited
+DataCite_Relations,Obsoletes,relatedIdentifiers,partial,update-to / relation.replaces,The corrections-and-retractions model
+DataCite_Relations,IsObsoletedBy,relatedIdentifiers,partial,updated-by / relation.is-replaced-by,The corrections-and-retractions model
+DataCite_ContributorTypes,ContactPerson,contributors,none,—,No such contributor role in Crossref
+DataCite_ContributorTypes,DataCollector,contributors,none,—,No such contributor role in Crossref
+DataCite_ContributorTypes,DataCurator,contributors,none,—,No such contributor role in Crossref
+DataCite_ContributorTypes,DataManager,contributors,none,—,No such contributor role in Crossref
+DataCite_ContributorTypes,Distributor,contributors,none,—,No such contributor role in Crossref
+DataCite_ContributorTypes,HostingInstitution,contributors,partial,institution{},"Only on reports, dissertations, posted content"
+DataCite_ContributorTypes,OtherContributor,contributors,none,—,No such contributor role in Crossref
+DataCite_ContributorTypes,Producer,contributors,none,—,No such contributor role in Crossref
+DataCite_ContributorTypes,ProjectLeader,contributors,none,—,No such contributor role in Crossref
+DataCite_ContributorTypes,ProjectManager,contributors,none,—,No such contributor role in Crossref
+DataCite_ContributorTypes,ProjectMember,contributors,none,—,No such contributor role in Crossref
+DataCite_ContributorTypes,RegistrationAgency,contributors,partial,source,"Implicit — every record’s agency is ""Crossref"""
+DataCite_ContributorTypes,RegistrationAuthority,contributors,none,—,No such contributor role in Crossref
+DataCite_ContributorTypes,RelatedPerson,contributors,none,—,No such contributor role in Crossref
+DataCite_ContributorTypes,ResearchGroup,contributors,none,—,No such contributor role in Crossref
+DataCite_ContributorTypes,RightsHolder,contributors,none,—,No RightsHolder role; copyright lines occasionally in assertion[]
+DataCite_ContributorTypes,Researcher,contributors,none,—,No such contributor role in Crossref
+DataCite_ContributorTypes,Sponsor,contributors,none,—,No such contributor role in Crossref
+DataCite_ContributorTypes,Supervisor,contributors,none,—,No such contributor role in Crossref
+DataCite_ContributorTypes,WorkPackageLeader,contributors,none,—,No such contributor role in Crossref
+Project_Team,Resource Author,creators,direct,author[].family / .given / .name,Universal on Crossref works
+Project_Team,Resource Author Type,creators,partial,author[] shape,Person vs organization inferable (given/family vs name); no explicit nameType
+Project_Team,Resource Author Identifier,creators,direct,author[].ORCID,ORCID only; ~13% of works (22.0M)
+Project_Team,Resource Author Identifier Type,creators,partial,(implicit),Always ORCID when present
+Project_Team,Resource Author Affiliation,creators,direct,author[].affiliation[].name,~20% of works (33.3M)
+Project_Team,Resource Author Affiliation Identifier,creators,direct,author[].affiliation[].id[].id,"ROR; ~0.7% of works (1.15M), growing"
+Project_Team,Resource Author Affiliation Identifier Type,creators,direct,author[].affiliation[].id[].id-type,"""ROR"""
+Project_Team,Temporal Extent,dates,none,—,No coverage dates
+Project_Team,Resource Contributor Name,contributors,partial,editor[] / translator[] / chair[],Only fixed roles — no general contributor list
+Project_Team,Resource Contributor Identifier,contributors,partial,editor[].ORCID etc.,ORCID on the role lists; rare
+Project_Team,Resource Contributor Identifier Type,contributors,partial,(implicit),Always ORCID when present
+Project_Team,Resource Contributor Affiliation,contributors,partial,editor[].affiliation[] etc.,"Structurally present, rarely deposited"
+Project_Team,Resource Contributor Affiliation Identifier,contributors,partial,editor[].affiliation[].id[] etc.,"Structurally present, rarely deposited"
+Project_Team,Funder Name,fundingReferences,direct,funder[].name,~9% of works (15.6M)
+Project_Team,Funder Identifier,fundingReferences,direct,funder[].DOI / funder[].id[],Funder Registry DOI today; RORs arriving as the registry merges into ROR
+Project_Team,ContactPerson,contributors,none,—,No such contributor role in Crossref
+Project_Team,DataManager,contributors,none,—,No such contributor role in Crossref
+Project_Team,Editor,contributors,direct,editor[],
+Project_Team,HostingInstitution,contributors,partial,institution{},"Only on reports, dissertations, posted content"
+Project_Team,Other,contributors,none,—,contributorType Other has no Crossref role
+Project_Team,Producer,contributors,none,—,No such contributor role in Crossref
+Project_Team,ProjectLeader,contributors,none,—,No such contributor role in Crossref
+Project_Team,ProjectManager,contributors,none,—,No such contributor role in Crossref
+Project_Team,ProjectMember,contributors,none,—,No such contributor role in Crossref
+Project_Team,RegistrationAgency,contributors,partial,source,"Implicit — every record’s agency is ""Crossref"""
+Project_Team,RelatedPerson,contributors,none,—,No such contributor role in Crossref
+Project_Team,Researcher,contributors,none,—,No such contributor role in Crossref
+Project_Team,Sponsor,contributors,none,—,No such contributor role in Crossref
+Project_Team,Supervisor,contributors,none,—,No such contributor role in Crossref
+Project_Team,WorkPackageLeader,contributors,none,—,No such contributor role in Crossref
+Project_Items,Audiovisual,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,Award,relatedIdentifiers,partial,grant records,Crossref grant DOIs exist; works rarely link them as relations
+Project_Items,Book,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,BookChapter,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,Collection,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,ComputationalNotebook,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,ConferencePaper,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,ConferenceProceeding,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,Dataset,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,Event,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,JournalArticle,relatedIdentifiers,partial,relation.is-preprint-of,Preprint→article links type the target implicitly
+Project_Items,Other,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,OutputManagementPlan,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,PhysicalObject,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,Project,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,Report,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,Software,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,Standard,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,Text,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Items,Workflow,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Relations,Related Identifier,relatedIdentifiers,direct,relation.*[].id + reference[].DOI,Typed relations plus the reference list
+Project_Relations,Related Identifier Type,relatedIdentifiers,direct,relation.*[].id-type,doi / issn / isbn / uri
+Project_Relations,Relation Type,relatedIdentifiers,direct,relation object keys,Shared vocabulary; Crossref subset
+Project_Relations,Related Item Type,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+Project_Relations,Continues,relatedIdentifiers,partial,relation.continues,In the relation schema; essentially undeposited
+Project_Relations,Describes,relatedIdentifiers,none,—,Not in the vocabulary
+Project_Relations,HasPart,relatedIdentifiers,direct,relation.has-part,"Components (figures, supplements) via is-component-of are common"
+Project_Relations,HasVersion,relatedIdentifiers,direct,relation.has-version,
+Project_Relations,IsCitedBy,relatedIdentifiers,partial,is-referenced-by-count,Count only; citing DOIs not in the work record
+Project_Relations,IsContinuedBy,relatedIdentifiers,partial,relation.is-continued-by,In the relation schema; essentially undeposited
+Project_Relations,IsDerivedFrom,relatedIdentifiers,partial,relation.is-derived-from / is-based-on,Derivation vocabulary differs; rarely deposited
+Project_Relations,IsDocumentedBy,relatedIdentifiers,partial,relation.is-documented-by,In the relation schema; essentially undeposited
+Project_Relations,IsIdenticalTo,relatedIdentifiers,direct,relation.is-identical-to,Used for mirrored / duplicate deposits
+Project_Relations,IsObsoletedBy,relatedIdentifiers,partial,updated-by / relation.is-replaced-by,The corrections-and-retractions model
+Project_Relations,RelatedItems Item Type,relatedItems,partial,reference[],Reference entries are the closest analog to citation relatedItems
+Project_Relations,RelatedItems Relation Type,relatedItems,partial,reference[],"All references are an implicit ""Cites"""
+Project_Relations,IsPartOf,relatedIdentifiers,direct,relation.is-part-of,Also structural: container-title / ISSN for articles
+Project_Relations,IsPublishedIn,relatedIdentifiers,partial,container-title / ISSN,"Structural in Crossref, not a relation"
+Project_Relations,IsReferencedBy,relatedIdentifiers,partial,is-referenced-by-count,Count only
+Project_Relations,IsSourceOf,relatedIdentifiers,partial,relation.has-derivation / is-basis-for,Rarely deposited
+Project_Relations,IsSupplementedBy,relatedIdentifiers,direct,relation.is-supplemented-by,
+Project_Relations,IsSupplementTo,relatedIdentifiers,direct,relation.is-supplement-to,
+Project_Relations,IsVariantFormOf,relatedIdentifiers,partial,relation.is-variant-form-of,In the relation schema; essentially undeposited
+Project_Relations,IsVersionOf,relatedIdentifiers,direct,relation.is-version-of,
+Project_Relations,Obsoletes,relatedIdentifiers,partial,update-to / relation.replaces,The corrections-and-retractions model
+Project_Relations,References,relatedIdentifiers,direct,reference[],Crossref does not distinguish Cites from References
+SHARE_stewardship,Spatial Extent,geoLocations,none,—,No geolocation
+SHARE_stewardship,Date Collected,dates,none,—,No collection dates
+SHARE_stewardship,Date Coverage,dates,none,—,No coverage dates
+SHARE_stewardship,Contributor Type,contributors,partial,role lists,Only editor / translator / chair; no contributorType vocabulary
+SHARE_stewardship,Keyword,subjects,none,—,subject[] was retired in 2024 and now returns empty
+SHARE_harmonization,Methods,descriptions,none,—,No typed descriptions
+SHARE_harmonization,Resource Author Identifier,creators,direct,author[].ORCID,ORCID only; ~13% of works (22.0M)
+SHARE_harmonization,Resource Contributor Identifier,contributors,partial,editor[].ORCID etc.,ORCID on the role lists; rare
+SHARE_harmonization,IsCitedBy,relatedIdentifiers,partial,is-referenced-by-count,Count only; citing DOIs not in the work record
+SHARE_harmonization,Abstract,descriptions,direct,abstract,JATS-XML markup; ~27% of works (44.8M)
+SHARE_harmonization,Resource Author Affiliation Identifier,creators,direct,author[].affiliation[].id[].id,"ROR; ~0.7% of works (1.15M), growing"
+SHARE_harmonization,Resource Contributor Affiliation Identifier,contributors,partial,editor[].affiliation[].id[] etc.,"Structurally present, rarely deposited"
+SHARE_harmonization,Resource Author Identifier Type,creators,partial,(implicit),Always ORCID when present
+SHARE_harmonization,Resource Author Affiliation Identifier Type,creators,direct,author[].affiliation[].id[].id-type,"""ROR"""
+SHARE_harmonization,Resource Contributor Identifier Type,contributors,partial,(implicit),Always ORCID when present
+SHARE_harmonization,Resource Contributor Affiliation Identifier Type,contributors,partial,editor[].affiliation[].id[].id-type,"Structurally present, rarely deposited"
+SHARE_access,Rights Identifier,rightsList,none,—,No SPDX identifier; derivable from license URL
+SHARE_access,Rights,rightsList,partial,license[].URL,URL only — no rights name; derivable from the URL
+SHARE_access,Date Available,dates,partial,license[].start,License start / embargo delay approximates availability
+SHARE_access,Resource Format,formats,partial,link[].content-type,MIME types of full-text links only
+SHARE_reuse,IsSourceOf,relatedIdentifiers,partial,relation.has-derivation / is-basis-for,Rarely deposited
+SHARE_reuse,Discovery Metrics,viewCount,none,—,No view counts
+SHARE_reuse,Access Metrics,downloadCount,none,—,No download counts
+SHARE_reuse,Citation Metrics,citationCount,direct,is-referenced-by-count,
+SHARE_engagement,JournalArticle,relatedIdentifiers,partial,relation.is-preprint-of,Preprint→article links type the target implicitly
+SHARE_engagement,Preprint,relatedIdentifiers,direct,relation.has-preprint,
+SHARE_engagement,ConferencePaper,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+SHARE_engagement,ConferenceProceeding,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+SHARE_engagement,Dataset,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+SHARE_engagement,Software,relatedIdentifiers,none,—,"Needs the related item's resource type, which Crossref relations don't carry"
+SHARE_engagement,Project Funder,fundingReferences,direct,funder[].name,~9% of works (15.6M)
+SHARE_engagement,Funder Identifier,fundingReferences,direct,funder[].DOI / funder[].id[],Funder Registry DOI today; RORs arriving as the registry merges into ROR
+SHARE_engagement,Award Title,fundingReferences,partial,grant records (type=grant),Works carry award numbers only; titles live on Crossref grant DOIs
+SHARE_engagement,Award Number,fundingReferences,direct,funder[].award[],
+SHARE_engagement,IsVersionOf,relatedIdentifiers,direct,relation.is-version-of,
+SHARE_engagement,Funder Identifier Type,fundingReferences,direct,funder[].id[].id-type,"""DOI"" (Funder Registry), ""ROR"""

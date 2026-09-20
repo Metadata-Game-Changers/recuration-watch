@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DataCite ↔ Crossref Crosswalk</title>
+</head>
+<body>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --accent:#9167b0; --accent-dk:#673289; --tint:#f0eaf5; --ink:#1f2330; --muted:#6b7280;
+    --line:#e6e3ec; --bg:#fbfafe; --surface:#ffffff; --code-bg:#f3f1f8;
+    --green:#3a9d6e; --green-bg:#e7f4ee; --amber:#b07607; --amber-bg:#fdf3df; --red:#c0392b; --red-bg:#fbeae7;
+  }
+  :root:not([data-theme="light"]){ }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --accent:#b18ad0; --accent-dk:#c9a6e4; --tint:#2a2337; --ink:#ece8f4; --muted:#a49bb8;
+      --line:#37304a; --bg:#17141d; --surface:#201b2a; --code-bg:#2b2438;
+      --green:#5cbd8f; --green-bg:#20372c; --amber:#d9a544; --amber-bg:#3a3016; --red:#e07a6c; --red-bg:#3d2320;
+    }
+  }
+  :root[data-theme="dark"]{
+    --accent:#b18ad0; --accent-dk:#c9a6e4; --tint:#2a2337; --ink:#ece8f4; --muted:#a49bb8;
+    --line:#37304a; --bg:#17141d; --surface:#201b2a; --code-bg:#2b2438;
+    --green:#5cbd8f; --green-bg:#20372c; --amber:#d9a544; --amber-bg:#3a3016; --red:#e07a6c; --red-bg:#3d2320;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:0}
+  .topbar{border-bottom:2px solid var(--ink);padding:.7rem 2rem .5rem}
+  .topbar-inner{max-width:1100px;margin:0 auto;display:flex;align-items:baseline;gap:1.2rem;flex-wrap:wrap}
+  .brand{font-family:Montserrat,Inter,sans-serif;font-size:1.7rem;font-weight:400;letter-spacing:.02em;color:var(--accent-dk);text-transform:uppercase;line-height:1.1}
+  .topbar-links{margin-left:auto;display:flex;gap:1.2rem;flex-wrap:wrap}
+  .topbar-links a{font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap}
+  .topbar-links a:hover{color:var(--accent-dk)}
+  .hero{background:var(--tint);border-bottom:2px solid var(--accent);padding:1.3rem 2rem}
+  .hero-inner{max-width:1100px;margin:0 auto}
+  .hero h1{font-size:1.25rem;font-weight:600;color:var(--accent-dk);margin:0 0 .4rem;text-wrap:balance}
+  .hero p{font-size:.85rem;line-height:1.6;max-width:70ch;margin:.3rem 0;color:var(--ink)}
+  .hero b{color:var(--accent-dk)}
+  .wrap{max-width:1100px;margin:0 auto;padding:1.4rem 1.5rem 3rem}
+  h2{font-size:1.05rem;color:var(--accent-dk);margin:2rem 0 .4rem;border-bottom:1px solid var(--line);padding-bottom:.3rem}
+  p{font-size:.84rem;line-height:1.6;max-width:76ch}
+  .kicker{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);display:block;margin:1.8rem 0 -.2rem}
+  code,.mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.86em}
+  code{background:var(--code-bg);padding:.05rem .3rem;border-radius:4px}
+  table{border-collapse:collapse;width:100%;font-size:.8rem;background:var(--surface)}
+  .tbl-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;margin:.7rem 0 1rem}
+  th{font-size:.64rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;text-align:left;padding:.5rem .65rem;border-bottom:1px solid var(--line);background:var(--code-bg);white-space:nowrap}
+  td{padding:.42rem .65rem;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.45}
+  tr:last-child td{border-bottom:none}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .chip{display:inline-block;font-size:.66rem;font-weight:600;padding:.1rem .5rem;border-radius:99px;line-height:1.5;white-space:nowrap}
+  .chip-direct{background:var(--green-bg);color:var(--green)}
+  .chip-partial{background:var(--amber-bg);color:var(--amber)}
+  .chip-none{background:var(--red-bg);color:var(--red)}
+  .c-d{color:var(--green)} .c-p{color:var(--amber)} .c-n{color:var(--red)}
+  .verdict{font-weight:600;white-space:nowrap}
+  .uc-head td{background:var(--tint);border-top:2px solid var(--accent);padding:.5rem .65rem}
+  .uc-name{font-weight:600;color:var(--accent-dk);margin-right:.6rem}
+  .uc-tag{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-right:1rem}
+  .uc-tally{font-size:.72rem;color:var(--muted)}
+  .uc-tally b{font-weight:600}
+  td.concept{font-weight:500;white-space:nowrap}
+  td.note{color:var(--muted);min-width:22ch}
+  .dim{color:var(--muted)}
+  .callout{border:1px solid var(--accent);border-left-width:4px;border-radius:8px;background:var(--tint);padding:.7rem 1rem;margin:1rem 0;font-size:.82rem;line-height:1.6;max-width:860px}
+  .callout b{color:var(--accent-dk)}
+  ul{font-size:.84rem;line-height:1.65;max-width:80ch;margin:.4rem 0 .8rem 1.1rem;padding:0}
+  li{margin:.3rem 0}
+  a{color:var(--accent-dk)}
+  .jump{font-size:.75rem;line-height:2;margin:.4rem 0 0;max-width:none}
+  .jump a{color:var(--accent-dk);text-decoration:none;white-space:nowrap}
+  .jump a:hover{text-decoration:underline}
+  footer{margin-top:2.5rem;font-size:.72rem;color:var(--muted);border-top:1px solid var(--line);padding-top:.8rem;line-height:1.6}
+</style>
+
+<div class="topbar"><div class="topbar-inner">
+  <div class="brand">DataCite ↔ Crossref Crosswalk</div>
+  <div class="topbar-links">
+    <a href="https://metadata-game-changers.github.io/recuration-watch/useCases.html" target="_blank" rel="noopener">Metadata Game Changers Use Cases ↗</a>
+    <a href="https://api.crossref.org/swagger-ui/index.html" target="_blank" rel="noopener">Crossref API ↗</a>
+    <a href="https://support.datacite.org/docs/api" target="_blank" rel="noopener">DataCite API ↗</a>
+  </div>
+</div></div>
+<div class="hero"><div class="hero-inner">
+  <h1>Can the Metadata Game Changers use cases run on Crossref metadata?</h1>
+  <p><b>Mostly yes, for a reduced catalog.</b> Of the 234 concept scorings across the fourteen use cases,
+  <b class="c-d">64 map directly</b> to the Crossref <span class="mono">/works</span> response,
+  <b class="c-p">71 map approximately</b>, and <b class="c-n">99 have no Crossref equivalent</b>.
+  The core FAIR Text and Identifiers concepts, funding, licenses, and most relation types survive the port;
+  contacts, contributor types, typed related items, keywords, and geographic/temporal coverage do not —
+  Crossref&rsquo;s journal-article heritage shows exactly where you&rsquo;d expect.</p>
+  <p style="font-size:.75rem;color:var(--muted)">Concepts from the Metadata Game Changers catalog (FAIR_spirals.json, 2026-09-06) · Crossref side verified against the live api.crossref.org (186.3M works)</p>
+</div></div>
+<div class="wrap">
+
+<h2>The verdict, use case by use case</h2>
+<div class="tbl-scroll"><table>
+<thead><tr><th>Use case</th><th>Group</th><th class="num">Concepts</th><th class="num">Direct</th><th class="num">Partial</th><th class="num">Unmapped</th><th>Reads as</th></tr></thead>
+<tbody>
+<tr><td><a href="#FAIR_Text">FAIR Text</a></td><td>FAIR</td><td class="num">15</td><td class="num c-d">9</td><td class="num c-p">2</td><td class="num c-n">4</td><td class="verdict c-d">Ports well</td></tr>
+<tr><td><a href="#FAIR_Identifiers">FAIR Identifiers</a></td><td>FAIR</td><td class="num">18</td><td class="num c-d">6</td><td class="num c-p">6</td><td class="num c-n">6</td><td class="verdict c-p">Ports with gaps</td></tr>
+<tr><td><a href="#FAIR_Connections">FAIR Connections</a></td><td>FAIR</td><td class="num">18</td><td class="num c-d">3</td><td class="num c-p">7</td><td class="num c-n">8</td><td class="verdict c-p">Weak port</td></tr>
+<tr><td><a href="#FAIR_Contacts">FAIR Contacts</a></td><td>FAIR</td><td class="num">10</td><td class="num c-d">1</td><td class="num c-p">0</td><td class="num c-n">9</td><td class="verdict c-n">Does not port</td></tr>
+<tr><td><a href="#Project_Team">Project Team</a></td><td>Projects</td><td class="num">30</td><td class="num c-d">8</td><td class="num c-p">9</td><td class="num c-n">13</td><td class="verdict c-p">Author half ports</td></tr>
+<tr><td><a href="#Project_Items">Project Items</a></td><td>Projects</td><td class="num">20</td><td class="num c-d">0</td><td class="num c-p">2</td><td class="num c-n">18</td><td class="verdict c-n">Does not port</td></tr>
+<tr><td><a href="#Project_Relations">Project Relations</a></td><td>Projects</td><td class="num">26</td><td class="num c-d">11</td><td class="num c-p">13</td><td class="num c-n">2</td><td class="verdict c-d">Ports well</td></tr>
+<tr><td><a href="#SHARE_stewardship">SHARE Stewardship</a></td><td>SHARE</td><td class="num">5</td><td class="num c-d">0</td><td class="num c-p">1</td><td class="num c-n">4</td><td class="verdict c-n">Does not port</td></tr>
+<tr><td><a href="#SHARE_harmonization">SHARE Harmonization</a></td><td>SHARE</td><td class="num">11</td><td class="num c-d">4</td><td class="num c-p">6</td><td class="num c-n">1</td><td class="verdict c-d">Ports well</td></tr>
+<tr><td><a href="#SHARE_access">SHARE Access</a></td><td>SHARE</td><td class="num">4</td><td class="num c-d">0</td><td class="num c-p">3</td><td class="num c-n">1</td><td class="verdict c-p">Approximate</td></tr>
+<tr><td><a href="#SHARE_reuse">SHARE Reuse</a></td><td>SHARE</td><td class="num">4</td><td class="num c-d">1</td><td class="num c-p">1</td><td class="num c-n">2</td><td class="verdict c-p">Citations only</td></tr>
+<tr><td><a href="#SHARE_engagement">SHARE Engagement</a></td><td>SHARE</td><td class="num">12</td><td class="num c-d">6</td><td class="num c-p">2</td><td class="num c-n">4</td><td class="verdict c-p">Ports with gaps</td></tr>
+<tr><td><a href="#DataCite_Relations">DataCite Relations</a></td><td>Extras</td><td class="num">41</td><td class="num c-d">15</td><td class="num c-p">17</td><td class="num c-n">9</td><td class="verdict c-p">Ports with gaps</td></tr>
+<tr><td><a href="#DataCite_ContributorTypes">DataCite Contributors</a></td><td>Extras</td><td class="num">20</td><td class="num c-d">0</td><td class="num c-p">2</td><td class="num c-n">18</td><td class="verdict c-n">Does not port</td></tr>
+</tbody></table></div>
+
+<div class="callout"><b>Metadata Connectivity ports better than the completeness catalog.</b> Its questions map almost one-for-one:
+creator identifiers → <code>author[].ORCID</code>, affiliations → <code>author[].affiliation[].name</code>,
+affiliation identifiers → <code>affiliation[].id[]</code> (ROR), funder identifiers → <code>funder[].DOI</code>/<code>funder[].id[]</code>,
+rights URIs → <code>license[].URL</code>. The two casualties: publisher identifiers (Crossref identifies the depositing <i>member</i>, not a publisher ROR)
+and the contributor bars (no contributor-type vocabulary). An Organization Completeness analog also exists:
+<code>filter=ror-id:&lt;ROR&gt;</code> finds an organization&rsquo;s works (12,912 for Wageningen), and <code>facet=publisher-name</code> plays the role of the client facet.</div>
+
+<h2>Element level: where the concepts come from</h2>
+<p>The 234 concept scorings draw on about fifteen DataCite properties. This is how each property fares, with live coverage of the 186.3M Crossref works where a filter exists to measure it.</p>
+<div class="tbl-scroll"><table>
+<thead><tr><th>DataCite property</th><th>Crossref equivalent</th><th>Status</th><th class="num">Crossref coverage</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td class="mono">titles, publisher, publicationYear, types, doi, url</td><td class="mono">title[], publisher, issued, type, DOI, resource.primary.URL</td><td><span class="chip chip-direct">direct</span></td><td class="num">~100%</td><td class="note">The required core; type vocabularies differ (30 Crossref types vs resourceTypeGeneral)</td></tr>
+<tr><td class="mono">creators (names)</td><td class="mono">author[]</td><td><span class="chip chip-direct">direct</span></td><td class="num">~100%</td><td class="note">given/family vs name distinguishes people from organizations</td></tr>
+<tr><td class="mono">creators → nameIdentifiers</td><td class="mono">author[].ORCID</td><td><span class="chip chip-direct">direct</span></td><td class="num">11.8% (22.0M)</td><td class="note">ORCID only</td></tr>
+<tr><td class="mono">creators → affiliation</td><td class="mono">author[].affiliation[].name</td><td><span class="chip chip-direct">direct</span></td><td class="num">17.9% (33.3M)</td><td class="note"></td></tr>
+<tr><td class="mono">creators → affiliation identifiers</td><td class="mono">author[].affiliation[].id[]</td><td><span class="chip chip-direct">direct</span></td><td class="num">0.6% (1.15M)</td><td class="note">ROR, publisher-asserted; young and growing</td></tr>
+<tr><td class="mono">contributors (24 types)</td><td class="mono">editor[] / translator[] / chair[]</td><td><span class="chip chip-partial">partial</span></td><td class="num">—</td><td class="note">Three fixed roles; no ContactPerson, Distributor, RightsHolder, Data*, Project* …</td></tr>
+<tr><td class="mono">fundingReferences</td><td class="mono">funder[] {name, DOI, id[], award[]}</td><td><span class="chip chip-direct">direct</span></td><td class="num">8.4% (15.6M)</td><td class="note">Award titles only on separate grant records (type=grant)</td></tr>
+<tr><td class="mono">rightsList</td><td class="mono">license[].URL</td><td><span class="chip chip-partial">partial</span></td><td class="num">45.0% (83.9M)</td><td class="note">URL only — no rights name or SPDX identifier fields</td></tr>
+<tr><td class="mono">descriptions (Abstract)</td><td class="mono">abstract</td><td><span class="chip chip-direct">direct</span></td><td class="num">24.1% (44.8M)</td><td class="note">JATS XML; Methods / TechnicalInfo have no home</td></tr>
+<tr><td class="mono">relatedIdentifiers</td><td class="mono">relation{} + reference[]</td><td><span class="chip chip-partial">partial</span></td><td class="num">7.3% relations · 43.7% references</td><td class="note">Shared relation vocabulary, Crossref subset; no target resource types</td></tr>
+<tr><td class="mono">relatedItems</td><td class="mono">reference[]</td><td><span class="chip chip-partial">partial</span></td><td class="num">43.7% (81.4M)</td><td class="note">Reference entries ≈ citation relatedItems</td></tr>
+<tr><td class="mono">subjects</td><td class="mono">—</td><td><span class="chip chip-none">none</span></td><td class="num">0%</td><td class="note">subject[] retired 2024, now empty</td></tr>
+<tr><td class="mono">dates (typed)</td><td class="mono">created, issued, accepted, license[].start</td><td><span class="chip chip-partial">partial</span></td><td class="num">—</td><td class="note">System dates; no Collected / Coverage / depositor-typed dates</td></tr>
+<tr><td class="mono">geoLocations</td><td class="mono">—</td><td><span class="chip chip-none">none</span></td><td class="num">0%</td><td class="note"></td></tr>
+<tr><td class="mono">sizes, formats</td><td class="mono">link[].content-type</td><td><span class="chip chip-none">none</span></td><td class="num">—</td><td class="note">MIME of full-text links at best</td></tr>
+<tr><td class="mono">viewCount, downloadCount, citationCount</td><td class="mono">is-referenced-by-count</td><td><span class="chip chip-partial">partial</span></td><td class="num">~100%</td><td class="note">Citations yes; views and downloads no</td></tr>
+</tbody></table></div>
+
+<h2>The full crosswalk, concept by concept</h2>
+<p class="jump">Jump to:
+<a href="#FAIR_Text">Text</a> · <a href="#FAIR_Identifiers">Identifiers</a> · <a href="#FAIR_Connections">Connections</a> · <a href="#FAIR_Contacts">Contacts</a> ·
+<a href="#DataCite_Relations">Relations</a> · <a href="#DataCite_ContributorTypes">Contributors</a> ·
+<a href="#Project_Team">Project Team</a> · <a href="#Project_Items">Project Items</a> · <a href="#Project_Relations">Project Relations</a> ·
+<a href="#SHARE_stewardship">Stewardship</a> · <a href="#SHARE_harmonization">Harmonization</a> · <a href="#SHARE_access">Access</a> · <a href="#SHARE_reuse">Reuse</a> · <a href="#SHARE_engagement">Engagement</a></p>
+<div class="tbl-scroll"><table>
+<thead><tr><th>Concept</th><th>DataCite field</th><th>Status</th><th>Crossref field</th><th>Note</th></tr></thead>
+<tbody>
+<tr class="uc-head" id="FAIR_Text"><td colspan="5"><span class="uc-name">FAIR Text</span><span class="uc-tag">FAIR</span><span class="uc-tally"><b class="c-d">9</b> direct · <b class="c-p">2</b> partial · <b class="c-n">4</b> unmapped of 15</span></td></tr>
+<tr><td class="concept">Abstract</td><td class="mono dim">descriptions</td><td><span class="chip chip-direct">direct</span></td><td class="mono">abstract</td><td class="note">JATS-XML markup; ~27% of works (44.8M)</td></tr>
+<tr><td class="concept">Date Created</td><td class="mono dim">dates</td><td><span class="chip chip-partial">partial</span></td><td class="mono">created</td><td class="note">Registration timestamp, not a depositor-supplied content date</td></tr>
+<tr><td class="concept">Keyword</td><td class="mono dim">subjects</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">subject[] was retired in 2024 and now returns empty</td></tr>
+<tr><td class="concept">Keyword Vocabulary</td><td class="mono dim">subjects</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No keywords</td></tr>
+<tr><td class="concept">Resource Author Affiliation</td><td class="mono dim">creators</td><td><span class="chip chip-direct">direct</span></td><td class="mono">author[].affiliation[].name</td><td class="note">~20% of works (33.3M)</td></tr>
+<tr><td class="concept">Resource Author</td><td class="mono dim">creators</td><td><span class="chip chip-direct">direct</span></td><td class="mono">author[].family / .given / .name</td><td class="note">Universal on Crossref works</td></tr>
+<tr><td class="concept">Resource Identifier</td><td class="mono dim">identifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">DOI</td><td class="note"></td></tr>
+<tr><td class="concept">Resource Publication Date</td><td class="mono dim">publicationYear</td><td><span class="chip chip-direct">direct</span></td><td class="mono">issued.date-parts</td><td class="note">Also published / published-print / published-online</td></tr>
+<tr><td class="concept">Resource Publisher</td><td class="mono dim">publisher</td><td><span class="chip chip-direct">direct</span></td><td class="mono">publisher</td><td class="note"></td></tr>
+<tr><td class="concept">Resource Title</td><td class="mono dim">titles</td><td><span class="chip chip-direct">direct</span></td><td class="mono">title[]</td><td class="note"></td></tr>
+<tr><td class="concept">Resource Type General</td><td class="mono dim">types</td><td><span class="chip chip-direct">direct</span></td><td class="mono">type</td><td class="note">30-value vocabulary; needs a crosswalk to resourceTypeGeneral</td></tr>
+<tr><td class="concept">Project Funder</td><td class="mono dim">fundingReferences</td><td><span class="chip chip-direct">direct</span></td><td class="mono">funder[].name</td><td class="note">~9% of works (15.6M)</td></tr>
+<tr><td class="concept">Award Title</td><td class="mono dim">fundingReferences</td><td><span class="chip chip-partial">partial</span></td><td class="mono">grant records (type=grant)</td><td class="note">Works carry award numbers only; titles live on Crossref grant DOIs</td></tr>
+<tr><td class="concept">Temporal Extent</td><td class="mono dim">dates</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No coverage dates</td></tr>
+<tr><td class="concept">Spatial Extent</td><td class="mono dim">geoLocations</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No geolocation</td></tr>
+<tr class="uc-head" id="FAIR_Identifiers"><td colspan="5"><span class="uc-name">FAIR Identifiers</span><span class="uc-tag">FAIR</span><span class="uc-tally"><b class="c-d">6</b> direct · <b class="c-p">6</b> partial · <b class="c-n">6</b> unmapped of 18</span></td></tr>
+<tr><td class="concept">Date Submitted</td><td class="mono dim">dates</td><td><span class="chip chip-partial">partial</span></td><td class="mono">accepted / posted</td><td class="note">Closest equivalents, on some record types</td></tr>
+<tr><td class="concept">Keyword Value URI</td><td class="mono dim">subjects</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No keywords</td></tr>
+<tr><td class="concept">Keyword Vocabulary URI</td><td class="mono dim">subjects</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No keywords</td></tr>
+<tr><td class="concept">Resource Author Type</td><td class="mono dim">creators</td><td><span class="chip chip-partial">partial</span></td><td class="mono">author[] shape</td><td class="note">Person vs organization inferable (given/family vs name); no explicit nameType</td></tr>
+<tr><td class="concept">Resource Author Identifier</td><td class="mono dim">creators</td><td><span class="chip chip-direct">direct</span></td><td class="mono">author[].ORCID</td><td class="note">ORCID only; ~13% of works (22.0M)</td></tr>
+<tr><td class="concept">Resource Author Identifier Type</td><td class="mono dim">creators</td><td><span class="chip chip-partial">partial</span></td><td class="mono">(implicit)</td><td class="note">Always ORCID when present</td></tr>
+<tr><td class="concept">Publisher Identifier</td><td class="mono dim">publisher</td><td><span class="chip chip-partial">partial</span></td><td class="mono">member</td><td class="note">Crossref member ID (the depositor), not a publisher ROR</td></tr>
+<tr><td class="concept">Publisher Identifier Type</td><td class="mono dim">publisher</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note"></td></tr>
+<tr><td class="concept">Publisher Identifier Scheme URI</td><td class="mono dim">publisher</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note"></td></tr>
+<tr><td class="concept">Resource Author Affiliation Identifier</td><td class="mono dim">creators</td><td><span class="chip chip-direct">direct</span></td><td class="mono">author[].affiliation[].id[].id</td><td class="note">ROR; ~0.7% of works (1.15M), growing</td></tr>
+<tr><td class="concept">Resource Author Affiliation Identifier Type</td><td class="mono dim">creators</td><td><span class="chip chip-direct">direct</span></td><td class="mono">author[].affiliation[].id[].id-type</td><td class="note">&quot;ROR&quot;</td></tr>
+<tr><td class="concept">Resource Author Affiliation Identifier Scheme URI</td><td class="mono dim">creators</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No schemeUri field; derivable from id-type</td></tr>
+<tr><td class="concept">Resource Identifier Type</td><td class="mono dim">identifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">(implicit)</td><td class="note">Always DOI</td></tr>
+<tr><td class="concept">Resource Type</td><td class="mono dim">types</td><td><span class="chip chip-partial">partial</span></td><td class="mono">type</td><td class="note">No free-text resourceType</td></tr>
+<tr><td class="concept">Funder Identifier</td><td class="mono dim">fundingReferences</td><td><span class="chip chip-direct">direct</span></td><td class="mono">funder[].DOI / funder[].id[]</td><td class="note">Funder Registry DOI today; RORs arriving as the registry merges into ROR</td></tr>
+<tr><td class="concept">Funder Identifier Type</td><td class="mono dim">fundingReferences</td><td><span class="chip chip-direct">direct</span></td><td class="mono">funder[].id[].id-type</td><td class="note">&quot;DOI&quot; (Funder Registry), &quot;ROR&quot;</td></tr>
+<tr><td class="concept">Award URI</td><td class="mono dim">fundingReferences</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note"></td></tr>
+<tr><td class="concept">Award Number</td><td class="mono dim">fundingReferences</td><td><span class="chip chip-direct">direct</span></td><td class="mono">funder[].award[]</td><td class="note"></td></tr>
+<tr class="uc-head" id="FAIR_Connections"><td colspan="5"><span class="uc-name">FAIR Connections</span><span class="uc-tag">FAIR</span><span class="uc-tally"><b class="c-d">3</b> direct · <b class="c-p">7</b> partial · <b class="c-n">8</b> unmapped of 18</span></td></tr>
+<tr><td class="concept">CitedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">is-referenced-by-count</td><td class="note">Count only</td></tr>
+<tr><td class="concept">Date Available</td><td class="mono dim">dates</td><td><span class="chip chip-partial">partial</span></td><td class="mono">license[].start</td><td class="note">License start / embargo delay approximates availability</td></tr>
+<tr><td class="concept">DescribedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Not in the vocabulary</td></tr>
+<tr><td class="concept">Distribution Contact</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No Distributor role</td></tr>
+<tr><td class="concept">DocumentedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.is-documented-by</td><td class="note">In the relation schema; essentially undeposited</td></tr>
+<tr><td class="concept">Resource Contact</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No ContactPerson role</td></tr>
+<tr><td class="concept">HasMetadata</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Not in the vocabulary</td></tr>
+<tr><td class="concept">Resource Format</td><td class="mono dim">formats</td><td><span class="chip chip-partial">partial</span></td><td class="mono">link[].content-type</td><td class="note">MIME types of full-text links only</td></tr>
+<tr><td class="concept">Resource Size</td><td class="mono dim">sizes</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note"></td></tr>
+<tr><td class="concept">Resource URL</td><td class="mono dim">url</td><td><span class="chip chip-direct">direct</span></td><td class="mono">resource.primary.URL</td><td class="note">Landing page URL</td></tr>
+<tr><td class="concept">Rights</td><td class="mono dim">rightsList</td><td><span class="chip chip-partial">partial</span></td><td class="mono">license[].URL</td><td class="note">URL only — no rights name; derivable from the URL</td></tr>
+<tr><td class="concept">RightsHolder</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No RightsHolder role; copyright lines occasionally in assertion[]</td></tr>
+<tr><td class="concept">Methods</td><td class="mono dim">descriptions</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No typed descriptions</td></tr>
+<tr><td class="concept">Technical Information</td><td class="mono dim">descriptions</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No typed descriptions</td></tr>
+<tr><td class="concept">ReferencedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">is-referenced-by-count</td><td class="note">Count only</td></tr>
+<tr><td class="concept">ReviewedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.has-review</td><td class="note"></td></tr>
+<tr><td class="concept">SourceOf</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.has-derivation / is-basis-for</td><td class="note">Rarely deposited</td></tr>
+<tr><td class="concept">SupplementTo</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.is-supplement-to</td><td class="note"></td></tr>
+<tr class="uc-head" id="FAIR_Contacts"><td colspan="5"><span class="uc-name">FAIR Contacts</span><span class="uc-tag">FAIR</span><span class="uc-tally"><b class="c-d">1</b> direct · <b class="c-p">0</b> partial · <b class="c-n">9</b> unmapped of 10</span></td></tr>
+<tr><td class="concept">Resource Contact Identifier</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Role does not exist</td></tr>
+<tr><td class="concept">Resource Contact Identifier Scheme</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Role does not exist</td></tr>
+<tr><td class="concept">Resource Contact Identifier Scheme URI</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Role does not exist</td></tr>
+<tr><td class="concept">Distribution Contact Identifier</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Role does not exist</td></tr>
+<tr><td class="concept">Distribution Contact Identifier Scheme</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Role does not exist</td></tr>
+<tr><td class="concept">Distribution Contact Identifier Scheme URI</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Role does not exist</td></tr>
+<tr><td class="concept">Rights Holder Identifier</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Role does not exist</td></tr>
+<tr><td class="concept">Rights Holder Identifier Scheme</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Role does not exist</td></tr>
+<tr><td class="concept">Rights Holder Identifier Scheme URI</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Role does not exist</td></tr>
+<tr><td class="concept">Rights URI</td><td class="mono dim">rightsList</td><td><span class="chip chip-direct">direct</span></td><td class="mono">license[].URL</td><td class="note">~50% of works (83.9M)</td></tr>
+<tr class="uc-head" id="DataCite_Relations"><td colspan="5"><span class="uc-name">DataCite Relations</span><span class="uc-tag">Extras</span><span class="uc-tally"><b class="c-d">15</b> direct · <b class="c-p">17</b> partial · <b class="c-n">9</b> unmapped of 41</span></td></tr>
+<tr><td class="concept">Related Identifier</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.*[].id + reference[].DOI</td><td class="note">Typed relations plus the reference list</td></tr>
+<tr><td class="concept">Related Identifier Type</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.*[].id-type</td><td class="note">doi / issn / isbn / uri</td></tr>
+<tr><td class="concept">Related Item Type</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">Cites</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">reference[]</td><td class="note">Citations are the reference list; ~48% of works (81.4M)</td></tr>
+<tr><td class="concept">IsCitedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">is-referenced-by-count</td><td class="note">Count only; citing DOIs not in the work record</td></tr>
+<tr><td class="concept">Collects</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Not in the Crossref relation vocabulary</td></tr>
+<tr><td class="concept">IsCollectedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Not in the Crossref relation vocabulary</td></tr>
+<tr><td class="concept">IsSupplementTo</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.is-supplement-to</td><td class="note"></td></tr>
+<tr><td class="concept">IsSupplementedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.is-supplemented-by</td><td class="note"></td></tr>
+<tr><td class="concept">IsTranslationOf</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.is-translation-of</td><td class="note"></td></tr>
+<tr><td class="concept">HasTranslation</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.has-translation</td><td class="note"></td></tr>
+<tr><td class="concept">Continues</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.continues</td><td class="note">In the relation schema; essentially undeposited</td></tr>
+<tr><td class="concept">IsContinuedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.is-continued-by</td><td class="note">In the relation schema; essentially undeposited</td></tr>
+<tr><td class="concept">IsNewVersionOf</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.is-version-of / replaces</td><td class="note">No new-vs-previous distinction</td></tr>
+<tr><td class="concept">IsPreviousVersionOf</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.has-version / is-replaced-by</td><td class="note">No new-vs-previous distinction</td></tr>
+<tr><td class="concept">IsPartOf</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.is-part-of</td><td class="note">Also structural: container-title / ISSN for articles</td></tr>
+<tr><td class="concept">HasPart</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.has-part</td><td class="note">Components (figures, supplements) via is-component-of are common</td></tr>
+<tr><td class="concept">IsPublishedIn</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">container-title / ISSN</td><td class="note">Structural in Crossref, not a relation</td></tr>
+<tr><td class="concept">IsReferencedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">is-referenced-by-count</td><td class="note">Count only</td></tr>
+<tr><td class="concept">References</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">reference[]</td><td class="note">Crossref does not distinguish Cites from References</td></tr>
+<tr><td class="concept">Documents</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.documents</td><td class="note">In the relation schema; essentially undeposited</td></tr>
+<tr><td class="concept">IsDocumentedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.is-documented-by</td><td class="note">In the relation schema; essentially undeposited</td></tr>
+<tr><td class="concept">IsCompiledBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Not in the Crossref relation vocabulary</td></tr>
+<tr><td class="concept">Compiles</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Not in the Crossref relation vocabulary</td></tr>
+<tr><td class="concept">IsVariantFormOf</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.is-variant-form-of</td><td class="note">In the relation schema; essentially undeposited</td></tr>
+<tr><td class="concept">IsOriginalFormOf</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.is-original-form-of</td><td class="note">In the relation schema; essentially undeposited</td></tr>
+<tr><td class="concept">IsIdenticalTo</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.is-identical-to</td><td class="note">Used for mirrored / duplicate deposits</td></tr>
+<tr><td class="concept">HasMetadata</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Not in the vocabulary</td></tr>
+<tr><td class="concept">IsMetadataFor</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Not in the vocabulary</td></tr>
+<tr><td class="concept">Reviews</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.is-review-of</td><td class="note">Peer-review records carry these</td></tr>
+<tr><td class="concept">IsReviewedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.has-review</td><td class="note"></td></tr>
+<tr><td class="concept">IsDerivedFrom</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.is-derived-from / is-based-on</td><td class="note">Derivation vocabulary differs; rarely deposited</td></tr>
+<tr><td class="concept">IsSourceOf</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.has-derivation / is-basis-for</td><td class="note">Rarely deposited</td></tr>
+<tr><td class="concept">Describes</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Not in the vocabulary</td></tr>
+<tr><td class="concept">IsDescribedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Not in the vocabulary</td></tr>
+<tr><td class="concept">HasVersion</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.has-version</td><td class="note"></td></tr>
+<tr><td class="concept">IsVersionOf</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.is-version-of</td><td class="note"></td></tr>
+<tr><td class="concept">Requires</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.requires</td><td class="note">In the relation schema; essentially undeposited</td></tr>
+<tr><td class="concept">IsRequiredBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.is-required-by</td><td class="note">In the relation schema; essentially undeposited</td></tr>
+<tr><td class="concept">Obsoletes</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">update-to / relation.replaces</td><td class="note">The corrections-and-retractions model</td></tr>
+<tr><td class="concept">IsObsoletedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">updated-by / relation.is-replaced-by</td><td class="note">The corrections-and-retractions model</td></tr>
+<tr class="uc-head" id="DataCite_ContributorTypes"><td colspan="5"><span class="uc-name">DataCite Contributors</span><span class="uc-tag">Extras</span><span class="uc-tally"><b class="c-d">0</b> direct · <b class="c-p">2</b> partial · <b class="c-n">18</b> unmapped of 20</span></td></tr>
+<tr><td class="concept">ContactPerson</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">DataCollector</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">DataCurator</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">DataManager</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">Distributor</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">HostingInstitution</td><td class="mono dim">contributors</td><td><span class="chip chip-partial">partial</span></td><td class="mono">institution{}</td><td class="note">Only on reports, dissertations, posted content</td></tr>
+<tr><td class="concept">OtherContributor</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">Producer</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">ProjectLeader</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">ProjectManager</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">ProjectMember</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">RegistrationAgency</td><td class="mono dim">contributors</td><td><span class="chip chip-partial">partial</span></td><td class="mono">source</td><td class="note">Implicit — every record’s agency is &quot;Crossref&quot;</td></tr>
+<tr><td class="concept">RegistrationAuthority</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">RelatedPerson</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">ResearchGroup</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">RightsHolder</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No RightsHolder role; copyright lines occasionally in assertion[]</td></tr>
+<tr><td class="concept">Researcher</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">Sponsor</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">Supervisor</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">WorkPackageLeader</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr class="uc-head" id="Project_Team"><td colspan="5"><span class="uc-name">Project Team Members</span><span class="uc-tag">Projects</span><span class="uc-tally"><b class="c-d">8</b> direct · <b class="c-p">9</b> partial · <b class="c-n">13</b> unmapped of 30</span></td></tr>
+<tr><td class="concept">Resource Author</td><td class="mono dim">creators</td><td><span class="chip chip-direct">direct</span></td><td class="mono">author[].family / .given / .name</td><td class="note">Universal on Crossref works</td></tr>
+<tr><td class="concept">Resource Author Type</td><td class="mono dim">creators</td><td><span class="chip chip-partial">partial</span></td><td class="mono">author[] shape</td><td class="note">Person vs organization inferable (given/family vs name); no explicit nameType</td></tr>
+<tr><td class="concept">Resource Author Identifier</td><td class="mono dim">creators</td><td><span class="chip chip-direct">direct</span></td><td class="mono">author[].ORCID</td><td class="note">ORCID only; ~13% of works (22.0M)</td></tr>
+<tr><td class="concept">Resource Author Identifier Type</td><td class="mono dim">creators</td><td><span class="chip chip-partial">partial</span></td><td class="mono">(implicit)</td><td class="note">Always ORCID when present</td></tr>
+<tr><td class="concept">Resource Author Affiliation</td><td class="mono dim">creators</td><td><span class="chip chip-direct">direct</span></td><td class="mono">author[].affiliation[].name</td><td class="note">~20% of works (33.3M)</td></tr>
+<tr><td class="concept">Resource Author Affiliation Identifier</td><td class="mono dim">creators</td><td><span class="chip chip-direct">direct</span></td><td class="mono">author[].affiliation[].id[].id</td><td class="note">ROR; ~0.7% of works (1.15M), growing</td></tr>
+<tr><td class="concept">Resource Author Affiliation Identifier Type</td><td class="mono dim">creators</td><td><span class="chip chip-direct">direct</span></td><td class="mono">author[].affiliation[].id[].id-type</td><td class="note">&quot;ROR&quot;</td></tr>
+<tr><td class="concept">Temporal Extent</td><td class="mono dim">dates</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No coverage dates</td></tr>
+<tr><td class="concept">Resource Contributor Name</td><td class="mono dim">contributors</td><td><span class="chip chip-partial">partial</span></td><td class="mono">editor[] / translator[] / chair[]</td><td class="note">Only fixed roles — no general contributor list</td></tr>
+<tr><td class="concept">Resource Contributor Identifier</td><td class="mono dim">contributors</td><td><span class="chip chip-partial">partial</span></td><td class="mono">editor[].ORCID etc.</td><td class="note">ORCID on the role lists; rare</td></tr>
+<tr><td class="concept">Resource Contributor Identifier Type</td><td class="mono dim">contributors</td><td><span class="chip chip-partial">partial</span></td><td class="mono">(implicit)</td><td class="note">Always ORCID when present</td></tr>
+<tr><td class="concept">Resource Contributor Affiliation</td><td class="mono dim">contributors</td><td><span class="chip chip-partial">partial</span></td><td class="mono">editor[].affiliation[] etc.</td><td class="note">Structurally present, rarely deposited</td></tr>
+<tr><td class="concept">Resource Contributor Affiliation Identifier</td><td class="mono dim">contributors</td><td><span class="chip chip-partial">partial</span></td><td class="mono">editor[].affiliation[].id[] etc.</td><td class="note">Structurally present, rarely deposited</td></tr>
+<tr><td class="concept">Funder Name</td><td class="mono dim">fundingReferences</td><td><span class="chip chip-direct">direct</span></td><td class="mono">funder[].name</td><td class="note">~9% of works (15.6M)</td></tr>
+<tr><td class="concept">Funder Identifier</td><td class="mono dim">fundingReferences</td><td><span class="chip chip-direct">direct</span></td><td class="mono">funder[].DOI / funder[].id[]</td><td class="note">Funder Registry DOI today; RORs arriving as the registry merges into ROR</td></tr>
+<tr><td class="concept">ContactPerson</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">DataManager</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">Editor</td><td class="mono dim">contributors</td><td><span class="chip chip-direct">direct</span></td><td class="mono">editor[]</td><td class="note"></td></tr>
+<tr><td class="concept">HostingInstitution</td><td class="mono dim">contributors</td><td><span class="chip chip-partial">partial</span></td><td class="mono">institution{}</td><td class="note">Only on reports, dissertations, posted content</td></tr>
+<tr><td class="concept">Other</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">contributorType Other has no Crossref role</td></tr>
+<tr><td class="concept">Producer</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">ProjectLeader</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">ProjectManager</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">ProjectMember</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">RegistrationAgency</td><td class="mono dim">contributors</td><td><span class="chip chip-partial">partial</span></td><td class="mono">source</td><td class="note">Implicit — every record’s agency is &quot;Crossref&quot;</td></tr>
+<tr><td class="concept">RelatedPerson</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">Researcher</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">Sponsor</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">Supervisor</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr><td class="concept">WorkPackageLeader</td><td class="mono dim">contributors</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No such contributor role in Crossref</td></tr>
+<tr class="uc-head" id="Project_Items"><td colspan="5"><span class="uc-name">Project Items</span><span class="uc-tag">Projects</span><span class="uc-tally"><b class="c-d">0</b> direct · <b class="c-p">2</b> partial · <b class="c-n">18</b> unmapped of 20</span></td></tr>
+<tr><td class="concept">Audiovisual</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">Award</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">grant records</td><td class="note">Crossref grant DOIs exist; works rarely link them as relations</td></tr>
+<tr><td class="concept">Book</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">BookChapter</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">Collection</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">ComputationalNotebook</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">ConferencePaper</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">ConferenceProceeding</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">Dataset</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">Event</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">JournalArticle</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.is-preprint-of</td><td class="note">Preprint→article links type the target implicitly</td></tr>
+<tr><td class="concept">Other</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">OutputManagementPlan</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">PhysicalObject</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">Project</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">Report</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">Software</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">Standard</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">Text</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">Workflow</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr class="uc-head" id="Project_Relations"><td colspan="5"><span class="uc-name">Project Relations</span><span class="uc-tag">Projects</span><span class="uc-tally"><b class="c-d">11</b> direct · <b class="c-p">13</b> partial · <b class="c-n">2</b> unmapped of 26</span></td></tr>
+<tr><td class="concept">Related Identifier</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.*[].id + reference[].DOI</td><td class="note">Typed relations plus the reference list</td></tr>
+<tr><td class="concept">Related Identifier Type</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.*[].id-type</td><td class="note">doi / issn / isbn / uri</td></tr>
+<tr><td class="concept">Relation Type</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation object keys</td><td class="note">Shared vocabulary; Crossref subset</td></tr>
+<tr><td class="concept">Related Item Type</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">Continues</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.continues</td><td class="note">In the relation schema; essentially undeposited</td></tr>
+<tr><td class="concept">Describes</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Not in the vocabulary</td></tr>
+<tr><td class="concept">HasPart</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.has-part</td><td class="note">Components (figures, supplements) via is-component-of are common</td></tr>
+<tr><td class="concept">HasVersion</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.has-version</td><td class="note"></td></tr>
+<tr><td class="concept">IsCitedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">is-referenced-by-count</td><td class="note">Count only; citing DOIs not in the work record</td></tr>
+<tr><td class="concept">IsContinuedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.is-continued-by</td><td class="note">In the relation schema; essentially undeposited</td></tr>
+<tr><td class="concept">IsDerivedFrom</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.is-derived-from / is-based-on</td><td class="note">Derivation vocabulary differs; rarely deposited</td></tr>
+<tr><td class="concept">IsDocumentedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.is-documented-by</td><td class="note">In the relation schema; essentially undeposited</td></tr>
+<tr><td class="concept">IsIdenticalTo</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.is-identical-to</td><td class="note">Used for mirrored / duplicate deposits</td></tr>
+<tr><td class="concept">IsObsoletedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">updated-by / relation.is-replaced-by</td><td class="note">The corrections-and-retractions model</td></tr>
+<tr><td class="concept">RelatedItems Item Type</td><td class="mono dim">relatedItems</td><td><span class="chip chip-partial">partial</span></td><td class="mono">reference[]</td><td class="note">Reference entries are the closest analog to citation relatedItems</td></tr>
+<tr><td class="concept">RelatedItems Relation Type</td><td class="mono dim">relatedItems</td><td><span class="chip chip-partial">partial</span></td><td class="mono">reference[]</td><td class="note">All references are an implicit &quot;Cites&quot;</td></tr>
+<tr><td class="concept">IsPartOf</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.is-part-of</td><td class="note">Also structural: container-title / ISSN for articles</td></tr>
+<tr><td class="concept">IsPublishedIn</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">container-title / ISSN</td><td class="note">Structural in Crossref, not a relation</td></tr>
+<tr><td class="concept">IsReferencedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">is-referenced-by-count</td><td class="note">Count only</td></tr>
+<tr><td class="concept">IsSourceOf</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.has-derivation / is-basis-for</td><td class="note">Rarely deposited</td></tr>
+<tr><td class="concept">IsSupplementedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.is-supplemented-by</td><td class="note"></td></tr>
+<tr><td class="concept">IsSupplementTo</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.is-supplement-to</td><td class="note"></td></tr>
+<tr><td class="concept">IsVariantFormOf</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.is-variant-form-of</td><td class="note">In the relation schema; essentially undeposited</td></tr>
+<tr><td class="concept">IsVersionOf</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.is-version-of</td><td class="note"></td></tr>
+<tr><td class="concept">Obsoletes</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">update-to / relation.replaces</td><td class="note">The corrections-and-retractions model</td></tr>
+<tr><td class="concept">References</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">reference[]</td><td class="note">Crossref does not distinguish Cites from References</td></tr>
+<tr class="uc-head" id="SHARE_stewardship"><td colspan="5"><span class="uc-name">Share Stewardship</span><span class="uc-tag">SHARE</span><span class="uc-tally"><b class="c-d">0</b> direct · <b class="c-p">1</b> partial · <b class="c-n">4</b> unmapped of 5</span></td></tr>
+<tr><td class="concept">Spatial Extent</td><td class="mono dim">geoLocations</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No geolocation</td></tr>
+<tr><td class="concept">Date Collected</td><td class="mono dim">dates</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No collection dates</td></tr>
+<tr><td class="concept">Date Coverage</td><td class="mono dim">dates</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No coverage dates</td></tr>
+<tr><td class="concept">Contributor Type</td><td class="mono dim">contributors</td><td><span class="chip chip-partial">partial</span></td><td class="mono">role lists</td><td class="note">Only editor / translator / chair; no contributorType vocabulary</td></tr>
+<tr><td class="concept">Keyword</td><td class="mono dim">subjects</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">subject[] was retired in 2024 and now returns empty</td></tr>
+<tr class="uc-head" id="SHARE_harmonization"><td colspan="5"><span class="uc-name">Share Harmonization</span><span class="uc-tag">SHARE</span><span class="uc-tally"><b class="c-d">4</b> direct · <b class="c-p">6</b> partial · <b class="c-n">1</b> unmapped of 11</span></td></tr>
+<tr><td class="concept">Methods</td><td class="mono dim">descriptions</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No typed descriptions</td></tr>
+<tr><td class="concept">Resource Author Identifier</td><td class="mono dim">creators</td><td><span class="chip chip-direct">direct</span></td><td class="mono">author[].ORCID</td><td class="note">ORCID only; ~13% of works (22.0M)</td></tr>
+<tr><td class="concept">Resource Contributor Identifier</td><td class="mono dim">contributors</td><td><span class="chip chip-partial">partial</span></td><td class="mono">editor[].ORCID etc.</td><td class="note">ORCID on the role lists; rare</td></tr>
+<tr><td class="concept">IsCitedBy</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">is-referenced-by-count</td><td class="note">Count only; citing DOIs not in the work record</td></tr>
+<tr><td class="concept">Abstract</td><td class="mono dim">descriptions</td><td><span class="chip chip-direct">direct</span></td><td class="mono">abstract</td><td class="note">JATS-XML markup; ~27% of works (44.8M)</td></tr>
+<tr><td class="concept">Resource Author Affiliation Identifier</td><td class="mono dim">creators</td><td><span class="chip chip-direct">direct</span></td><td class="mono">author[].affiliation[].id[].id</td><td class="note">ROR; ~0.7% of works (1.15M), growing</td></tr>
+<tr><td class="concept">Resource Contributor Affiliation Identifier</td><td class="mono dim">contributors</td><td><span class="chip chip-partial">partial</span></td><td class="mono">editor[].affiliation[].id[] etc.</td><td class="note">Structurally present, rarely deposited</td></tr>
+<tr><td class="concept">Resource Author Identifier Type</td><td class="mono dim">creators</td><td><span class="chip chip-partial">partial</span></td><td class="mono">(implicit)</td><td class="note">Always ORCID when present</td></tr>
+<tr><td class="concept">Resource Author Affiliation Identifier Type</td><td class="mono dim">creators</td><td><span class="chip chip-direct">direct</span></td><td class="mono">author[].affiliation[].id[].id-type</td><td class="note">&quot;ROR&quot;</td></tr>
+<tr><td class="concept">Resource Contributor Identifier Type</td><td class="mono dim">contributors</td><td><span class="chip chip-partial">partial</span></td><td class="mono">(implicit)</td><td class="note">Always ORCID when present</td></tr>
+<tr><td class="concept">Resource Contributor Affiliation Identifier Type</td><td class="mono dim">contributors</td><td><span class="chip chip-partial">partial</span></td><td class="mono">editor[].affiliation[].id[].id-type</td><td class="note">Structurally present, rarely deposited</td></tr>
+<tr class="uc-head" id="SHARE_access"><td colspan="5"><span class="uc-name">Share Access</span><span class="uc-tag">SHARE</span><span class="uc-tally"><b class="c-d">0</b> direct · <b class="c-p">3</b> partial · <b class="c-n">1</b> unmapped of 4</span></td></tr>
+<tr><td class="concept">Rights Identifier</td><td class="mono dim">rightsList</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No SPDX identifier; derivable from license URL</td></tr>
+<tr><td class="concept">Rights</td><td class="mono dim">rightsList</td><td><span class="chip chip-partial">partial</span></td><td class="mono">license[].URL</td><td class="note">URL only — no rights name; derivable from the URL</td></tr>
+<tr><td class="concept">Date Available</td><td class="mono dim">dates</td><td><span class="chip chip-partial">partial</span></td><td class="mono">license[].start</td><td class="note">License start / embargo delay approximates availability</td></tr>
+<tr><td class="concept">Resource Format</td><td class="mono dim">formats</td><td><span class="chip chip-partial">partial</span></td><td class="mono">link[].content-type</td><td class="note">MIME types of full-text links only</td></tr>
+<tr class="uc-head" id="SHARE_reuse"><td colspan="5"><span class="uc-name">Share Reuse</span><span class="uc-tag">SHARE</span><span class="uc-tally"><b class="c-d">1</b> direct · <b class="c-p">1</b> partial · <b class="c-n">2</b> unmapped of 4</span></td></tr>
+<tr><td class="concept">IsSourceOf</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.has-derivation / is-basis-for</td><td class="note">Rarely deposited</td></tr>
+<tr><td class="concept">Discovery Metrics</td><td class="mono dim">viewCount</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No view counts</td></tr>
+<tr><td class="concept">Access Metrics</td><td class="mono dim">downloadCount</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">No download counts</td></tr>
+<tr><td class="concept">Citation Metrics</td><td class="mono dim">citationCount</td><td><span class="chip chip-direct">direct</span></td><td class="mono">is-referenced-by-count</td><td class="note"></td></tr>
+<tr class="uc-head" id="SHARE_engagement"><td colspan="5"><span class="uc-name">Share Engagement</span><span class="uc-tag">SHARE</span><span class="uc-tally"><b class="c-d">6</b> direct · <b class="c-p">2</b> partial · <b class="c-n">4</b> unmapped of 12</span></td></tr>
+<tr><td class="concept">JournalArticle</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-partial">partial</span></td><td class="mono">relation.is-preprint-of</td><td class="note">Preprint→article links type the target implicitly</td></tr>
+<tr><td class="concept">Preprint</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.has-preprint</td><td class="note"></td></tr>
+<tr><td class="concept">ConferencePaper</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">ConferenceProceeding</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">Dataset</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">Software</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-none">none</span></td><td class="mono">—</td><td class="note">Needs the related item&#x27;s resource type, which Crossref relations don&#x27;t carry</td></tr>
+<tr><td class="concept">Project Funder</td><td class="mono dim">fundingReferences</td><td><span class="chip chip-direct">direct</span></td><td class="mono">funder[].name</td><td class="note">~9% of works (15.6M)</td></tr>
+<tr><td class="concept">Funder Identifier</td><td class="mono dim">fundingReferences</td><td><span class="chip chip-direct">direct</span></td><td class="mono">funder[].DOI / funder[].id[]</td><td class="note">Funder Registry DOI today; RORs arriving as the registry merges into ROR</td></tr>
+<tr><td class="concept">Award Title</td><td class="mono dim">fundingReferences</td><td><span class="chip chip-partial">partial</span></td><td class="mono">grant records (type=grant)</td><td class="note">Works carry award numbers only; titles live on Crossref grant DOIs</td></tr>
+<tr><td class="concept">Award Number</td><td class="mono dim">fundingReferences</td><td><span class="chip chip-direct">direct</span></td><td class="mono">funder[].award[]</td><td class="note"></td></tr>
+<tr><td class="concept">IsVersionOf</td><td class="mono dim">relatedIdentifiers</td><td><span class="chip chip-direct">direct</span></td><td class="mono">relation.is-version-of</td><td class="note"></td></tr>
+<tr><td class="concept">Funder Identifier Type</td><td class="mono dim">fundingReferences</td><td><span class="chip chip-direct">direct</span></td><td class="mono">funder[].id[].id-type</td><td class="note">&quot;DOI&quot; (Funder Registry), &quot;ROR&quot;</td></tr></tbody></table></div>
+
+<h2>Implementation notes for a Crossref port</h2>
+<ul>
+  <li><b>Response shape.</b> Crossref wraps everything in <code>{"message": …}</code>; a work list is <code>message.items[]</code> with fields at the top level — no <code>attributes</code> wrapper. Every jq query needs its path prefix rewritten, and the strict non-empty guards carry over unchanged.</li>
+  <li><b>Random sampling exists natively.</b> <code>/works?sample=100</code> returns a true random sample (max 100 per call) — repeat and dedup by DOI, the same pattern the tools already use for DataCite's <code>random=true</code>.</li>
+  <li><b>Organization Completeness analog.</b> <code>filter=ror-id:&lt;ROR&gt;</code> selects works carrying the organization's ROR (12,912 for Wageningen today vs 6,764 in DataCite), and <code>facet=publisher-name</code> or <code>facet=funder-doi</code> can play the client-facet role. Note the population is ~0.6% of works so far — publisher-asserted RORs are young in Crossref.</li>
+  <li><b>Filters compose</b> like DataCite query params: <code>filter=type:journal-article,from-pub-date:2024-01-01,has-orcid:true</code>. Counts come free from <code>total-results</code> with <code>rows=0</code>.</li>
+  <li><b>Abstracts are JATS XML</b> — strip tags before value drill-downs and length checks.</li>
+  <li><b>Be polite.</b> Add <code>mailto=</code> to every request (or a User-Agent) to reach the polite pool; page with <code>cursor=*</code> for deep result sets.</li>
+  <li><b>Vocabulary crosswalks needed.</b> <code>type</code> (30 values) → resourceTypeGeneral, and Crossref relation keys (<code>is-supplement-to</code>…) → DataCite relationTypes are mechanical renames; both are enumerated in this page's CSV companion.</li>
+  <li><b>What a Crossref catalog would drop.</b> Keywords (subjects retired 2024), geographic and temporal coverage, typed descriptions beyond the abstract, sizes/formats, view/download counts, contact roles, and the contributor-type vocabulary. A sensible port scores a reduced catalog rather than reporting structural zeros for concepts Crossref cannot express.</li>
+</ul>
+
+<footer>
+DataCite side: Metadata Game Changers use-case catalog (FAIR_spirals.json, strict-empty semantics of 2026-08-24), 234 concept scorings over 14 use cases, 159 distinct concepts.
+Crossref side: verified against the live REST API (api.crossref.org, 186.3M works) on 2026-09-06 — field structures inspected on real records; coverage counts from filter totals; relation-type usage sampled from 1,000 works with relations.
+Statuses: <b class="c-d">direct</b> = an equivalent field exists · <b class="c-p">partial</b> = an approximation or a sparsely-used equivalent · <b class="c-n">unmapped</b> = Crossref cannot express it.
+A Metadata Game Changers working document.
+</footer>
+</div>
+
+</body>
+</html>
