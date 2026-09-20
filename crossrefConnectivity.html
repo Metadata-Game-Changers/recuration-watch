@@ -105,9 +105,8 @@
   .conn-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:.2rem}
   .conn-actions{display:flex;gap:.5rem;flex-wrap:wrap}
   .conn-intro{font-size:.78rem;color:var(--muted);margin:0 0 1rem;line-height:1.5;max-width:760px}
-  /* Participation Report card: era radar beside the table */
-  .prep-flex{display:flex;gap:1.4rem;flex-wrap:wrap;align-items:flex-start}
-  .prep-radar{flex:0 0 380px;max-width:100%}
+  /* Participation Report card: era radar above the full table */
+  .prep-radar{max-width:420px;margin-bottom:1rem}
   .prep-radar-head{display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap;margin-bottom:.2rem}
   .prep-legend{font-size:.7rem;color:var(--muted);white-space:nowrap}
   .prep-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 .3rem 0 .7rem;vertical-align:-1px}
@@ -328,20 +327,18 @@
       </div>
     </div>
     <p class="conn-intro" id="prep-intro"></p>
-    <div class="prep-flex">
-      <div class="prep-radar">
-        <div class="prep-radar-head">
-          <label class="hero-chk" style="gap:.4rem"><span class="hero-secondary-label">Content type</span>
-            <select class="hero-select" id="prep-type" style="flex:none;min-width:0"></select></label>
-          <span class="prep-legend"><i style="background:#673289"></i>current <i style="background:#9aa0ab"></i>backfile</span>
-        </div>
-        <div id="prep-radar-svg"></div>
-        <div class="prep-radar-note">The fourteen Participation Report checks — backfile records vs current
-          (last three calendar years). Where the current line reaches beyond the backfile line, this member&rsquo;s
-          recent metadata is richer than its older records.</div>
+    <div class="prep-radar">
+      <div class="prep-radar-head">
+        <label class="hero-chk" style="gap:.4rem"><span class="hero-secondary-label">Content type</span>
+          <select class="hero-select" id="prep-type" style="flex:none;min-width:0"></select></label>
+        <span class="prep-legend"><i style="background:#673289"></i>current <i style="background:#9aa0ab"></i>backfile</span>
       </div>
-      <div style="overflow-x:auto;flex:1;min-width:340px"><table class="cd-table" id="prep-table"></table></div>
+      <div id="prep-radar-svg"></div>
+      <div class="prep-radar-note">The fourteen Participation Report checks — backfile records vs current
+        (last three calendar years). Where the current line reaches beyond the backfile line, this member&rsquo;s
+        recent metadata is richer than its older records. All fourteen checks are in the table below.</div>
     </div>
+    <div style="overflow-x:auto"><table class="cd-table" id="prep-table"></table></div>
   </div>
 
   <div class="card" id="dup-card" style="display:none">
@@ -1964,22 +1961,24 @@ async function maybeRenderPrep(memberCounts, analyzed){
   catch (e){ /* the card is a bonus — never fail the run for it */ }
   if (!msg || !msg['coverage-type']) return;
   const ct = msg['coverage-type'], counts = msg['counts-type'] || {};
-  // content types with any signal in the shown checks first (components etc. sink), then by size
+  // content types with signal in the five connectivity checks first, then by size — components
+  // and other infrastructure-only types (nonzero just on licenses/update-policies/…) sink
   const signal = t => Object.values(ct).some(o => o[t] && PREP_CHECKS.some(([k]) => o[t][k] > 0)) ? 1 : 0;
   const types = [...new Set([].concat(...Object.values(ct).map(o => Object.keys(o))))]
     .sort((a, b) => signal(b) - signal(a) || ((counts.all || {})[b] || 0) - ((counts.all || {})[a] || 0));
   const pct = v => (v == null || isNaN(v)) ? '—' : (v * 100).toFixed(0) + '%';
+  // the complete report: the same fourteen checks the radar draws
   let rows = '';
   for (const t of types){
     for (const era of ['current', 'backfile', 'all']){
       const c = ct[era] && ct[era][t]; if (!c) continue;
       const n = (counts[era] || {})[t];
       rows += `<tr><td class="val">${escHtml(t)}</td><td class="val">${era}</td><td class="num">${n != null ? n.toLocaleString() : '—'}</td>`
-        + PREP_CHECKS.map(([k]) => `<td class="num">${pct(c[k])}</td>`).join('') + '</tr>';
+        + PREP_RADAR_CHECKS.map(([k]) => `<td class="num">${pct(c[k])}</td>`).join('') + '</tr>';
     }
   }
   $('prep-table').innerHTML =
-    `<thead><tr><th>Content type</th><th>Era</th><th class="num">Records</th>${PREP_CHECKS.map(([, l]) => `<th class="num">${l}</th>`).join('')}</tr></thead><tbody>${rows}</tbody>`;
+    `<thead><tr><th>Content type</th><th>Era</th><th class="num">Records</th>${PREP_RADAR_CHECKS.map(([, l]) => `<th class="num">${l}</th>`).join('')}</tr></thead><tbody>${rows}</tbody>`;
   $('prep-title').textContent = `Crossref Participation Report — ${msg['primary-name'] || 'member ' + memberId}`;
   $('prep-link').href = `https://www.crossref.org/members/prep/${memberId}`;
   const checked = msg['last-status-check-time'] ? new Date(msg['last-status-check-time']).toISOString().slice(0, 10) : null;
