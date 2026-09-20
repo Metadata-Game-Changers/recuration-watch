@@ -107,7 +107,7 @@
   .conn-intro{font-size:.78rem;color:var(--muted);margin:0 0 1rem;line-height:1.5;max-width:760px}
   /* Participation Report card: era radar above the full table */
   .prep-radar{max-width:420px;margin-bottom:1rem}
-  .prep-radar-head{display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap;margin-bottom:.2rem}
+  .prep-radar-head{display:flex;align-items:center;gap:1.1rem;flex-wrap:wrap;margin-bottom:.3rem}
   .prep-legend{font-size:.7rem;color:var(--muted);white-space:nowrap}
   .prep-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 .3rem 0 .7rem;vertical-align:-1px}
   .prep-radar-note{font-size:.68rem;color:var(--muted);line-height:1.45;margin-top:.2rem;max-width:380px}
@@ -331,14 +331,14 @@
       </div>
     </div>
     <p class="conn-intro" id="prep-intro"></p>
+    <div class="prep-radar-head">
+      <label class="hero-chk" style="gap:.4rem"><span class="hero-secondary-label">Content type</span>
+        <select class="hero-select" id="prep-type" style="flex:none;min-width:0"></select></label>
+      <button class="dl-btn" id="prep-strip-btn" type="button" title="Show a small backfile-vs-current radar for every content type">▦ All types</button>
+      <span class="prep-legend"><i style="background:#673289"></i>current <i style="background:#9aa0ab"></i>backfile</span>
+    </div>
+    <div id="prep-strip" style="display:none"></div>
     <div class="prep-radar">
-      <div class="prep-radar-head">
-        <label class="hero-chk" style="gap:.4rem"><span class="hero-secondary-label">Content type</span>
-          <select class="hero-select" id="prep-type" style="flex:none;min-width:0"></select></label>
-        <button class="dl-btn" id="prep-strip-btn" type="button" title="Show a small backfile-vs-current radar for every content type">▦ All types</button>
-        <span class="prep-legend"><i style="background:#673289"></i>current <i style="background:#9aa0ab"></i>backfile</span>
-      </div>
-      <div id="prep-strip" style="display:none"></div>
       <div id="prep-radar-svg"></div>
       <div class="prep-radar-note">The fourteen Participation Report checks — backfile records vs current
         (last three calendar years). Where the current line reaches beyond the backfile line, this member&rsquo;s
