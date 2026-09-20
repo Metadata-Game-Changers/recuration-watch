@@ -208,8 +208,11 @@ def main():
                 print(f'  {era}: no matching works — skipped', flush=True)
                 continue
             m = measure(works)
+            # any of these can be None (coverage value null; a sample with no author slots) —
+            # the CSV writes them as blanks, and the progress line must survive them too
+            pct = lambda v: f'{v:.0%}' if v is not None else '—'
             print(f"  {era}: {len(works)} sampled of {matching:,} · "
-                  f"ORCIDs PReP {prep.get('orcids', 0):.0%} / record {m['record']['orcids']:.0%} / occ {m['occurrence']['orcids']:.0%}", flush=True)
+                  f"ORCIDs PReP {pct(prep.get('orcids'))} / record {pct(m['record']['orcids'])} / occ {pct(m['occurrence']['orcids'])}", flush=True)
             row = [mid, name, era, args.type,
                    prep_n if prep_n is not None else '', checked, matching, len(works),
                    m['denominators']['authors'], m['denominators']['affiliations'], m['denominators']['funders']]
