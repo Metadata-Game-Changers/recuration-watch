@@ -224,13 +224,13 @@ def main():
     todo = list(dict.fromkeys(ids))
     for i, mid in enumerate(todo, 1):
         if all((mid, era) in done for era in eras):
-            print(f'[{i}/{len(todo)}] {mid}: already in CSV — skipped', flush=True)
+            print(f'{datetime.now():%H:%M:%S} [{i}/{len(todo)}] {mid}: already in CSV — skipped', flush=True)
             continue
         msg = (api_get(f'/members/{mid}').get('message') or {})
         name = msg.get('primary-name') or f'member {mid}'
         checked = msg.get('last-status-check-time')
         checked = datetime.fromtimestamp(checked / 1000).strftime('%Y-%m-%d') if checked else ''
-        print(f'[{i}/{len(todo)}] {mid}: {name}', flush=True)
+        print(f'{datetime.now():%H:%M:%S} [{i}/{len(todo)}] {mid}: {name}', flush=True)
         for era in eras:
             if (mid, era) in done:
                 print(f'  {era}: already in CSV — skipped', flush=True)
