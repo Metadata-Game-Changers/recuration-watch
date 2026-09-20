@@ -84,9 +84,13 @@ def member_rows(msg, eras, type_filter, quiet=False):
             if not c:
                 continue
             n = (counts.get(era) or {}).get(t)
+            vals = [c.get(k) for k in CHECKS]
+            present = [v for v in vals if v is not None]
+            average = sum(present) / len(present) if present else None   # mean of the checks present
             rows.append([msg.get('id'), name, loc, era, t,
                          n if n is not None else '', total if total is not None else '', checked]
-                        + [('' if c.get(k) is None else rnd(c.get(k))) for k in CHECKS])
+                        + [('' if v is None else rnd(v)) for v in vals]
+                        + [rnd(average) if average is not None else ''])
     if not rows and not quiet:
         print(f'  member {msg.get("id")} ({name}): no coverage data', flush=True)
     return rows
@@ -160,7 +164,7 @@ def main():
     with open(out, 'w', newline='', encoding='utf-8') as fh:
         w = csv.writer(fh)
         w.writerow(['Member_ID', 'Member_Name', 'Location', 'Era', 'Content_Type',
-                    'Records', 'Total_DOIs', 'Last_Checked'] + [c.replace('-', '_') for c in CHECKS])
+                    'Records', 'Total_DOIs', 'Last_Checked'] + [c.replace('-', '_') for c in CHECKS] + ['Average'])
         w.writerows(all_rows)
     print(f'Wrote {out} ({len(all_rows)} rows)', flush=True)
 
