@@ -347,6 +347,7 @@
         than its older records. All fourteen checks are in the table below.</div>
     </div>
     <div style="overflow-x:auto"><table class="cd-table" id="prep-table"></table></div>
+    <div class="prep-radar-note" id="prep-empty-note" style="display:none;max-width:none"></div>
   </div>
 
   <div class="card" id="dup-card" style="display:none">
@@ -2034,18 +2035,23 @@ async function maybeRenderPrep(memberCounts, analyzed){
   catch (e){ /* the card is a bonus — never fail the run for it */ }
   if (!msg || !msg['coverage-type']) return;
   const ct = msg['coverage-type'], counts = msg['counts-type'] || {};
-  // content types with signal in the five connectivity checks first, then by size — components
-  // and other infrastructure-only types (nonzero just on licenses/update-policies/…) sink
+  // a type is empty when every one of the fourteen checks reads 0% (rounds below 1%) in every
+  // era (e.g. component, journal) — no Participation Report data; drop it and note it below.
+  const hasData = t => Object.values(ct).some(o => o[t] && PREP_RADAR_CHECKS.some(([k]) => (o[t][k] || 0) >= 0.005));
+  // types with signal in the five connectivity checks first, then by size
   const signal = t => Object.values(ct).some(o => o[t] && PREP_CHECKS.some(([k]) => o[t][k] > 0)) ? 1 : 0;
-  const types = [...new Set([].concat(...Object.values(ct).map(o => Object.keys(o))))]
+  const allTypes = [...new Set([].concat(...Object.values(ct).map(o => Object.keys(o))))]
     .sort((a, b) => signal(b) - signal(a) || ((counts.all || {})[b] || 0) - ((counts.all || {})[a] || 0));
+  const types = allTypes.filter(hasData);
+  const emptyTypes = allTypes.filter(t => !hasData(t))
+    .sort((a, b) => ((counts.all || {})[b] || 0) - ((counts.all || {})[a] || 0));
   const pct = v => (v == null || isNaN(v)) ? '—' : (v * 100).toFixed(0) + '%';
   // the complete report: the same fourteen checks the radar draws.
   // Era is abbreviated (C/B/A) so the narrow column doesn't wrap; the header caret explains it.
   const ERA_ABBR = { current: 'C', backfile: 'B', all: 'A' };
   let rows = '';
   for (const t of types){
-    for (const era of ['current', 'backfile', 'all']){
+    for (const era of ['backfile', 'current', 'all']){
       const c = ct[era] && ct[era][t]; if (!c) continue;
       const n = (counts[era] || {})[t];
       rows += `<tr><td class="val">${escHtml(t)}</td><td class="val" title="${era}">${ERA_ABBR[era]}</td><td class="num">${n != null ? n.toLocaleString() : '—'}</td>`
@@ -2054,6 +2060,15 @@ async function maybeRenderPrep(memberCounts, analyzed){
   }
   $('prep-table').innerHTML =
     `<thead><tr><th>Content type</th><th title="C = current · B = backfile · A = all">Era</th><th class="num">Records</th>${PREP_RADAR_CHECKS.map(([, l]) => `<th class="num">${l}</th>`).join('')}</tr></thead><tbody>${rows}</tbody>`;
+  // note the content types Crossref has no participation data for (all fourteen checks 0%)
+  const emptyNote = $('prep-empty-note');
+  if (emptyTypes.length){
+    const list = emptyTypes.map(t => `<b>${escHtml(t)}</b>`);
+    const joined = list.length === 1 ? list[0]
+      : list.slice(0, -1).join(', ') + (list.length === 2 ? ' and ' : ', and ') + list[list.length - 1];
+    emptyNote.innerHTML = `${joined} content had no Participation Report data (all checks 0%) and ${list.length === 1 ? 'is' : 'are'} omitted above.`;
+    emptyNote.style.display = '';
+  } else emptyNote.style.display = 'none';
   $('prep-title').textContent = `Crossref Participation Report — ${msg['primary-name'] || 'member ' + memberId}`;
   $('prep-link').href = `https://www.crossref.org/members/prep/${memberId}`;
   const checked = msg['last-status-check-time'] ? new Date(msg['last-status-check-time']).toISOString().slice(0, 10) : null;
