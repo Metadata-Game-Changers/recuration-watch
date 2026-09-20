@@ -333,7 +333,7 @@
     <p class="conn-intro" id="prep-intro"></p>
     <div class="prep-radar-head">
       <label class="hero-chk" style="gap:.4rem"><span class="hero-secondary-label">Content type</span>
-        <select class="hero-select" id="prep-type" style="flex:none;min-width:0"></select></label>
+        <select class="hero-select" id="prep-type" style="flex:none;min-width:0" autocomplete="off"></select></label>
       <button class="dl-btn" id="prep-strip-btn" type="button" title="Show a small backfile-vs-current radar for every content type">▦ All types</button>
       <button class="dl-btn" id="prep-strip-copy" type="button" title="Copy the all-types radar strip to the clipboard as an image (with member, date, and legend in the title)">⧉ Copy strip</button>
       <span class="prep-legend"><i style="background:#673289"></i>current <i style="background:#9aa0ab"></i>backfile</span>
@@ -2040,18 +2040,20 @@ async function maybeRenderPrep(memberCounts, analyzed){
   const types = [...new Set([].concat(...Object.values(ct).map(o => Object.keys(o))))]
     .sort((a, b) => signal(b) - signal(a) || ((counts.all || {})[b] || 0) - ((counts.all || {})[a] || 0));
   const pct = v => (v == null || isNaN(v)) ? '—' : (v * 100).toFixed(0) + '%';
-  // the complete report: the same fourteen checks the radar draws
+  // the complete report: the same fourteen checks the radar draws.
+  // Era is abbreviated (C/B/A) so the narrow column doesn't wrap; the header caret explains it.
+  const ERA_ABBR = { current: 'C', backfile: 'B', all: 'A' };
   let rows = '';
   for (const t of types){
     for (const era of ['current', 'backfile', 'all']){
       const c = ct[era] && ct[era][t]; if (!c) continue;
       const n = (counts[era] || {})[t];
-      rows += `<tr><td class="val">${escHtml(t)}</td><td class="val">${era}</td><td class="num">${n != null ? n.toLocaleString() : '—'}</td>`
+      rows += `<tr><td class="val">${escHtml(t)}</td><td class="val" title="${era}">${ERA_ABBR[era]}</td><td class="num">${n != null ? n.toLocaleString() : '—'}</td>`
         + PREP_RADAR_CHECKS.map(([k]) => `<td class="num">${pct(c[k])}</td>`).join('') + '</tr>';
     }
   }
   $('prep-table').innerHTML =
-    `<thead><tr><th>Content type</th><th>Era</th><th class="num">Records</th>${PREP_RADAR_CHECKS.map(([, l]) => `<th class="num">${l}</th>`).join('')}</tr></thead><tbody>${rows}</tbody>`;
+    `<thead><tr><th>Content type</th><th title="C = current · B = backfile · A = all">Era</th><th class="num">Records</th>${PREP_RADAR_CHECKS.map(([, l]) => `<th class="num">${l}</th>`).join('')}</tr></thead><tbody>${rows}</tbody>`;
   $('prep-title').textContent = `Crossref Participation Report — ${msg['primary-name'] || 'member ' + memberId}`;
   $('prep-link').href = `https://www.crossref.org/members/prep/${memberId}`;
   const checked = msg['last-status-check-time'] ? new Date(msg['last-status-check-time']).toISOString().slice(0, 10) : null;
@@ -2066,17 +2068,17 @@ async function maybeRenderPrep(memberCounts, analyzed){
   sel.innerHTML = radarTypes.map(t => `<option value="${escAttr(t)}">${escHtml(t)}</option>`).join('');
   sel.value = radarTypes.includes('journal-article') ? 'journal-article' : (radarTypes[0] || '');
   sel.onchange = () => drawPrepRadar(sel.value);
-  const strip = $('prep-strip'), stripBtn = $('prep-strip-btn');
+  const strip = $('prep-strip'), stripBtn = $('prep-strip-btn'), copyBtn = $('prep-strip-copy');
   strip.style.display = 'none'; strip.innerHTML = ''; stripBtn.textContent = '▦ All types';
+  copyBtn.style.display = 'none';   // Copy strip appears only while the strip is shown
   stripBtn.onclick = () => {
     const open = strip.style.display === 'none';
     if (open && !strip.innerHTML) drawPrepStrip();   // rendered lazily on first open
     strip.style.display = open ? '' : 'none';
     stripBtn.textContent = open ? '▦ Hide types' : '▦ All types';
+    copyBtn.style.display = open ? '' : 'none';
   };
   stripBtn.style.display = radarTypes.length > 1 ? '' : 'none';
-  const copyBtn = $('prep-strip-copy');
-  copyBtn.style.display = radarTypes.length ? '' : 'none';
   copyBtn.onclick = copyPrepStrip;
   if (radarTypes.length){ drawPrepRadar(sel.value); $('prep-radar-svg').parentElement.style.display = ''; }
   else $('prep-radar-svg').parentElement.style.display = 'none';
