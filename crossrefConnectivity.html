@@ -335,6 +335,7 @@
       <label class="hero-chk" style="gap:.4rem"><span class="hero-secondary-label">Content type</span>
         <select class="hero-select" id="prep-type" style="flex:none;min-width:0"></select></label>
       <button class="dl-btn" id="prep-strip-btn" type="button" title="Show a small backfile-vs-current radar for every content type">▦ All types</button>
+      <button class="dl-btn" id="prep-strip-copy" type="button" title="Copy the all-types radar strip to the clipboard as an image (with member, date, and legend in the title)">⧉ Copy strip</button>
       <span class="prep-legend"><i style="background:#673289"></i>current <i style="background:#9aa0ab"></i>backfile</span>
     </div>
     <div id="prep-strip" style="display:none"></div>
@@ -1961,6 +1962,52 @@ function drawPrepRadar(type){
     ? r.svg + (r.drawn.length === 1 ? `<div style="font-size:.68rem;color:var(--muted)">Only ${r.drawn[0]}-era data exists for this content type.</div>` : '')
     : '<div style="font-size:.75rem;color:var(--muted);padding:1rem 0">No era coverage for this content type.</div>';
 }
+// Copy the whole strip as one PNG: a composite SVG (title, legend, one cell per type,
+// counts) rasterized to a canvas — the Metadata Completeness "Copy strip" pattern.
+function prepStripCompositeSvg(){
+  const counts = prepState.counts || {};
+  const cellW = 150, gap = 18, padX = 20, titleH = 40, labelH = 15, countH = 18;
+  const types = prepState.radarTypes.filter(t => prepRadarSvg(t, cellW, false));
+  const W = Math.max(560, padX * 2 + types.length * cellW + (types.length - 1) * gap);
+  const H = titleH + labelH + cellW + countH + 12;
+  const stamp = new Date().toISOString().slice(0, 10);
+  let s = `<rect width="${W}" height="${H}" fill="#ffffff"/>`;
+  s += `<text x="${padX}" y="20" font-size="14" font-weight="600" fill="#673289">${escHtml($('prep-title').textContent)}</text>`;
+  s += `<text x="${padX}" y="34" font-size="10" fill="#6b7280">Participation Report by content type · `
+     + `<tspan fill="#673289" font-weight="600">current</tspan> vs <tspan fill="#9aa0ab" font-weight="600">backfile (dashed)</tspan> · ${stamp}</text>`;
+  types.forEach((t, i) => {
+    const x = padX + i * (cellW + gap);
+    s += `<text x="${x + cellW / 2}" y="${titleH + 10}" text-anchor="middle" font-size="10" font-weight="600" fill="#1f2330">${escHtml(t)}</text>`;
+    s += prepRadarSvg(t, cellW, false).svg.replace('<svg ', `<svg x="${x}" y="${titleH + labelH}" `);
+    const cn = (counts.current || {})[t], bn = (counts.backfile || {})[t];
+    s += `<text x="${x + cellW / 2}" y="${titleH + labelH + cellW + 12}" text-anchor="middle" font-size="8.5" fill="#6b7280">`
+       + `${cn != null ? cn.toLocaleString() + ' current' : 'no current'} · ${bn != null ? bn.toLocaleString() + ' backfile' : 'no backfile'}</text>`;
+  });
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="Inter, Helvetica, sans-serif">${s}</svg>`, W, H };
+}
+async function copyPrepStrip(){
+  const btn = $('prep-strip-copy');
+  try {
+    if (!prepState) throw new Error('no report yet');
+    const { svg, W, H } = prepStripCompositeSvg();
+    const blob = await new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+      img.onload = () => {
+        const scale = 2, cv = document.createElement('canvas');
+        cv.width = W * scale; cv.height = H * scale;
+        const ctx = cv.getContext('2d'); ctx.scale(scale, scale); ctx.drawImage(img, 0, 0, W, H);
+        URL.revokeObjectURL(url);
+        cv.toBlob(b => b ? resolve(b) : reject(new Error('could not render the image')), 'image/png');
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('could not load the composite SVG')); };
+      img.src = url;
+    });
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    btn.textContent = '✓ Copied';
+  } catch (e){ console.warn('copy strip failed', e); btn.textContent = 'Copy failed'; }
+  setTimeout(() => { btn.textContent = '⧉ Copy strip'; }, 1600);
+}
 // the all-types strip (opt-in, like Metadata Completeness's radar strip): one small
 // backfile-vs-current radar per content type — every change at a glance
 function drawPrepStrip(){
@@ -2028,6 +2075,9 @@ async function maybeRenderPrep(memberCounts, analyzed){
     stripBtn.textContent = open ? '▦ Hide types' : '▦ All types';
   };
   stripBtn.style.display = radarTypes.length > 1 ? '' : 'none';
+  const copyBtn = $('prep-strip-copy');
+  copyBtn.style.display = radarTypes.length ? '' : 'none';
+  copyBtn.onclick = copyPrepStrip;
   if (radarTypes.length){ drawPrepRadar(sel.value); $('prep-radar-svg').parentElement.style.display = ''; }
   else $('prep-radar-svg').parentElement.style.display = 'none';
   card.style.display = '';
