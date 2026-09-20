@@ -64,7 +64,7 @@ def api_get(path_and_query, retries=3):
             time.sleep(3 * (attempt + 1))
 
 
-def member_rows(msg, eras, type_filter):
+def member_rows(msg, eras, type_filter, quiet=False):
     """The tidy rows for one member message (list rows and /members/<id> are identical)."""
     name = msg.get('primary-name') or f"member {msg.get('id')}"
     loc = msg.get('location') or ''
@@ -87,7 +87,7 @@ def member_rows(msg, eras, type_filter):
             rows.append([msg.get('id'), name, loc, era, t,
                          n if n is not None else '', total if total is not None else '', checked]
                         + [('' if c.get(k) is None else rnd(c.get(k))) for k in CHECKS])
-    if not rows:
+    if not rows and not quiet:
         print(f'  member {msg.get("id")} ({name}): no coverage data', flush=True)
     return rows
 
@@ -97,6 +97,8 @@ def main():
     ap.add_argument('--member', action='append', default=[], help='Crossref member id (repeatable)')
     ap.add_argument('--file', default='', help='text file of member ids, one per line (# comments allowed)')
     ap.add_argument('--search', default='', help='retrieve every member matching this name search')
+    ap.add_argument('--all', action='store_true',
+                    help='retrieve EVERY Crossref member (~34k, cursor-paged; a minute or two)')
     ap.add_argument('--rows', type=int, default=20, help='max members retrieved by --search (default 20)')
     ap.add_argument('--era', choices=ERAS, default='', help='only this era (default: all three)')
     ap.add_argument('--type', default='', help='only this content type (e.g. journal-article)')
@@ -109,8 +111,8 @@ def main():
             line = line.split('#')[0].strip()
             if line:
                 ids.append(line.split()[0])
-    if not ids and not args.search:
-        ap.error('nothing to retrieve — give --member (repeatable), --file, or --search')
+    if not ids and not args.search and not args.all:
+        ap.error('nothing to retrieve — give --member (repeatable), --file, --search, or --all')
     bad = [i for i in ids if not i.isdigit()]
     if bad:
         ap.error(f'member ids are numeric; not ids: {", ".join(bad)}')
@@ -132,6 +134,24 @@ def main():
         for msg in items:
             print(f'{msg.get("id")}: {msg.get("primary-name")}', flush=True)
             all_rows += member_rows(msg, eras, args.type)
+
+    if args.all:
+        cursor, page, members, covered = '*', 0, 0, 0
+        while True:
+            page += 1
+            d = api_get(f'/members?rows=1000&cursor={urllib.parse.quote(cursor)}')
+            msg = d.get('message') or {}
+            items = msg.get('items') or []
+            for m in items:
+                r = member_rows(m, eras, args.type, quiet=True)
+                if r:
+                    covered += 1
+                all_rows += r
+            members += len(items)
+            print(f'page {page}: {members:,} members retrieved · {covered:,} with coverage · {len(all_rows):,} rows', flush=True)
+            cursor = msg.get('next-cursor') or ''
+            if not items or not cursor:
+                break
 
     if not all_rows:
         sys.exit('no coverage rows retrieved')
