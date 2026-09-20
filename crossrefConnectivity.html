@@ -111,6 +111,10 @@
   .prep-legend{font-size:.7rem;color:var(--muted);white-space:nowrap}
   .prep-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 .3rem 0 .7rem;vertical-align:-1px}
   .prep-radar-note{font-size:.68rem;color:var(--muted);line-height:1.45;margin-top:.2rem;max-width:380px}
+  #prep-strip{display:flex;gap:.9rem;overflow-x:auto;padding:.3rem 0 .5rem;margin-bottom:.4rem}
+  .prep-cell{flex:0 0 auto;text-align:center}
+  .prep-cell .t{font-size:.7rem;font-weight:600;color:var(--ink);margin-bottom:.1rem}
+  .prep-cell small{display:block;font-size:.62rem;color:var(--muted)}
   .conn-legend{display:flex;gap:1.3rem;flex-wrap:wrap;font-size:.72rem;color:var(--muted);margin-bottom:1.1rem}
   .conn-legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:.4rem;vertical-align:middle}
   .conn-group{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:1.3rem 0 .55rem;border-bottom:1px solid var(--line);padding-bottom:.3rem}
@@ -331,8 +335,10 @@
       <div class="prep-radar-head">
         <label class="hero-chk" style="gap:.4rem"><span class="hero-secondary-label">Content type</span>
           <select class="hero-select" id="prep-type" style="flex:none;min-width:0"></select></label>
+        <button class="dl-btn" id="prep-strip-btn" type="button" title="Show a small backfile-vs-current radar for every content type">▦ All types</button>
         <span class="prep-legend"><i style="background:#673289"></i>current <i style="background:#9aa0ab"></i>backfile</span>
       </div>
+      <div id="prep-strip" style="display:none"></div>
       <div id="prep-radar-svg"></div>
       <div class="prep-radar-note">The fourteen Participation Report checks — backfile records vs current
         (last three calendar years). Where the current line reaches beyond the backfile line, this member&rsquo;s
@@ -1908,11 +1914,13 @@ const PREP_RADAR_CHECKS = [
 let prepState = null;   // { coverageType } for the radar's type selector
 
 /* Era radar: the fourteen checks as axes, backfile (gray, dashed) under current (accent).
-   Reads coverage-type[era][type]; a type missing an era draws only the era it has. */
-function drawPrepRadar(type){
-  if (!prepState) return;
+   Reads coverage-type[era][type]; a type missing an era draws only the era it has.
+   prepRadarSvg builds one radar at any size (labels optional) — used for the main plot
+   and for the all-types strip. Returns { svg, drawn } or null when the type has no eras. */
+function prepRadarSvg(type, W, labels){
   const ct = prepState.coverageType;
-  const W = 380, H = 330, cx = W / 2, cy = H / 2 + 6, R = 105;
+  const H = labels ? Math.round(W * 0.87) : W;
+  const cx = W / 2, cy = H / 2 + (labels ? 6 : 0), R = labels ? Math.round(W * 0.276) : Math.round(W * 0.4);
   const n = PREP_RADAR_CHECKS.length;
   const pt = (i, r) => {
     const a = i * 2 * Math.PI / n - Math.PI / 2;
@@ -1921,14 +1929,16 @@ function drawPrepRadar(type){
   let s = '';
   for (const f of [0.25, 0.5, 0.75, 1])   // rings
     s += `<polygon points="${PREP_RADAR_CHECKS.map((_, i) => pt(i, f * R).map(v => v.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="#e8e6ef" stroke-width="${f === 1 ? 1.2 : 0.8}"/>`;
-  PREP_RADAR_CHECKS.forEach(([, label], i) => {   // axes + labels
+  PREP_RADAR_CHECKS.forEach(([, label], i) => {   // axes (+ labels on the large radar)
     const [x, y] = pt(i, R);
     s += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#efedf4" stroke-width="0.8"/>`;
-    const [lx, ly] = pt(i, R + 10);
-    const anchor = Math.abs(lx - cx) < 8 ? 'middle' : (lx > cx ? 'start' : 'end');
-    s += `<text x="${lx.toFixed(1)}" y="${(ly + 3).toFixed(1)}" text-anchor="${anchor}" font-size="8.5" fill="#6b7280" font-family="Inter,sans-serif">${escHtml(label)}</text>`;
+    if (labels){
+      const [lx, ly] = pt(i, R + 10);
+      const anchor = Math.abs(lx - cx) < 8 ? 'middle' : (lx > cx ? 'start' : 'end');
+      s += `<text x="${lx.toFixed(1)}" y="${(ly + 3).toFixed(1)}" text-anchor="${anchor}" font-size="8.5" fill="#6b7280" font-family="Inter,sans-serif">${escHtml(label)}</text>`;
+    }
   });
-  s += `<text x="${cx + 3}" y="${cy - R - 2}" font-size="7.5" fill="#9aa0ab" font-family="Inter,sans-serif">100%</text>`;
+  if (labels) s += `<text x="${cx + 3}" y="${cy - R - 2}" font-size="7.5" fill="#9aa0ab" font-family="Inter,sans-serif">100%</text>`;
   const eras = [['backfile', '#9aa0ab', '4 3'], ['current', '#673289', '']];   // backfile under current
   const drawn = [];
   for (const [era, color, dash] of eras){
@@ -1937,15 +1947,31 @@ function drawPrepRadar(type){
     drawn.push(era);
     const vals = PREP_RADAR_CHECKS.map(([k]) => (c[k] == null || isNaN(c[k])) ? 0 : Math.min(c[k], 1));
     const pts = vals.map((v, i) => pt(i, v * R));
-    s += `<polygon points="${pts.map(p => p.map(v => v.toFixed(1)).join(',')).join(' ')}" fill="${color}" fill-opacity="0.13" stroke="${color}" stroke-width="1.8"${dash ? ` stroke-dasharray="${dash}"` : ''}/>`;
-    s += pts.map(([x, y], i) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.4" fill="${color}"><title>${escHtml(PREP_RADAR_CHECKS[i][1])} · ${era}: ${(vals[i] * 100).toFixed(0)}%</title></circle>`).join('');
+    s += `<polygon points="${pts.map(p => p.map(v => v.toFixed(1)).join(',')).join(' ')}" fill="${color}" fill-opacity="0.13" stroke="${color}" stroke-width="${labels ? 1.8 : 1.4}"${dash ? ` stroke-dasharray="${dash}"` : ''}/>`;
+    s += pts.map(([x, y], i) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${labels ? 2.4 : 1.8}" fill="${color}"><title>${escHtml(PREP_RADAR_CHECKS[i][1])} · ${era}: ${(vals[i] * 100).toFixed(0)}%</title></circle>`).join('');
   }
-  if (!drawn.length){
-    $('prep-radar-svg').innerHTML = '<div style="font-size:.75rem;color:var(--muted);padding:1rem 0">No era coverage for this content type.</div>';
-    return;
-  }
-  $('prep-radar-svg').innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Participation Report radar, backfile vs current">${s}</svg>`
-    + (drawn.length === 1 ? `<div style="font-size:.68rem;color:var(--muted)">Only ${drawn[0]}-era data exists for this content type.</div>` : '');
+  if (!drawn.length) return null;
+  return { drawn,
+    svg: `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Participation Report radar, backfile vs current — ${escAttr(type)}">${s}</svg>` };
+}
+function drawPrepRadar(type){
+  if (!prepState) return;
+  const r = prepRadarSvg(type, 380, true);
+  $('prep-radar-svg').innerHTML = r
+    ? r.svg + (r.drawn.length === 1 ? `<div style="font-size:.68rem;color:var(--muted)">Only ${r.drawn[0]}-era data exists for this content type.</div>` : '')
+    : '<div style="font-size:.75rem;color:var(--muted);padding:1rem 0">No era coverage for this content type.</div>';
+}
+// the all-types strip (opt-in, like Metadata Completeness's radar strip): one small
+// backfile-vs-current radar per content type — every change at a glance
+function drawPrepStrip(){
+  const counts = prepState.counts || {};
+  $('prep-strip').innerHTML = prepState.radarTypes.map(t => {
+    const r = prepRadarSvg(t, 150, false);
+    if (!r) return '';
+    const cn = (counts.current || {})[t], bn = (counts.backfile || {})[t];
+    return `<div class="prep-cell"><div class="t">${escHtml(t)}</div>${r.svg}
+      <small>${cn != null ? cn.toLocaleString() + ' current' : 'no current'} · ${bn != null ? bn.toLocaleString() + ' backfile' : 'no backfile'}</small></div>`;
+  }).join('');
 }
 async function maybeRenderPrep(memberCounts, analyzed){
   const card = $('prep-card'); card.style.display = 'none';
@@ -1985,13 +2011,23 @@ async function maybeRenderPrep(memberCounts, analyzed){
   $('prep-intro').innerHTML = `Crossref&rsquo;s <b>own coverage</b> for this member — computed by Crossref over <b>all</b> the member&rsquo;s records (not the sample above), by content type and era (<b>current</b> = the last two calendar years)${checked ? `, last checked ${checked}` : ''}. `
     + (share < 1 ? `Shown because ${(share * 100).toFixed(0)}% of the analyzed sample belongs to this member. ` : '')
     + 'Use it as a cross-check: the bars above count <b>distinct entities</b> in a sample across all content types; these are <b>record-level</b> percentages per content type.';
-  // era radar: content-type selector over the same coverage data (default journal-article)
-  prepState = { coverageType: ct };
+  // era radar: content-type selector over the same coverage data (default journal-article),
+  // plus the opt-in all-types strip
   const radarTypes = types.filter(t => (ct.current && ct.current[t]) || (ct.backfile && ct.backfile[t]));
+  prepState = { coverageType: ct, counts, radarTypes };
   const sel = $('prep-type');
   sel.innerHTML = radarTypes.map(t => `<option value="${escAttr(t)}">${escHtml(t)}</option>`).join('');
   sel.value = radarTypes.includes('journal-article') ? 'journal-article' : (radarTypes[0] || '');
   sel.onchange = () => drawPrepRadar(sel.value);
+  const strip = $('prep-strip'), stripBtn = $('prep-strip-btn');
+  strip.style.display = 'none'; strip.innerHTML = ''; stripBtn.textContent = '▦ All types';
+  stripBtn.onclick = () => {
+    const open = strip.style.display === 'none';
+    if (open && !strip.innerHTML) drawPrepStrip();   // rendered lazily on first open
+    strip.style.display = open ? '' : 'none';
+    stripBtn.textContent = open ? '▦ Hide types' : '▦ All types';
+  };
+  stripBtn.style.display = radarTypes.length > 1 ? '' : 'none';
   if (radarTypes.length){ drawPrepRadar(sel.value); $('prep-radar-svg').parentElement.style.display = ''; }
   else $('prep-radar-svg').parentElement.style.display = 'none';
   card.style.display = '';
