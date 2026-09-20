@@ -53,6 +53,9 @@ self-contained HTML file with inline CSS + vanilla JS — no framework, no bundl
 - `crossrefParticipation.py` — bulk harvester of Crossref Participation Reports (stdlib
   only): one tidy CSV of the `coverage-type` blocks (era × content type × fourteen checks)
   for many members at once (`--member`/`--file`/`--search`).
+- `prepBoxes.py` — plots the `--all` harvest: box plots of the per-member Average by
+  content type, one figure per era, quartiles + upper whiskers labeled, MGC house
+  distribution style (needs matplotlib, unlike the other scripts).
 - `comparePrepConnectivity.py` — desktop companion to the Crossref tools (stdlib only, no
   jq): samples members' works and writes one CSV comparing, per member × era, Crossref's
   Participation Report coverage (`PReP_*`), the sampled record-level/completeness counting
