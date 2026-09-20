@@ -105,6 +105,13 @@
   .conn-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:.2rem}
   .conn-actions{display:flex;gap:.5rem;flex-wrap:wrap}
   .conn-intro{font-size:.78rem;color:var(--muted);margin:0 0 1rem;line-height:1.5;max-width:760px}
+  /* Participation Report card: era radar beside the table */
+  .prep-flex{display:flex;gap:1.4rem;flex-wrap:wrap;align-items:flex-start}
+  .prep-radar{flex:0 0 380px;max-width:100%}
+  .prep-radar-head{display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap;margin-bottom:.2rem}
+  .prep-legend{font-size:.7rem;color:var(--muted);white-space:nowrap}
+  .prep-legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 .3rem 0 .7rem;vertical-align:-1px}
+  .prep-radar-note{font-size:.68rem;color:var(--muted);line-height:1.45;margin-top:.2rem;max-width:380px}
   .conn-legend{display:flex;gap:1.3rem;flex-wrap:wrap;font-size:.72rem;color:var(--muted);margin-bottom:1.1rem}
   .conn-legend i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:.4rem;vertical-align:middle}
   .conn-group{font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:1.3rem 0 .55rem;border-bottom:1px solid var(--line);padding-bottom:.3rem}
@@ -321,7 +328,20 @@
       </div>
     </div>
     <p class="conn-intro" id="prep-intro"></p>
-    <div style="overflow-x:auto"><table class="cd-table" id="prep-table"></table></div>
+    <div class="prep-flex">
+      <div class="prep-radar">
+        <div class="prep-radar-head">
+          <label class="hero-chk" style="gap:.4rem"><span class="hero-secondary-label">Content type</span>
+            <select class="hero-select" id="prep-type" style="flex:none;min-width:0"></select></label>
+          <span class="prep-legend"><i style="background:#673289"></i>current <i style="background:#9aa0ab"></i>backfile</span>
+        </div>
+        <div id="prep-radar-svg"></div>
+        <div class="prep-radar-note">The fourteen Participation Report checks — backfile records vs current
+          (last three calendar years). Where the current line reaches beyond the backfile line, this member&rsquo;s
+          recent metadata is richer than its older records.</div>
+      </div>
+      <div style="overflow-x:auto;flex:1;min-width:340px"><table class="cd-table" id="prep-table"></table></div>
+    </div>
   </div>
 
   <div class="card" id="dup-card" style="display:none">
@@ -1881,6 +1901,55 @@ function syncUrl(target, typeId, query, cap, random, era){
 const PREP_CHECKS = [['orcids','ORCIDs'], ['affiliations','Affiliations'],
                      ['affiliation-ror-ids','Affiliation RORs'], ['funders','Funders'],
                      ['funder-ror-ids','Funder RORs']];
+// all fourteen PReP checks, radar-axis order + short labels
+const PREP_RADAR_CHECKS = [
+  ['abstracts','Abstracts'], ['orcids','ORCIDs'], ['references','References'],
+  ['funders','Funders'], ['award-numbers','Awards'], ['licenses','Licenses'],
+  ['affiliations','Affiliations'], ['ror-ids','RORs'], ['affiliation-ror-ids','Affil RORs'],
+  ['funder-ror-ids','Funder RORs'], ['update-policies','Update pol.'],
+  ['resource-links','Res. links'], ['similarity-checking','Similarity'], ['descriptions','Descriptions']];
+let prepState = null;   // { coverageType } for the radar's type selector
+
+/* Era radar: the fourteen checks as axes, backfile (gray, dashed) under current (accent).
+   Reads coverage-type[era][type]; a type missing an era draws only the era it has. */
+function drawPrepRadar(type){
+  if (!prepState) return;
+  const ct = prepState.coverageType;
+  const W = 380, H = 330, cx = W / 2, cy = H / 2 + 6, R = 105;
+  const n = PREP_RADAR_CHECKS.length;
+  const pt = (i, r) => {
+    const a = i * 2 * Math.PI / n - Math.PI / 2;
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  };
+  let s = '';
+  for (const f of [0.25, 0.5, 0.75, 1])   // rings
+    s += `<polygon points="${PREP_RADAR_CHECKS.map((_, i) => pt(i, f * R).map(v => v.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="#e8e6ef" stroke-width="${f === 1 ? 1.2 : 0.8}"/>`;
+  PREP_RADAR_CHECKS.forEach(([, label], i) => {   // axes + labels
+    const [x, y] = pt(i, R);
+    s += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="#efedf4" stroke-width="0.8"/>`;
+    const [lx, ly] = pt(i, R + 10);
+    const anchor = Math.abs(lx - cx) < 8 ? 'middle' : (lx > cx ? 'start' : 'end');
+    s += `<text x="${lx.toFixed(1)}" y="${(ly + 3).toFixed(1)}" text-anchor="${anchor}" font-size="8.5" fill="#6b7280" font-family="Inter,sans-serif">${escHtml(label)}</text>`;
+  });
+  s += `<text x="${cx + 3}" y="${cy - R - 2}" font-size="7.5" fill="#9aa0ab" font-family="Inter,sans-serif">100%</text>`;
+  const eras = [['backfile', '#9aa0ab', '4 3'], ['current', '#673289', '']];   // backfile under current
+  const drawn = [];
+  for (const [era, color, dash] of eras){
+    const c = ct[era] && ct[era][type];
+    if (!c) continue;
+    drawn.push(era);
+    const vals = PREP_RADAR_CHECKS.map(([k]) => (c[k] == null || isNaN(c[k])) ? 0 : Math.min(c[k], 1));
+    const pts = vals.map((v, i) => pt(i, v * R));
+    s += `<polygon points="${pts.map(p => p.map(v => v.toFixed(1)).join(',')).join(' ')}" fill="${color}" fill-opacity="0.13" stroke="${color}" stroke-width="1.8"${dash ? ` stroke-dasharray="${dash}"` : ''}/>`;
+    s += pts.map(([x, y], i) => `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.4" fill="${color}"><title>${escHtml(PREP_RADAR_CHECKS[i][1])} · ${era}: ${(vals[i] * 100).toFixed(0)}%</title></circle>`).join('');
+  }
+  if (!drawn.length){
+    $('prep-radar-svg').innerHTML = '<div style="font-size:.75rem;color:var(--muted);padding:1rem 0">No era coverage for this content type.</div>';
+    return;
+  }
+  $('prep-radar-svg').innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Participation Report radar, backfile vs current">${s}</svg>`
+    + (drawn.length === 1 ? `<div style="font-size:.68rem;color:var(--muted)">Only ${drawn[0]}-era data exists for this content type.</div>` : '');
+}
 async function maybeRenderPrep(memberCounts, analyzed){
   const card = $('prep-card'); card.style.display = 'none';
   let memberId = null, share = 1;
@@ -1917,6 +1986,15 @@ async function maybeRenderPrep(memberCounts, analyzed){
   $('prep-intro').innerHTML = `Crossref&rsquo;s <b>own coverage</b> for this member — computed by Crossref over <b>all</b> the member&rsquo;s records (not the sample above), by content type and era (<b>current</b> = the last two calendar years)${checked ? `, last checked ${checked}` : ''}. `
     + (share < 1 ? `Shown because ${(share * 100).toFixed(0)}% of the analyzed sample belongs to this member. ` : '')
     + 'Use it as a cross-check: the bars above count <b>distinct entities</b> in a sample across all content types; these are <b>record-level</b> percentages per content type.';
+  // era radar: content-type selector over the same coverage data (default journal-article)
+  prepState = { coverageType: ct };
+  const radarTypes = types.filter(t => (ct.current && ct.current[t]) || (ct.backfile && ct.backfile[t]));
+  const sel = $('prep-type');
+  sel.innerHTML = radarTypes.map(t => `<option value="${escAttr(t)}">${escHtml(t)}</option>`).join('');
+  sel.value = radarTypes.includes('journal-article') ? 'journal-article' : (radarTypes[0] || '');
+  sel.onchange = () => drawPrepRadar(sel.value);
+  if (radarTypes.length){ drawPrepRadar(sel.value); $('prep-radar-svg').parentElement.style.display = ''; }
+  else $('prep-radar-svg').parentElement.style.display = 'none';
   card.style.display = '';
 }
 
