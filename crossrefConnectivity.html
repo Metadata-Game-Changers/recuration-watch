@@ -210,7 +210,7 @@
     </div>
     <div class="topbar-links">
       <div class="topbar-col">
-      <a href="metadataConnectivity.html" target="_blank" rel="noopener">Metadata Connectivity (DataCite) ↗</a>
+      <a id="completeness-link" href="crossrefCompleteness.html" target="_blank" rel="noopener">Crossref Completeness ↗</a>
       <a href="rorRetriever.html" target="_blank" rel="noopener">ROR Retriever ↗</a>
       <a href="orcidRetriever.html" target="_blank" rel="noopener">ORCID Retriever ↗</a>
       </div>
@@ -652,6 +652,26 @@ function renderSelection(clientId, meta, recordCount, random, repoTotal, resourc
   if (query) parts.push(`query: ${query}`);
   $('sel-filter').textContent = parts.length ? `filter — ${parts.join(' · ')}` : '';
   $('sel-filter').style.display = parts.length ? '' : 'none';
+}
+
+// point the Crossref Completeness link at the same target + filters (mirror of
+// crossrefCompleteness.html's setConnectivityLink — the reverse handoff, so the two
+// Crossref tools carry the selection back and forth).
+function setCompletenessLink(target, typeId, query, cap, era, singleDoi){
+  const el = $('completeness-link'); if (!el || !target) return;
+  const p = singleDoi ? 'doi=' + encodeURIComponent(singleDoi)
+          : target.kind === 'journal' ? 'issn=' + encodeURIComponent(target.id)
+          : target.kind === 'member' ? 'member=' + encodeURIComponent(target.id)
+          : target.kind === 'ror' ? 'ror=' + encodeURIComponent(target.id)
+          : 'client=' + ALL_CROSSREF;
+  el.href = 'crossrefCompleteness.html?' + p
+    + (!singleDoi && typeId ? '&type=' + encodeURIComponent(typeId) : '')
+    + (!singleDoi && era ? '&era=' + encodeURIComponent(era) : '')
+    + (!singleDoi && query ? '&query=' + encodeURIComponent(query) : '')
+    + (!singleDoi && cap ? '&max=' + cap : '');
+  el.title = singleDoi
+    ? 'Score metadata completeness for this DOI'
+    : 'Score metadata completeness for the same selection (a fresh sample of the same population)';
 }
 
 /* ---------- connectivity computation ----------
@@ -2146,6 +2166,7 @@ let lastRun = null;
 async function analyze(target, records, repoTotal, usedRandom, typeId, query, era, singleDoi, memberCounts){
   const meta = await fetchTargetMeta(target);
   renderSelection(target.token, meta, records.length, usedRandom, repoTotal, typeId, query, null, singleDoi, era);
+  setCompletenessLink(target, typeId, query, singleDoi ? 0 : (parseInt($('cap').value, 10) || 0), era, singleDoi);
   setStatus('Computing connectivity…');
   const results = computeConnectivity(records);
   lastRun = { records, clientId: target.token, target, resourceTypeId: typeId, query, era,
