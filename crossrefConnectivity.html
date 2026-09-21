@@ -325,7 +325,7 @@
 
   <div class="card" id="prep-card" style="display:none">
     <div class="conn-head">
-      <h2 id="prep-title">Crossref Participation Report</h2>
+      <h2 id="prep-title">Crossref Metadata Evolution</h2>
       <div class="conn-actions">
         <a class="dl-btn" id="prep-link" href="#" target="_blank" rel="noopener" style="text-decoration:none">Open at crossref.org ↗</a>
       </div>
@@ -2129,7 +2129,7 @@ async function maybeRenderPrep(memberCounts, analyzed){
     emptyNote.innerHTML = `${joined} content had no Participation Report data (all checks 0%) and ${list.length === 1 ? 'is' : 'are'} omitted above.`;
     emptyNote.style.display = '';
   } else emptyNote.style.display = 'none';
-  $('prep-title').textContent = `Crossref Participation Report — ${msg['primary-name'] || 'member ' + memberId}`;
+  $('prep-title').textContent = `Crossref Metadata Evolution — ${msg['primary-name'] || 'member ' + memberId}`;
   $('prep-link').href = `https://www.crossref.org/members/prep/${memberId}`;
   const checked = msg['last-status-check-time'] ? new Date(msg['last-status-check-time']).toISOString().slice(0, 10) : null;
   $('prep-intro').innerHTML = `Crossref&rsquo;s <b>own coverage</b> for this member — computed by Crossref over <b>all</b> the member&rsquo;s records (not the sample above), by content type and era (<b>current</b> = the last two calendar years)${checked ? `, last checked ${checked}` : ''}. `
