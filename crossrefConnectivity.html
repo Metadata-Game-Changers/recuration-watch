@@ -334,6 +334,7 @@
     <div class="prep-radar-head">
       <label class="hero-chk" style="gap:.4rem"><span class="hero-secondary-label">Content type</span>
         <select class="hero-select" id="prep-type" style="flex:none;min-width:0" autocomplete="off"></select></label>
+      <button class="dl-btn" id="prep-plot-copy" type="button" title="Copy the radar plot above to the clipboard as an image (with member, content type, date, and legend in the title)">⧉ Copy plot</button>
       <button class="dl-btn" id="prep-strip-btn" type="button" title="Show a small backfile-vs-current radar for every content type">▦ All types</button>
       <button class="dl-btn" id="prep-strip-copy" type="button" title="Copy the all-types radar strip to the clipboard as an image (with member, date, and legend in the title)">⧉ Copy strip</button>
       <span class="prep-legend"><i style="background:#673289"></i>current <i style="background:#9aa0ab"></i>backfile</span>
@@ -1986,28 +1987,64 @@ function prepStripCompositeSvg(){
   });
   return { svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="Inter, Helvetica, sans-serif">${s}</svg>`, W, H };
 }
+// rasterize a composite SVG to a 2x PNG blob and put it on the clipboard
+async function copyCompositeSvg(svg, W, H){
+  const blob = await new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+    img.onload = () => {
+      const scale = 2, cv = document.createElement('canvas');
+      cv.width = W * scale; cv.height = H * scale;
+      const ctx = cv.getContext('2d'); ctx.scale(scale, scale); ctx.drawImage(img, 0, 0, W, H);
+      URL.revokeObjectURL(url);
+      cv.toBlob(b => b ? resolve(b) : reject(new Error('could not render the image')), 'image/png');
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('could not load the composite SVG')); };
+    img.src = url;
+  });
+  await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+}
 async function copyPrepStrip(){
   const btn = $('prep-strip-copy');
   try {
     if (!prepState) throw new Error('no report yet');
     const { svg, W, H } = prepStripCompositeSvg();
-    const blob = await new Promise((resolve, reject) => {
-      const img = new Image();
-      const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
-      img.onload = () => {
-        const scale = 2, cv = document.createElement('canvas');
-        cv.width = W * scale; cv.height = H * scale;
-        const ctx = cv.getContext('2d'); ctx.scale(scale, scale); ctx.drawImage(img, 0, 0, W, H);
-        URL.revokeObjectURL(url);
-        cv.toBlob(b => b ? resolve(b) : reject(new Error('could not render the image')), 'image/png');
-      };
-      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('could not load the composite SVG')); };
-      img.src = url;
-    });
-    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    await copyCompositeSvg(svg, W, H);
     btn.textContent = '✓ Copied';
   } catch (e){ console.warn('copy strip failed', e); btn.textContent = 'Copy failed'; }
   setTimeout(() => { btn.textContent = '⧉ Copy strip'; }, 1600);
+}
+// Copy the single (selected-type) radar as one PNG: title, content type + legend,
+// the labeled radar, and that type's current/backfile counts.
+function prepPlotCompositeSvg(type){
+  const r = prepRadarSvg(type, 380, true);
+  if (!r) return null;
+  const counts = prepState.counts || {};
+  const padX = 20, titleH = 42, radarW = 380, footH = 20;
+  const W = Math.max(560, radarW + padX * 2);
+  const radarH = Math.round(radarW * 0.87);
+  const H = titleH + radarH + footH;
+  const stamp = new Date().toISOString().slice(0, 10);
+  const cn = (counts.current || {})[type], bn = (counts.backfile || {})[type];
+  let s = `<rect width="${W}" height="${H}" fill="#ffffff"/>`;
+  s += `<text x="${padX}" y="20" font-size="14" font-weight="600" fill="#673289">${escHtml($('prep-title').textContent)}</text>`;
+  s += `<text x="${padX}" y="34" font-size="10" fill="#6b7280">${escHtml(type)} · `
+     + `<tspan fill="#673289" font-weight="600">current</tspan> vs <tspan fill="#9aa0ab" font-weight="600">backfile (dashed)</tspan> · ${stamp}</text>`;
+  s += r.svg.replace('<svg ', `<svg x="${(W - radarW) / 2}" y="${titleH}" `);
+  s += `<text x="${W / 2}" y="${H - 6}" text-anchor="middle" font-size="8.5" fill="#6b7280">`
+     + `${cn != null ? cn.toLocaleString() + ' current' : 'no current'} · ${bn != null ? bn.toLocaleString() + ' backfile' : 'no backfile'}</text>`;
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="Inter, Helvetica, sans-serif">${s}</svg>`, W, H };
+}
+async function copyPrepPlot(){
+  const btn = $('prep-plot-copy');
+  try {
+    if (!prepState) throw new Error('no report yet');
+    const c = prepPlotCompositeSvg($('prep-type').value);
+    if (!c) throw new Error('no era coverage for this content type');
+    await copyCompositeSvg(c.svg, c.W, c.H);
+    btn.textContent = '✓ Copied';
+  } catch (e){ console.warn('copy plot failed', e); btn.textContent = 'Copy failed'; }
+  setTimeout(() => { btn.textContent = '⧉ Copy plot'; }, 1600);
 }
 // the all-types strip (opt-in, like Metadata Completeness's radar strip): one small
 // backfile-vs-current radar per content type — every change at a glance
@@ -2095,6 +2132,9 @@ async function maybeRenderPrep(memberCounts, analyzed){
   };
   stripBtn.style.display = radarTypes.length > 1 ? '' : 'none';
   copyBtn.onclick = copyPrepStrip;
+  const plotCopyBtn = $('prep-plot-copy');
+  plotCopyBtn.onclick = copyPrepPlot;
+  plotCopyBtn.style.display = radarTypes.length ? '' : 'none';
   if (radarTypes.length){ drawPrepRadar(sel.value); $('prep-radar-svg').parentElement.style.display = ''; }
   else $('prep-radar-svg').parentElement.style.display = 'none';
   card.style.display = '';
