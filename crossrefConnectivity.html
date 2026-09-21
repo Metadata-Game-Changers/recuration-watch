@@ -2132,7 +2132,7 @@ async function maybeRenderPrep(memberCounts, analyzed){
   $('prep-title').textContent = `Crossref Metadata Evolution — ${msg['primary-name'] || 'member ' + memberId}`;
   $('prep-link').href = `https://www.crossref.org/members/prep/${memberId}`;
   const checked = msg['last-status-check-time'] ? new Date(msg['last-status-check-time']).toISOString().slice(0, 10) : null;
-  $('prep-intro').innerHTML = `Crossref&rsquo;s <b>own coverage</b> for this member — computed by Crossref over <b>all</b> the member&rsquo;s records (not the sample above), by content type and era (<b>current</b> = the last two calendar years)${checked ? `, last checked ${checked}` : ''}. `
+  $('prep-intro').innerHTML = `Crossref&rsquo;s <b>Participation Report</b> for this member — computed by Crossref over <b>all</b> the member&rsquo;s records (not the sample above), by content type and era (<b>current</b> = the last two calendar years)${checked ? `, last checked ${checked}` : ''}. `
     + (share < 1 ? `Shown because ${(share * 100).toFixed(0)}% of the analyzed sample belongs to this member. ` : '')
     + 'Use it as a cross-check: the bars above count <b>distinct entities</b> in a sample across all content types; these are <b>record-level</b> percentages per content type.';
   // era radar: content-type selector over the same coverage data (default journal-article),
