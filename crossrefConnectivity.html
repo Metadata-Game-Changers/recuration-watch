@@ -1941,6 +1941,23 @@ const PREP_RADAR_CHECKS = [
   ['resource-links','Res. links'], ['similarity-checking','Similarity'], ['descriptions','Descriptions']];
 let prepState = null;   // { coverageType } for the radar's type selector
 
+// the Average PReP score for one coverage cell — the mean of the fourteen checks
+// (the same number crossrefParticipation.py writes as Average, used to pick bright spots)
+function prepAvg(c){
+  if (!c) return null;
+  const v = PREP_RADAR_CHECKS.map(([k]) => c[k]).filter(x => x != null && !isNaN(x));
+  return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+}
+// "current 71% · backfile 8%" — the era averages present for one content type
+function prepAvgLabel(type){
+  const ct = prepState.coverageType, parts = [];
+  for (const era of ['current', 'backfile']){
+    const a = prepAvg(ct[era] && ct[era][type]);
+    if (a != null) parts.push(`${era} ${(a * 100).toFixed(0)}%`);
+  }
+  return parts.join(' · ');
+}
+
 /* Era radar: the fourteen checks as axes, backfile (gray, dashed) under current (accent).
    Reads coverage-type[era][type]; a type missing an era draws only the era it has.
    prepRadarSvg builds one radar at any size (labels optional) — used for the main plot
@@ -1984,15 +2001,20 @@ function prepRadarSvg(type, W, labels){
 function drawPrepRadar(type){
   if (!prepState) return;
   const r = prepRadarSvg(type, 380, true);
-  $('prep-radar-svg').innerHTML = r
-    ? r.svg + (r.drawn.length === 1 ? `<div style="font-size:.68rem;color:var(--muted)">Only ${r.drawn[0]}-era data exists for this content type.</div>` : '')
-    : '<div style="font-size:.75rem;color:var(--muted);padding:1rem 0">No era coverage for this content type.</div>';
+  if (!r){ $('prep-radar-svg').innerHTML = '<div style="font-size:.75rem;color:var(--muted);padding:1rem 0">No era coverage for this content type.</div>'; return; }
+  const avg = prepAvgLabel(type);   // "current 71% · backfile 8%"
+  $('prep-radar-svg').innerHTML =
+      (avg ? `<div style="font-size:.82rem;font-weight:600;color:#673289;text-align:center">${escHtml(type)} — average ${avg}</div>` : '')
+    + r.svg
+    + (r.drawn.length === 1 ? `<div style="font-size:.68rem;color:var(--muted);text-align:center">Only ${r.drawn[0]}-era data exists for this content type.</div>` : '');
 }
 // Copy the whole strip as one PNG: a composite SVG (title, legend, one cell per type,
 // counts) rasterized to a canvas — the Metadata Completeness "Copy strip" pattern.
 function prepStripCompositeSvg(){
   const counts = prepState.counts || {};
-  const cellW = 150, gap = 18, padX = 20, titleH = 40, labelH = 15, countH = 18;
+  const ct = prepState.coverageType;
+  const av = (era, t) => { const a = prepAvg(ct[era] && ct[era][t]); return a == null ? '—' : (a * 100).toFixed(0) + '%'; };
+  const cellW = 150, gap = 18, padX = 20, titleH = 40, labelH = 27, countH = 18;
   const types = prepState.radarTypes.filter(t => prepRadarSvg(t, cellW, false));
   const W = Math.max(560, padX * 2 + types.length * cellW + (types.length - 1) * gap);
   const H = titleH + labelH + cellW + countH + 12;
@@ -2000,10 +2022,11 @@ function prepStripCompositeSvg(){
   let s = `<rect width="${W}" height="${H}" fill="#ffffff"/>`;
   s += `<text x="${padX}" y="20" font-size="14" font-weight="600" fill="#673289">${escHtml($('prep-title').textContent)}</text>`;
   s += `<text x="${padX}" y="34" font-size="10" fill="#6b7280">Participation Report by content type · `
-     + `<tspan fill="#673289" font-weight="600">current</tspan> vs <tspan fill="#9aa0ab" font-weight="600">backfile (dashed)</tspan> · ${stamp}</text>`;
+     + `<tspan fill="#673289" font-weight="600">current</tspan> vs <tspan fill="#9aa0ab" font-weight="600">backfile (dashed)</tspan> · avg = mean of 14 checks · ${stamp}</text>`;
   types.forEach((t, i) => {
     const x = padX + i * (cellW + gap);
     s += `<text x="${x + cellW / 2}" y="${titleH + 10}" text-anchor="middle" font-size="10" font-weight="600" fill="#1f2330">${escHtml(t)}</text>`;
+    s += `<text x="${x + cellW / 2}" y="${titleH + 22}" text-anchor="middle" font-size="9" font-weight="600" fill="#673289">avg C ${av('current', t)} · B ${av('backfile', t)}</text>`;
     s += prepRadarSvg(t, cellW, false).svg.replace('<svg ', `<svg x="${x}" y="${titleH + labelH}" `);
     const cn = (counts.current || {})[t], bn = (counts.backfile || {})[t];
     s += `<text x="${x + cellW / 2}" y="${titleH + labelH + cellW + 12}" text-anchor="middle" font-size="8.5" fill="#6b7280">`
@@ -2052,7 +2075,8 @@ function prepPlotCompositeSvg(type){
   const cn = (counts.current || {})[type], bn = (counts.backfile || {})[type];
   let s = `<rect width="${W}" height="${H}" fill="#ffffff"/>`;
   s += `<text x="${padX}" y="20" font-size="14" font-weight="600" fill="#673289">${escHtml($('prep-title').textContent)}</text>`;
-  s += `<text x="${padX}" y="34" font-size="10" fill="#6b7280">${escHtml(type)} · `
+  const av = prepAvgLabel(type);   // "current 71% · backfile 8%"
+  s += `<text x="${padX}" y="34" font-size="10" fill="#6b7280">${escHtml(type)} — average ${escHtml(av)} · `
      + `<tspan fill="#673289" font-weight="600">current</tspan> vs <tspan fill="#9aa0ab" font-weight="600">backfile (dashed)</tspan> · ${stamp}</text>`;
   s += r.svg.replace('<svg ', `<svg x="${(W - radarW) / 2}" y="${titleH}" `);
   s += `<text x="${W / 2}" y="${H - 6}" text-anchor="middle" font-size="8.5" fill="#6b7280">`
@@ -2074,11 +2098,13 @@ async function copyPrepPlot(){
 // backfile-vs-current radar per content type — every change at a glance
 function drawPrepStrip(){
   const counts = prepState.counts || {};
+  const ct = prepState.coverageType;
+  const av = (era, t) => { const a = prepAvg(ct[era] && ct[era][t]); return a == null ? '—' : (a * 100).toFixed(0) + '%'; };
   $('prep-strip').innerHTML = prepState.radarTypes.map(t => {
     const r = prepRadarSvg(t, 150, false);
     if (!r) return '';
     const cn = (counts.current || {})[t], bn = (counts.backfile || {})[t];
-    return `<div class="prep-cell"><div class="t">${escHtml(t)}</div>${r.svg}
+    return `<div class="prep-cell"><div class="t">${escHtml(t)}<br><span style="color:#673289">avg C ${av('current', t)} · B ${av('backfile', t)}</span></div>${r.svg}
       <small>${cn != null ? cn.toLocaleString() + ' current' : 'no current'} · ${bn != null ? bn.toLocaleString() + ' backfile' : 'no backfile'}</small></div>`;
   }).join('');
 }
@@ -2116,11 +2142,12 @@ async function maybeRenderPrep(memberCounts, analyzed){
       const c = ct[era] && ct[era][t]; if (!c) continue;
       const n = (counts[era] || {})[t];
       rows += `<tr><td class="val">${escHtml(t)}</td><td class="val" title="${era}">${ERA_ABBR[era]}</td><td class="num">${n != null ? n.toLocaleString() : '—'}</td>`
+        + `<td class="num" style="font-weight:600;color:#673289">${pct(prepAvg(c))}</td>`
         + PREP_RADAR_CHECKS.map(([k]) => `<td class="num">${pct(c[k])}</td>`).join('') + '</tr>';
     }
   }
   $('prep-table').innerHTML =
-    `<thead><tr><th>Content type</th><th title="C = current · B = backfile · A = all">Era</th><th class="num">Records</th>${PREP_RADAR_CHECKS.map(([, l]) => `<th class="num">${l}</th>`).join('')}</tr></thead><tbody>${rows}</tbody>`;
+    `<thead><tr><th>Content type</th><th title="C = current · B = backfile · A = all">Era</th><th class="num">Records</th><th class="num" title="Mean of the fourteen checks">Average</th>${PREP_RADAR_CHECKS.map(([, l]) => `<th class="num">${l}</th>`).join('')}</tr></thead><tbody>${rows}</tbody>`;
   // note the content types Crossref has no participation data for (all fourteen checks 0%)
   const emptyNote = $('prep-empty-note');
   if (emptyTypes.length){
