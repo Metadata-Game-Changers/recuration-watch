@@ -119,6 +119,17 @@
   table.hist td.year-open{text-align:left;white-space:nowrap}
   table.hist td.year-open a{color:var(--accent);text-decoration:none;cursor:pointer;font-size:.72rem;font-weight:600;margin-right:.5rem}
   table.hist td.year-open a:hover{color:var(--accent-dk);text-decoration:underline}
+  /* configuration: sets as an openable directory tree */
+  details.cfg-set{border:1px solid var(--line);border-radius:8px;margin:.4rem 0;background:#fff;overflow:hidden}
+  details.cfg-set>summary{list-style:none;cursor:pointer;padding:.5rem .7rem;display:flex;align-items:center;gap:.6rem;font-size:.82rem}
+  details.cfg-set>summary::-webkit-details-marker{display:none}
+  details.cfg-set>summary::before{content:'▸';color:var(--accent);font-size:.72rem;transition:transform .12s ease;flex:none}
+  details.cfg-set[open]>summary::before{transform:rotate(90deg)}
+  details.cfg-set>summary:hover{background:var(--tint)}
+  details.cfg-set .cfg-name{font-weight:600;color:var(--accent-dk)}
+  details.cfg-set .cfg-meta{color:var(--muted);font-size:.74rem;margin-left:auto;display:flex;gap:.9rem;flex-wrap:wrap}
+  details.cfg-set.inactive{opacity:.55}
+  details.cfg-set .cfg-repos{border-top:1px solid var(--line);padding:.1rem .7rem .5rem}
   /* radar grid (small multiples: use cases × years) */
   #grid{overflow-x:auto;margin-top:.4rem}
   table.grid-tbl{border-collapse:collapse}
@@ -316,7 +327,7 @@
       <div class="card-actions"><button class="dl-btn" id="config-close" type="button">✕ Close</button></div>
     </div>
     <p class="card-intro" id="config-note">The <code>config.json</code> that drives this repository&rsquo;s scoring runs.</p>
-    <div style="overflow-x:auto"><table class="hist" id="config-table"></table></div>
+    <div style="overflow-x:auto" id="config-body"></div>
   </div>
 </div>
 
@@ -580,11 +591,49 @@ function fmtConfigValue(k, v){
   if (typeof v === 'object') return `<code>${escHtml(JSON.stringify(v))}</code>`;
   return escHtml(String(v));
 }
+// config.json comes in two shapes: the simple flat one (repositories[]/max/… — one implicit
+// set) and the richer { sets: [{ name, schedule, max, repositories:[…] }] }, where a repository
+// is a client-id string or a { client, query, label } object. Render sets one row per
+// repository, and highlight the client this history is for.
 function renderConfigTable(cfg){
+  const muted = t => `<span style="color:var(--muted)">${t}</span>`;
+  const here = history ? history.clientId : '';
+  const L = 'style="text-align:left"';
+  const clientOf = r => typeof r === 'string' ? r : (r && r.client) || '';
+  if (Array.isArray(cfg.sets)){
+    // each set is an openable "folder"; the set holding the viewed client opens by default
+    let html = '';
+    for (const set of cfg.sets){
+      const active = set.active !== false;   // absent = active
+      const repos = Array.isArray(set.repositories) ? set.repositories : [];
+      const contains = !!here && repos.some(r => clientOf(r) === here);
+      const rows = repos.map(repo => {
+        const client = clientOf(repo);
+        const query = (typeof repo === 'object' && repo) ? (repo.query || '') : '';
+        const label = (typeof repo === 'object' && repo) ? (repo.label || '') : '';
+        const mine = client && client === here;
+        return `<tr${mine ? ' style="background:var(--tint)"' : ''}>`
+          + `<td ${L}>${escHtml(client)}${mine ? ' <span style="color:var(--accent-dk);font-weight:600">◀ viewing</span>' : ''}</td>`
+          + `<td ${L}>${query ? escHtml(query) : muted('—')}</td>`
+          + `<td ${L}>${label ? escHtml(label) : muted('—')}</td></tr>`;
+      }).join('');
+      const meta = [active ? 'Active' : 'Inactive',
+                    set.schedule ? escHtml(set.schedule) : '',
+                    set.max != null ? 'max ' + Number(set.max).toLocaleString() : '',
+                    `${repos.length} repositor${repos.length === 1 ? 'y' : 'ies'}`]
+                   .filter(Boolean).map(x => `<span>${x}</span>`).join('');
+      html += `<details class="cfg-set${active ? '' : ' inactive'}"${contains ? ' open' : ''}>`
+        + `<summary><span class="cfg-name">${escHtml(set.name || '(unnamed set)')}</span><span class="cfg-meta">${meta}</span></summary>`
+        + `<div class="cfg-repos"><table class="hist"><thead><tr><th ${L}>Client</th><th ${L}>Query</th><th ${L}>Label</th></tr></thead><tbody>${rows}</tbody></table></div>`
+        + `</details>`;
+    }
+    $('config-body').innerHTML = html;
+    return;
+  }
   const rows = Object.keys(cfg).map(k =>
-    `<tr><td>${escHtml(CONFIG_LABELS[k] || k)}</td><td style="text-align:left">${fmtConfigValue(k, cfg[k])}</td></tr>`).join('');
-  $('config-table').innerHTML =
-    `<thead><tr><th>Setting</th><th style="text-align:left">Value</th></tr></thead><tbody>${rows}</tbody>`;
+    `<tr><td>${escHtml(CONFIG_LABELS[k] || k)}</td><td ${L}>${fmtConfigValue(k, cfg[k])}</td></tr>`).join('');
+  $('config-body').innerHTML =
+    `<table class="hist"><thead><tr><th>Setting</th><th ${L}>Value</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 async function showConfig(){
   const card = $('config-card');
@@ -596,8 +645,15 @@ async function showConfig(){
   try {
     const res = await fetch(url);
     if (!res.ok) throw new Error(`No config.json in that repository (HTTP ${res.status}).`);
-    renderConfigTable(await res.json());
-    $('config-note').innerHTML = `The <code>config.json</code> that drives this repository&rsquo;s scoring runs — `
+    const cfg = await res.json();
+    renderConfigTable(cfg);
+    let summary = '';
+    if (Array.isArray(cfg.sets)){
+      const repos = cfg.sets.reduce((a, s) => a + ((Array.isArray(s.repositories) ? s.repositories : []).length), 0);
+      const activeSets = cfg.sets.filter(s => s.active !== false).length;
+      summary = `${cfg.sets.length} set${cfg.sets.length === 1 ? '' : 's'} (${activeSets} active) · ${repos} repositor${repos === 1 ? 'y' : 'ies'} · `;
+    }
+    $('config-note').innerHTML = `${summary}The <code>config.json</code> that drives this repository&rsquo;s scoring runs — `
       + `<a href="${escAttr(url)}" target="_blank" rel="noopener">${escHtml(url)}</a>`;
     card.style.display = '';
     card.scrollIntoView({ behavior: 'smooth', block: 'start' });
