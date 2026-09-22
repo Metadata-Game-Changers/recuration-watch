@@ -236,6 +236,7 @@
       <span class="sel-stat" id="sel-mode">—</span>
       <span class="sel-stat" id="sel-filter" style="display:none"></span>
     </div>
+    <button class="dl-btn" id="show-config" type="button" style="display:none" title="Show the config.json from the same repository as this history — the settings that drive its scoring runs">⚙ Configuration</button>
   </div>
 </div>
 
@@ -307,6 +308,15 @@
       <th>Text</th><th>Identifiers</th><th>Connections</th><th>Contacts</th>
     </tr></thead><tbody id="hist-body"></tbody></table>
     </div>
+  </div>
+
+  <div class="card" id="config-card" style="display:none">
+    <div class="card-head">
+      <h2>Configuration</h2>
+      <div class="card-actions"><button class="dl-btn" id="config-close" type="button">✕ Close</button></div>
+    </div>
+    <p class="card-intro" id="config-note">The <code>config.json</code> that drives this repository&rsquo;s scoring runs.</p>
+    <div style="overflow-x:auto"><table class="hist" id="config-table"></table></div>
   </div>
 </div>
 
@@ -551,6 +561,51 @@ function loadFromFile(file){
   reader.readAsText(file);
 }
 
+/* ---------- configuration (config.json from the same repo as the loaded history) ----------
+   A metrics-watch history lives at raw.githubusercontent.com/<owner>/<repo>/<ref>/<path>; its
+   config.json sits at the repo root for that same ref, so the "current" configuration is one
+   fetch away. Only derivable for GitHub-hosted histories (a file-loaded one has no repo). */
+function configUrlFromSource(source){
+  const raw = rawUrl(source || '');
+  const m = /^https?:\/\/raw\.githubusercontent\.com\/([^\/]+)\/([^\/]+)\/([^\/]+)\/.+$/.exec(raw);
+  return m ? `https://raw.githubusercontent.com/${m[1]}/${m[2]}/${m[3]}/config.json` : null;
+}
+const CONFIG_LABELS = { repositories: 'Repositories', consortium: 'Consortium', schedule: 'Schedule',
+  max: 'Max records', random: 'Random sample', resourceType: 'Resource type', query: 'Query' };
+function fmtConfigValue(k, v){
+  const muted = t => `<span style="color:var(--muted)">${t}</span>`;
+  if (Array.isArray(v)) return v.length ? v.map(escHtml).join('<br>') : muted('(none)');
+  if (typeof v === 'boolean') return v ? 'Yes' : 'No';
+  if (v === '' || v == null) return muted(k === 'resourceType' ? '(all types)' : (k === 'query' || k === 'consortium') ? '(none)' : '—');
+  if (typeof v === 'object') return `<code>${escHtml(JSON.stringify(v))}</code>`;
+  return escHtml(String(v));
+}
+function renderConfigTable(cfg){
+  const rows = Object.keys(cfg).map(k =>
+    `<tr><td>${escHtml(CONFIG_LABELS[k] || k)}</td><td style="text-align:left">${fmtConfigValue(k, cfg[k])}</td></tr>`).join('');
+  $('config-table').innerHTML =
+    `<thead><tr><th>Setting</th><th style="text-align:left">Value</th></tr></thead><tbody>${rows}</tbody>`;
+}
+async function showConfig(){
+  const card = $('config-card');
+  if (card.style.display !== 'none'){ card.style.display = 'none'; return; }   // second click closes it
+  if (!history) return;
+  const url = configUrlFromSource(history.source);
+  if (!url){ setStatus('Configuration is only available for a history loaded from a GitHub repository.', true); return; }
+  const btn = $('show-config'), prev = btn.textContent; btn.textContent = '⏳ Loading…'; btn.disabled = true;
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`No config.json in that repository (HTTP ${res.status}).`);
+    renderConfigTable(await res.json());
+    $('config-note').innerHTML = `The <code>config.json</code> that drives this repository&rsquo;s scoring runs — `
+      + `<a href="${escAttr(url)}" target="_blank" rel="noopener">${escHtml(url)}</a>`;
+    card.style.display = '';
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setStatus('');
+  } catch (e){ console.error(e); setStatus(e.message || String(e), true); }
+  finally { btn.textContent = prev; btn.disabled = false; }
+}
+
 /* ---------- rendering ---------- */
 function renderSelection(){
   $('sel-summary').style.display = '';
@@ -565,6 +620,10 @@ function renderSelection(){
   if (last.sampling) parts.push(last.sampling);
   $('sel-filter').textContent = parts.length ? parts.join(' · ') : '';
   $('sel-filter').style.display = parts.length ? '' : 'none';
+  // the config button only appears for GitHub-hosted histories (config.json is derivable); a
+  // fresh load hides any config card left over from a previous repository
+  $('show-config').style.display = configUrlFromSource(history.source) ? '' : 'none';
+  $('config-card').style.display = 'none';
 }
 
 function renderLegend(){
@@ -998,6 +1057,8 @@ document.addEventListener('keydown', e => {
 });
 $('dl-summary').addEventListener('click', downloadSummary);
 $('dl-csv').addEventListener('click', downloadCsv);
+$('show-config').addEventListener('click', showConfig);
+$('config-close').addEventListener('click', () => { $('config-card').style.display = 'none'; });
 // deep link: ?src=<history-file URL> loads on arrival (GitHub blob URLs are converted to raw)
 (() => {
   const src = new URLSearchParams(location.search).get('src');
