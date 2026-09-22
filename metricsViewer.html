@@ -605,26 +605,37 @@ function renderConfigTable(cfg){
     let html = '';
     for (const set of cfg.sets){
       const active = set.active !== false;   // absent = active
+      // a set lists members explicitly (repositories[]) OR names a whole DataCite consortium
+      // (consortium: "nasaco"); an empty-string consortium is not one.
+      const consortium = (set.consortium || '').trim();
       const repos = Array.isArray(set.repositories) ? set.repositories : [];
-      const contains = !!here && repos.some(r => clientOf(r) === here);
-      const rows = repos.map(repo => {
-        const client = clientOf(repo);
-        const query = (typeof repo === 'object' && repo) ? (repo.query || '') : '';
-        const label = (typeof repo === 'object' && repo) ? (repo.label || '') : '';
-        const mine = client && client === here;
-        return `<tr${mine ? ' style="background:var(--tint)"' : ''}>`
-          + `<td ${L}>${escHtml(client)}${mine ? ' <span style="color:var(--accent-dk);font-weight:600">◀ viewing</span>' : ''}</td>`
-          + `<td ${L}>${query ? escHtml(query) : muted('—')}</td>`
-          + `<td ${L}>${label ? escHtml(label) : muted('—')}</td></tr>`;
-      }).join('');
+      const contains = !consortium && !!here && repos.some(r => clientOf(r) === here);
+      let detail, body;
+      if (consortium){
+        detail = `consortium: ${escHtml(consortium)}`;
+        body = `<div class="cfg-repos" style="font-size:.78rem;color:var(--muted);padding:.5rem .7rem">Scores every repository in the DataCite consortium <code>${escHtml(consortium)}</code> — members are resolved at scoring time.</div>`;
+      } else {
+        const rows = repos.map(repo => {
+          const client = clientOf(repo);
+          const query = (typeof repo === 'object' && repo) ? (repo.query || '') : '';
+          const label = (typeof repo === 'object' && repo) ? (repo.label || '') : '';
+          const mine = client && client === here;
+          return `<tr${mine ? ' style="background:var(--tint)"' : ''}>`
+            + `<td ${L}>${escHtml(client)}${mine ? ' <span style="color:var(--accent-dk);font-weight:600">◀ viewing</span>' : ''}</td>`
+            + `<td ${L}>${query ? escHtml(query) : muted('—')}</td>`
+            + `<td ${L}>${label ? escHtml(label) : muted('—')}</td></tr>`;
+        }).join('');
+        detail = `${repos.length} repositor${repos.length === 1 ? 'y' : 'ies'}`;
+        body = `<div class="cfg-repos"><table class="hist"><thead><tr><th ${L}>Client</th><th ${L}>Query</th><th ${L}>Label</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+      }
       const meta = [active ? 'Active' : 'Inactive',
                     set.schedule ? escHtml(set.schedule) : '',
                     set.max != null ? 'max ' + Number(set.max).toLocaleString() : '',
-                    `${repos.length} repositor${repos.length === 1 ? 'y' : 'ies'}`]
+                    detail]
                    .filter(Boolean).map(x => `<span>${x}</span>`).join('');
       html += `<details class="cfg-set${active ? '' : ' inactive'}"${contains ? ' open' : ''}>`
         + `<summary><span class="cfg-name">${escHtml(set.name || '(unnamed set)')}</span><span class="cfg-meta">${meta}</span></summary>`
-        + `<div class="cfg-repos"><table class="hist"><thead><tr><th ${L}>Client</th><th ${L}>Query</th><th ${L}>Label</th></tr></thead><tbody>${rows}</tbody></table></div>`
+        + body
         + `</details>`;
     }
     $('config-body').innerHTML = html;
@@ -651,7 +662,9 @@ async function showConfig(){
     if (Array.isArray(cfg.sets)){
       const repos = cfg.sets.reduce((a, s) => a + ((Array.isArray(s.repositories) ? s.repositories : []).length), 0);
       const activeSets = cfg.sets.filter(s => s.active !== false).length;
-      summary = `${cfg.sets.length} set${cfg.sets.length === 1 ? '' : 's'} (${activeSets} active) · ${repos} repositor${repos === 1 ? 'y' : 'ies'} · `;
+      const consSets = cfg.sets.filter(s => (s.consortium || '').trim()).length;
+      const consLabel = consSets ? ` · ${consSets} consortium set${consSets === 1 ? '' : 's'}` : '';
+      summary = `${cfg.sets.length} set${cfg.sets.length === 1 ? '' : 's'} (${activeSets} active) · ${repos} explicit repositor${repos === 1 ? 'y' : 'ies'}${consLabel} · `;
     }
     $('config-note').innerHTML = `${summary}The <code>config.json</code> that drives this repository&rsquo;s scoring runs — `
       + `<a href="${escAttr(url)}" target="_blank" rel="noopener">${escHtml(url)}</a>`;
