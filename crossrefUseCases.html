@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Crossref Use Cases — Metadata Game Changers</title>
+<meta name="description" content="The Crossref reduced FAIR catalog: the three FAIR use cases and the Crossref /works field each concept is drawn from, with approximations flagged. The reference behind the Crossref Completeness tool." />
+<link rel="icon" type="image/png" href="favicon_MGC.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{ --accent:#9167b0; --accent-dk:#673289; --tint:#f0eaf5; --ink:#1f2330; --muted:#6b7280; --line:#e6e3ec; --bg:#fbfafe; --green:#3a9d6e; --amber:#d4910b; }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:0}
+  .topbar{border-bottom:2px solid var(--ink);padding:0 2rem}
+  .topbar-inner{max-width:1040px;margin:0 auto;display:flex;align-items:stretch;gap:0}
+  .topbar-brand{padding:.5rem 2rem .3rem 0;display:flex;flex-direction:row;align-items:flex-end;gap:1rem}
+  .brand-logo{height:64px;width:auto;display:block;flex-shrink:0}
+  .brand-title-wrap{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:.15rem}
+  .brand-tool-name{font-family:'Montserrat',sans-serif;font-size:2rem;font-weight:400;letter-spacing:.02em;color:#673289;line-height:1;white-space:nowrap;text-transform:uppercase}
+  .topbar-links{padding:0 0 0 1.5rem;display:flex;gap:1.6rem;margin-left:auto}
+  .topbar-col{display:flex;flex-direction:column;justify-content:center;gap:.25rem}
+  .topbar-links a{font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4}
+  .topbar-links a:hover{color:var(--accent-dk)}
+  @media(max-width:820px){.topbar{padding:0 1rem}.topbar-inner{flex-direction:column}.topbar-brand{padding-right:0}.brand-tool-name{font-size:1.5rem}.topbar-links{flex-wrap:wrap;gap:.75rem;padding:.25rem 0 .5rem}.topbar-col{flex-direction:row;flex-wrap:wrap;gap:.75rem}}
+  .hero{background:var(--tint);border-bottom:2px solid var(--accent);padding:1.4rem 2rem}
+  .hero-inner{max-width:1040px;margin:0 auto}
+  .hero-title{font-size:1.4rem;font-weight:600;color:#5b3d7a;line-height:1.25;margin:0 0 .4rem;max-width:820px}
+  .hero-sub{font-size:.86rem;color:var(--ink);line-height:1.6;max-width:820px;margin:0}
+  .hero-sub b{color:var(--accent-dk)}
+  .wrap{max-width:1040px;margin:0 auto;padding:1.4rem 1.25rem 2.5rem}
+  a{color:var(--accent)}
+  .lead{font-size:.85rem;line-height:1.65;max-width:820px;margin:.2rem 0 1rem}
+  .lead b{color:var(--accent-dk)}
+  .lead a{color:var(--accent-dk);font-weight:600;text-decoration:none}
+  .lead a:hover{text-decoration:underline}
+  .facts{display:flex;gap:.5rem 1.6rem;flex-wrap:wrap;margin:.2rem 0 1.4rem;font-size:.78rem;color:var(--muted)}
+  .facts b{color:var(--accent-dk);font-weight:600}
+  .uc-head{display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap;border-left:4px solid var(--accent);padding:.35rem .7rem;margin:1.5rem 0 .2rem;background:#fff;border-radius:0 8px 8px 0;border:1px solid var(--line);border-left-width:4px}
+  .uc-head h2{font-size:1.05rem;margin:0;color:var(--ink)}
+  .uc-head .n{font-size:.72rem;color:var(--muted);font-weight:500}
+  .uc-purpose{font-size:.8rem;color:var(--ink);line-height:1.55;max-width:820px;margin:.35rem 0 .2rem}
+  table.uc{border-collapse:collapse;width:100%;font-size:.8rem;margin:.5rem 0 .3rem;max-width:920px;background:#fff}
+  table.uc th,table.uc td{text-align:left;padding:.4rem .6rem;border-bottom:1px solid #f0eef5;vertical-align:top}
+  table.uc th{font-size:.64rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:600;background:#faf9fc}
+  table.uc td.concept{font-weight:600;color:var(--accent-dk);white-space:nowrap}
+  table.uc td.path{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.74rem;color:var(--ink)}
+  .approx{display:inline-block;font-family:Inter,sans-serif;font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#8a5d00;background:#fff7e6;border:1px solid #f0d9a8;border-radius:4px;padding:.02rem .3rem;margin-left:.4rem;vertical-align:1px}
+  .notmeasured{font-size:.74rem;color:var(--muted);line-height:1.5;max-width:920px;margin:.15rem 0 .2rem}
+  .notmeasured b{color:var(--ink)}
+  footer{margin-top:2.5rem;font-size:.72rem;color:var(--muted);border-top:1px solid var(--line);padding-top:.9rem;line-height:1.5}
+  footer a{color:var(--accent);text-decoration:none}
+  @media print{.topbar-links,#analytics-banner{display:none !important} .uc-head,table.uc{break-inside:avoid}}
+  #analytics-banner{position:fixed;bottom:0;left:0;right:0;background:var(--ink);color:#fff;padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;z-index:500;font-size:.75rem;border-top:2px solid #444}
+  #analytics-banner a{color:#93c5fd}
+  #analytics-banner-btns{display:flex;gap:.5rem}
+  .ab-btn{padding:.35rem .85rem;font-size:.72rem;cursor:pointer;border:1px solid #666;font-family:inherit;background:none;color:#fff;border-radius:6px}
+  .ab-btn-ok{background:#fff;color:var(--ink);border-color:#fff}
+  .ab-btn-ok:hover{background:var(--tint)}
+  .ab-btn-no:hover{background:rgba(255,255,255,.1)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" onerror="this.style.display='none'" />
+      </a>
+      <div class="brand-title-wrap"><div class="brand-tool-name">Crossref Use Cases</div></div>
+    </div>
+    <div class="topbar-links">
+      <div class="topbar-col">
+      <a href="crossrefTools.html">Crossref Tools ↗</a>
+      <a href="crossrefCompleteness.html">Crossref Completeness ↗</a>
+      <a href="crossrefGuide.html">Crossref Guide ↗</a>
+      <a href="useCases.html">DataCite Use Cases ↗</a>
+      </div>
+      <div class="topbar-col">
+      <a href="DataCite-Crossref-Crosswalk.html">Full crosswalk ↗</a>
+      <a href="https://api.crossref.org/swagger-ui/index.html" target="_blank" rel="noopener">Crossref API ↗</a>
+      <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-inner">
+    <h1 class="hero-title">The Crossref use cases — a reduced FAIR catalog</h1>
+    <p class="hero-sub">The concepts <b>Crossref Completeness</b> scores, use case by use case, and the exact
+    <b>Crossref <code>/works</code> field</b> each one is drawn from. Only the concepts the Crossref schema can
+    express are here — a reduced catalog of the Metadata Game Changers FAIR use cases.</p>
+  </div>
+</div>
+
+<div class="wrap">
+  <p class="lead">Each Crossref work is translated to the DataCite record shape and scored with the <b>same jq queries</b>
+  as <a href="completeness.html">Metadata Completeness</a>, so the methodology is identical — but only the
+  Crossref-expressible concepts are scored, and Crossref scores are <b>not comparable</b> to DataCite scores. This page
+  is the quick reference; the complete concept-by-concept analysis across all fourteen use cases (which map directly,
+  which approximately, which have no Crossref equivalent) is in the
+  <a href="DataCite-Crossref-Crosswalk.html">DataCite&#8211;Crossref crosswalk</a>. Concepts marked
+  <span class="approx">≈ approx</span> are deliberate approximations — the field is the closest Crossref equivalent,
+  not an exact match.</p>
+
+  <div class="facts">
+    <span><b id="fact-concepts">—</b> concepts</span>
+    <span><b>3</b> FAIR use cases (Text, Identifiers, Connections)</span>
+    <span><b>Not measured:</b> FAIR Contacts, keywords, geographic &amp; temporal coverage</span>
+  </div>
+
+  <div id="use-cases"></div>
+</div>
+
+<footer>
+  Crossref Use Cases &copy; Metadata Game Changers, licensed under <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener">CC BY-NC 4.0</a> ·
+  The reference behind <a href="crossrefCompleteness.html">Crossref Completeness</a> · Full analysis in the <a href="DataCite-Crossref-Crosswalk.html">DataCite&#8211;Crossref crosswalk</a> ·
+  Better Documentation | Better Data | Better Science
+</footer>
+
+<!-- Concept → Crossref field, mirrored from crossrefCompleteness.html's concept-paths + use-case
+     descriptions. KEEP IN SYNC when the reduced catalog changes (same discipline as
+     FAIR_spirals.json ↔ completeness.html). -->
+<script id="uc-data" type="application/json">{
+  "order": ["FAIR_Text", "FAIR_Identifiers", "FAIR_Connections"],
+  "meta": {
+    "FAIR_Text": { "title": "FAIR Text", "color": "#E97131",
+      "purpose": "Concepts that let people find a record through text search — titles, authors, funders, publisher.",
+      "expressible": "9 of the 15 DataCite FAIR Text concepts",
+      "notMeasured": "Date Created, Keyword, Keyword Vocabulary, Award Title, Temporal Extent, Spatial Extent" },
+    "FAIR_Identifiers": { "title": "FAIR Identifiers", "color": "#0070C0",
+      "purpose": "Identifiers and references that connect the discovery concepts to the wider research graph.",
+      "expressible": "10 of the 18 DataCite FAIR Identifiers concepts",
+      "notMeasured": "Keyword Value URI, Keyword Vocabulary URI, Resource Author Type, Publisher Identifier, Publisher Identifier Type, Publisher Identifier Scheme URI, Resource Author Affiliation Identifier Scheme URI, Award URI" },
+    "FAIR_Connections": { "title": "FAIR Connections", "color": "#3a9d6e",
+      "purpose": "Connections that support interoperability, understanding, and trust — related works, rights, formats, references.",
+      "expressible": "8 of the 18 DataCite FAIR Connections concepts, plus References (from the DataCite Relations catalog)",
+      "notMeasured": "CitedBy, DescribedBy, Distribution Contact, Resource Contact, HasMetadata, Resource Size, RightsHolder, Methods, Technical Information, ReferencedBy" }
+  },
+  "approximations": ["Date Submitted", "Date Available", "Rights", "Resource Format"],
+  "paths": {
+    "FAIR_Text": [
+      {"concept": "Abstract", "path": "abstract (JATS markup, tags stripped)"},
+      {"concept": "Resource Author", "path": "author[].family / .given / .name"},
+      {"concept": "Resource Author Affiliation", "path": "author[].affiliation[].name"},
+      {"concept": "Resource Identifier", "path": "DOI"},
+      {"concept": "Resource Publication Date", "path": "issued.date-parts (year)"},
+      {"concept": "Resource Publisher", "path": "publisher"},
+      {"concept": "Resource Title", "path": "title[]"},
+      {"concept": "Resource Type General", "path": "type (mapped to the DataCite vocabulary)"},
+      {"concept": "Project Funder", "path": "funder[].name"}
+    ],
+    "FAIR_Identifiers": [
+      {"concept": "Resource Author Identifier", "path": "author[].ORCID"},
+      {"concept": "Resource Author Identifier Type", "path": "author[].ORCID (scheme is ORCID by definition)"},
+      {"concept": "Resource Author Affiliation Identifier", "path": "author[].affiliation[].id[].id (ROR)"},
+      {"concept": "Resource Author Affiliation Identifier Type", "path": "author[].affiliation[].id[].id-type"},
+      {"concept": "Funder Identifier", "path": "funder[].id[].id (ROR preferred) or funder[].DOI (Funder Registry)"},
+      {"concept": "Funder Identifier Type", "path": "funder[].id[].id-type / \"Crossref Funder ID\""},
+      {"concept": "Award Number", "path": "funder[].award[]"},
+      {"concept": "Resource Identifier Type", "path": "DOI (type is DOI by definition)"},
+      {"concept": "Resource Type", "path": "type (the Crossref work type, verbatim)"},
+      {"concept": "Date Submitted", "path": "accepted or posted date"}
+    ],
+    "FAIR_Connections": [
+      {"concept": "Resource URL", "path": "resource URL (the DOI resolution target)"},
+      {"concept": "Rights", "path": "license[].URL (license URLs stand in for rights statements)"},
+      {"concept": "SupplementTo", "path": "relation.is-supplement-to"},
+      {"concept": "ReviewedBy", "path": "relation.has-review"},
+      {"concept": "DocumentedBy", "path": "relation.is-documented-by (in the schema, rarely deposited)"},
+      {"concept": "SourceOf", "path": "relation.has-derivation / is-basis-for (rarely deposited)"},
+      {"concept": "Date Available", "path": "license[].start (the date the license takes effect)"},
+      {"concept": "Resource Format", "path": "link[].content-type (MIME types of full-text links)"},
+      {"concept": "References", "path": "reference[].DOI (deposited references that carry a DOI)"}
+    ]
+  }
+}</script>
+<script>
+  (function(){
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const data = JSON.parse(document.getElementById('uc-data').textContent);
+    const approx = new Set(data.approximations);
+    let total = 0, html = '';
+    for (const code of data.order){
+      const m = data.meta[code], items = data.paths[code];
+      total += items.length;
+      const rows = items.map(it => {
+        const badge = approx.has(it.concept) ? ' <span class="approx">≈ approx</span>' : '';
+        return `<tr><td class="concept">${esc(it.concept)}${badge}</td><td class="path">${esc(it.path)}</td></tr>`;
+      }).join('');
+      html += `<div class="uc-head" style="border-left-color:${m.color}">`
+        + `<h2>${esc(m.title)}</h2><span class="n">— ${items.length} Crossref concepts · ${esc(m.expressible)}</span></div>`
+        + `<p class="uc-purpose">${esc(m.purpose)}</p>`
+        + `<table class="uc"><thead><tr><th>Concept</th><th>Crossref <code>/works</code> field</th></tr></thead><tbody>${rows}</tbody></table>`
+        + `<p class="notmeasured"><b>Not measured in Crossref:</b> ${esc(m.notMeasured)}.</p>`;
+    }
+    document.getElementById('use-cases').innerHTML = html;
+    document.getElementById('fact-concepts').textContent = total;
+  })();
+</script>
+<!-- Google Analytics (shared consent with the rest of the suite via localStorage 'rcw-ga') -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9JQRWY72HW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  try{ if(localStorage.getItem('rcw-ga')==='declined') window['ga-disable-G-9JQRWY72HW']=true; }catch(e){}
+  gtag('js', new Date());
+  gtag('config', 'G-9JQRWY72HW');
+</script>
+<div id="analytics-banner">
+  <span>This site uses Google Analytics for anonymous usage statistics. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy ↗</a></span>
+  <div id="analytics-banner-btns">
+    <button class="ab-btn ab-btn-ok" type="button" onclick="hideBanner('accepted')">OK</button>
+    <button class="ab-btn ab-btn-no" type="button" onclick="hideBanner('declined')">Decline</button>
+  </div>
+</div>
+<script>
+  function hideBanner(choice){
+    try{ localStorage.setItem('rcw-ga', choice); }catch(e){}
+    document.getElementById('analytics-banner').style.display='none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  }
+  (function(){
+    var choice=null; try{ choice=localStorage.getItem('rcw-ga'); }catch(e){}
+    if (choice) document.getElementById('analytics-banner').style.display='none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  })();
+</script>
+</body>
+</html>
