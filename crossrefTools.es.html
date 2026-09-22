@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Metadata Game Changers — Herramientas de Crossref</title>
+<meta name="description" content="Herramientas gratuitas que funcionan en el navegador para medir y mejorar los metadatos de Crossref: completitud FAIR y conectividad de identificadores para cualquier revista o miembro, además de recuperación de identificadores ROR y ORCID." />
+<link rel="icon" type="image/png" href="favicon_MGC.png" />
+<link rel="alternate" hreflang="en" href="crossrefTools.html" />
+<link rel="alternate" hreflang="es" href="crossrefTools.es.html" />
+<link rel="alternate" hreflang="x-default" href="crossrefTools.html" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --accent:#9167b0; --accent-dk:#673289; --tint:#f0eaf5;
+    --ink:#1f2330; --muted:#6b7280; --line:#e6e3ec; --bg:#fbfafe;
+    --green:#3a9d6e; --amber:#d4910b; --red:#c0392b;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:0}
+
+  /* ── Brand top bar ── */
+  .topbar{border-bottom:2px solid var(--ink);padding:0 2rem}
+  .topbar-inner{max-width:1040px;margin:0 auto;display:flex;align-items:stretch;gap:0}
+  .topbar-brand{padding:.5rem 2rem .3rem 0;display:flex;flex-direction:row;align-items:flex-end;gap:1rem}
+  .brand-logo{height:64px;width:auto;display:block;flex-shrink:0}
+  .brand-title-wrap{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:.15rem}
+  .brand-tool-name{font-family:'Montserrat',sans-serif;font-size:2rem;font-weight:400;letter-spacing:.02em;color:#673289;line-height:1;white-space:nowrap;text-transform:uppercase}
+  .topbar-links{padding:0 0 0 1.5rem;display:flex;flex-direction:column;justify-content:center;gap:.25rem;margin-left:auto}
+  .topbar-links a{font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4}
+  .topbar-links a:hover{color:var(--accent-dk)}
+  @media(max-width:820px){.topbar{padding:0 1rem}.topbar-inner{flex-direction:column}.topbar-brand{padding-right:0}.brand-tool-name{font-size:1.5rem}.topbar-links{flex-direction:row;flex-wrap:wrap;gap:.75rem;padding:.25rem 0 .5rem}}
+
+  /* ── Hero ── */
+  .hero{background:var(--tint);border-bottom:2px solid var(--accent);padding:1.6rem 2rem}
+  .hero-inner{max-width:1040px;margin:0 auto}
+  .hero-title{font-size:1.5rem;font-weight:600;color:#5b3d7a;line-height:1.25;margin:0 0 .45rem;letter-spacing:-.01em;max-width:820px}
+  .hero-sub{font-size:.88rem;color:var(--ink);line-height:1.6;max-width:820px;margin:0}
+  .hero-sub b{color:var(--accent-dk)}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:1.4rem 1.25rem 2.5rem}
+
+  /* ── Facts bar ── */
+  .facts{display:flex;gap:.6rem 2rem;flex-wrap:wrap;margin:.2rem 0 1.4rem;font-size:.78rem;color:var(--muted)}
+  .facts b{color:var(--accent-dk);font-weight:600}
+  .facts span::before{content:"✓";color:var(--green);font-weight:700;margin-right:.4rem}
+
+  /* ── Guide row ── */
+  .guides{display:grid;grid-template-columns:1fr;gap:.9rem;margin:0 0 .9rem}
+  .guide{background:var(--tint);border:1px solid var(--accent);border-radius:12px;padding:.75rem 1.1rem;display:flex;flex-direction:column;gap:.3rem}
+  .guide h3{margin:0;font-size:.95rem;color:var(--accent-dk)}
+  .guide h3 a{color:inherit;text-decoration:none}
+  .guide h3 a:hover{text-decoration:underline}
+  .guide .kicker{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)}
+  .guide p{margin:0;font-size:.78rem;color:var(--ink);line-height:1.55}
+  .guide .go{margin-top:auto;padding-top:.35rem;font-size:.74rem;font-weight:600}
+  .guide .go a{color:var(--accent-dk);text-decoration:none}
+  .guide .go a:hover{text-decoration:underline}
+
+  /* ── Tool cards ── */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:.9rem}
+  .tool{background:#fff;border:1px solid var(--line);border-radius:12px;padding:.95rem 1.1rem;display:flex;flex-direction:column;gap:.35rem}
+  .tool h3{margin:0;font-size:.95rem;color:var(--accent-dk)}
+  .tool h3 a{color:inherit;text-decoration:none}
+  .tool h3 a:hover{text-decoration:underline}
+  .tool .kicker{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent)}
+  .tool p{margin:0;font-size:.78rem;color:var(--ink);line-height:1.55}
+  .tool ul{margin:.15rem 0 0 1rem;padding:0;font-size:.74rem;color:var(--muted);line-height:1.5}
+  .tool li{margin:.12rem 0}
+  .tool .go{margin-top:auto;padding-top:.4rem;font-size:.74rem;font-weight:600}
+  .tool .go a{color:var(--accent);text-decoration:none}
+  .tool .go a:hover{color:var(--accent-dk)}
+
+  /* ── Pipeline strip ── */
+  .pipe{background:#fff;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:10px;padding:.85rem 1.1rem;margin:1.3rem 0 0;font-size:.8rem;line-height:1.65;color:var(--ink);max-width:100%}
+  .pipe b{color:var(--accent-dk)}
+  .pipe .arrow{color:var(--accent);font-weight:700;margin:0 .25rem}
+  .pipe a{color:var(--accent-dk);font-weight:600;text-decoration:none}
+  .pipe a:hover{text-decoration:underline}
+
+  /* ── Note strip ── */
+  .note{background:#fffdf7;border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:10px;padding:.75rem 1.1rem;margin:.9rem 0 0;font-size:.8rem;line-height:1.6;color:var(--ink)}
+  .note b{color:#8a5d00}
+
+  /* ── CTA ── */
+  .cta{margin:1.4rem 0 0;background:var(--tint);border:1px solid var(--accent);border-radius:10px;padding:.9rem 1.1rem;font-size:.84rem;line-height:1.6}
+  .cta b{color:var(--accent-dk)}
+  .cta a{color:var(--accent-dk);font-weight:600;text-decoration:none}
+  .cta a:hover{text-decoration:underline}
+  .cta .mono{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.78rem}
+
+  @media print{
+    body{background:#fff}
+    .topbar-links,#analytics-banner{display:none !important}
+    .hero{padding:1rem 2rem}
+    .wrap{padding:.8rem 1.25rem 1rem}
+    .tool,.guide,.pipe,.cta,.note{break-inside:avoid}
+    .grid{grid-template-columns:repeat(2,1fr);gap:.6rem}
+    a{text-decoration:none !important}
+  }
+  /* analytics consent banner */
+  #analytics-banner{position:fixed;bottom:0;left:0;right:0;background:var(--ink);color:#fff;padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;z-index:500;font-size:.75rem;border-top:2px solid #444}
+  #analytics-banner a{color:#93c5fd}
+  #analytics-banner-btns{display:flex;gap:.5rem}
+  .ab-btn{padding:.35rem .85rem;font-size:.72rem;cursor:pointer;border:1px solid #666;font-family:inherit;background:none;color:#fff;border-radius:6px}
+  .ab-btn-ok{background:#fff;color:var(--ink);border-color:#fff}
+  .ab-btn-ok:hover{background:var(--tint)}
+  .ab-btn-no:hover{background:rgba(255,255,255,.1)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" onerror="this.style.display='none'" />
+      </a>
+      <div class="brand-title-wrap"><div class="brand-tool-name">Herramientas de Crossref</div></div>
+    </div>
+    <div class="topbar-links">
+      <a href="crossrefTools.html">English ↗</a>
+      <a href="crossrefGuide.html">Guía de Crossref (en inglés) ↗</a>
+      <a href="index.es.html">Herramientas de DataCite ↗</a>
+      <a href="https://api.crossref.org/swagger-ui/index.html" target="_blank" rel="noopener">API de Crossref ↗</a>
+      <a href="https://github.com/Metadata-Game-Changers/recuration-watch" target="_blank" rel="noopener">Código en GitHub ↗</a>
+      <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Comentarios ↗</a>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-inner">
+    <h1 class="hero-title">Vea qué tan completos están sus metadatos de Crossref y mejórelos.</h1>
+    <p class="hero-sub">Herramientas gratuitas que funcionan en el navegador, de <b>Metadata Game Changers</b>, que miden la
+    completitud y la conectividad de cualquier <b>revista</b> o <b>miembro</b> de Crossref con datos en vivo — y
+    convierten lo que encuentran en acción, emparejando a las personas y organizaciones de sus metadatos con los
+    identificadores <b>ORCID</b> y <b>ROR</b> que conectan la investigación.</p>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="facts">
+    <span><b>100 % en su navegador</b> — no se sube nada, sin registro</span>
+    <span><b>Datos en vivo</b> de la API REST de Crossref (grupo cortés)</span>
+    <span><b>Cualquier</b> revista (ISSN) o miembro (editorial) de Crossref</span>
+    <span><b>Abierto</b> — CC BY-NC 4.0, código fuente en GitHub</span>
+  </div>
+
+  <div class="guides">
+    <div class="guide">
+      <span class="kicker">¿Primera vez? · Para editoriales y editores</span>
+      <h3><a href="crossrefGuide.html">Guía de Crossref</a></h3>
+      <p>Una primera sesión práctica con su propia revista o miembro: medir la completitud, desglosar, recuperar identificadores y leer la evolución de su Reporte de Participación, de principio a fin. También explica en qué se diferencian las puntuaciones de Crossref de las de DataCite y qué conceptos pueden expresar los metadatos de Crossref. <b>(por ahora disponible en inglés)</b></p>
+      <div class="go"><a href="crossrefGuide.html">Abrir la Guía de Crossref →</a></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="tool">
+      <span class="kicker">Medir · FAIR</span>
+      <h3><a href="crossrefCompleteness.html">Completitud de Crossref</a></h3>
+      <p>Puntúa una revista o miembro de Crossref según los casos de uso FAIR de MGC — los conceptos que los metadatos de Crossref sí pueden expresar — un concepto a la vez.</p>
+      <ul>
+        <li>Casos de uso Texto, Identificadores y Conexiones, concepto por concepto</li>
+        <li>Desglose hasta los valores reales detrás de cada concepto</li>
+        <li>Filtre por tipo de contenido, era (actual / retrospectivo), consulta o muestra</li>
+        <li>Reportes HTML / JSON para compartir y analizar</li>
+      </ul>
+      <div class="go"><a href="crossrefCompleteness.html">Abrir Completitud de Crossref →</a></div>
+    </div>
+
+    <div class="tool">
+      <span class="kicker">Medir · Identificadores</span>
+      <h3><a href="crossrefConnectivity.html">Conectividad de Crossref</a></h3>
+      <p>Mide qué tan bien autores, editores, afiliaciones y financiadores llevan los identificadores que los conectan — y muestra cómo han cambiado sus metadatos con el tiempo.</p>
+      <ul>
+        <li>Cobertura de ORCID, ROR e identificadores de financiadores de un vistazo</li>
+        <li>Los desgloses listan cada nombre sin identificar — las victorias rápidas primero</li>
+        <li>Un clic los envía a los Recuperadores de ROR / ORCID</li>
+        <li>Radar de Evolución de Metadatos de Crossref — actual vs. retrospectivo, desde su Reporte de Participación</li>
+      </ul>
+      <div class="go"><a href="crossrefConnectivity.html">Abrir Conectividad de Crossref →</a></div>
+    </div>
+
+    <div class="tool">
+      <span class="kicker">Recuperar · Organizaciones</span>
+      <h3><a href="rorRetriever.html">Recuperador de ROR</a></h3>
+      <p>Empareja nombres de afiliaciones y financiadores con identificadores ROR usando las mismas estrategias de coincidencia de afiliaciones que emplean DataCite, Crossref y ROR.</p>
+      <ul>
+        <li>Coincidencia algorítmica cuidadosa primero, búsqueda completa como respaldo</li>
+        <li>Confianza codificada por colores con todos los detalles de cada candidato</li>
+        <li>Resultados en CSV listos para análisis y recuración</li>
+      </ul>
+      <div class="go"><a href="rorRetriever.html">Abrir Recuperador de ROR →</a></div>
+    </div>
+
+    <div class="tool">
+      <span class="kicker">Recuperar · Personas</span>
+      <h3><a href="orcidRetriever.html">Recuperador de ORCID</a></h3>
+      <p>Encuentra iDs de ORCID para listas de personas, mostrando el empleo y la revista más recientes de cada candidato para que sea fácil elegir a la persona correcta.</p>
+      <ul>
+        <li>Admite las formas de nombre &ldquo;Nombre Apellido&rdquo; y &ldquo;Apellido, Nombre&rdquo;</li>
+        <li>Desambiguación integrada para nombres comunes</li>
+        <li>Resultados en CSV listos para análisis y recuración</li>
+      </ul>
+      <div class="go"><a href="orcidRetriever.html">Abrir Recuperador de ORCID →</a></div>
+    </div>
+  </div>
+
+  <div class="pipe">
+    <b>Las herramientas funcionan como una tubería.</b> <b>Mida</b> la completitud y la conectividad de una revista o miembro
+    <span class="arrow">→</span> <b>desglose</b> hasta las personas y organizaciones específicas que carecen de identificadores
+    <span class="arrow">→</span> <b>recupere</b> sus ROR y ORCID con un clic
+    <span class="arrow">→</span> <b>recure</b> sus depósitos de Crossref y vea mejorar la cobertura.
+    Cada transferencia lleva su contexto, de modo que siempre sabe qué selección está mejorando.
+    La <a href="crossrefGuide.html">Guía de Crossref</a> le guía por todo el ciclo.
+  </div>
+
+  <div class="note">
+    <b>Las puntuaciones de Crossref no son comparables con las de DataCite.</b> Los dos ecosistemas llevan metadatos
+    distintos, así que un total FAIR de Crossref se mide contra un catálogo más pequeño y expresable en Crossref. Compare
+    un miembro de Crossref con otro miembro de Crossref — y consulte la Guía de Crossref para las correspondencias de
+    conceptos y las cuatro aproximaciones documentadas.
+  </div>
+
+  <div class="cta">
+    <b>Pruébelas ahora — sin instalación, sin cuenta:</b>
+    <a href="https://metadata-game-changers.github.io/recuration-watch/crossrefCompleteness.html" target="_blank" rel="noopener" class="mono">metadata-game-changers.github.io/recuration-watch/crossrefCompleteness.html</a><br />
+    ¿Preguntas, ideas o un título con el que le gustaría ayuda? Contacte a
+    <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">Metadata Game Changers</a> —
+    Mejor Documentación | Mejores Datos | Mejor Ciencia.
+  </div>
+</div>
+
+<footer style="border-top:1px solid var(--line);background:#fff;padding:1rem 2rem;margin-top:1.5rem;">
+  <div style="max-width:1040px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" style="height:22px;width:auto;display:block;" onerror="this.style.display='none'" />
+      </a>
+      <span style="font-size:0.72rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Herramientas de Crossref</a> · Creado por <a href="https://metadatagamechangers.com" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Metadata Game Changers</a> · Mejor Documentación | Mejores Datos | Mejor Ciencia</span>
+    </div>
+    <span style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:0.65rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Reportar un problema ↗</a> &nbsp;·&nbsp; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none;">CC BY-NC 4.0</a> &nbsp;·&nbsp; Datos en vivo de <a href="https://api.crossref.org" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Crossref</a>, <a href="https://api.ror.org" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">ROR</a> y <a href="https://pub.orcid.org" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">ORCID</a></span>
+  </div>
+</footer>
+<!-- Google Analytics (shared consent with the rest of the suite via localStorage 'rcw-ga') -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9JQRWY72HW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  try{ if(localStorage.getItem('rcw-ga')==='declined') window['ga-disable-G-9JQRWY72HW']=true; }catch(e){}
+  gtag('js', new Date());
+  gtag('config', 'G-9JQRWY72HW');
+</script>
+<!-- Analytics consent banner -->
+<div id="analytics-banner">
+  <span>Este sitio usa Google Analytics para estadísticas de uso anónimas. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Política de Privacidad de Google ↗</a></span>
+  <div id="analytics-banner-btns">
+    <button class="ab-btn ab-btn-ok" type="button" onclick="hideBanner('accepted')">OK</button>
+    <button class="ab-btn ab-btn-no" type="button" onclick="hideBanner('declined')">Rechazar</button>
+  </div>
+</div>
+<script>
+  function hideBanner(choice){
+    try{ localStorage.setItem('rcw-ga', choice); }catch(e){}
+    document.getElementById('analytics-banner').style.display='none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  }
+  (function(){
+    var choice=null; try{ choice=localStorage.getItem('rcw-ga'); }catch(e){}
+    if (choice) document.getElementById('analytics-banner').style.display='none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  })();
+</script>
+</body>
+</html>
