@@ -488,8 +488,10 @@ async function crFetch(url, retries = 3){
    · Rights          ← license URL (Crossref has no rights names)
    · Resource Format ← MIME types of full-text links
    · relation keys map to DataCite relationTypes (is-supplement-to → IsSupplementTo, …)
-   · References     ← reference[].DOI (deposited references that carry a DOI) */
-const CR_SELECT = 'DOI,title,author,funder,license,publisher,issued,accepted,posted,type,member,abstract,URL,link,relation,reference';
+   · References     ← reference[].DOI (deposited references that carry a DOI)
+   editor/translator/chair and container-title are not scored here — they are fetched so the
+   sampled works can be handed to Crossref Connectivity as the SAME sample (shared-sample mailbox). */
+const CR_SELECT = 'DOI,title,author,editor,translator,chair,funder,license,publisher,container-title,issued,accepted,posted,type,member,abstract,URL,link,relation,reference';
 const CR_TYPE_MAP = {
   'journal-article':'JournalArticle', 'proceedings-article':'ConferencePaper', 'posted-content':'Preprint',
   'book':'Book', 'edited-book':'Book', 'monograph':'Book', 'reference-book':'Book', 'book-series':'Book', 'book-set':'Book',
@@ -640,6 +642,7 @@ function countExpr(query){
    returning records already transformed to the DataCite shape the catalog queries read ---------- */
 async function fetchWorks(target, cap, random, typeId, query, era){
   const records = [];
+  const rawWorks = [];   // kept so the exact sample can be shared with Crossref Connectivity
   const seen = new Set();
   let requests = 0, firstUrl = '', repoTotal = null, cursor = '*';
   setStatus('Fetching works…');
@@ -677,7 +680,7 @@ async function fetchWorks(target, cap, random, typeId, query, era){
     const msg = json.message || {};
     const batch = msg.items || [];
     let added = 0;
-    for (const w of batch){ if (w && w.DOI && !seen.has(w.DOI)){ seen.add(w.DOI); records.push(crToRecord(w)); added++; } }
+    for (const w of batch){ if (w && w.DOI && !seen.has(w.DOI)){ seen.add(w.DOI); records.push(crToRecord(w)); rawWorks.push(w); added++; } }
     if (!effectiveRandom) setProgress(Math.min(records.length / cap, 1));
     if (typeof msg['total-results'] === 'number') repoTotal = msg['total-results'];
     if (effectiveRandom){
@@ -691,7 +694,7 @@ async function fetchWorks(target, cap, random, typeId, query, era){
     }
   }
   showApiUrl(firstUrl, requests, effectiveRandom);
-  return { records: records.slice(0, cap), repoTotal, random: effectiveRandom };
+  return { records: records.slice(0, cap), rawWorks: rawWorks.slice(0, cap), repoTotal, random: effectiveRandom };
 }
 
 function showApiUrl(url, requests, random){
@@ -1856,10 +1859,47 @@ function setConnectivityLink(target, typeId, query, cap, era){
     + (era ? '&era=' + encodeURIComponent(era) : '')
     + (query ? '&query=' + encodeURIComponent(query) : '')
     + (cap ? '&max=' + cap : '');
-  el.title = 'Measure identifier connectivity for the same selection (a fresh sample of the same population)';
+  el.title = 'Measure identifier connectivity for this selection — after a run it hands over the exact same sample';
 }
+/* ---------- shared-sample mailbox: hand the EXACT sampled works to Crossref Connectivity ----------
+   so both tools measure the same records (a re-drawn random sample would differ). Small samples ride
+   in localStorage; large ones go through IndexedDB. The receiver consumes it via ?input=stored and
+   applies its own crToRecord; on storage failure the link falls back to the re-fetch selection link. */
+const CX_MAILBOX_DB = 'mgc-handoff', CX_MAILBOX_STORE = 'samples', CX_SHARE_KEY = 'crossref-connectivity-input';
+function cxMailboxIdb(){
+  return new Promise((resolve, reject) => {
+    let rq; try { rq = indexedDB.open(CX_MAILBOX_DB, 1); } catch (e){ return reject(e); }
+    rq.onupgradeneeded = () => { try { rq.result.createObjectStore(CX_MAILBOX_STORE); } catch (e){} };
+    rq.onsuccess = () => resolve(rq.result);
+    rq.onerror = () => reject(rq.error);
+  });
+}
+async function cxMailboxPutIdb(key, value){
+  try {
+    const db = await cxMailboxIdb();
+    await new Promise((res, rej) => { const tx = db.transaction(CX_MAILBOX_STORE, 'readwrite'); tx.objectStore(CX_MAILBOX_STORE).put(value, key); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+    return true;
+  } catch (e){ return false; }
+}
+function cxShareOpen(page, key, payload, fallbackUrl){
+  try { localStorage.removeItem(key); localStorage.setItem(key, JSON.stringify(payload)); window.open(page + '?input=stored', '_blank', 'noopener'); return; }
+  catch (e){ /* too big for localStorage — stream through IndexedDB */ }
+  const w = window.open(page + '?input=stored', '_blank');
+  cxMailboxPutIdb(key, payload).then(ok => { if (!ok && w){ try { w.location = fallbackUrl; } catch (e){} } })
+    .catch(() => { if (w){ try { w.location = fallbackUrl; } catch (e){} } });
+}
+$('connectivity-link').addEventListener('click', ev => {
+  if (!lastRun || !lastRun.rawWorks || !lastRun.rawWorks.length) return;   // no sample yet — let the plain link navigate
+  ev.preventDefault();
+  const l = lastRun;
+  cxShareOpen('crossrefConnectivity.html', CX_SHARE_KEY,
+    { source: 'crossrefCompleteness', sharedFrom: 'Crossref Completeness',
+      works: l.rawWorks, target: l.target, repoName: l.repoName, repoTotal: l.repoTotal,
+      random: l.random, typeId: l.resourceTypeId, query: l.query, era: l.era, singleDoi: l.singleDoi },
+    $('connectivity-link').getAttribute('href'));   // fallback: the selection deep link setConnectivityLink built
+});
 // score a set of (transformed) records — shared by run() and the single-DOI path
-async function analyze(target, records, repoTotal, usedRandom, typeId, query, era, singleDoi){
+async function analyze(target, records, repoTotal, usedRandom, typeId, query, era, singleDoi, rawWorks){
   const meta = await fetchTargetMeta(target);
   renderSelection(target.token, meta, records.length, usedRandom, repoTotal, typeId, query, null, singleDoi, era);
   const sampleNote = singleDoi ? `DOI ${singleDoi}` : (usedRandom ? `random sample of ${records.length}` : `${records.length} sequential`);
@@ -1868,11 +1908,12 @@ async function analyze(target, records, repoTotal, usedRandom, typeId, query, er
   setProgress(0);
   const byCode = await scoreAllSpirals(records, frac => setProgress(frac));
   const total = computeTotal(byCode);
-  lastRun = { byCode, total, records, clientId: target.token, target, resourceTypeId: typeId, query, era, random: usedRandom,
+  lastRun = { byCode, total, records, rawWorks: rawWorks || [], meta, clientId: target.token, target, resourceTypeId: typeId, query, era, random: usedRandom,
               repoName: (meta && meta.name) ? meta.name : target.label, repoTotal, singleDoi };
   renderTotal();
   showDetail();
   hideProgress();
+  { const cl = $('connectivity-link'); if (cl) cl.textContent = 'Share with Crossref Connectivity ↗'; }   // now hands over this exact sample
   setStatus(`Done — ${sampleNote}${singleDoi ? '' : ` work${records.length===1?'':'s'}`}, FAIR Total (Crossref) ${fmtPct(total)}.`);
 }
 // A single DOI can be scored on its own (like Re-Curation Watch) — fetch just that record and
@@ -1895,7 +1936,7 @@ async function runSingleDoi(doi){
       ? { kind:'member', id: String(w.member), token: `member:${w.member}`, label: `member:${w.member}` }
       : { kind:'all', id:'', token: ALL_CROSSREF, label:'All of Crossref' };
     setConnectivityLink(target, '', '', 0);
-    await analyze(target, [crToRecord(w)], null, false, '', '', '', doi);
+    await analyze(target, [crToRecord(w)], null, false, '', '', '', doi, [w]);
   } catch (e){ console.error(e); hideProgress(); setStatus(e.message || String(e), true); }
   finally { stopTips(); $('repo-go').disabled = false; }
 }
@@ -1925,9 +1966,9 @@ async function run(){
   $('repo-go').disabled = true;
   startTips();
   try {
-    const { records, repoTotal, random: usedRandom } = await fetchWorks(target, cap, random, resourceTypeId, query, era);
+    const { records, rawWorks, repoTotal, random: usedRandom } = await fetchWorks(target, cap, random, resourceTypeId, query, era);
     if (!records.length){ hideProgress(); setStatus('No works returned for that selection.', true); return; }
-    await analyze(target, records, repoTotal, usedRandom, resourceTypeId, query, era);
+    await analyze(target, records, repoTotal, usedRandom, resourceTypeId, query, era, undefined, rawWorks);
   } catch (e){
     console.error(e);
     hideProgress();
