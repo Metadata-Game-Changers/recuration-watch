@@ -2195,20 +2195,20 @@ async function maybeRenderPrep(memberCounts, analyzed){
 /* ---------- run ---------- */
 let lastRun = null;
 // analyze a set of (transformed) records — shared by run() and the single-DOI path
-async function analyze(target, records, repoTotal, usedRandom, typeId, query, era, singleDoi, memberCounts){
+async function analyze(target, records, repoTotal, usedRandom, typeId, query, era, singleDoi, memberCounts, sharedFrom){
   const meta = await fetchTargetMeta(target);
-  renderSelection(target.token, meta, records.length, usedRandom, repoTotal, typeId, query, null, singleDoi, era);
+  renderSelection(target.token, meta, records.length, usedRandom, repoTotal, typeId, query, sharedFrom || null, singleDoi, era);
   setCompletenessLink(target, typeId, query, singleDoi ? 0 : (parseInt($('cap').value, 10) || 0), era, singleDoi);
   setStatus('Computing connectivity…');
   const results = computeConnectivity(records);
-  lastRun = { records, clientId: target.token, target, resourceTypeId: typeId, query, era,
+  lastRun = { records, clientId: target.token, target, resourceTypeId: typeId, query, era, sharedFrom: sharedFrom || null,
               repoName: (meta && meta.name) ? meta.name : target.label, results, repoTotal, random: usedRandom, singleDoi };
   $('conn-card').style.display = '';
   renderConnectivity(results);
   renderDuplicates();
   hideProgress();
   const sampleNote = singleDoi ? `DOI ${singleDoi}` : (usedRandom ? `random sample of ${records.length}` : `${records.length} sequential`);
-  setStatus(`Done — connectivity over ${sampleNote}${singleDoi ? '' : ` work${records.length===1?'':'s'}`}.`);
+  setStatus(`Done — connectivity over ${sampleNote}${singleDoi ? '' : ` work${records.length===1?'':'s'}`}${sharedFrom ? `, shared from ${sharedFrom}` : ''}.`);
   maybeRenderPrep(memberCounts, records.length);   // async; the card appears when the member's report arrives
 }
 // A single DOI can be analysed on its own — fetch just that work and measure its connectivity.
@@ -2370,11 +2370,58 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('dd-moda
 if (location.protocol === 'file:') {
   setStatus('This page is open as a local file (file://). Crossref requests will be blocked — serve it over http (e.g. "python3 -m http.server" → http://localhost:8000/crossrefConnectivity.html).', true);
 }
+/* ---------- shared-sample mailbox reader ----------
+   Crossref Completeness hands over the EXACT sampled works via ?input=stored, so both tools measure
+   the same records. We read the mailbox (localStorage first, then IndexedDB) and transform the raw
+   works with our own crToRecord. Port of the DataCite completeness↔connectivity handoff. */
+const CX_MAILBOX_DB = 'mgc-handoff', CX_MAILBOX_STORE = 'samples', CX_SHARE_KEY = 'crossref-connectivity-input';
+function cxMailboxIdb(){
+  return new Promise((resolve, reject) => {
+    let rq; try { rq = indexedDB.open(CX_MAILBOX_DB, 1); } catch (e){ return reject(e); }
+    rq.onupgradeneeded = () => { try { rq.result.createObjectStore(CX_MAILBOX_STORE); } catch (e){} };
+    rq.onsuccess = () => resolve(rq.result);
+    rq.onerror = () => reject(rq.error);
+  });
+}
+async function cxMailboxTake(key){
+  try { const raw = localStorage.getItem(key); if (raw){ localStorage.removeItem(key); return JSON.parse(raw); } } catch (e){ /* fall through to IndexedDB */ }
+  for (let i = 0; i < 10; i++){
+    let v = null, failed = false;
+    try { const db = await cxMailboxIdb(); v = await new Promise((res, rej) => { const tx = db.transaction(CX_MAILBOX_STORE, 'readonly'); const r = tx.objectStore(CX_MAILBOX_STORE).get(key); r.onsuccess = () => res(r.result ?? null); r.onerror = () => rej(r.error); }); }
+    catch (e){ failed = true; }
+    if (failed) return null;
+    if (v){
+      try { const db = await cxMailboxIdb(); await new Promise(res => { const tx = db.transaction(CX_MAILBOX_STORE, 'readwrite'); tx.objectStore(CX_MAILBOX_STORE).delete(key); tx.oncomplete = res; tx.onerror = res; }); } catch (e){}
+      return v;
+    }
+    await new Promise(r => setTimeout(r, 150));
+  }
+  return null;
+}
+async function loadSharedSample(){
+  let payload = null;
+  try { payload = await cxMailboxTake(CX_SHARE_KEY); } catch (e){ payload = null; }
+  if (!payload || !Array.isArray(payload.works) || !payload.works.length) return false;
+  const t = payload.target;
+  if (t && t.token) $('repo-input').value = t.token;
+  if (payload.typeId && [...$('resource-type').options].some(o => o.value === payload.typeId)) $('resource-type').value = payload.typeId;
+  if (payload.query) $('query-input').value = payload.query;
+  if (payload.era && [...$('era').options].some(o => o.value === payload.era)) $('era').value = payload.era;
+  const records = payload.works.map(crToRecord);
+  const memberCounts = {};   // for the Participation Report card — which member the sample is from
+  for (const w of payload.works){ if (w && w.member != null){ const m = String(w.member); memberCounts[m] = (memberCounts[m] || 0) + 1; } }
+  $('repo-go').disabled = true;
+  try { await analyze(t, records, payload.repoTotal ?? null, payload.random !== false, payload.typeId || '', payload.query || '', payload.era || '', payload.singleDoi || null, memberCounts, payload.sharedFrom || 'Crossref Completeness'); }
+  catch (e){ console.error(e); hideProgress(); setStatus(e.message || String(e), true); }
+  finally { $('repo-go').disabled = false; }
+  return true;
+}
 // optional URL parameters (deep-link a target):
-//   ?issn=1932-6203 | ?member=340 | ?ror=04qw24q55 | ?client=crossref.all | ?doi=10.…
+//   ?input=stored (consume a shared sample) | ?issn=1932-6203 | ?member=340 | ?ror=04qw24q55 | ?client=crossref.all | ?doi=10.…
 //   plus &type=…&query=…&max=…&random=0 to override the form defaults (max 200, random on).
-(() => {
+(async () => {
   const params = new URLSearchParams(location.search);
+  if (params.get('input') === 'stored'){ if (await loadSharedSample()) return; }   // shared sample consumed
   const doiParam = params.get('doi');
   if (doiParam){ $('repo-input').value = doiParam; runSingleDoi(parseDOI(doiParam)); return; }
   const token = params.get('issn') ? params.get('issn')
