@@ -88,6 +88,7 @@
       <a href="crossrefTools.html" target="_blank" rel="noopener">Crossref Tools ↗</a>
       <a href="crossrefCompleteness.html" target="_blank" rel="noopener">Crossref Completeness ↗</a>
       <a href="crossrefConnectivity.html" target="_blank" rel="noopener">Crossref Connectivity ↗</a>
+      <a href="crossrefUseCases.html" target="_blank" rel="noopener">Crossref Use Cases ↗</a>
       </div>
       <div class="topbar-col">
       <a href="rorRetriever.html" target="_blank" rel="noopener">ROR Retriever ↗</a>
@@ -168,9 +169,9 @@
     <div class="step-n">6</div>
     <div class="step-b">
       <div class="step-t">Check for duplicates — the same entity with several spellings</div>
-      <p>Scroll to <b>Potential duplicates</b> in Connectivity. It clusters names that look like the same person or organization.</p>
+      <p>Scroll to <b>Potential duplicates</b> in Connectivity. It clusters names that look like the same person or organization using fuzzy matching.</p>
       <div class="look"><b>What you'll see:</b> a canonical name with its spellings, each with Occurrences and Identified (both link to the works). A <b>⚠ shared-id conflict</b> means two spellings carry the same identifier — sometimes the same name, sometimes one needs fixing (two people under one ORCID, or one person under several).</div>
-      <p>This section is advisory: it suggests, you decide.</p>
+      <p>This section uses fuzzy matching so it is advisory: it suggests, you decide.</p>
     </div>
   </div>
 
@@ -178,10 +179,10 @@
     <div class="step-n">7</div>
     <div class="step-b">
       <div class="step-t">See how the metadata has changed — <b>Crossref Metadata Evolution</b></div>
-      <p>Below the connectivity bars, the <b>Crossref Metadata Evolution</b> section reads Crossref's own <b>Participation Report</b> for the member — Crossref's coverage numbers, computed over <em>all</em> of the member's records (not the sample above).</p>
+      <p>Below the connectivity bars, the <b>Crossref Metadata Evolution</b> section reads Crossref <b>Participation Report</b> for the member — Crossref's coverage numbers, computed over <em>all</em> of the member's records (not the sample above).</p>
       <div class="look"><b>What you'll see:</b> a radar plot comparing <b>backfile</b> records against <b>current</b> ones (last three calendar years) across fourteen checks — where the current line reaches past the backfile line, recent metadata is richer than older records. Pick a content type, open the <b>All types</b> strip for every type at a glance, and <b>Copy plot</b> / <b>Copy strip</b> to drop the figure into a slide.</div>
       <div class="look">Crossref's public report at <code>crossref.org/members/prep</code> shows ten of these checks; the radar plots all fourteen from the API, adding <b>Affil RORs</b>, <b>Funder RORs</b>, <b>Update policies</b> (Crossmark), and <b>Descriptions</b>.</div>
-      <p>This answers the question a single completeness score can't: <em>is this improving?</em></p>
+      <p>This answers the question a single completeness score can't: <em>have these metadata been improving?</em></p>
     </div>
   </div>
 
@@ -200,19 +201,19 @@
     <tbody>
       <tr><td class="q">Are the elements I care about present?</td><td class="t"><a href="crossrefCompleteness.html" target="_blank" rel="noopener">Crossref Completeness</a></td></tr>
       <tr><td class="q">What values exist in a given element?</td><td class="t"><a href="crossrefCompleteness.html" target="_blank" rel="noopener">Completeness</a> → click a concept</td></tr>
-      <tr><td class="q">Do my authors and affiliations have ORCIDs and RORs?</td><td class="t"><a href="crossrefConnectivity.html" target="_blank" rel="noopener">Crossref Connectivity</a></td></tr>
+      <tr><td class="q">Do my authors, affiliations, and funders have ORCIDs and RORs?</td><td class="t"><a href="crossrefConnectivity.html" target="_blank" rel="noopener">Crossref Connectivity</a></td></tr>
       <tr><td class="q">Which works should I fix first?</td><td class="t"><a href="crossrefConnectivity.html" target="_blank" rel="noopener">Connectivity</a> → quick wins / To fix</td></tr>
       <tr><td class="q">What ORCID/ROR should this name have?</td><td class="t"><a href="orcidRetriever.html" target="_blank" rel="noopener">ORCID</a> / <a href="rorRetriever.html" target="_blank" rel="noopener">ROR Retriever</a></td></tr>
       <tr><td class="q">Is the same person/organization here under several spellings?</td><td class="t"><a href="crossrefConnectivity.html" target="_blank" rel="noopener">Connectivity</a> → Potential duplicates</td></tr>
-      <tr><td class="q">Is our current metadata richer than our backfile?</td><td class="t"><a href="crossrefConnectivity.html" target="_blank" rel="noopener">Connectivity</a> → Crossref Metadata Evolution</td></tr>
+      <tr><td class="q">Are our metadata improving?</td><td class="t"><a href="crossrefConnectivity.html" target="_blank" rel="noopener">Connectivity</a> → Crossref Metadata Evolution</td></tr>
     </tbody>
   </table>
 
   <h2 class="sec">Reading the numbers honestly</h2>
 
-  <div class="note"><b>Crossref scores are not comparable to DataCite scores.</b> The two ecosystems carry different metadata, so a Crossref FAIR Total and a DataCite FAIR Total are measured against different catalogs. Compare a Crossref member to another Crossref member, not to a DataCite repository.</div>
+  <div class="note"><b>Crossref scores are not comparable to DataCite scores.</b> The two ecosystems carry different metadata, so a Crossref FAIR Total and a DataCite FAIR Total are measured against different metadata. DataCite has many datasets which have different metadata than Crossref journal articles. Compare a Crossref member to another Crossref member, not to a DataCite repository.</div>
 
-  <div class="note"><b>Completeness uses a reduced catalog.</b> Crossref Completeness scores only the concepts Crossref metadata can actually express — three FAIR use cases (Text, Identifiers, Connections) over about two dozen concepts. Concepts with no faithful Crossref field are left out rather than scored as structural zeros. Four are honest <em>approximations</em> (Date Submitted from accepted/posted dates, Date Available from a license start date, Rights from a license URL, Resource Format from a link's MIME type); the About tab lists every mapping.</div>
+  <div class="note"><b>Completeness uses a reduced catalog.</b> Crossref Completeness scores only the concepts included in Crossref metadata — three FAIR use cases (Text, Identifiers, Connections) over about two dozen concepts. Concepts with no faithful Crossref field are left out rather than scored as structural zeros. Four are honest <em>approximations</em> (Date Submitted from accepted/posted dates, Date Available from a license start date, Rights from a license URL, Resource Format from a link's MIME type); the About tab lists every mapping.</div>
 
   <div class="note"><b>Completeness is presence, not quality.</b> A 100% score means the element is there in every work — not that it's correct, rich, or useful. A title of "Untitled" still counts. Use completeness to find gaps, then look at the values.</div>
 
@@ -238,8 +239,8 @@
       <tr><td class="term">ISSN</td><td>A journal's identifier, like <code>1932-6203</code>. Use it to scope a single journal instead of a whole publisher.</td></tr>
       <tr><td class="term">Content type</td><td>The kind of work — journal-article, posted-content (preprint), book-chapter, dataset, grant, and so on.</td></tr>
       <tr><td class="term">Era</td><td>Current = published in the current or two previous calendar years; backfile = published earlier. Crossref's Participation Report definition.</td></tr>
-      <tr><td class="term">Participation Report</td><td>Crossref's own coverage numbers for a member (the figures behind <code>crossref.org/members/prep</code>), computed over all their records.</td></tr>
-      <tr><td class="term">Occurrence</td><td>One appearance of a value. A funder named on 30 works is 30 occurrences.</td></tr>
+      <tr><td class="term">Participation Report</td><td>Crossref's own coverage numbers for a member (the figures behind <code>crossref.org/members/prep</code>), computed over all a member's records.</td></tr>
+      <tr><td class="term">Occurrence</td><td>One appearance of a value. A funder named in 30 works is 30 occurrences.</td></tr>
       <tr><td class="term">Entity</td><td>One distinct person, organization, or funder — however many works it appears in.</td></tr>
       <tr><td class="term">Quick win</td><td>An entity that already has an identifier on some works but not others. Copy it across — no lookup needed.</td></tr>
       <tr><td class="term">ORCID / ROR</td><td>Persistent identifiers for people (ORCID) and organizations (ROR). They're what turn a name into a connection.</td></tr>
