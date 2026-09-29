@@ -62,6 +62,16 @@ self-contained HTML file with inline CSS + vanilla JS — no framework, no bundl
   (`Record_*`), and the occurrence-level/connectivity counting (`Occurrence_*`). Eras use
   the PReP definition (current = published in the current or two previous calendar years) —
   keep its `era_filter` in sync with the pages' `eraFilter`.
+- `batchConnectivity.py` — batch companion to BOTH web Connectivity tools (stdlib only, no
+  jq — connectivity is counted in Python, not scored). For a list of DataCite client ids or
+  Crossref members/ISSNs/RORs it samples records, normalizes both registries to one record
+  shape, and writes one tidy CSV (one row per target × connector) with the full bar model:
+  occurrence share (identified ÷ all) plus the distinct-entity view (complete/partial/missing,
+  quick wins). Connectors: creators/contributors ORCID, their affiliation RORs, funder ids,
+  and (DataCite only) publisher ROR and rights. `--registry datacite|crossref` (inferred from
+  the flags); `--era` is Crossref-only. Resumable like `comparePrepConnectivity.py`. Reuses
+  the DataCite sampling from metrics-watch's `scoreRepository.py` and the Crossref sampling /
+  `crToRecord` shape from the pages — keep the normalizers faithful to those.
 - `tips.html` / `tips.es.html` — **generated** collections of every tool's while-you-wait
   tips (English / Spanish). Never edit by hand: edit the tips array in the tool page (and
   its Spanish text in `tipsTranslations.es.json`, keyed by tool file + English label), then
