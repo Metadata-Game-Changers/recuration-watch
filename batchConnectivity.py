@@ -63,9 +63,11 @@ CROSSREF_API = 'https://api.crossref.org'
 MAILTO = 'ted@metadatagamechangers.com'   # Crossref polite pool
 UA = f'recuration-watch batchConnectivity (https://github.com/Metadata-Game-Changers/recuration-watch; mailto:{MAILTO})'
 
-# connector -> (source family, identifier kind); families present per registry differ
-CONNECTORS = ['creators_orcid', 'creator_affiliations_ror',
-              'contributors_orcid', 'contributor_affiliations_ror',
+# connectors mirror the web bars: per person type, identifier (ORCID), affiliation
+# PRESENCE (does the person carry an affiliation at all), and affiliation ROR; then
+# funders, and (DataCite only) publisher ROR and rights.
+CONNECTORS = ['creators_orcid', 'creator_affiliations', 'creator_affiliations_ror',
+              'contributors_orcid', 'contributor_affiliations', 'contributor_affiliations_ror',
               'funders_id', 'publishers_ror', 'rights_id']
 
 rnd = lambda x: '' if x is None else int(x * 10000 + 0.5) / 10000
@@ -268,6 +270,16 @@ def fetch_crossref(token, cap, type_id, era, query):
     return [normalize_crossref(w) for w in works[:cap]], total
 
 
+def ror_name(ror_id):
+    """The display name for a ROR id, from the ROR API (used for readable labels)."""
+    try:
+        j = api_get(f'https://api.ror.org/v2/organizations/{urllib.parse.quote(ror_id)}')
+        disp = next((n['value'] for n in (j.get('names') or []) if 'ror_display' in (n.get('types') or [])), None)
+        return disp or (j.get('names') or [{}])[0].get('value') or ror_id
+    except Exception:
+        return ror_id
+
+
 def crossref_name(token):
     m = re.match(r'member:(\d+)', token)
     if m:
@@ -280,6 +292,9 @@ def crossref_name(token):
             return d.get('title') or token
         except Exception:
             return token
+    m = re.match(r'ror-id:(.+)', token)
+    if m:
+        return ror_name(m.group(1))
     return token
 
 
@@ -290,6 +305,9 @@ def _occurrences(records, connector):
         if connector == 'creators_orcid':
             for p in r['creators']:
                 yield p['name'], p['orcid']
+        elif connector == 'creator_affiliations':
+            for p in r['creators']:
+                yield p['name'], bool(p['affiliations'])
         elif connector == 'creator_affiliations_ror':
             for p in r['creators']:
                 for a in p['affiliations']:
@@ -297,6 +315,9 @@ def _occurrences(records, connector):
         elif connector == 'contributors_orcid':
             for p in r['contributors']:
                 yield p['name'], p['orcid']
+        elif connector == 'contributor_affiliations':
+            for p in r['contributors']:
+                yield p['name'], bool(p['affiliations'])
         elif connector == 'contributor_affiliations_ror':
             for p in r['contributors']:
                 for a in p['affiliations']:

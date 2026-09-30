@@ -67,11 +67,18 @@ self-contained HTML file with inline CSS + vanilla JS — no framework, no bundl
   Crossref members/ISSNs/RORs it samples records, normalizes both registries to one record
   shape, and writes one tidy CSV (one row per target × connector) with the full bar model:
   occurrence share (identified ÷ all) plus the distinct-entity view (complete/partial/missing,
-  quick wins). Connectors: creators/contributors ORCID, their affiliation RORs, funder ids,
-  and (DataCite only) publisher ROR and rights. `--registry datacite|crossref` (inferred from
+  quick wins). Connectors mirror the web bars — per person type: ORCID, affiliation presence,
+  affiliation ROR — then funder ids, and (DataCite only) publisher ROR and rights.
+  `--registry datacite|crossref` (inferred from
   the flags); `--era` is Crossref-only. Resumable like `comparePrepConnectivity.py`. Reuses
   the DataCite sampling from metrics-watch's `scoreRepository.py` and the Crossref sampling /
   `crToRecord` shape from the pages — keep the normalizers faithful to those.
+- `plotConnectivity.py` — plots the `batchConnectivity.py` CSV as stacked
+  Complete/Partial/Missing (green/gold/magenta) horizontal bars (needs matplotlib). Two views:
+  `--institution TARGET` (all connectors for one target) and `--connector NAME` (one connector
+  across all targets, ranked best-at-bottom), plus `--all-institutions` / `--all-connectors`
+  loops. Bars are the distinct-entity distribution as a percent; `--era` selects when the CSV
+  holds several.
 - `tips.html` / `tips.es.html` — **generated** collections of every tool's while-you-wait
   tips (English / Spanish). Never edit by hand: edit the tips array in the tool page (and
   its Spanish text in `tipsTranslations.es.json`, keyed by tool file + English label), then
