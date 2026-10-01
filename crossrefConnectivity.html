@@ -213,6 +213,7 @@
       <a href="crossrefTools.html" target="_blank" rel="noopener">Crossref Tools ↗</a>
       <a href="crossrefGuide.html" target="_blank" rel="noopener">Crossref Guide ↗</a>
       <a id="completeness-link" href="crossrefCompleteness.html" target="_blank" rel="noopener">Crossref Completeness ↗</a>
+      <a id="history-link" href="crossrefHistory.html" target="_blank" rel="noopener">Crossref History ↗</a>
       <a href="rorRetriever.html" target="_blank" rel="noopener">ROR Retriever ↗</a>
       <a href="orcidRetriever.html" target="_blank" rel="noopener">ORCID Retriever ↗</a>
       </div>
@@ -677,6 +678,11 @@ function setCompletenessLink(target, typeId, query, cap, era, singleDoi){
   el.title = singleDoi
     ? 'Score metadata completeness for this DOI'
     : 'Score metadata completeness for the same selection (a fresh sample of the same population)';
+  // Crossref History takes the same target + type/query (it samples per year, so no era, max, or DOI)
+  const h = $('history-link');
+  if (h && !singleDoi) h.href = 'crossrefHistory.html?' + p
+    + (typeId ? '&type=' + encodeURIComponent(typeId) : '')
+    + (query ? '&query=' + encodeURIComponent(query) : '');
 }
 
 /* ---------- connectivity computation ----------

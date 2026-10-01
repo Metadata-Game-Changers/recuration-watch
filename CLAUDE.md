@@ -50,6 +50,15 @@ self-contained HTML file with inline CSS + vanilla JS — no framework, no bundl
   `FAIR_spirals.json` with a per-use-case exclusions note) — regenerate that embed when the
   catalog changes; its About tab documents every concept's Crossref field and the four
   approximations. Crossref scores are **not comparable** to DataCite scores.
+- `crossrefHistory.html` — **Crossref History** (prototype): the Crossref port of
+  `repositoryHistory.html`. Samples each **deposit year** (Crossref `created`, the analog of
+  DataCite registered; `?by=published` groups by publication year instead — for backfiles the
+  two differ by decades), bounds via `sort=created|published` asc/desc probes (auto-detected
+  ranges clip to the latest 30 years), per-period `from-/until-created-date` or `-pub-date`
+  filters. Embeds the **same reduced catalog** as `crossrefCompleteness.html` (regenerate both
+  together) and `crToRecord` verbatim; codes FAIR_Text/Identifiers/Connections (+ Extras). Each
+  year's raw works go to both Crossref tools via the mailbox keys `crossref-completeness-input` /
+  `crossref-connectivity-input` (`?input=stored`); Completeness's receiver is `loadSharedSample`.
 - `crossrefParticipation.py` — bulk harvester of Crossref Participation Reports (stdlib
   only): one tidy CSV of the `coverage-type` blocks (era × content type × fourteen checks)
   for many members at once (`--member`/`--file`/`--search`).
