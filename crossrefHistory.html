@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Crossref History — completeness by deposit year</title>
+<link rel="icon" type="image/png" href="favicon_MGC.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Montserrat:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --accent:#9167b0; --accent-dk:#673289; --tint:#f0eaf5;
+    --ink:#1f2330; --muted:#6b7280; --line:#e6e3ec; --bg:#fbfafe;
+    --green:#3a9d6e; --amber:#d4910b; --red:#c0392b;
+  }
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg);margin:0;padding:0}
+
+  /* ── Brand top bar ── */
+  .topbar{border-bottom:2px solid var(--ink);padding:0 2rem}
+  .topbar-inner{max-width:1040px;margin:0 auto;display:flex;align-items:stretch;gap:0}
+  .topbar-brand{padding:.5rem 2rem .3rem 0;display:flex;flex-direction:row;align-items:flex-end;gap:1rem}
+  .brand-logo{height:64px;width:auto;display:block;flex-shrink:0}
+  .brand-title-wrap{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:.15rem}
+  .brand-tool-name{font-family:'Montserrat',sans-serif;font-size:2rem;font-weight:400;letter-spacing:.02em;color:#673289;line-height:1;white-space:nowrap;text-transform:uppercase}
+  .topbar-links{padding:0 0 0 1.5rem;display:flex;gap:1.6rem;margin-left:auto}
+  .topbar-col{display:flex;flex-direction:column;justify-content:center;gap:.25rem}
+  .topbar-links a{font-size:.72rem;color:var(--muted);text-decoration:none;white-space:nowrap;line-height:1.4}
+  .topbar-links a:hover{color:var(--accent-dk)}
+  @media(max-width:820px){.topbar{padding:0 1rem}.topbar-inner{flex-direction:column}.topbar-brand{padding-right:0}.brand-tool-name{font-size:1.5rem}.topbar-links{flex-wrap:wrap;gap:.75rem;padding:.25rem 0 .5rem}.topbar-col{flex-direction:row;flex-wrap:wrap;gap:.75rem}}
+  .wrap{max-width:1080px;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+  .proto-flag{display:inline-block;background:#fff;color:var(--accent-dk);font-size:.62rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:.12rem .45rem;border-radius:4px;margin-left:.5rem;vertical-align:middle;border:1px solid var(--accent)}
+
+  /* ── Hero bar ── */
+  .hero{background:#f0eaf5;border-bottom:2px solid #9167b0;padding:1.75rem 2rem}
+  .hero-inner{max-width:1040px;margin:0 auto;display:flex;align-items:center;gap:2.5rem;flex-wrap:wrap}
+  .hero-text{flex:1;min-width:200px}
+  .hero-title{font-size:1.15rem;font-weight:600;color:#5b3d7a;line-height:1.2;margin:0 0 .3rem;letter-spacing:-.01em}
+  .hero-sub{font-size:.78rem;color:var(--muted);line-height:1.5;max-width:380px;margin:0}
+  .hero-search{flex:1;min-width:280px;position:relative}
+  .hero-form{display:flex;border:2px solid #9167b0;background:#fff}
+  .hero-input{flex:1;border:none;padding:.6rem .85rem;font-size:.85rem;outline:none;font-family:Inter,sans-serif;color:var(--ink);background:transparent}
+  .hero-input::placeholder{color:#a99bbf}
+  .hero-go{border:none;border-left:2px solid #9167b0;background:#9167b0;color:#fff;padding:.6rem 1.1rem;font-size:.82rem;font-weight:500;cursor:pointer;white-space:nowrap;font-family:Inter,sans-serif}
+  .hero-go:hover{background:#7a52a0}
+  .hero-go:disabled{opacity:.5;cursor:default}
+  .hero-stop{border:none;border-left:2px solid var(--red);background:#fff;color:var(--red);padding:.6rem 1.1rem;font-size:.82rem;font-weight:500;cursor:pointer;white-space:nowrap;font-family:Inter,sans-serif;display:none}
+  .hero-secondary{display:flex;gap:.5rem;margin-top:.5rem;flex-wrap:wrap;align-items:center}
+  .hero-secondary-label{font-size:.65rem;font-weight:600;color:#5b3d7a;text-transform:uppercase;letter-spacing:.03em}
+  .hero-select,.hero-num{border:1px solid rgba(145,103,176,.4);background:rgba(255,255,255,.85);padding:.32rem .6rem;font-family:Inter,sans-serif;font-size:.75rem;color:var(--ink);outline:none}
+  .hero-select{cursor:pointer;flex:1;min-width:150px}
+  .hero-num{width:74px}
+  .hero-query{border:1px solid rgba(145,103,176,.4);background:rgba(255,255,255,.85);padding:.32rem .6rem;font-family:Inter,sans-serif;font-size:.75rem;color:var(--ink);outline:none;flex:1;min-width:160px}
+  .hero-query::placeholder{color:#a99bbf}
+  .hero-select:focus,.hero-num:focus,.hero-query:focus{border-color:#9167b0}
+  .hero-chk{display:flex;align-items:center;gap:.3rem;font-size:.72rem;color:#5b3d7a;cursor:pointer}
+  .hero-field{display:flex;align-items:center;gap:.4rem}
+  .hero-field.grow{flex:1;min-width:180px}
+  .hero-help{margin-top:.35rem;text-align:right}
+  .hero-help a{font-size:.68rem;color:#5b3d7a;text-decoration:none}
+  .hero-help a:hover{color:var(--accent-dk);text-decoration:underline}
+  .repo-autocomplete{position:absolute;top:100%;left:0;right:0;background:#fff;border:1.5px solid var(--ink);border-top:none;z-index:200;display:none;max-height:260px;overflow-y:auto}
+  .repo-autocomplete.open{display:block}
+  .repo-ac-item{padding:.55rem .75rem;cursor:pointer;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:.1rem}
+  .repo-ac-item:last-child{border-bottom:none}
+  .repo-ac-item:hover,.repo-ac-item.highlighted{background:var(--bg)}
+  .repo-ac-name{font-size:.78rem;font-weight:500;color:var(--ink)}
+  .repo-ac-id{font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted)}
+  .repo-ac-count{font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:#0070C0}
+  .repo-ac-loading{padding:.6rem .75rem;font-size:.75rem;color:var(--muted);font-style:italic}
+  @media(max-width:820px){.hero{padding:1.25rem 1rem}.hero-inner{flex-direction:column;gap:1rem;align-items:stretch}.hero-text{min-width:0}.hero-search{min-width:0;width:100%}}
+
+  /* ── Selection summary strip ── */
+  .sel-summary{background:#fff;border-bottom:1px solid var(--line)}
+  .sel-inner{max-width:1040px;margin:0 auto;padding:.7rem 2rem;display:flex;align-items:baseline;gap:1.5rem;flex-wrap:wrap}
+  .sel-repo{font-size:.95rem;font-weight:600;color:var(--accent-dk)}
+  .sel-repo .sel-id{font-family:'IBM Plex Mono',monospace;font-size:.7rem;font-weight:400;color:var(--muted);margin-left:.5rem}
+  .sel-stats{display:flex;gap:1.4rem;flex-wrap:wrap;margin-left:auto}
+  .sel-stat{font-size:.78rem;color:var(--muted)}
+  .sel-stat b{color:var(--ink);font-weight:600}
+  @media(max-width:820px){.sel-inner{padding:.7rem 1rem}.sel-stats{margin-left:0}}
+
+  #status{font-size:.82rem;color:var(--muted);min-height:1.2em;margin:.2rem 0 .5rem}
+  #status.err{color:var(--red)}
+  #progress{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin:0 0 1rem;display:none}
+  #progress.on{display:block}
+  #progress>i{display:block;height:100%;width:0;background:var(--accent);border-radius:3px;transition:width .18s ease}
+  #progress.indet>i{width:40%;animation:indet 1.1s ease-in-out infinite}
+  @keyframes indet{0%{margin-left:-40%}100%{margin-left:100%}}
+  #apiurl{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:.7rem;color:var(--muted);background:#f3f1f8;border-radius:6px;padding:.45rem .6rem;margin:0 0 1rem;word-break:break-all;line-height:1.5}
+  #apiurl b{color:var(--ink);font-weight:600}
+  .tips{border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:8px;background:#fff;padding:.7rem .9rem;margin:0 0 1rem;max-width:560px}
+  .tips .tips-head{font-size:.6rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.35rem}
+  .tips .tips-label{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-dk);font-weight:600;margin-bottom:.2rem}
+  .tips .tips-text{font-size:.82rem;color:var(--ink);line-height:1.5}
+  .tips .tips-text strong{color:var(--accent-dk)}
+  .tips .tips-link{display:inline-block;margin-top:.4rem;font-size:.68rem;color:var(--accent);text-decoration:none}
+  .tips .tips-link:hover{text-decoration:underline}
+
+  /* ── Cards ── */
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:1rem}
+  .card h2{font-size:1rem;margin:0 0 .4rem;color:var(--accent-dk)}
+  .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap;margin-bottom:.2rem}
+  .card-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+  .card-intro{font-size:.78rem;color:var(--muted);margin:0 0 1rem;line-height:1.5;max-width:760px}
+  .dl-btn{appearance:none;border:1px solid var(--accent);background:#fff;color:var(--accent-dk);font:inherit;font-size:.75rem;font-weight:600;padding:.42rem .85rem;border-radius:6px;cursor:pointer}
+  .dl-btn:hover{background:var(--tint)}
+  #chart{width:100%;height:auto;display:block}
+  .legend{display:flex;gap:1.1rem;flex-wrap:wrap;font-size:.72rem;color:var(--muted);margin:.6rem 0 .2rem}
+  .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:.4rem;vertical-align:middle}
+  .legend .thin-note{color:var(--muted);font-style:italic}
+  table.hist{border-collapse:collapse;width:100%;font-size:.8rem}
+  table.hist th,table.hist td{text-align:right;padding:.32rem .55rem;border-bottom:1px solid #f0eef5;white-space:nowrap}
+  table.hist th{font-size:.66rem;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:600}
+  table.hist th:first-child,table.hist td:first-child{text-align:left}
+  table.hist td.thin{color:var(--muted);font-style:italic}
+  table.hist td.num{font-variant-numeric:tabular-nums}
+  table.hist td.year-open{text-align:left;white-space:nowrap}
+  table.hist td.year-open a{color:var(--accent);text-decoration:none;cursor:pointer;font-size:.72rem;font-weight:600;margin-right:.5rem}
+  table.hist td.year-open a:hover{color:var(--accent-dk);text-decoration:underline}
+  /* radar grid (small multiples: use cases × years) */
+  #grid{overflow-x:auto;margin-top:.4rem}
+  table.grid-tbl{border-collapse:collapse}
+  table.grid-tbl th.corner{background:#fff}
+  table.grid-tbl th.yr{font-size:.74rem;font-weight:600;color:var(--ink);padding:.2rem .3rem;text-align:center;white-space:nowrap}
+  table.grid-tbl th.yr small{display:block;font-weight:400;color:var(--muted);font-size:.62rem}
+  table.grid-tbl th.yr small.tot{color:var(--accent-dk);font-weight:600;font-size:.68rem}
+  table.grid-tbl th.rowlab{font-size:.72rem;font-weight:600;color:var(--accent-dk);text-align:right;padding:0 .6rem 0 .2rem;white-space:nowrap;vertical-align:middle}
+  table.grid-tbl td.cell{padding:.15rem;text-align:center;vertical-align:top}
+  table.grid-tbl td.cell .cell-avg{font-size:.68rem;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:-.15rem}
+  table.grid-tbl td.cell.thin{opacity:.5}
+  table.grid-tbl td.cell svg{display:block;margin:0 auto}
+  /* movie: one year at a time, enlarged, with a play/scrub control */
+  .movie-bar{display:flex;align-items:center;gap:1rem;margin:.4rem 0 1rem;flex-wrap:wrap}
+  .movie-bar input[type=range]{flex:1;min-width:180px;accent-color:var(--accent);cursor:pointer}
+  .movie-caption{font-size:.95rem;font-weight:600;color:var(--accent-dk);white-space:nowrap}
+  .movie-caption b{color:var(--ink);font-size:1.15rem}
+  .movie-radars{display:flex;flex-wrap:wrap;gap:.6rem 1.2rem;justify-content:center;align-items:flex-start}
+  .movie-cell{text-align:center;width:240px}
+  .movie-cell .mc-title{font-size:.78rem;font-weight:600;color:var(--accent-dk)}
+  .movie-cell .mc-avg{font-size:.74rem;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums;margin-top:-.4rem}
+  .movie-cell svg{display:block;margin:0 auto}
+  /* analytics consent banner */
+  #analytics-banner{position:fixed;bottom:0;left:0;right:0;background:var(--ink);color:#fff;padding:.75rem 2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;z-index:500;font-size:.75rem;border-top:2px solid #444}
+  #analytics-banner a{color:#93c5fd}
+  #analytics-banner-btns{display:flex;gap:.5rem}
+  .ab-btn{padding:.35rem .85rem;font-size:.72rem;cursor:pointer;border:1px solid #666;font-family:inherit;background:none;color:#fff;border-radius:6px}
+  .ab-btn-ok{background:#fff;color:var(--ink);border-color:#fff}
+  .ab-btn-ok:hover{background:var(--tint)}
+  .ab-btn-no:hover{background:rgba(255,255,255,.1)}
+  @media print{.topbar-links,#analytics-banner{display:none !important}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="topbar-brand">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img class="brand-logo" src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" onerror="this.style.display='none'" />
+      </a>
+      <div class="brand-title-wrap"><div class="brand-tool-name">Crossref History</div></div>
+    </div>
+    <div class="topbar-links">
+      <div class="topbar-col">
+      <a href="crossrefTools.html" target="_blank" rel="noopener">Crossref Tools ↗</a>
+      <a href="crossrefGuide.html" target="_blank" rel="noopener">Crossref Guide ↗</a>
+      <a id="completeness-link" href="crossrefCompleteness.html" target="_blank" rel="noopener">Crossref Completeness ↗</a>
+      <a id="connectivity-link" href="crossrefConnectivity.html" target="_blank" rel="noopener">Crossref Connectivity ↗</a>
+      <a href="crossrefUseCases.html" target="_blank" rel="noopener">Crossref Use Cases ↗</a>
+      </div>
+      <div class="topbar-col">
+      <a href="DataCite-Crossref-Crosswalk.html" target="_blank" rel="noopener">DataCite - Crossref Crosswalk ↗</a>
+      <a href="https://api.crossref.org/swagger-ui/index.html" target="_blank" rel="noopener">Crossref API ↗</a>
+      <a href="tips.html#completeness" target="_blank" rel="noopener">Metadata Tips ↗</a>
+      <a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener">Feedback ↗</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h2 class="hero-title">Completeness, year by year <span class="proto-flag">Prototype</span></h2>
+      <p class="hero-sub">Samples a journal&rsquo;s or publisher&rsquo;s Crossref works for each <b>deposit year</b> (or publication year), scores every year against the Crossref-expressible FAIR use cases, and plots how completeness evolves. Each year&rsquo;s score reflects those records <b>as they are today</b> — including any metadata updates since.</p>
+    </div>
+    <div class="hero-search">
+      <div class="hero-form">
+        <input class="hero-input" id="repo-input" type="text" placeholder="Journal, publisher, ISSN, member:ID, or ROR…" spellcheck="false" autocomplete="off" value="" />
+        <button class="hero-stop" id="stop-btn">Stop</button>
+        <button class="hero-go" id="repo-go" disabled>Explore →</button>
+      </div>
+      <div class="repo-autocomplete" id="repo-autocomplete"></div>
+      <div class="hero-secondary">
+        <span class="hero-field grow">
+        <span class="hero-secondary-label">Type</span>
+        <select class="hero-select" id="resource-type">
+          <option value="">All work types</option>
+          <option value="book">Book</option>
+          <option value="book-chapter">Book Chapter</option>
+          <option value="dataset">Dataset</option>
+          <option value="dissertation">Dissertation</option>
+          <option value="edited-book">Edited Book</option>
+          <option value="grant">Grant</option>
+          <option value="journal-article">Journal Article</option>
+          <option value="monograph">Monograph</option>
+          <option value="other">Other</option>
+          <option value="peer-review">Peer Review</option>
+          <option value="posted-content">Posted Content (preprints)</option>
+          <option value="proceedings-article">Proceedings Article</option>
+          <option value="reference-entry">Reference Entry</option>
+          <option value="report">Report</option>
+          <option value="standard">Standard</option>
+        </select>
+        </span>
+        <span class="hero-field grow">
+        <span class="hero-secondary-label">Query</span>
+        <input class="hero-query" id="query-input" type="text" placeholder="free-text search, e.g. climate" spellcheck="false" autocomplete="off" />
+        </span>
+      </div>
+      <div class="hero-secondary">
+        <span class="hero-field">
+        <span class="hero-secondary-label">Group by</span>
+        <select class="hero-select" id="date-field" style="flex:0 0 auto;min-width:0" title="Deposit year groups works by when Crossref first received the record (the analog of DataCite's registered date — set by the system, so it tracks how depositing practice evolves). Publication year groups them by the issued date instead — for backfiles deposited long after publication the two can differ by decades.">
+          <option value="created">Deposit year</option>
+          <option value="published">Publication year</option>
+        </select>
+        </span>
+        <span class="hero-field">
+        <span class="hero-secondary-label">From</span>
+        <input class="hero-num" id="year-min" type="number" min="1000" max="2100" placeholder="auto" autocomplete="off" title="First year to sample — left blank, the selection's earliest year is detected automatically (capped to the most recent 30 years)" />
+        </span>
+        <span class="hero-field">
+        <span class="hero-secondary-label">To</span>
+        <input class="hero-num" id="year-max" type="number" min="1000" max="2100" placeholder="auto" autocomplete="off" title="Last year to sample — left blank, the selection's latest year is detected automatically" />
+        </span>
+        <span class="hero-field">
+        <span class="hero-secondary-label">Max / year</span>
+        <input class="hero-num" id="cap" type="number" value="100" min="1" max="1000" />
+        </span>
+        <label class="hero-chk"><input type="checkbox" id="random" checked /> Random sample</label>
+      </div>
+      <div class="hero-help"><a href="https://api.crossref.org/swagger-ui/index.html#/Works/get_works" target="_blank" rel="noopener" title="The Crossref /works endpoint — queries, filters, and sampling">Crossref /works API ↗</a></div>
+    </div>
+  </div>
+</div>
+
+<div class="sel-summary" id="sel-summary" style="display:none">
+  <div class="sel-inner">
+    <span class="sel-repo" id="sel-repo">—</span>
+    <div class="sel-stats">
+      <span class="sel-stat"><b id="sel-years">—</b> years</span>
+      <span class="sel-stat"><b id="sel-records">—</b> records scored</span>
+      <span class="sel-stat" id="sel-mode">—</span>
+      <span class="sel-stat" id="sel-filter" style="display:none"></span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="status">Loading engine…</div>
+  <div id="progress"><i></i></div>
+  <div id="apiurl" style="display:none"></div>
+  <div id="tips" class="tips" style="display:none"></div>
+
+  <div class="card" id="chart-card" style="display:none">
+    <div class="card-head">
+      <h2><span id="chart-head-label">Completeness by deposit year</span></h2>
+      <div class="card-actions">
+        <label class="hero-chk" style="gap:.4rem" title="Lines: one trend line per use case over the years. Grid: a radar plot per use case per year. Movie: one year at a time, enlarged — press Play to animate across the years.">
+          <span class="hero-secondary-label">View</span>
+          <select class="hero-select" id="view-mode" style="flex:none;min-width:0">
+            <option value="lines" selected>Lines</option>
+            <option value="grid">Grid</option>
+            <option value="movie">Movie</option>
+          </select>
+        </label>
+        <label class="hero-chk" style="gap:.4rem" title="Which use cases to show: the three Crossref-expressible FAIR use cases, the two additional Crossref use cases (Relations, Contributor Types), or all five">
+          <span class="hero-secondary-label">Use Cases</span>
+          <select class="hero-select" id="plot-group" style="flex:none;min-width:0">
+            <option value="FAIR" selected>FAIR (3 + total)</option>
+            <option value="Extras">Extras (2)</option>
+            <option value="All">All (5)</option>
+          </select>
+        </label>
+        <button class="dl-btn" id="dl-lines-copy" type="button" title="Copy the line plot to the clipboard as an image">⧉ Copy plot</button>
+        <button class="dl-btn" id="dl-png" type="button">⬇ Plot (PNG)</button>
+        <button class="dl-btn" id="dl-grid-copy" type="button" style="display:none" title="Copy the radar grid to the clipboard as an image">⧉ Copy grid</button>
+        <button class="dl-btn" id="dl-grid-png" type="button" style="display:none" title="Download the radar grid as a PNG image">⬇ Grid (PNG)</button>
+        <button class="dl-btn" id="dl-json" type="button">⬇ Data (JSON)</button>
+        <button class="dl-btn" id="dl-summary" type="button" title="One row per year: records, FAIR total and the three FAIR use cases, and the two additional Crossref use cases">⬇ Data Summary (CSV)</button>
+        <button class="dl-btn" id="dl-csv" type="button" title="Long form: one row per year × concept (analysis-ready)">⬇ Data (CSV)</button>
+      </div>
+    </div>
+    <p class="card-intro">Each point scores a sample of the works <b>deposited</b> with Crossref in that year, as those records are <b>today</b> — so a strong early year can mean good metadata then <i>or</i> updates since. Thin years (fewer than 10 records) — hollow points in <b>Lines</b>, dimmed cells in <b>Grid</b> — have noisy percentages. Results appear as each year finishes; switch <b>View</b> to a radar-plot <b>Grid</b> to watch each use case&rsquo;s concept profile change year to year. Short ranges sample finer: set <b>From&nbsp;=&nbsp;To</b> for a <b>monthly</b> view of one year, a span of up to four years for a <b>quarterly</b> view. Grouping by <b>Publication year</b> instead follows the issued date — for backfiles deposited long after publication the two views can differ sharply. Crossref scores are <b>not comparable</b> to DataCite scores: the catalog here holds only the 28 concepts the Crossref schema can express.</p>
+    <canvas id="chart" width="960" height="360"></canvas>
+    <div class="legend" id="legend"></div>
+    <div id="grid" style="display:none"></div>
+    <div id="movie" style="display:none">
+      <div class="movie-bar">
+        <button class="dl-btn" id="movie-prev" type="button" title="Previous year (←)">◀ Prev</button>
+        <button class="dl-btn" id="movie-play" type="button">▶ Play</button>
+        <button class="dl-btn" id="movie-next" type="button" title="Next year (→)">Next ▶</button>
+        <input type="range" id="movie-slider" min="0" max="0" value="0" step="1" aria-label="Year" />
+        <span class="movie-caption" id="movie-caption"></span>
+      </div>
+      <div class="movie-radars" id="movie-radars"></div>
+    </div>
+  </div>
+
+  <div class="card" id="table-card" style="display:none">
+    <h2>Year by year</h2>
+    <div style="overflow-x:auto">
+    <table class="hist"><thead><tr id="hist-head">
+      <th>Deposited</th><th>Records scored</th><th>Matching</th><th>FAIR Total</th>
+      <th>Text</th><th>Identifiers</th><th>Connections</th>
+      <th title="Open this year's exact sample in another tool — both then measure the same records">Open this year</th>
+    </tr></thead><tbody id="hist-body"></tbody></table>
+    </div>
+  </div>
+</div>
+
+<!-- The reduced Crossref use-case catalog — a verbatim copy of the <script id="spirals-data"> embed in
+     crossrefCompleteness.html (3 FAIR use cases + 2 Extras). Regenerate both together when the catalog changes. -->
+<script id="spirals-data" type="application/json">[{"title": "FAIR Text","code": "FAIR_Text","dialect": "Crossref","description": "Documentation concepts used to support many types of data discovery using text searches, i.e. title, author, funder name, publisher, etc. This spiral includes six mandatory concepts that exist in all records so the minimum completeness for this spiral is 40%. The average for this spiral for 387 University reporitories during January 2024 is 51%. Crossref edition: 9 of the 15 DataCite concepts are expressible in the Crossref schema; not measured here: Date Created, Keyword, Keyword Vocabulary, Award Title, Temporal Extent, Spatial Extent.","items": [{"concept": "Abstract","jq_query": ".data[] | select((.attributes.descriptions | type == \"array\") and (.attributes.descriptions | length > 0) and any((.attributes.descriptions // [])[]; type == \"object\" and .descriptionType == \"Abstract\" and has(\"description\") and .description != null and .description != \"\")) | {id: .id, concept: \"Abstract\", count: (([(.attributes.descriptions // [])[] | select(type == \"object\" and .descriptionType == \"Abstract\" and has(\"description\") and .description != null and .description != \"\")]) | length), values: (([(.attributes.descriptions // [])[] | select(type == \"object\" and .descriptionType == \"Abstract\" and has(\"description\") and .description != null and .description != \"\") | .description]))}"},{"concept": "Resource Author Affiliation","jq_query": ".data[] | select((.attributes.creators | type == \"array\") and (.attributes.creators | length > 0) and any((.attributes.creators // [])[]; type == \"object\" and has(\"affiliation\")) and any((.attributes.creators // [])[]; .affiliation | type == \"array\") and any((.attributes.creators // [])[] | (.affiliation // [])[]?; type == \"object\" and has(\"name\") and .name != null and .name != \"\")) | {id: .id, concept: \"Resource Author Affiliation\", count: (([(.attributes.creators // [])[] | (.affiliation // [])[]? | select(type == \"object\" and has(\"name\") and .name != null and .name != \"\")]) | length), values: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"affiliation\") and (.affiliation | type == \"array\")) | (.affiliation // [])[] | select(type == \"object\" and has(\"name\") and .name != null and .name != \"\") | .name])}"},{"concept": "Resource Author","jq_query": ".data[] | select((.attributes.creators | type == \"array\") and (.attributes.creators | length > 0) and any((.attributes.creators // [])[]; type == \"object\" and (.name != null and .name != \"\" or .givenName != null and .givenName != \"\" or .familyName != null and .familyName != \"\"))) | {id: .id, concept: \"Resource Author\", count: (([(.attributes.creators // [])[] | select(type == \"object\" and (.name != null and .name != \"\" or .givenName != null and .givenName != \"\" or .familyName != null and .familyName != \"\"))]) | length), values: (([(.attributes.creators // [])[] | select(type == \"object\" and (.name != null and .name != \"\" or .givenName != null and .givenName != \"\" or .familyName != null and .familyName != \"\")) | (.name // ([.givenName, .familyName] | map(select(. != null and . != \"\")) | join(\" \")))]))}"},{"concept": "Resource Identifier","jq_query": ".data[] | select((.attributes | type == \"object\") and (.attributes | has(\"doi\") and .doi != null and .doi != \"\") or (.attributes.identifiers | type == \"array\") and (.attributes.identifiers | length > 0) and any((.attributes.identifiers // [])[]; type == \"object\" and has(\"identifier\") and .identifier != null and .identifier != \"\")) | {id: .id, concept: \"Resource Identifier\", count: (([.attributes.doi] + [(.attributes.identifiers // [])[] | select(type == \"object\" and has(\"identifier\") and .identifier != null and .identifier != \"\") | .identifier] | map(select(. != null and . != \"\"))) | length), values: ([.attributes.doi] + [(.attributes.identifiers // [])[] | select(type == \"object\" and has(\"identifier\") and .identifier != null and .identifier != \"\") | .identifier] | map(select(. != null and . != \"\")))}"},{"concept": "Resource Publication Date","jq_query": ".data[] | select((.attributes | type == \"object\") and (.attributes | has(\"publicationYear\") and .publicationYear != null and .publicationYear != \"\")) | {id: .id, concept: \"Resource Publication Date\", count: (if ((.attributes.publicationYear // null)) != null and ((.attributes.publicationYear // null)) != \"\" then 1 else 0 end), values: ((.attributes.publicationYear // null))}"},{"concept": "Resource Publisher","jq_query": ".data[] | select((.attributes.publisher | type == \"object\") and (.attributes.publisher | has(\"name\") and .name != null and .name != \"\")) | {id: .id, concept: \"Resource Publisher\", count: (if ((.attributes.publisher.name // null)) != null and ((.attributes.publisher.name // null)) != \"\" then 1 else 0 end), values: ((.attributes.publisher.name // null))}"},{"concept": "Resource Title","jq_query": ".data[] | select((.attributes.titles | type == \"array\") and (.attributes.titles | length > 0) and any((.attributes.titles // [])[]; type == \"object\" and has(\"title\") and .title != null and .title != \"\")) | {id: .id, concept: \"Resource Title\", count: (([(.attributes.titles // [])[] | select(type == \"object\" and has(\"title\") and .title != null and .title != \"\")]) | length), values: (([(.attributes.titles // [])[] | select(type == \"object\" and has(\"title\") and .title != null and .title != \"\") | .title]))}"},{"concept": "Resource Type General","jq_query": ".data[] | select((.attributes.types | type == \"object\") and (.attributes.types | has(\"resourceTypeGeneral\") and .resourceTypeGeneral != null and .resourceTypeGeneral != \"\")) | {id: .id, concept: \"Resource Type General\", count: (if ((.attributes.types.resourceTypeGeneral // null)) != null and ((.attributes.types.resourceTypeGeneral // null)) != \"\" then 1 else 0 end), values: ((.attributes.types.resourceTypeGeneral // null))}"},{"concept": "Project Funder","jq_query": ".data[] | select((.attributes.fundingReferences | type == \"array\") and (.attributes.fundingReferences | length > 0) and any((.attributes.fundingReferences // [])[]; type == \"object\" and has(\"funderName\") and .funderName != null and .funderName != \"\")) | {id: .id, concept: \"Project Funder\", count: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"funderName\") and .funderName != null and .funderName != \"\")]) | length), values: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"funderName\") and .funderName != null and .funderName != \"\") | .funderName]))}"}]},{"title": "FAIR Identifiers","code": "FAIR_Identifiers","dialect": "Crossref","description": "Documentation concepts that provide extra information, i.e. identifiers and references, about discovery concepts. The average for this spiral for 387 University reporitories during January 2024 is 19%. Crossref edition: 10 of the 18 DataCite concepts are expressible in the Crossref schema; not measured here: Keyword Value URI, Keyword Vocabulary URI, Resource Author Type, Publisher Identifier, Publisher Identifier Type, Publisher Identifier Scheme URI, Resource Author Affiliation Identifier Scheme URI, Award URI.","items": [{"concept": "Date Submitted","jq_query": ".data[] | select((.attributes.dates | type == \"array\") and (.attributes.dates | length > 0) and any((.attributes.dates // [])[]; type == \"object\" and .dateType == \"Submitted\" and has(\"date\") and .date != null and .date != \"\")) | {id: .id, concept: \"Date Submitted\", count: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Submitted\" and has(\"date\") and .date != null and .date != \"\")]) | length), values: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Submitted\" and has(\"date\") and .date != null and .date != \"\") | .date]))}"},{"concept": "Resource Author Identifier","jq_query": ".data[] | select(\n    (.attributes.creators | type == \"array\") and \n    (.attributes.creators | length > 0) and \n    any((.attributes.creators // [])[]; \n        type == \"object\" and has(\"nameIdentifiers\") and \n        (.nameIdentifiers | type == \"array\") and \n        (.nameIdentifiers | length > 0) and \n        any((.nameIdentifiers // [])[]; type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null and .nameIdentifier != \"\")\n    )\n) | {\n    id: .id, \n    concept: \"Resource Author Identifier\", \n    count: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | \n             (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null and .nameIdentifier != \"\")] | length),\n    values: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | \n              (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifier\") and .nameIdentifier != null and .nameIdentifier != \"\") | .nameIdentifier])\n}"},{"concept": "Resource Author Identifier Type","jq_query": ".data[] | select(\n    (.attributes.creators | type == \"array\") and \n    (.attributes.creators | length > 0) and \n    any((.attributes.creators // [])[]; \n        type == \"object\" and has(\"nameIdentifiers\") and \n        (.nameIdentifiers | type == \"array\") and \n        (.nameIdentifiers | length > 0) and \n        any((.nameIdentifiers // [])[]; type == \"object\" and has(\"nameIdentifierScheme\") and .nameIdentifierScheme != null and .nameIdentifierScheme != \"\")\n    )\n) | {\n    id: .id, \n    concept: \"Resource Author Identifier Type\", \n    count: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | \n             (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifierScheme\") and .nameIdentifierScheme != null and .nameIdentifierScheme != \"\")] | length),\n    values: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"nameIdentifiers\") and (.nameIdentifiers | type == \"array\")) | \n              (.nameIdentifiers // [])[] | select(type == \"object\" and has(\"nameIdentifierScheme\") and .nameIdentifierScheme != null and .nameIdentifierScheme != \"\") | .nameIdentifierScheme])\n}"},{"concept": "Resource Author Affiliation Identifier","jq_query": ".data[] | select((.attributes.creators | type == \"array\") and (.attributes.creators | length > 0) and any((.attributes.creators // [])[]; type == \"object\" and has(\"affiliation\")) and any((.attributes.creators // [])[]; .affiliation | type == \"array\") and any((.attributes.creators // [])[] | (.affiliation // [])[]?; type == \"object\" and has(\"affiliationIdentifier\") and .affiliationIdentifier != null and .affiliationIdentifier != \"\")) | {id: .id, concept: \"Resource Author Affiliation Identifier\", count: (([(.attributes.creators // [])[] | (.affiliation // [])[]? | select(type == \"object\" and has(\"affiliationIdentifier\") and .affiliationIdentifier != null and .affiliationIdentifier != \"\")]) | length), values: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"affiliation\") and (.affiliation | type == \"array\")) | (.affiliation // [])[] | select(type == \"object\" and has(\"affiliationIdentifier\") and .affiliationIdentifier != null and .affiliationIdentifier != \"\") | .affiliationIdentifier])}"},{"concept": "Resource Author Affiliation Identifier Type","jq_query": ".data[] | select((.attributes.creators | type == \"array\") and (.attributes.creators | length > 0) and any((.attributes.creators // [])[]; type == \"object\" and has(\"affiliation\")) and any((.attributes.creators // [])[]; .affiliation | type == \"array\") and any((.attributes.creators // [])[] | (.affiliation // [])[]?; type == \"object\" and has(\"affiliationIdentifierScheme\") and .affiliationIdentifierScheme != null and .affiliationIdentifierScheme != \"\")) | {id: .id, concept: \"Resource Author Affiliation Identifier Type\", count: (([(.attributes.creators // [])[] | (.affiliation // [])[]? | select(type == \"object\" and has(\"affiliationIdentifierScheme\") and .affiliationIdentifierScheme != null and .affiliationIdentifierScheme != \"\")]) | length), values: ([(.attributes.creators // [])[] | select(type == \"object\" and has(\"affiliation\") and (.affiliation | type == \"array\")) | (.affiliation // [])[] | select(type == \"object\" and has(\"affiliationIdentifierScheme\") and .affiliationIdentifierScheme != null and .affiliationIdentifierScheme != \"\") | .affiliationIdentifierScheme])}"},{"concept": "Resource Identifier Type","jq_query": ".data[] | select((.attributes.identifiers | type == \"array\") and (.attributes.identifiers | length > 0) and any((.attributes.identifiers // [])[]; type == \"object\" and has(\"identifierType\") and .identifierType != null and .identifierType != \"\")) | {id: .id, concept: \"Resource Identifier Type\", count: (([(.attributes.identifiers // [])[] | select(type == \"object\" and has(\"identifierType\") and .identifierType != null and .identifierType != \"\")]) | length), values: (([(.attributes.identifiers // [])[] | select(type == \"object\" and has(\"identifierType\") and .identifierType != null and .identifierType != \"\") | .identifierType]))}"},{"concept": "Resource Type","jq_query": ".data[] | select((.attributes.types | type == \"object\") and (.attributes.types | has(\"resourceType\") and .resourceType != null and .resourceType != \"\")) | {id: .id, concept: \"Resource Type\", count: (if ((.attributes.types.resourceType // null)) != null and ((.attributes.types.resourceType // null)) != \"\" then 1 else 0 end), values: ((.attributes.types.resourceType // null))}"},{"concept": "Funder Identifier","jq_query": ".data[] | select((.attributes.fundingReferences | type == \"array\") and (.attributes.fundingReferences | length > 0) and any((.attributes.fundingReferences // [])[]; type == \"object\" and has(\"funderIdentifier\") and .funderIdentifier != null and .funderIdentifier != \"\")) | {id: .id, concept: \"Funder Identifier\", count: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"funderIdentifier\") and .funderIdentifier != null and .funderIdentifier != \"\")]) | length), values: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"funderIdentifier\") and .funderIdentifier != null and .funderIdentifier != \"\") | .funderIdentifier]))}"},{"concept": "Funder Identifier Type","jq_query": ".data[] | select((.attributes.fundingReferences | type == \"array\") and (.attributes.fundingReferences | length > 0) and any((.attributes.fundingReferences // [])[]; type == \"object\" and has(\"funderIdentifierType\") and .funderIdentifierType != null and .funderIdentifierType != \"\")) | {id: .id, concept: \"Funder Identifier Type\", count: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"funderIdentifierType\") and .funderIdentifierType != null and .funderIdentifierType != \"\")]) | length), values: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"funderIdentifierType\") and .funderIdentifierType != null and .funderIdentifierType != \"\") | .funderIdentifierType]))}"},{"concept": "Award Number","jq_query": ".data[] | select((.attributes.fundingReferences | type == \"array\") and (.attributes.fundingReferences | length > 0) and any((.attributes.fundingReferences // [])[]; type == \"object\" and has(\"awardNumber\") and .awardNumber != null and .awardNumber != \"\")) | {id: .id, concept: \"Award Number\", count: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"awardNumber\") and .awardNumber != null and .awardNumber != \"\")]) | length), values: (([(.attributes.fundingReferences // [])[] | select(type == \"object\" and has(\"awardNumber\") and .awardNumber != null and .awardNumber != \"\") | .awardNumber]))}"}]},{"title": "FAIR Connections","code": "FAIR_Connections","dialect": "Crossref","description": "Documentation concepts for datasets interoperability and connections for resource documentation, understanding, and trust. This spiral includes one mandatory concept (Resource URL) so the minimum score is 6%. The average for this spiral for 387 University reporitories during January 2024 is 12%. Crossref edition: 8 of the 18 DataCite FAIR Connections concepts are expressible in the Crossref schema, plus References (from the DataCite Relations catalog), which Crossref exposes natively as deposited reference DOIs; not measured here: CitedBy, DescribedBy, Distribution Contact, Resource Contact, HasMetadata, Resource Size, RightsHolder, Methods, Technical Information, ReferencedBy.","items": [{"concept": "Date Available","jq_query": ".data[] | select((.attributes.dates | type == \"array\") and (.attributes.dates | length > 0) and any((.attributes.dates // [])[]; type == \"object\" and .dateType == \"Available\" and has(\"date\") and .date != null and .date != \"\")) | {id: .id, concept: \"Date Available\", count: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Available\" and has(\"date\") and .date != null and .date != \"\")]) | length), values: (([(.attributes.dates // [])[] | select(type == \"object\" and .dateType == \"Available\" and has(\"date\") and .date != null and .date != \"\") | .date]))}"},{"concept": "DocumentedBy","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsDocumentedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"DocumentedBy\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsDocumentedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsDocumentedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "Resource Format","jq_query": ".data[] | select((.attributes | type == \"object\") and (.attributes | has(\"formats\")) and (.attributes.formats | type == \"array\") and (.attributes.formats | length > 0)) | {id: .id, concept: \"Resource Format\", count: (if ((.attributes.formats // null)) != null and ((.attributes.formats // null)) != \"\" then 1 else 0 end), values: ((.attributes.formats // null))}"},{"concept": "Resource URL","jq_query": ".data[] | select((.attributes | type == \"object\") and (.attributes | has(\"url\") and .url != null and .url != \"\")) | {id: .id, concept: \"Resource URL\", count: (if ((.attributes.url // null)) != null and ((.attributes.url // null)) != \"\" then 1 else 0 end), values: ((.attributes.url // null))}"},{"concept": "Rights","jq_query": ".data[] | select((.attributes.rightsList | type == \"array\") and (.attributes.rightsList | length > 0) and any((.attributes.rightsList // [])[]; type == \"object\" and has(\"rights\") and .rights != null and .rights != \"\")) | {id: .id, concept: \"Rights\", count: (([(.attributes.rightsList // [])[] | select(type == \"object\" and has(\"rights\") and .rights != null and .rights != \"\")]) | length), values: (([(.attributes.rightsList // [])[] | select(type == \"object\" and has(\"rights\") and .rights != null and .rights != \"\") | .rights]))}"},{"concept": "ReviewedBy","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsReviewedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"ReviewedBy\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsReviewedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsReviewedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "SourceOf","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsSourceOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"SourceOf\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSourceOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSourceOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "SupplementTo","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsSupplementTo\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"SupplementTo\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSupplementTo\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSupplementTo\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "References","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"References\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"References\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"References\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"References\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"}]},{"title": "Relations","code": "Crossref_Relations","dialect": "Crossref","description": "Typed relationships between this work and others, expressed as related identifiers. Crossref carries these in its relation object and reference list; the tool maps them to DataCite relationTypes and scores the presence of each. Most types are deposited rarely, so scores are typically low — this use case shows which relations the Crossref community is (and is not) using. Not in the FAIR Total.","items": [{"concept": "References","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"References\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"References\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"References\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"References\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "IsSupplementTo","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsSupplementTo\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"IsSupplementTo\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSupplementTo\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSupplementTo\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "IsSupplementedBy","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsSupplementedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"IsSupplementedBy\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSupplementedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSupplementedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "IsPartOf","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsPartOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"IsPartOf\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsPartOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsPartOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "HasPart","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"HasPart\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"HasPart\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"HasPart\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"HasPart\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "IsVersionOf","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsVersionOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"IsVersionOf\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsVersionOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsVersionOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "HasVersion","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"HasVersion\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"HasVersion\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"HasVersion\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"HasVersion\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "IsReviewedBy","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsReviewedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"IsReviewedBy\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsReviewedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsReviewedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "Reviews","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"Reviews\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"Reviews\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"Reviews\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"Reviews\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "IsDocumentedBy","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsDocumentedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"IsDocumentedBy\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsDocumentedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsDocumentedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "Documents","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"Documents\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"Documents\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"Documents\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"Documents\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "IsSourceOf","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsSourceOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"IsSourceOf\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSourceOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsSourceOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "IsDerivedFrom","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsDerivedFrom\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"IsDerivedFrom\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsDerivedFrom\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsDerivedFrom\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "IsTranslationOf","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsTranslationOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"IsTranslationOf\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsTranslationOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsTranslationOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "HasTranslation","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"HasTranslation\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"HasTranslation\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"HasTranslation\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"HasTranslation\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "IsNewVersionOf","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsNewVersionOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"IsNewVersionOf\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsNewVersionOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsNewVersionOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "IsPreviousVersionOf","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsPreviousVersionOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"IsPreviousVersionOf\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsPreviousVersionOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsPreviousVersionOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "Continues","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"Continues\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"Continues\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"Continues\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"Continues\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "IsContinuedBy","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsContinuedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"IsContinuedBy\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsContinuedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsContinuedBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "IsIdenticalTo","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsIdenticalTo\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"IsIdenticalTo\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsIdenticalTo\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsIdenticalTo\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "Requires","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"Requires\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"Requires\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"Requires\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"Requires\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "IsRequiredBy","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsRequiredBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"IsRequiredBy\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsRequiredBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsRequiredBy\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "IsVariantFormOf","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsVariantFormOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"IsVariantFormOf\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsVariantFormOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsVariantFormOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"},{"concept": "IsOriginalFormOf","jq_query": ".data[] | select((.attributes.relatedIdentifiers | type == \"array\") and (.attributes.relatedIdentifiers | length > 0) and any((.attributes.relatedIdentifiers // [])[]; type == \"object\" and .relationType == \"IsOriginalFormOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")) | {id: .id, concept: \"IsOriginalFormOf\", count: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsOriginalFormOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\")]) | length), values: (([(.attributes.relatedIdentifiers // [])[] | select(type == \"object\" and .relationType == \"IsOriginalFormOf\" and has(\"relatedIdentifier\") and .relatedIdentifier != null and .relatedIdentifier != \"\") | .relatedIdentifier]))}"}]},{"title": "Contributor Types","code": "Crossref_ContributorTypes","dialect": "Crossref","description": "Contributor roles beyond author. Crossref's deposit schema supports many roles (corresponding-author, reviewer, reader, CRediT, …), but the REST /works API exposes only editor, translator, and chair as separate arrays — so only those three are scoreable here (author is ~100% by definition and omitted). Not in the FAIR Total.","items": [{"concept": "Editor","jq_query": ".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and .contributorType == \"Editor\" and (.name != null and .name != \"\" or .givenName != null and .givenName != \"\" or .familyName != null and .familyName != \"\"))) | {id: .id, concept: \"Editor\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"Editor\" and (.name != null and .name != \"\" or .givenName != null and .givenName != \"\" or .familyName != null and .familyName != \"\"))]) | length), values: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"Editor\" and (.name != null and .name != \"\" or .givenName != null and .givenName != \"\" or .familyName != null and .familyName != \"\")) | (.name // ([.givenName, .familyName] | map(select(. != null and . != \"\")) | join(\" \")))]))}"},{"concept": "Translator","jq_query": ".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and .contributorType == \"Translator\" and (.name != null and .name != \"\" or .givenName != null and .givenName != \"\" or .familyName != null and .familyName != \"\"))) | {id: .id, concept: \"Translator\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"Translator\" and (.name != null and .name != \"\" or .givenName != null and .givenName != \"\" or .familyName != null and .familyName != \"\"))]) | length), values: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"Translator\" and (.name != null and .name != \"\" or .givenName != null and .givenName != \"\" or .familyName != null and .familyName != \"\")) | (.name // ([.givenName, .familyName] | map(select(. != null and . != \"\")) | join(\" \")))]))}"},{"concept": "Chair","jq_query": ".data[] | select((.attributes.contributors | type == \"array\") and (.attributes.contributors | length > 0) and any((.attributes.contributors // [])[]; type == \"object\" and .contributorType == \"Chair\" and (.name != null and .name != \"\" or .givenName != null and .givenName != \"\" or .familyName != null and .familyName != \"\"))) | {id: .id, concept: \"Chair\", count: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"Chair\" and (.name != null and .name != \"\" or .givenName != null and .givenName != \"\" or .familyName != null and .familyName != \"\"))]) | length), values: (([(.attributes.contributors // [])[] | select(type == \"object\" and .contributorType == \"Chair\" and (.name != null and .name != \"\" or .givenName != null and .givenName != \"\" or .familyName != null and .familyName != \"\")) | (.name // ([.givenName, .familyName] | map(select(. != null and . != \"\")) | join(\" \")))]))}"}]}]</script>
+
+<!-- jq-web (jq compiled to WASM/asm.js), same loader as completeness.html -->
+<script>
+(function(){
+  var sources = [
+    'https://cdn.jsdelivr.net/npm/jq-web@0.5.1/jq.asm.bundle.js',
+    'https://unpkg.com/jq-web@0.5.1/jq.asm.bundle.js'
+  ];
+  var i = 0;
+  (function load(){
+    if (i >= sources.length){ window.__jqLoadFailed = true; return; }
+    var s = document.createElement('script');
+    s.src = sources[i++];
+    s.onerror = load;
+    document.head.appendChild(s);
+  })();
+})();
+</script>
+
+<script>
+/* Crossref History: the Crossref port of repositoryHistory.html. Samples a journal's or
+   publisher's works for each DEPOSIT year (Crossref `created` — the analog of DataCite's
+   registered date; publication year is the alternative), transforms each work to the
+   DataCite record shape with crToRecord (verbatim from crossrefCompleteness.html) so the
+   catalog's jq queries run unchanged, scores every year, and plots completeness over time.
+   The scoring engine (whenJqReady / countExpr / scoreAllSpirals / weightedTotal) and the
+   plot/grid/movie views are the repositoryHistory.html ports — keep them in sync. The reduced
+   Crossref catalog is EMBEDDED (same embed as crossrefCompleteness.html). */
+const API_BASE = 'https://api.crossref.org';
+
+/* ---------- targets (verbatim from crossrefCompleteness.html) ----------
+   A target is { kind: 'journal'|'member'|'ror'|'all', id, token, label }; token is the canonical
+   input form ('1932-6203', 'member:340', 'ror:04qw24q55', 'crossref.all' — the unadvertised
+   whole-of-Crossref sentinel, mirroring datacite.all). */
+const ALL_CROSSREF = 'crossref.all';
+const ISSN_RE   = /^\d{4}-\d{3}[\dX]$/i;
+const MEMBER_RE = /^member:(\d+)$/i;
+const ROR_RE    = /^(?:ror:|(?:https?:\/\/)?ror\.org\/)(0[a-hj-km-np-tv-z0-9]{6}\d{2})$/i;
+function parseTarget(input){
+  const v = String(input || '').trim();
+  if (!v) return null;
+  if (v.toLowerCase() === ALL_CROSSREF) return { kind:'all', id:'', token: ALL_CROSSREF, label:'All of Crossref' };
+  if (ISSN_RE.test(v)) return { kind:'journal', id: v.toUpperCase(), token: v.toUpperCase(), label: v.toUpperCase() };
+  const m = MEMBER_RE.exec(v); if (m) return { kind:'member', id: m[1], token: `member:${m[1]}`, label: `member:${m[1]}` };
+  const r = ROR_RE.exec(v);    if (r) return { kind:'ror', id: r[1], token: `ror:${r[1]}`, label: `ror:${r[1]}` };
+  return null;
+}
+function targetFilter(t){
+  if (!t || t.kind === 'all') return '';
+  if (t.kind === 'journal') return 'issn:' + t.id;
+  if (t.kind === 'member')  return 'member:' + t.id;
+  return 'ror-id:https://ror.org/' + t.id;
+}
+
+/* ---------- Crossref fetch with polite pool + retries (as the other Crossref tools) ---------- */
+const CR_MAILTO = 'ted@metadatagamechangers.com';
+function withMailto(url){
+  if (!url.startsWith(API_BASE) || url.includes('mailto=')) return url;
+  return url + (url.includes('?') ? '&' : '?') + 'mailto=' + encodeURIComponent(CR_MAILTO);
+}
+async function crFetch(url, retries = 3){
+  let lastErr = null;
+  for (let i = 0; i < retries; i++){
+    try {
+      const res = await fetch(withMailto(url));
+      if (res.status !== 429 && res.status < 500) return res;
+      lastErr = new Error(`Crossref returned ${res.status}`);
+    } catch (e){ lastErr = e; }
+    if (i < retries - 1) await new Promise(r => setTimeout(r, 1500 * (i + 1)));
+  }
+  throw lastErr || new Error('Crossref request failed');
+}
+
+/* ---------- Crossref work → DataCite-shaped record (verbatim from crossrefCompleteness.html) ----------
+   The catalog's jq queries run VERBATIM; this transform is the entire Crossref adaptation. The
+   approximations (Date Submitted ← accepted/posted, Date Available ← license start, Rights ←
+   license URL, Resource Format ← link MIME types, References ← reference[].DOI) are documented
+   on the Crossref Completeness About tab. */
+const CR_SELECT = 'DOI,title,author,editor,translator,chair,funder,license,publisher,container-title,issued,accepted,posted,type,member,abstract,URL,link,relation,reference';
+const CR_TYPE_MAP = {
+  'journal-article':'JournalArticle', 'proceedings-article':'ConferencePaper', 'posted-content':'Preprint',
+  'book':'Book', 'edited-book':'Book', 'monograph':'Book', 'reference-book':'Book', 'book-series':'Book', 'book-set':'Book',
+  'book-chapter':'BookChapter', 'book-section':'BookChapter', 'book-part':'BookChapter', 'book-track':'BookChapter',
+  'dataset':'Dataset', 'database':'Dataset', 'dissertation':'Dissertation', 'peer-review':'PeerReview',
+  'report':'Report', 'report-component':'Report', 'report-series':'Report', 'standard':'Standard',
+  'journal':'Journal', 'journal-issue':'Journal', 'journal-volume':'Journal',
+  'proceedings':'ConferenceProceeding', 'proceedings-series':'ConferenceProceeding',
+  'reference-entry':'Text', 'component':'Other', 'grant':'Award', 'other':'Other'
+};
+const CR_REL_MAP = {
+  'is-supplement-to':'IsSupplementTo', 'is-supplemented-by':'IsSupplementedBy',
+  'is-review-of':'Reviews', 'has-review':'IsReviewedBy',
+  'is-documented-by':'IsDocumentedBy', 'documents':'Documents',
+  'has-derivation':'IsSourceOf', 'is-basis-for':'IsSourceOf',
+  'is-derived-from':'IsDerivedFrom', 'is-based-on':'IsDerivedFrom',
+  'is-part-of':'IsPartOf', 'has-part':'HasPart',
+  'is-version-of':'IsVersionOf', 'has-version':'HasVersion',
+  'is-translation-of':'IsTranslationOf', 'has-translation':'HasTranslation',
+  'is-identical-to':'IsIdenticalTo', 'continues':'Continues', 'is-continued-by':'IsContinuedBy',
+  'replaces':'IsNewVersionOf', 'is-replaced-by':'IsPreviousVersionOf',
+  'requires':'Requires', 'is-required-by':'IsRequiredBy',
+  'is-variant-form-of':'IsVariantFormOf', 'is-original-form-of':'IsOriginalFormOf'
+};
+const stripJats = s => String(s).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+function crDateStr(x){
+  if (!x) return null;
+  if (x['date-time']) return String(x['date-time']).slice(0, 10);
+  const p = Array.isArray(x['date-parts']) && Array.isArray(x['date-parts'][0]) ? x['date-parts'][0].filter(n => n != null) : [];
+  return p.length ? p.map((n, i) => i ? String(n).padStart(2, '0') : String(n)).join('-') : null;
+}
+function crPerson(p){
+  const name = p.name || [p.given, p.family].filter(Boolean).join(' ');
+  const aff = (Array.isArray(p.affiliation) ? p.affiliation : []).filter(a => a && a.name).map(a => {
+    const ids = Array.isArray(a.id) ? a.id.filter(x => x && x.id) : [];
+    const ror = ids.find(x => String(x['id-type']).toUpperCase() === 'ROR');
+    const use = ror || ids[0];
+    return { name: a.name,
+             affiliationIdentifier: use ? use.id : undefined,
+             affiliationIdentifierScheme: use ? use['id-type'] : undefined };
+  });
+  return { name, givenName: p.given, familyName: p.family,
+           nameType: p.family ? 'Personal' : (p.name ? 'Organizational' : undefined),
+           nameIdentifiers: p.ORCID ? [{ nameIdentifier: p.ORCID, nameIdentifierScheme: 'ORCID', schemeUri: 'https://orcid.org' }] : [],
+           affiliation: aff };
+}
+function crToRecord(w){
+  const dates = [];
+  const sub = crDateStr(w.accepted || w.posted);
+  if (sub) dates.push({ date: sub, dateType: 'Submitted' });                       // ≈ acceptance/posting
+  const lic = (Array.isArray(w.license) ? w.license : []).filter(l => l && l.URL);
+  const avail = lic.length ? crDateStr(lic[0].start) : null;
+  if (avail) dates.push({ date: avail, dateType: 'Available' });                   // ≈ license start
+  const related = [];
+  for (const [key, arr] of Object.entries(w.relation || {})){
+    const rt = CR_REL_MAP[key];
+    if (!rt) continue;
+    for (const e of (Array.isArray(arr) ? arr : []))
+      if (e && e.id) related.push({ relatedIdentifier: e.id,
+                                    relatedIdentifierType: String(e['id-type'] || '').toUpperCase() || undefined,
+                                    relationType: rt });
+  }
+  // Crossref deposits its reference list separately from relation{}; a reference that carries a
+  // DOI is exactly a DataCite relatedIdentifier with relationType References.
+  for (const ref of (Array.isArray(w.reference) ? w.reference : []))
+    if (ref && ref.DOI) related.push({ relatedIdentifier: ref.DOI, relatedIdentifierType: 'DOI', relationType: 'References' });
+  const funding = (Array.isArray(w.funder) ? w.funder : []).filter(f => f && f.name).map(f => {
+    const ids = Array.isArray(f.id) ? f.id.filter(x => x && x.id) : [];
+    const ror = ids.find(x => String(x['id-type']).toUpperCase() === 'ROR');
+    const idv = (ror && ror.id) || (f.DOI ? 'https://doi.org/' + f.DOI : (ids[0] && ids[0].id));
+    return { funderName: f.name, funderIdentifier: idv || undefined,
+             funderIdentifierType: idv ? (ror ? 'ROR' : (f.DOI ? 'Crossref Funder ID' : ids[0] && ids[0]['id-type'])) : undefined,
+             awardNumber: (Array.isArray(f.award) && f.award[0]) || undefined };
+  });
+  // editor/translator/chair → contributors (the only roles the Crossref /works API exposes as
+  // separate arrays); scored by the Extras "Contributor Types" use case.
+  const contributors = [];
+  for (const [key, ct] of [['editor', 'Editor'], ['translator', 'Translator'], ['chair', 'Chair']])
+    for (const p of (Array.isArray(w[key]) ? w[key] : []))
+      if (p && (p.family || p.name)) contributors.push({ ...crPerson(p), contributorType: ct });
+  const formats = [...new Set((Array.isArray(w.link) ? w.link : [])
+    .map(l => l && l['content-type']).filter(x => x && x !== 'unspecified'))];
+  const year = Array.isArray(w.issued && w.issued['date-parts']) && Array.isArray(w.issued['date-parts'][0])
+    ? w.issued['date-parts'][0][0] : null;
+  const abs = w.abstract ? stripJats(w.abstract) : '';
+  return {
+    id: w.DOI,
+    attributes: {
+      doi: w.DOI,
+      identifiers: [{ identifier: 'https://doi.org/' + w.DOI, identifierType: 'DOI' }],
+      titles: (Array.isArray(w.title) ? w.title : []).filter(t => t).map(t => ({ title: t })),
+      publisher: w.publisher ? { name: w.publisher } : undefined,
+      publicationYear: typeof year === 'number' ? year : undefined,
+      types: { resourceTypeGeneral: CR_TYPE_MAP[w.type] || (w.type ? 'Other' : undefined), resourceType: w.type },
+      url: w.URL || undefined,
+      descriptions: abs ? [{ description: abs, descriptionType: 'Abstract' }] : [],
+      creators: (Array.isArray(w.author) ? w.author : []).filter(p => p && (p.family || p.name)).map(crPerson),
+      contributors,
+      fundingReferences: funding,
+      rightsList: lic.map(l => ({ rights: l.URL, rightsUri: l.URL })),
+      dates,
+      relatedIdentifiers: related,
+      formats
+    }
+  };
+}
+
+const SPIRALS = JSON.parse(document.getElementById('spirals-data').textContent);   // the embedded reduced catalog
+
+const $ = id => document.getElementById(id);
+const statusEl = $('status');
+function setStatus(msg, isErr){ statusEl.textContent = msg; statusEl.className = isErr ? 'err' : ''; }
+function setProgress(frac){ const p=$('progress'); p.classList.add('on'); p.classList.remove('indet'); p.firstElementChild.style.width = Math.max(0,Math.min(1,frac))*100 + '%'; }
+function setProgressIndeterminate(){ const p=$('progress'); p.classList.add('on','indet'); p.firstElementChild.style.width=''; }
+function hideProgress(){ const p=$('progress'); p.classList.remove('on','indet'); p.firstElementChild.style.width='0'; }
+const escHtml = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const escAttr = s => escHtml(s);
+function fmtPct(x){ return (x*100).toFixed(0) + '%'; }
+
+// Greedy word wrap of an export title to a pixel width, measured with the real font via
+// canvas measureText (exact, unlike a character-width estimate). Long repository names —
+// e.g. nihnichd.dash's 116-character name — would otherwise run off the PNG canvas.
+const _titleMeas = document.createElement('canvas').getContext('2d');
+function wrapToWidth(text, maxWidth, font){
+  _titleMeas.font = font;
+  const lines = []; let line = '';
+  for (const w of String(text).split(/\s+/)){
+    const test = line ? line + ' ' + w : w;
+    if (!line || _titleMeas.measureText(test).width <= maxWidth) line = test;
+    else { lines.push(line); line = w; }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+/* ---------- jq readiness (ported from completeness.html) ---------- */
+function whenJqReady(){
+  return new Promise((resolve, reject) => {
+    let tries = 0;
+    (function poll(){
+      if (window.__jqLoadFailed) return reject(new Error('Could not load the jq engine from any CDN — network/CDN appears blocked.'));
+      if (typeof jq !== 'undefined' && jq && jq.promised && typeof jq.promised.raw === 'function') {
+        jq.promised.raw('{"a":1}', '.a', ['-c'])
+          .then(out => (out && out.trim() === '1') ? resolve() : reject(new Error('jq loaded but self-test failed (got "'+out+'").')))
+          .catch(err => reject(new Error('jq self-test threw: ' + (err && err.message || err))));
+        return;
+      }
+      if (++tries > 300) return reject(new Error('jq engine did not initialize within 30s.'));
+      setTimeout(poll, 100);
+    })();
+  });
+}
+
+function countExpr(query){
+  const i = query.indexOf('{');
+  if (i < 0) return query;
+  return query.slice(0, i).replace(/\|\s*$/, '').trim();
+}
+
+/* ---------- scoring (ported from completeness.html scoreAllSpirals) ---------- */
+async function scoreAllSpirals(records, onProgress){
+  const total = records.length;
+  const BATCH = 500;
+  const batches = [];
+  for (let i = 0; i < records.length; i += BATCH) batches.push(records.slice(i, i + BATCH));
+  if (!batches.length) batches.push([]);
+
+  const flat = [];
+  SPIRALS.forEach(s => s.items.forEach(it => { if (it.jq_query) flat.push({ code: s.code, concept: it.concept, jq: it.jq_query }); }));
+
+  const exprList = [];
+  const exprIndex = new Map();
+  const flatExpr = flat.map(it => {
+    const e = countExpr(it.jq);
+    if (!exprIndex.has(e)){ exprIndex.set(e, exprList.length); exprList.push(e); }
+    return exprIndex.get(e);
+  });
+  const matched = exprList.map(() => 0);
+  const errored = exprList.map(() => false);
+  const program = '{' + exprList.map((e, i) => `"c${i}":([ ${e} ]|length)`).join(',') + '}';
+
+  for (let b = 0; b < batches.length; b++){
+    const inputStr = JSON.stringify({ data: batches[b] });
+    let obj = null;
+    try {
+      const out = await jq.promised.raw(inputStr, program, ['-c']);
+      obj = JSON.parse(out);
+    } catch (e){
+      console.warn('combined scoring failed for a batch, falling back to per-query:', (e && e.message) || e);
+    }
+    if (obj){
+      exprList.forEach((e, i) => { const v = obj['c' + i]; if (typeof v === 'number') matched[i] += v; else errored[i] = true; });
+    } else {
+      for (let i = 0; i < exprList.length; i++){
+        try { const o = await jq.promised.raw(inputStr, `[ ${exprList[i]} ] | length`, ['-c']); const n = parseInt((o||'').trim(),10); matched[i] += Number.isNaN(n)?0:n; }
+        catch (e){ errored[i] = true; }
+      }
+    }
+    if (onProgress) onProgress((b + 1) / batches.length);
+    await new Promise(r => setTimeout(r));
+  }
+
+  const byCode = {};
+  SPIRALS.forEach(s => {
+    const items = flat
+      .map((it, i) => ({ it, u: flatExpr[i] }))
+      .filter(x => x.it.code === s.code)
+      .map(({ it, u }) => {
+        let comp = errored[u] ? 0 : (total > 0 ? matched[u] / total : 0);
+        if (comp > 1) comp = 1;
+        return { concept: it.concept, matched: matched[u], comp, errored: errored[u] };
+      })
+      .sort((a, b) => a.concept.localeCompare(b.concept));
+    const n = items.length || 1;
+    const average  = items.reduce((a, b) => a + Math.min(b.comp, 1), 0) / n;
+    const exist    = items.filter(i => i.comp > 0).length;
+    const complete = items.filter(i => i.comp >= 1).length;
+    byCode[s.code] = { spiral: s, res: { items, average, exist, complete, total } };
+  });
+  return byCode;
+}
+
+// the three Crossref-expressible FAIR use cases feed the headline total (as crossrefCompleteness.html
+// GROUP_TOTAL.FAIR); the Extras (Relations, Contributor Types) are plotted but never totalled
+const TOTAL_CODES = ['FAIR_Text','FAIR_Identifiers','FAIR_Connections'];
+const EXTRA_CODES = ['Crossref_Relations','Crossref_ContributorTypes'];
+function weightedTotal(byCode, codes){
+  let totalScore = 0, totalCount = 0;
+  for (const code of codes){
+    const e = byCode[code];
+    if (!e) continue;
+    const n = e.spiral.items.length;
+    totalScore += e.res.average * n;
+    totalCount += n;
+  }
+  return totalCount > 0 ? totalScore / totalCount : 0;
+}
+
+// the Crossref filter clause that scopes a selection to one deposit/publication period.
+// `created` is when Crossref first received the record (the analog of DataCite registered);
+// `published` follows the issued date. Both filters take YYYY-MM-DD bounds.
+function periodFilter(period, dateField){
+  return dateField === 'published'
+    ? `from-pub-date:${period.from},until-pub-date:${period.to}`
+    : `from-created-date:${period.from},until-created-date:${period.to}`;
+}
+// the whole filter= value for a run's target + type + one period
+function selectionFilter(target, typeId, period, dateField){
+  return [targetFilter(target), typeId ? 'type:' + typeId : '', period ? periodFilter(period, dateField) : ''].filter(Boolean).join(',');
+}
+/* ---------- fetch one period (adapted from crossrefCompleteness fetchWorks: native sample= draws
+   + cursor paging). Returns the works transformed to the DataCite shape AND the raw works, so a
+   period's exact sample can be handed to the other Crossref tools. ---------- */
+async function fetchPeriod(target, period, cap, random, typeId, userQuery, dateField){
+  const filters = selectionFilter(target, typeId, period, dateField);
+  const common = (filters ? `filter=${encodeURIComponent(filters)}&` : '')
+               + (userQuery ? `query=${encodeURIComponent(userQuery)}&` : '')
+               + `select=${encodeURIComponent(CR_SELECT)}`;
+  const records = [], works = [];
+  const seen = new Set();
+  let requests = 0, firstUrl = '', matching = null, cursor = '*';
+  let effectiveRandom = random;
+  // peek at the matching total: skip empty periods fast, and fall back to a deterministic
+  // fetch when the whole period fits within the cap
+  try {
+    const peek = await crFetch(`${API_BASE}/works?${common}&rows=0`);
+    if (peek.ok){
+      const pj = await peek.json();
+      const t = pj.message && typeof pj.message['total-results'] === 'number' ? pj.message['total-results'] : null;
+      if (t != null){ matching = t; if (t <= cap) effectiveRandom = false; }
+      if (t === 0) return { records: [], works: [], matching: 0, random: false, firstUrl: '' };
+    }
+  } catch { /* best-effort */ }
+  while (records.length < cap) {
+    requests++;
+    const url = effectiveRandom
+      ? `${API_BASE}/works?${common}&sample=${Math.min(100, cap)}`
+      : `${API_BASE}/works?${common}&rows=${Math.min(1000, cap)}&cursor=${encodeURIComponent(cursor)}`;
+    if (!firstUrl) firstUrl = url;
+    let res;
+    try { res = await crFetch(url); }
+    catch (netErr){
+      const hint = location.protocol === 'file:'
+        ? 'The page is open as a local file (file://); browsers block outbound requests there. Serve it over http — e.g. run "python3 -m http.server" and open http://localhost:8000/crossrefHistory.html'
+        : 'api.crossref.org did not answer after several tries — Crossref may be busy or rate-limiting; wait a moment and press Explore again.';
+      throw new Error('Failed to fetch works. ' + hint);
+    }
+    if (!res.ok) throw new Error(`Crossref returned ${res.status} for "${target.token}" (${period.label})`);
+    const json = await res.json();
+    const msg = json.message || {};
+    const batch = msg.items || [];
+    let added = 0;
+    for (const w of batch){ if (w && w.DOI && !seen.has(w.DOI)){ seen.add(w.DOI); records.push(crToRecord(w)); works.push(w); added++; } }
+    if (typeof msg['total-results'] === 'number') matching = msg['total-results'];
+    if (effectiveRandom){
+      if (records.length >= cap) break;
+      if (matching != null && records.length >= matching) break;
+      if (added === 0) break;
+      if (requests >= 30) break;
+    } else {
+      cursor = msg['next-cursor'] || '';
+      if (batch.length === 0 || !cursor || records.length >= cap || requests >= 10) break;
+    }
+  }
+  return { records: records.slice(0, cap), works: works.slice(0, cap), matching, random: effectiveRandom, firstUrl };
+}
+
+// the selection's display name (verbatim from crossrefCompleteness.html fetchTargetMeta)
+async function fetchTargetMeta(target){
+  try {
+    if (target.kind === 'all') return { name: 'All of Crossref', doiCount: null };
+    if (target.kind === 'journal'){
+      const res = await crFetch(`${API_BASE}/journals/${encodeURIComponent(target.id)}`);
+      if (!res.ok) return null;
+      const m = (await res.json()).message;
+      return { name: m?.title ?? target.token, doiCount: m?.counts?.['total-dois'] ?? null };
+    }
+    if (target.kind === 'member'){
+      const res = await crFetch(`${API_BASE}/members/${encodeURIComponent(target.id)}`);
+      if (!res.ok) return null;
+      const m = (await res.json()).message;
+      return { name: m?.['primary-name'] ?? target.token, doiCount: m?.counts?.['total-dois'] ?? null };
+    }
+    const res = await fetch(`https://api.ror.org/v2/organizations/${encodeURIComponent(target.id)}`);
+    if (!res.ok) return null;
+    const j = await res.json();
+    const display = (j.names || []).find(n => (n.types || []).includes('ror_display')) || (j.names || [])[0];
+    return { name: display ? display.value : target.token, doiCount: null };
+  } catch { return null; }
+}
+
+/* detect the selection's first and last years on the grouped date field with two one-row sorted
+   probes (sort=created or sort=published, ascending and descending). Deposit years read the work's
+   `created` date; publication years read `published` (falling back to `issued`). Publication-year
+   bounds can be wild — backfiles reach into the 1800s and a few records carry future dates — so
+   run() caps the auto-detected range to the most recent 30 years. */
+async function detectYearBounds(target, typeId, userQuery, dateField){
+  const filters = selectionFilter(target, typeId, null, dateField);
+  const common = (filters ? `filter=${encodeURIComponent(filters)}&` : '')
+               + (userQuery ? `query=${encodeURIComponent(userQuery)}&` : '')
+               + `rows=1&select=DOI,created,issued,published`;
+  const sortKey = dateField === 'published' ? 'published' : 'created';
+  const yearOf = async order => {
+    const res = await crFetch(`${API_BASE}/works?${common}&sort=${sortKey}&order=${order}`);
+    if (!res.ok) return null;
+    const w = ((await res.json()).message?.items || [])[0];
+    if (!w) return null;
+    const dp = dateField === 'published' ? ((w.published || w.issued || {})['date-parts']) : ((w.created || {})['date-parts']);
+    const y = Array.isArray(dp) && Array.isArray(dp[0]) ? dp[0][0] : null;
+    return typeof y === 'number' ? y : null;
+  };
+  const [first, last] = await Promise.all([yearOf('asc'), yearOf('desc')]);
+  if (first == null || last == null) return null;
+  return { minY: Math.min(first, last), maxY: Math.max(first, last) };
+}
+
+/* ---------- run: harvest year by year ---------- */
+/* plot groups: which lines to draw (Extras has no combined total, matching completeness) */
+const CODE_STYLE = {
+  FAIR_Text:                 { label: 'Text',         color: '#E97131' },
+  FAIR_Identifiers:          { label: 'Identifiers',  color: '#0070C0' },
+  FAIR_Connections:          { label: 'Connections',  color: '#A02C93' },
+  Crossref_Relations:        { label: 'Relations',    color: '#C0392B' },
+  Crossref_ContributorTypes: { label: 'Contributors', color: '#0E8A8A' },
+};
+const PLOT_GROUPS = {
+  FAIR:     { totals: [{ key: 'fair', label: 'FAIR Total', color: '#673289', width: 3 }], codes: TOTAL_CODES },
+  Extras:   { totals: [], codes: EXTRA_CODES },
+  All:      { totals: [], codes: [...TOTAL_CODES, ...EXTRA_CODES] },
+};
+const ALL_PALETTE = ['#e2725b','#0070C0','#9167b0','#3a9d6e','#b3005e','#d4910b','#2f6fb0','#c0392b','#5b3d7a'];
+function seriesFor(group){
+  const g = PLOT_GROUPS[group] || PLOT_GROUPS.FAIR;
+  const codeSeries = g.codes.map((code, i) => ({
+    key: code, width: 1.5,
+    label: group === 'All' ? code.replace('_', ' · ').replace(/_/g, ' ') : (CODE_STYLE[code] ? CODE_STYLE[code].label : code),
+    color: group === 'All' ? ALL_PALETTE[i % ALL_PALETTE.length] : (CODE_STYLE[code] ? CODE_STYLE[code].color : '#6b7280'),
+  }));
+  return [...g.totals, ...codeSeries];
+}
+let plotGroup = 'FAIR';
+let viewMode = 'lines';
+// use-case colours for the radar grid cells (ported from completeness.html SPIRAL_COLORS)
+const SPIRAL_COLORS = {
+  FAIR_Text:'#E97131', FAIR_Identifiers:'#0070C0', FAIR_Connections:'#A02C93',
+  Crossref_Relations:'#C0392B', Crossref_ContributorTypes:'#0E8A8A',
+};
+// a small, label-free radar of a use case's concepts (small-multiples cell); shape comparison
+// across a row is the point — the row label names the use case, axes are consistent within a row
+// inner geometry of a small radar (no outer <svg>) so it can be embedded both as a standalone
+// SVG (miniRadar) and as a nested cell in the composite grid SVG (gridSvgMarkup)
+function radarInner(items, color, size){
+  const W = size, cx = W/2, cy = W/2, R = W/2 * 0.82, N = items.length || 1;
+  const ang = i => (i/N) * 2 * Math.PI - Math.PI/2;
+  const pt  = (i,r) => [ +(cx + Math.cos(ang(i))*R*r).toFixed(1), +(cy + Math.sin(ang(i))*R*r).toFixed(1) ];
+  let g = '';
+  [0.5, 1].forEach(r => { g += `<circle cx="${cx}" cy="${cy}" r="${(R*r).toFixed(1)}" fill="none" stroke="#ece9f3" stroke-width="1"/>`; });
+  for (let i=0;i<N;i++){ const [x,y]=pt(i,1); g += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#f0eef5" stroke-width="1"/>`; }
+  const pts = items.map((it,i) => pt(i, Math.min(it.comp,1)).join(',')).join(' ');
+  g += `<polygon points="${pts}" fill="${color}" fill-opacity="0.30" stroke="${color}" stroke-width="1.5" stroke-linejoin="round"/>`;
+  return g;
+}
+function miniRadar(items, color, size){
+  return `<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">${radarInner(items, color, size)}</svg>`;
+}
+// a larger, labeled radar for the movie view (perimeter concept labels fit at this size;
+// omitted for very busy use cases to avoid a tangle). Ported from completeness.html.
+const displayConcept = c => String(c).replace(/Identifier/g, 'ID');
+function wrapLabel(text, width){
+  const lines = []; let line = '';
+  for (const w of String(text).split(/\s+/)){
+    if (!line) line = w;
+    else if ((line + ' ' + w).length <= width) line += ' ' + w;
+    else { lines.push(line); line = w; }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+function movieRadar(items, color){
+  const S = 240, cx = S/2, cy = S/2, N = items.length || 1;
+  const withLabels = N <= 18;
+  const R = (S/2) * (withLabels ? 0.60 : 0.82);
+  const ang = i => (i/N) * 2 * Math.PI - Math.PI/2;
+  const pt  = (i,r) => [ +(cx + Math.cos(ang(i))*R*r).toFixed(1), +(cy + Math.sin(ang(i))*R*r).toFixed(1) ];
+  let g = '';
+  [0.25,0.5,0.75,1].forEach(r => { g += `<circle cx="${cx}" cy="${cy}" r="${(R*r).toFixed(1)}" fill="none" stroke="#ece9f3" stroke-width="1"/>`; });
+  for (let i=0;i<N;i++){ const [x,y]=pt(i,1); g += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#f0eef5" stroke-width="1"/>`; }
+  const pts = items.map((it,i) => pt(i, Math.min(it.comp,1)).join(',')).join(' ');
+  g += `<polygon points="${pts}" fill="${color}" fill-opacity="0.30" stroke="${color}" stroke-width="1.75" stroke-linejoin="round"/>`;
+  if (withLabels){
+    const LH = 9;
+    items.forEach((it,i) => {
+      const [x,y] = pt(i, 1.12); const a = ang(i);
+      const anchor = Math.abs(Math.cos(a)) < 0.3 ? 'middle' : (Math.cos(a) > 0 ? 'start' : 'end');
+      const lines = wrapLabel(displayConcept(it.concept), 13);
+      const tspans = lines.map((ln,k) =>
+        `<tspan x="${x}" dy="${k===0 ? (-(lines.length-1)/2*LH).toFixed(1) : LH}">${escHtml(ln)}</tspan>`).join('');
+      g += `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle" font-size="7.5" fill="#6b7280">${tspans}</text>`;
+    });
+  }
+  return `<svg viewBox="0 0 ${S} ${S}" width="${S}" height="${S}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
+}
+const THIN = 10;   // years with fewer records than this are drawn hollow / italic
+let history = null;   // { target, clientId (= target.token), repoName, resourceTypeId, query, cap, random, dateField, years:[{year, period, t, n, matching, totals, byCode, records, works}] }
+let stopRequested = false;
+
+function yearTotals(byCode){
+  const t = { fair: weightedTotal(byCode, TOTAL_CODES) };
+  for (const code of Object.keys(byCode)) t[code] = byCode[code] ? byCode[code].res.average : null;
+  return t;
+}
+
+async function run(){
+  if (!SPIRALS){
+    // Enter / autocomplete can fire before the boot sequence finishes (or after it failed);
+    // without this guard they reach the scorer with a null catalog.
+    setStatus('Still loading the use-case catalog and jq engine — wait for "Engine ready", then try again. If this message persists, reload the page.', true);
+    return;
+  }
+  const input = $('repo-input').value.trim();
+  if (!input) return;
+  const target = parseTarget(input);
+  if (!target){
+    setStatus('Enter a journal ISSN (1932-6203), a Crossref member (member:340), or an organization’s ROR (ror:04qw24q55) — or pick a journal/publisher from the search list.', true);
+    return;
+  }
+  const clientId = target.token;
+  const cap = Math.max(1, Math.min(1000, parseInt($('cap').value,10) || 100));
+  const random = $('random').checked;
+  const resourceTypeId = $('resource-type').value;
+  const query = $('query-input').value.trim();
+  const dateField = $('date-field').value === 'published' ? 'published' : 'created';
+  $('repo-input').value = clientId;
+  syncUrl(target, resourceTypeId, query, cap, random);
+  setTopbarLinks(target);
+  closeAutocomplete();
+  $('repo-go').disabled = true; $('stop-btn').style.display = '';
+  stopRequested = false;
+  startTips();
+  try {
+    setStatus(`Detecting ${dateFieldWord(dateField)} years…`);
+    setProgressIndeterminate();
+    const [meta, bounds] = await Promise.all([fetchTargetMeta(target), detectYearBounds(target, resourceTypeId, query, dateField)]);
+    let minY = parseInt($('year-min').value, 10);
+    let maxY = parseInt($('year-max').value, 10);
+    const autoMin = Number.isNaN(minY);
+    if (Number.isNaN(minY)) minY = bounds ? bounds.minY : NaN;
+    if (Number.isNaN(maxY)) maxY = bounds ? bounds.maxY : NaN;
+    if (Number.isNaN(minY) || Number.isNaN(maxY)){ hideProgress(); setStatus(`Could not detect ${dateFieldWord(dateField)} years — enter From and To years and try again.`, true); return; }
+    if (minY > maxY){ const t = minY; minY = maxY; maxY = t; }
+    const thisYear = new Date().getUTCFullYear();
+    if (maxY > thisYear) maxY = thisYear;                                 // stray future publication dates
+    let clipped = false;
+    if (autoMin && maxY - minY + 1 > 30){ minY = maxY - 29; clipped = true; }   // deep backfiles: auto-detect shows the latest 30 years
+    if (maxY - minY + 1 > 30){ hideProgress(); setStatus(`That is ${maxY - minY + 1} years — please narrow the range to 30 or fewer.`, true); return; }
+    $('year-min').placeholder = minY; $('year-max').placeholder = maxY;   // show the resolved range without making it sticky
+
+    history = { target, clientId, repoName: (meta && meta.name) ? meta.name : target.label,
+                resourceTypeId, query, cap, random, dateField, years: [] };
+    $('chart-head-label').textContent = `Completeness by ${dateFieldWord(dateField)} year`;
+    movieStop(); movieIdx = 0;   // fresh run resets the movie to the first year
+    renderSelection(meta, target, minY, maxY, resourceTypeId, query, clipped ? bounds.minY : null);
+    $('chart-card').style.display = ''; $('table-card').style.display = '';
+    renderTableHead();
+    $('hist-body').innerHTML = '';
+    renderLegend();
+    renderView();
+
+    // adaptive sampling period: a single selected year samples monthly, a span of up to
+    // four years samples quarterly, longer spans sample yearly (the classic view)
+    const span = maxY - minY;
+    const pp = n => String(n).padStart(2, '0');
+    const lastDay = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();   // m is 1-based month
+    let yearList = [];
+    if (span === 0){
+      for (let m = 1; m <= 12; m++) yearList.push({ label: `${minY}-${pp(m)}`,
+        from: `${minY}-${pp(m)}-01`, to: `${minY}-${pp(m)}-${pp(lastDay(minY, m))}`, t: minY + (m - 0.5) / 12 });
+    } else if (span <= 3){
+      for (let y = minY; y <= maxY; y++) for (let q = 1; q <= 4; q++) yearList.push({ label: `${y} Q${q}`,
+        from: `${y}-${pp(3*q - 2)}-01`, to: `${y}-${pp(3*q)}-${pp(lastDay(y, 3*q))}`, t: y + (q - 0.5) / 4 });
+    } else {
+      for (let y = minY; y <= maxY; y++) yearList.push({ label: String(y),
+        from: `${y}-01-01`, to: `${y}-12-31`, t: y });
+    }
+    const today = new Date().toISOString().slice(0, 10);
+    yearList = yearList.filter(p => p.from <= today);                     // never sample the future
+    let done = 0, scoredRecords = 0, shownUrl = false;
+    for (const p of yearList){
+      if (stopRequested) break;
+      setStatus(`${p.label} — fetching records (period ${done + 1} of ${yearList.length})…`);
+      setProgress(done / yearList.length);
+      const { records, works, matching, random: usedRandom, firstUrl } = await fetchPeriod(target, p, cap, random, resourceTypeId, query, dateField);
+      if (!shownUrl && firstUrl){ $('apiurl').style.display=''; $('apiurl').innerHTML = `<b>API call (per period):</b> ${escHtml(firstUrl)}`; shownUrl = true; }
+      if (stopRequested) break;
+      let entry;
+      if (!records.length){
+        entry = { year: p.label, period: { from: p.from, to: p.to }, t: p.t, n: 0, matching: matching || 0, totals: null, byCode: null };
+      } else {
+        setStatus(`${p.label} — scoring ${records.length} work${records.length===1?'':'s'} (period ${done + 1} of ${yearList.length})…`);
+        const byCode = await scoreAllSpirals(records, f => setProgress((done + f) / yearList.length));
+        // retain the period's raw works so a row can be handed to Crossref Completeness/Connectivity
+        // without re-fetching (bounded: ≤ cap per period, and only one period is ever put in the mailbox)
+        entry = { year: p.label, period: { from: p.from, to: p.to }, t: p.t, n: records.length, matching, random: usedRandom, totals: yearTotals(byCode), byCode, works };
+        scoredRecords += records.length;
+      }
+      history.years.push(entry);
+      addTableRow(entry);
+      if (viewMode === 'grid') drawGrid(); else if (viewMode === 'movie') drawMovie(); else drawChart();
+      updateSelStats(scoredRecords);
+      done++;
+    }
+    hideProgress();
+    const scoredYears = history.years.filter(e => e.n > 0).length;
+    const unit = span === 0 ? 'month' : (span <= 3 ? 'quarter' : 'year');
+    setStatus(stopRequested
+      ? `Stopped — ${scoredYears} ${unit}${scoredYears===1?'':'s'} scored (${scoredRecords.toLocaleString()} records).`
+      : `Done — ${scoredYears} ${unit}${scoredYears===1?'':'s'} scored, ${scoredRecords.toLocaleString()} works, ${dateFieldWord(dateField)} years ${minY}–${maxY}.`);
+  } catch (e){
+    console.error(e); hideProgress(); setStatus(e.message || String(e), true);
+  } finally {
+    stopTips();
+    $('repo-go').disabled = false; $('stop-btn').style.display = 'none';
+  }
+}
+
+/* ---------- rendering ---------- */
+function renderSelection(meta, target, minY, maxY, resourceTypeId, query, clippedFrom){
+  $('sel-summary').style.display = '';
+  const name = (meta && meta.name) ? meta.name : target.label;
+  $('sel-repo').innerHTML = `${escHtml(name)}<span class="sel-id">${escHtml(target.token)}</span>`;
+  $('sel-years').textContent = `${minY}–${maxY}` + (clippedFrom != null ? ` (earliest ${clippedFrom})` : '');
+  $('sel-records').textContent = '0';
+  $('sel-mode').textContent = `${$('random').checked ? 'random sample' : 'sequential sample'} · up to ${$('cap').value}/year`
+    + ` · by ${dateFieldWord($('date-field').value)} year`;
+  const parts = [];
+  if (resourceTypeId) parts.push(`type: ${resourceTypeId}`);
+  if (query) parts.push(`query: ${query}`);
+  $('sel-filter').textContent = parts.length ? `filter — ${parts.join(' · ')}` : '';
+  $('sel-filter').style.display = parts.length ? '' : 'none';
+}
+// 'created' | 'published' → the word used in copy ("deposit year" / "publication year")
+function dateFieldWord(f){ return f === 'published' ? 'publication' : 'deposit'; }
+function dateFieldName(){ return history && history.dateField === 'published' ? 'published' : 'created'; }
+function dateFieldHead(){ return dateFieldName() === 'published' ? 'Published' : 'Deposited'; }
+function updateSelStats(scoredRecords){ $('sel-records').textContent = scoredRecords.toLocaleString(); }
+
+function renderLegend(){
+  $('legend').innerHTML = seriesFor(plotGroup).map(s =>
+    `<span><i style="background:${s.color};height:${s.width>2?'4px':'3px'}"></i>${s.label}</span>`).join('')
+    + '<span class="thin-note">hollow point = fewer than 10 records</span>';
+}
+
+// the year-by-year table follows the Use Cases selector: the group's total (Extras/All fall
+// back to the FAIR total, like the grid) plus one column per use case in the group
+function tableColumns(){
+  const g = PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR;
+  const gt = g.totals[0];
+  const labels = {}; seriesFor(plotGroup).forEach(sr => { labels[sr.key] = sr.label; });
+  return { totKey: gt ? gt.key : 'fair', totName: gt ? gt.label : 'FAIR Total',
+           codes: g.codes.map(c => ({ code: c, label: labels[c] || c })) };
+}
+function renderTableHead(){
+  const tc = tableColumns();
+  $('hist-head').innerHTML = `<th>${dateFieldHead()}</th><th>Records scored</th><th>Matching</th><th>${escHtml(tc.totName)}</th>`
+    + tc.codes.map(c => `<th>${escHtml(c.label)}</th>`).join('')
+    + `<th title="Open this year's exact sample in another tool — both then measure the same records">Open this year</th>`;
+}
+function addTableRow(e){
+  const tc = tableColumns();
+  const thin = e.n > 0 && e.n < THIN;
+  const cell = v => v == null ? '—' : fmtPct(v);
+  const row = e.n === 0
+    ? `<tr><td>${e.year}</td><td class="num">0</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td><td colspan="${tc.codes.length + 2}" style="text-align:left;color:var(--muted);font-style:italic">no works ${dateFieldName() === 'published' ? 'published' : 'deposited'}</td></tr>`
+    : `<tr><td>${e.year}${thin ? ' *' : ''}</td><td class="num${thin?' thin':''}">${e.n.toLocaleString()}</td><td class="num">${e.matching != null ? e.matching.toLocaleString() : '—'}</td>`
+      + `<td class="num"><b>${cell(e.totals[tc.totKey])}</b></td>`
+      + tc.codes.map(c => `<td class="num">${cell(e.totals[c.code])}</td>`).join('')
+      + `<td class="year-open"><a data-hy="${e.year}" data-target="completeness" title="Open ${e.n.toLocaleString()} work${e.n===1?'':'s'} from ${e.year} in Crossref Completeness">Completeness ↗</a> <a data-hy="${e.year}" data-target="connectivity" title="Open ${e.n.toLocaleString()} work${e.n===1?'':'s'} from ${e.year} in Crossref Connectivity">Connectivity ↗</a></td></tr>`;
+  $('hist-body').insertAdjacentHTML('beforeend', row);
+}
+function renderTable(){
+  if (!history) return;
+  renderTableHead();
+  $('hist-body').innerHTML = '';
+  for (const e of history.years) addTableRow(e);
+}
+
+function drawChart(){
+  const canvas = $('chart');
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.clientWidth || 960, cssH = 360;
+  canvas.width = cssW * dpr; canvas.height = cssH * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, cssW, cssH);
+  if (!history || !history.years.length) return;
+  const ts = history.years.map(e => e.t ?? e.year);
+  const minT = Math.min(...ts), maxT = Math.max(...ts);
+  const padL = 44, padR = 16, padT = 12, padB = 40;
+  const W = cssW - padL - padR, H = cssH - padT - padB;
+  const x = t => padL + (maxT === minT ? W/2 : (t - minT) / (maxT - minT) * W);
+  const yy = v => padT + (1 - v) * H;
+  // grid + axes
+  ctx.font = '11px Inter, sans-serif';
+  ctx.fillStyle = '#6b7280'; ctx.strokeStyle = '#e6e3ec'; ctx.lineWidth = 1;
+  for (let g = 0; g <= 100; g += 25){
+    const gy = yy(g/100);
+    ctx.beginPath(); ctx.moveTo(padL, gy); ctx.lineTo(cssW - padR, gy); ctx.stroke();
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText(g + '%', padL - 6, gy);
+  }
+  const nP = history.years.length;
+  const step = nP > 18 ? 4 : (nP > 9 ? 2 : 1);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  history.years.forEach((e, i) => {
+    if (i % step !== 0 && i !== nP - 1) return;
+    // centre the label on its point, but keep it inside the canvas — the last period sits
+    // padR from the right edge, so a wide label (e.g. "2026-08") would be clipped
+    const label = String(e.year), nLabel = e.n ? 'n=' + e.n : '·';
+    const half = Math.max(ctx.measureText(label).width, ctx.measureText(nLabel).width) / 2;
+    const px = Math.min(Math.max(x(e.t ?? e.year), half + 2), cssW - half - 2);
+    ctx.fillStyle = '#6b7280'; ctx.fillText(label, px, cssH - padB + 8);
+    ctx.fillStyle = '#a99bbf'; ctx.font = '9px Inter, sans-serif'; ctx.fillText(nLabel, px, cssH - padB + 22); ctx.font = '11px Inter, sans-serif';
+  });
+  // series
+  for (const s of seriesFor(plotGroup)){
+    const pts = history.years
+      .filter(e => e.n > 0 && e.totals && e.totals[s.key] != null)
+      .map(e => ({ px: x(e.t ?? e.year), py: yy(Math.min(1, e.totals[s.key])), thin: e.n < THIN }));
+    if (!pts.length) continue;
+    ctx.strokeStyle = s.color; ctx.lineWidth = s.width || 1.5;
+    ctx.setLineDash(s.dash || []);
+    ctx.beginPath();
+    pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.px, p.py) : ctx.lineTo(p.px, p.py));
+    ctx.stroke();
+    ctx.setLineDash([]);
+    for (const p of pts){
+      ctx.beginPath(); ctx.arc(p.px, p.py, s.width > 2 ? 4 : 3, 0, Math.PI * 2);
+      if (p.thin){ ctx.fillStyle = '#fff'; ctx.fill(); ctx.strokeStyle = s.color; ctx.lineWidth = 1.5; ctx.stroke(); }
+      else { ctx.fillStyle = s.color; ctx.fill(); }
+    }
+  }
+}
+window.addEventListener('resize', () => { if (viewMode === 'lines') drawChart(); });
+
+/* radar-grid view: rows = the plot-group's use cases, columns = scored years, each cell a
+   small radar of that use case's concepts that year (ported concept from dataCiteRepositories.py's
+   makeRadarPlotGrid). Reuses the retained per-year byCode scoring — no re-fetch. */
+const CELL = 132;
+function drawGrid(){
+  const grid = $('grid');
+  if (!history){ grid.innerHTML = ''; return; }
+  const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
+  const years = history.years.filter(e => e.n > 0 && e.byCode);
+  if (!years.length){ grid.innerHTML = '<p class="card-intro">No scored years to show yet.</p>'; return; }
+  // the total shown atop each year column: the group's own total (Projects → Projects total,
+  // otherwise the FAIR headline total)
+  const groupTot = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).totals[0];   // FAIR/Projects/SHARE have their own total; Extras/All fall back to FAIR
+  const totalKey = groupTot ? groupTot.key : 'fair';
+  const totalName = groupTot ? groupTot.label.replace(' Total','') : 'FAIR';
+  const head = '<tr><th class="corner"></th>' + years.map(e => {
+    const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
+    return `<th class="yr" title="${e.year}: ${e.n.toLocaleString()} records scored · ${totalName} total ${tot}">`
+      + `${e.year}<small>n=${e.n.toLocaleString()}${e.n < THIN ? ' *' : ''}</small><small class="tot">${tot}</small></th>`;
+  }).join('') + '</tr>';
+  const rows = codes.map(code => {
+    const color = SPIRAL_COLORS[code] || '#9167b0';
+    const label = CODE_STYLE[code] ? CODE_STYLE[code].label : code;
+    const cells = years.map(e => {
+      const uc = e.byCode[code];
+      if (!uc){ return '<td class="cell">—</td>'; }
+      const avg = (uc.res.average * 100).toFixed(0) + '%';
+      return `<td class="cell${e.n < THIN ? ' thin' : ''}" title="${escHtml(label)} · ${e.year} · ${avg} (${e.n} records)">`
+        + `${miniRadar(uc.res.items, color, CELL)}<div class="cell-avg">${avg}</div></td>`;
+    }).join('');
+    return `<tr><th class="rowlab">${escHtml(label)}</th>${cells}</tr>`;
+  }).join('');
+  grid.innerHTML = `<table class="grid-tbl"><thead>${head}</thead><tbody>${rows}</tbody></table>`;
+}
+
+/* ---------- grid export: one composite SVG of the whole grid, rasterized to PNG ---------- */
+const GRID_GROUP_LABEL = { FAIR:'FAIR use cases (Crossref)', Extras:'Additional Crossref use cases', All:'All five use cases' };
+// "type: … · query: …" for the current run's filters (empty when none) — mirrors the on-screen selection
+function selectionFilterText(){
+  return [history.resourceTypeId ? `type: ${history.resourceTypeId}` : '', history.query ? `query: ${history.query}` : ''].filter(Boolean).join(' · ');
+}
+function gridSvgMarkup(){
+  const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
+  const years = history.years.filter(e => e.n > 0 && e.byCode);
+  const groupTot = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).totals[0];   // FAIR/Projects/SHARE have their own total; Extras/All fall back to FAIR
+  const totalKey = groupTot ? groupTot.key : 'fair';
+  const totalName = groupTot ? groupTot.label.replace(' Total','') : 'FAIR';
+  const PAD = 14, LABEL_W = 96, HEADER_H = 46, RAD = 132, AVG_H = 18, TITLE_LH = 18;
+  const COL_W = RAD + 16, ROW_H = RAD + AVG_H + 8;
+  const gridLeft = PAD + LABEL_W;
+  const W = gridLeft + years.length * COL_W + PAD;
+  const titleText = `${history.repoName} (${history.clientId}) — Crossref completeness by ${dateFieldWord(history.dateField)} year`;
+  const titleLines = wrapToWidth(titleText, W - PAD*2, '600 15px Inter, sans-serif');   // long names wrap
+  const TITLE_H = 42 + (titleLines.length - 1) * TITLE_LH;
+  const gridTop = PAD + TITLE_H + HEADER_H;
+  const H = gridTop + codes.length * ROW_H + PAD;
+  const FONT = "font-family='Inter, system-ui, sans-serif'";
+  let s = `<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
+  s += titleLines.map((ln, i) => `<text x="${PAD}" y="${18 + i*TITLE_LH}" ${FONT} font-size="15" font-weight="600" fill="#673289">${escHtml(ln)}</text>`).join('');
+  const gridFilt = selectionFilterText();
+  s += `<text x="${PAD}" y="${34 + (titleLines.length - 1)*TITLE_LH}" ${FONT} font-size="11" fill="#6b7280">${escHtml(GRID_GROUP_LABEL[plotGroup] || plotGroup)} · up to ${history.cap} works/year${gridFilt ? ' · ' + escHtml(gridFilt) : ''} · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. later updates)</text>`;
+  // column headers: year / n / total
+  years.forEach((e, j) => {
+    const cxp = gridLeft + j*COL_W + COL_W/2;
+    const top = PAD + TITLE_H;
+    const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
+    s += `<text x="${cxp}" y="${top+13}" ${FONT} font-size="13" font-weight="600" text-anchor="middle" fill="#1f2330">${e.year}</text>`;
+    s += `<text x="${cxp}" y="${top+27}" ${FONT} font-size="10" text-anchor="middle" fill="#6b7280">n=${e.n.toLocaleString()}${e.n < THIN ? ' *' : ''}</text>`;
+    s += `<text x="${cxp}" y="${top+41}" ${FONT} font-size="11" font-weight="600" text-anchor="middle" fill="#673289">${tot}</text>`;
+  });
+  // rows: label + radar cells with avg below
+  codes.forEach((code, i) => {
+    const color = SPIRAL_COLORS[code] || '#9167b0';
+    const label = CODE_STYLE[code] ? CODE_STYLE[code].label : code;
+    const y0 = gridTop + i*ROW_H;
+    s += `<text x="${gridLeft-8}" y="${y0 + RAD/2}" ${FONT} font-size="12" font-weight="600" text-anchor="end" dominant-baseline="middle" fill="#673289">${escHtml(label)}</text>`;
+    years.forEach((e, j) => {
+      const uc = e.byCode[code]; if (!uc) return;
+      const x0 = gridLeft + j*COL_W + (COL_W - RAD)/2;
+      s += `<svg x="${x0}" y="${y0}" width="${RAD}" height="${RAD}" viewBox="0 0 ${RAD} ${RAD}">${radarInner(uc.res.items, color, RAD)}</svg>`;
+      const avg = (uc.res.average * 100).toFixed(0) + '%';
+      s += `<text x="${gridLeft + j*COL_W + COL_W/2}" y="${y0 + RAD + 12}" ${FONT} font-size="11" font-weight="600" text-anchor="middle" fill="#1f2330">${avg}</text>`;
+    });
+  });
+  return { svg: `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">${s}</svg>`, w: W, h: H };
+}
+function svgToPngBlob(svgString, scale){
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' }));
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = img.width * scale; c.height = img.height * scale;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
+      ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null')), 'image/png');
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('SVG failed to load for rasterization')); };
+    img.src = url;
+  });
+}
+async function downloadGridPng(){
+  if (!history || !history.years.some(e => e.n > 0 && e.byCode)) return;
+  try {
+    const { svg } = gridSvgMarkup();
+    const blob = await svgToPngBlob(svg, 2);
+    triggerDownload(blob, `${safeRepoId()}_historyGrid_${plotGroup}__${nowStamp()}.png`);
+  } catch (e){ console.error(e); setStatus('Could not render the grid to PNG: ' + (e.message || e), true); }
+}
+async function copyGrid(){
+  if (!history || !history.years.some(e => e.n > 0 && e.byCode)) return;
+  const btn = $('dl-grid-copy'); const label = btn.textContent;
+  try {
+    const { svg } = gridSvgMarkup();
+    const blob = await svgToPngBlob(svg, 2);
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    btn.textContent = '✓ Copied';
+  } catch (e){ console.error(e); btn.textContent = 'Copy failed'; }
+  setTimeout(() => { btn.textContent = label; }, 1600);
+}
+
+// switch between the line chart and the radar grid, keeping the download buttons sensible
+function renderView(){
+  $('chart').style.display   = viewMode === 'lines' ? '' : 'none';
+  $('legend').style.display  = viewMode === 'lines' ? '' : 'none';
+  $('grid').style.display    = viewMode === 'grid'  ? '' : 'none';
+  $('movie').style.display   = viewMode === 'movie' ? '' : 'none';
+  $('dl-png').style.display  = viewMode === 'lines' ? '' : 'none';   // PNG export is the line chart
+  $('dl-lines-copy').style.display = viewMode === 'lines' ? '' : 'none';
+  $('dl-grid-copy').style.display = viewMode === 'grid' ? '' : 'none';
+  $('dl-grid-png').style.display  = viewMode === 'grid' ? '' : 'none';
+  if (viewMode !== 'movie') movieStop();
+  if (viewMode === 'grid') drawGrid();
+  else if (viewMode === 'movie') drawMovie();
+  else drawChart();
+}
+
+/* ---------- movie: one year at a time, enlarged, scrub + play across the years ---------- */
+let movieIdx = 0, movieTimer = null;
+function scoredYears(){ return history ? history.years.filter(e => e.n > 0 && e.byCode) : []; }
+function drawMovie(){
+  const years = scoredYears();
+  if (!years.length){ $('movie-radars').innerHTML = ''; $('movie-caption').textContent = ''; $('movie-play').disabled = $('movie-prev').disabled = $('movie-next').disabled = true; return; }
+  if (movieIdx >= years.length) movieIdx = years.length - 1;
+  if (movieIdx < 0) movieIdx = 0;
+  const e = years[movieIdx];
+  const slider = $('movie-slider'); slider.max = years.length - 1; slider.value = movieIdx;
+  $('movie-play').disabled = years.length < 2;
+  $('movie-prev').disabled = movieIdx <= 0;
+  $('movie-next').disabled = movieIdx >= years.length - 1;
+  const groupTot = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).totals[0];   // FAIR/Projects/SHARE have their own total; Extras/All fall back to FAIR
+  const totalKey = groupTot ? groupTot.key : 'fair';
+  const totalName = groupTot ? groupTot.label.replace(' Total','') : 'FAIR';
+  const tot = e.totals && e.totals[totalKey] != null ? (e.totals[totalKey]*100).toFixed(0) + '%' : '—';
+  $('movie-caption').innerHTML = `<b>${e.year}</b> · ${e.n.toLocaleString()} record${e.n===1?'':'s'}${e.n < THIN ? ' *' : ''} · ${totalName} total ${tot}`;
+  const codes = (PLOT_GROUPS[plotGroup] || PLOT_GROUPS.FAIR).codes;
+  $('movie-radars').innerHTML = codes.map(code => {
+    const uc = e.byCode[code]; if (!uc) return '';
+    const color = SPIRAL_COLORS[code] || '#9167b0';
+    const label = CODE_STYLE[code] ? CODE_STYLE[code].label : code;
+    const avg = (uc.res.average * 100).toFixed(0) + '%';
+    return `<div class="movie-cell"><div class="mc-title">${escHtml(label)}</div>${movieRadar(uc.res.items, color)}<div class="mc-avg">${avg}</div></div>`;
+  }).join('');
+}
+function movieStop(){ if (movieTimer){ clearInterval(movieTimer); movieTimer = null; } const b = $('movie-play'); if (b) b.textContent = '▶ Play'; }
+function moviePlay(){
+  if (movieTimer){ movieStop(); return; }
+  const years = scoredYears(); if (years.length < 2) return;
+  if (movieIdx >= years.length - 1) movieIdx = 0;   // at the end → restart from the first year
+  $('movie-play').textContent = '⏸ Pause';
+  movieTimer = setInterval(() => {
+    if (movieIdx >= scoredYears().length - 1){ movieStop(); drawMovie(); return; }   // stop on the last year
+    movieIdx++; drawMovie();
+  }, 1100);
+}
+// step one year without playing (buttons and arrow keys); clamped to the scored-year range
+function movieStep(delta){
+  movieStop();
+  const years = scoredYears(); if (!years.length) return;
+  movieIdx = Math.max(0, Math.min(years.length - 1, movieIdx + delta));
+  drawMovie();
+}
+
+/* ---------- downloads ---------- */
+function nowStamp(){ const d=new Date(); const p=n=>String(n).padStart(2,'0'); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}T${p(d.getHours())}`; }
+function safeRepoId(){ return (history.clientId || 'repository').replace(/[^A-Za-z0-9._-]/g, '_'); }
+function triggerDownload(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+function downloadJson(){
+  if (!history) return;
+  const out = {
+    registry: 'Crossref',
+    target: { id: history.clientId, name: history.repoName, kind: history.target.kind },
+    generated: new Date().toISOString(),
+    selection: { typeId: history.resourceTypeId || '', query: history.query || '',
+                 maxPerYear: history.cap, random: history.random, dateField: dateFieldName() },
+    note: `Each period scores a sample of the works ${dateFieldName() === 'published' ? 'PUBLISHED' : 'DEPOSITED (Crossref created date)'} in that period, as those records are at the generated time (current state, including any later updates). Crossref scores use the reduced 28-concept catalog and are not comparable to DataCite scores.`,
+    years: history.years.map(e => ({
+      year: e.year, period: e.period || null, recordsScored: e.n, matchingTotal: e.matching,
+      totals: e.totals ? { fairTotal: e.totals.fair,
+        text: e.totals.FAIR_Text, identifiers: e.totals.FAIR_Identifiers, connections: e.totals.FAIR_Connections,
+        relations: e.totals.Crossref_Relations, contributorTypes: e.totals.Crossref_ContributorTypes } : null,
+      useCases: e.byCode ? Object.fromEntries(Object.entries(e.byCode).map(([code, v]) => [code, {
+        average: v.res.average,
+        concepts: v.res.items.map(i => ({ concept: i.concept, matched: i.matched, completeness: i.comp }))
+      }])) : null
+    }))
+  };
+  triggerDownload(new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }),
+    `${safeRepoId()}_historyReport__${nowStamp()}.json`);
+}
+function downloadCsv(){
+  if (!history) return;
+  const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  // one row per year × concept, plus per-year use-case averages — long form, analysis-ready
+  const rows = [['year','recordsScored','matchingTotal','useCase','concept','completeness']];
+  for (const e of history.years){
+    if (!e.byCode) continue;
+    for (const [code, v] of Object.entries(e.byCode)){
+      rows.push([e.year, e.n, e.matching ?? '', code, '(average)', v.res.average.toFixed(4)]);
+      for (const i of v.res.items) rows.push([e.year, e.n, e.matching ?? '', code, i.concept, i.comp.toFixed(4)]);
+    }
+    rows.push([e.year, e.n, e.matching ?? '', '(FAIR total)', '', e.totals.fair.toFixed(4)]);
+  }
+  const body = rows.map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
+  triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_history__${nowStamp()}.csv`);
+}
+// wide summary: one row per year matching the year-by-year table's columns (values as
+// fractions 0–1, rounded like the suite's other summary CSVs). Empty years get blank scores.
+function downloadSummary(){
+  if (!history || !history.years.length) return;
+  const csv = v => { const s = String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const round = x => x == null ? '' : Math.round(x * 10000) / 10000;
+  const headers = ['Target', dateFieldHead(), 'Records_Scored','Matching',
+    'FAIR_Total','Text','Identifiers','Connections', ...EXTRA_CODES];
+  const rows = [headers];
+  for (const e of history.years){
+    const t = e.totals;
+    rows.push([
+      history.clientId, e.year, e.n, e.matching ?? '',
+      t ? round(t.fair) : '', ...TOTAL_CODES.map(c => t ? round(t[c]) : ''),
+      ...EXTRA_CODES.map(c => t ? round(t[c]) : '')
+    ]);
+  }
+  const body = rows.map(r => r.map(csv).join(',')).join('\r\n') + '\r\n';
+  triggerDownload(new Blob([body], { type: 'text/csv' }), `${safeRepoId()}_historySummary__${nowStamp()}.csv`);
+}
+
+// compose the lines chart + title + legend into a PNG blob (shared by download and copy)
+function linesPngBlob(){
+  const chart = $('chart');
+  const scale = 2;
+  const W = chart.clientWidth || 960, chartH = 360;
+  const items = seriesFor(plotGroup);
+  const out = document.createElement('canvas');
+  const meas = out.getContext('2d');
+  const legendFont = '12px Inter, sans-serif';
+  meas.font = legendFont;
+  const pad = 16, sw = 18, gapIn = 6, gapBetween = 18, lineH = 20;
+  let x = pad, lines = 1;
+  const pos = items.map(s => {
+    const w = sw + gapIn + meas.measureText(s.label).width;
+    if (x + w > W - pad){ lines++; x = pad; }
+    const p = { x, line: lines }; x += w + gapBetween; return p;
+  });
+  const titleText = `${history.repoName} (${history.clientId}) — Crossref completeness by ${dateFieldWord(history.dateField)} year`;
+  const TITLE_LH = 18;
+  const titleLines = wrapToWidth(titleText, W - pad*2, '600 15px Inter, sans-serif');   // long names wrap
+  const titleH = 52 + (titleLines.length - 1) * TITLE_LH, legendH = lines * lineH + 10;
+  const H = titleH + chartH + legendH + pad;
+  out.width = W * scale; out.height = H * scale;
+  const ctx = out.getContext('2d'); ctx.scale(scale, scale);
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#673289'; ctx.font = '600 15px Inter, sans-serif'; ctx.textBaseline = 'top';
+  titleLines.forEach((ln, i) => ctx.fillText(ln, pad, 12 + i*TITLE_LH));
+  const groupLabel = GRID_GROUP_LABEL[plotGroup] || plotGroup;
+  ctx.fillStyle = '#6b7280'; ctx.font = '11px Inter, sans-serif';
+  const filt = selectionFilterText();
+  ctx.fillText(`${groupLabel} · up to ${history.cap} works/year${filt ? ' · ' + filt : ''} · records as of ${new Date().toISOString().slice(0,10)} (current state, incl. later updates)`, pad, 33 + (titleLines.length - 1)*TITLE_LH);
+  ctx.drawImage(chart, 0, titleH, W, chartH);
+  ctx.font = legendFont; ctx.textBaseline = 'middle';
+  items.forEach((s, i) => {
+    const y = titleH + chartH + (pos[i].line - 0.5) * lineH + 4;
+    ctx.fillStyle = s.color; ctx.fillRect(pos[i].x, y - 2, sw, s.width > 2 ? 4 : 3);
+    ctx.fillStyle = '#374151'; ctx.fillText(s.label, pos[i].x + sw + gapIn, y);
+  });
+  return new Promise((resolve, reject) => out.toBlob(b => b ? resolve(b) : reject(new Error('toBlob returned null')), 'image/png'));
+}
+async function downloadPng(){
+  if (!history || !history.years.length) return;
+  try {
+    const blob = await linesPngBlob();
+    triggerDownload(blob, `${safeRepoId()}_history_${plotGroup}__${nowStamp()}.png`);
+  } catch (e){ console.error(e); setStatus('Could not render the plot to PNG: ' + (e.message || e), true); }
+}
+async function copyLines(){
+  if (!history || !history.years.length) return;
+  const btn = $('dl-lines-copy'); const label = btn.textContent;
+  try {
+    const blob = await linesPngBlob();
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+    btn.textContent = '✓ Copied';
+  } catch (e){ console.error(e); btn.textContent = 'Copy failed'; }
+  setTimeout(() => { btn.textContent = label; }, 1600);
+}
+
+/* ---------- URL sync + deep links ---------- */
+// the target's deep-link parameter, as the other Crossref tools spell it:
+// ?issn=1932-6203 | ?member=340 | ?ror=04qw24q55 | ?client=crossref.all
+function targetParam(t){
+  return t.kind === 'journal' ? 'issn=' + encodeURIComponent(t.id)
+       : t.kind === 'member'  ? 'member=' + encodeURIComponent(t.id)
+       : t.kind === 'ror'     ? 'ror=' + encodeURIComponent(t.id)
+       : 'client=' + ALL_CROSSREF;
+}
+function syncUrl(target, typeId, query, cap, random){
+  try {
+    const url = new URL(location.href);
+    ['issn','member','ror','client','input'].forEach(k => url.searchParams.delete(k));
+    const [k, v] = targetParam(target).split('=');
+    url.searchParams.set(k, decodeURIComponent(v));
+    if (typeId) url.searchParams.set('type', typeId); else url.searchParams.delete('type');
+    if (query) url.searchParams.set('query', query); else url.searchParams.delete('query');
+    if (cap && cap !== 100) url.searchParams.set('max', cap); else url.searchParams.delete('max');
+    if (random === false) url.searchParams.set('random', '0'); else url.searchParams.delete('random');
+    if ($('date-field').value === 'published') url.searchParams.set('by', 'published'); else url.searchParams.delete('by');
+    const ymin = $('year-min').value, ymax = $('year-max').value;
+    if (ymin) url.searchParams.set('from', ymin); else url.searchParams.delete('from');
+    if (ymax) url.searchParams.set('to', ymax); else url.searchParams.delete('to');
+    history_replaceState(url);
+  } catch (e) { /* non-fatal */ }
+}
+// Carry the current selection to the sibling Crossref tools' top-bar links. Not a data handoff —
+// each tool re-fetches (the per-year "Open this year" links hand over the exact sample) — but it
+// keeps the target plus the type/query filters, which both tools read.
+function setTopbarLinks(target){
+  const t = target || parseTarget($('repo-input').value);
+  const set = (elId, href) => { const el = $(elId); if (el) el.href = href; };
+  if (!t){ set('completeness-link', 'crossrefCompleteness.html'); set('connectivity-link', 'crossrefConnectivity.html'); return; }
+  const rt = $('resource-type').value, uq = $('query-input').value.trim();
+  const filters = '?' + targetParam(t) + (rt ? '&type=' + encodeURIComponent(rt) : '') + (uq ? '&query=' + encodeURIComponent(uq) : '');
+  set('completeness-link', 'crossrefCompleteness.html' + filters);
+  set('connectivity-link', 'crossrefConnectivity.html' + filters);
+}
+function history_replaceState(url){ try { window.history.replaceState({}, '', url); } catch(e){} }
+
+/* ---------- journal / publisher autocomplete (as crossrefCompleteness.html) ---------- */
+let acTimer, acHighlight = -1, acItems = [];
+async function searchClients(q){
+  // one box searches both Crossref /journals and /members; a row's id is the canonical input
+  // token (an ISSN for journals, member:ID for publishers) that parseTarget understands
+  const journals = crFetch(`${API_BASE}/journals?query=${encodeURIComponent(q)}&rows=5`, 1)
+    .then(r => r.ok ? r.json() : null)
+    .then(j => (j?.message?.items ?? [])
+      .filter(it => Array.isArray(it.ISSN) && it.ISSN.length)
+      .map(it => ({ id: it.ISSN[0], name: (it.title || it.ISSN[0]) + ' — journal', count: it.counts?.['total-dois'] ?? null })))
+    .catch(() => []);
+  const members = crFetch(`${API_BASE}/members?query=${encodeURIComponent(q)}&rows=5`, 1)
+    .then(r => r.ok ? r.json() : null)
+    .then(j => (j?.message?.items ?? [])
+      .map(it => ({ id: `member:${it.id}`, name: (it['primary-name'] || `member ${it.id}`) + ' — publisher', count: it.counts?.['total-dois'] ?? null })))
+    .catch(() => []);
+  const [js, ms] = await Promise.all([journals, members]);
+  return [...js, ...ms];
+}
+function showAutocomplete(items){
+  const box = $('repo-autocomplete');
+  acItems = items; acHighlight = -1;
+  if (!items.length){ box.classList.remove('open'); return; }
+  box.innerHTML = items.map((it,i) =>
+    `<div class="repo-ac-item" data-id="${escAttr(it.id)}" data-idx="${i}">
+      <span class="repo-ac-name">${escHtml(it.name)}</span>
+      <span class="repo-ac-id">${escHtml(it.id)}</span>
+      ${it.count != null ? `<span class="repo-ac-count">${it.count.toLocaleString()} DOIs</span>` : ''}
+    </div>`).join('');
+  box.classList.add('open');
+  box.querySelectorAll('.repo-ac-item').forEach(el => {
+    el.addEventListener('mousedown', e => { e.preventDefault(); $('repo-input').value = el.dataset.id; box.classList.remove('open'); run(); });
+  });
+}
+function closeAutocomplete(){ $('repo-autocomplete').classList.remove('open'); acHighlight = -1; }
+$('repo-input').addEventListener('input', () => {
+  $('year-min').value = ''; $('year-max').value = ''; $('year-min').placeholder = 'auto'; $('year-max').placeholder = 'auto';
+  const q = $('repo-input').value.trim();
+  clearTimeout(acTimer);
+  if (q.length < 2 || parseTarget(q)){ closeAutocomplete(); return; }   // a typed ISSN / member:ID / ROR needs no lookup
+  $('repo-autocomplete').innerHTML = '<div class="repo-ac-loading">Searching…</div>';
+  $('repo-autocomplete').classList.add('open');
+  acTimer = setTimeout(async () => showAutocomplete(await searchClients(q)), 300);
+});
+$('repo-input').addEventListener('keydown', e => {
+  const box = $('repo-autocomplete');
+  const open = box.classList.contains('open');
+  if (e.key === 'ArrowDown'){ e.preventDefault();
+    if (open && acHighlight < acItems.length - 1){ acHighlight++; box.querySelectorAll('.repo-ac-item').forEach((el,i)=>el.classList.toggle('highlighted', i===acHighlight)); }
+  } else if (e.key === 'ArrowUp'){ e.preventDefault();
+    if (open && acHighlight > 0){ acHighlight--; box.querySelectorAll('.repo-ac-item').forEach((el,i)=>el.classList.toggle('highlighted', i===acHighlight)); }
+  } else if (e.key === 'Enter'){ e.preventDefault();
+    if (open && acHighlight >= 0 && acItems[acHighlight]){ $('repo-input').value = acItems[acHighlight].id; closeAutocomplete(); run(); }
+    else { closeAutocomplete(); run(); }
+  } else if (e.key === 'Escape'){ closeAutocomplete(); }
+});
+document.addEventListener('click', e => { if (!e.target.closest('.hero-search')) closeAutocomplete(); });
+
+/* ---------- loading tips ---------- */
+const HISTORY_TIPS = [
+  { label:'Cohorts, not a time machine', text:'Each year scores the works <strong>deposited</strong> that year <em>as they are today</em> — a strong early year can mean good metadata then, or <strong>updates</strong> since. Crossref&rsquo;s Participation Report (in Crossref Connectivity) shows the same evolution as current vs. backfile.', link:'crossrefConnectivity.html' },
+  { label:'Deposit vs. publication year', text:'<strong>Deposit year</strong> (Crossref&rsquo;s <strong>created</strong> date) is when Crossref first received the record — set by the system, so it tracks depositing practice. <strong>Publication year</strong> follows the issued date; for digitized backfiles the two can be decades apart.', link:'https://api.crossref.org/swagger-ui/index.html#/Works/get_works' },
+  { label:'Thin years', text:'Early years often have only a handful of works, so their percentages swing wildly — <strong>hollow points</strong> mark years with fewer than 10 records. Read trends from the solid ones.', link:'https://metadatagamechangers.com' },
+  { label:'Components count too', text:'Publishers that register figures and tables as <strong>components</strong> can show many more deposits than articles. Set <strong>Type</strong> to <strong>Journal Article</strong> to follow the articles alone.', link:'https://www.crossref.org/documentation/schema-library/markup-guide-record-types/components/' },
+  { label:'Rising lines', text:'A rising line means newer works are <strong>better documented</strong> — or older cohorts were never revisited. Falling lines are rarer and worth investigating: did a production workflow change?', link:'https://metadatagamechangers.com/blog' },
+  { label:'In your browser', text:'Every year is fetched from the Crossref API and scored <strong>in your browser</strong> with the same jq use-case queries as Crossref Completeness — nothing is uploaded or stored.', link:'https://metadatagamechangers.com' },
+];
+const TIPS = HISTORY_TIPS;
+let tipTimer = null, tipDelay = null, tipIndex = 0;
+function renderTip(){
+  const t = TIPS[tipIndex];
+  $('tips').innerHTML =
+    '<div class="tips-head">While you wait…</div>' +
+    '<div class="tips-label">' + t.label + '</div>' +
+    '<div class="tips-text">' + t.text + '</div>' +
+    (t.link ? '<a class="tips-link" href="' + t.link + '" target="_blank" rel="noopener">Learn more ↗</a>' : '');
+}
+function startTips(){
+  stopTips();
+  tipDelay = setTimeout(() => {
+    tipIndex = Math.floor(Math.random() * TIPS.length);
+    renderTip();
+    $('tips').style.display = '';
+    tipTimer = setInterval(() => { tipIndex = (tipIndex + 1) % TIPS.length; renderTip(); }, 4500);
+  }, 1200);
+}
+function stopTips(){ clearTimeout(tipDelay); clearInterval(tipTimer); tipDelay = tipTimer = null; $('tips').style.display = 'none'; }
+
+/* ---------- boot ---------- */
+$('repo-go').addEventListener('click', run);
+$('stop-btn').addEventListener('click', () => { stopRequested = true; });
+$('dl-png').addEventListener('click', downloadPng);
+$('dl-grid-png').addEventListener('click', downloadGridPng);
+$('dl-grid-copy').addEventListener('click', copyGrid);
+$('dl-lines-copy').addEventListener('click', copyLines);
+$('plot-group').addEventListener('change', () => { plotGroup = $('plot-group').value; renderLegend(); renderTable(); if (viewMode === 'grid') drawGrid(); else if (viewMode === 'movie') drawMovie(); else drawChart(); });
+$('view-mode').addEventListener('change', () => { viewMode = $('view-mode').value; renderView(); });
+$('movie-play').addEventListener('click', moviePlay);
+$('movie-prev').addEventListener('click', () => movieStep(-1));
+$('movie-next').addEventListener('click', () => movieStep(1));
+$('movie-slider').addEventListener('input', () => { movieStop(); movieIdx = +$('movie-slider').value; drawMovie(); });
+// arrow keys step through the years while the Movie view is active (ignore when typing in a field)
+document.addEventListener('keydown', e => {
+  if (viewMode !== 'movie' || $('movie').style.display === 'none') return;
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || ''))) return;
+  if (e.key === 'ArrowLeft'){ e.preventDefault(); movieStep(-1); }
+  else if (e.key === 'ArrowRight'){ e.preventDefault(); movieStep(1); }
+});
+$('dl-json').addEventListener('click', downloadJson);
+$('dl-summary').addEventListener('click', downloadSummary);
+$('dl-csv').addEventListener('click', downloadCsv);
+/* ---------- cross-tool sample mailbox ----------
+   Hands a year's exact sample (the RAW Crossref works — each receiver applies its own crToRecord)
+   to Crossref Completeness/Connectivity so both measure the SAME records. Small samples ride in
+   localStorage; large ones (past its ~5 MB quota) go through IndexedDB. The receiver consumes the
+   mailbox via ?input=stored; if no storage works it degrades to a fresh sample of the selection
+   (the other tools have no per-year filter, so the fallback cannot reproduce the period). */
+const MAILBOX_DB = 'mgc-handoff', MAILBOX_STORE = 'samples';
+function mailboxIdb(){
+  return new Promise((resolve, reject) => {
+    let rq; try { rq = indexedDB.open(MAILBOX_DB, 1); } catch (e){ return reject(e); }
+    rq.onupgradeneeded = () => { try { rq.result.createObjectStore(MAILBOX_STORE); } catch (e){} };
+    rq.onsuccess = () => resolve(rq.result);
+    rq.onerror = () => reject(rq.error);
+  });
+}
+async function mailboxPutIdb(key, value){
+  try {
+    const db = await mailboxIdb();
+    await new Promise((res, rej) => { const tx = db.transaction(MAILBOX_STORE, 'readwrite'); tx.objectStore(MAILBOX_STORE).put(value, key); tx.oncomplete = res; tx.onerror = () => rej(tx.error); });
+    return true;
+  } catch (e){ return false; }
+}
+function shareSampleOpen(page, key, payload, fallbackUrl){
+  try { localStorage.removeItem(key); localStorage.setItem(key, JSON.stringify(payload)); window.open(page + '?input=stored', '_blank', 'noopener'); return; }
+  catch (e){ /* too big for localStorage — IndexedDB */ }
+  const w = window.open(page + '?input=stored', '_blank');
+  mailboxPutIdb(key, payload).then(ok => { if (!ok && w){ try { w.location = fallbackUrl; } catch (e){} } })
+    .catch(() => { if (w){ try { w.location = fallbackUrl; } catch (e){} } });
+}
+// per-year handoff: open a year's exact sample in Crossref Completeness or Connectivity (the same
+// mailbox keys those tools read via ?input=stored), so both measure the same works. The payload is
+// the shape crossrefCompleteness.html sends to Connectivity, so one receiver serves both senders.
+$('hist-body').addEventListener('click', e => {
+  const a = e.target.closest('a[data-hy]'); if (!a) return;
+  e.preventDefault();
+  const entry = history && history.years.find(y => String(y.year) === a.dataset.hy);
+  if (!entry || !entry.works || !entry.works.length) return;
+  const which = a.dataset.target;
+  const page = which === 'connectivity' ? 'crossrefConnectivity.html' : 'crossrefCompleteness.html';
+  const key  = which === 'connectivity' ? 'crossref-connectivity-input' : 'crossref-completeness-input';
+  const payload = {
+    source: 'crossrefHistory', sharedFrom: `Crossref History · ${dateFieldWord(history.dateField)} year ${entry.year}`,
+    works: entry.works, target: history.target, repoName: history.repoName,
+    repoTotal: entry.matching, random: !!entry.random,
+    typeId: history.resourceTypeId || '', query: history.query || '', era: '', singleDoi: null
+  };
+  const fallback = `${page}?${targetParam(history.target)}`
+    + (history.resourceTypeId ? `&type=${encodeURIComponent(history.resourceTypeId)}` : '')
+    + (history.query ? `&query=${encodeURIComponent(history.query)}` : '')
+    + `&max=${entry.works.length}${entry.random ? '' : '&random=0'}`;
+  shareSampleOpen(page, key, payload, fallback);
+});
+if (location.protocol === 'file:') {
+  setStatus('This page is open as a local file (file://). Crossref requests will be blocked — serve it over http (e.g. "python3 -m http.server" → http://localhost:8000/crossrefHistory.html).', true);
+}
+(async () => {
+  try {
+    await whenJqReady();
+    $('repo-go').disabled = false;
+    setStatus('Engine ready. Search for a journal or publisher (or enter an ISSN, member:ID, or ROR) and click Explore.');
+    // deep links: ?issn=… | ?member=… | ?ror=… | ?client=crossref.all, plus
+    // &type=…&query=…&max=…&random=0&by=published&from=YYYY&to=YYYY
+    const params = new URLSearchParams(location.search);
+    const token = params.get('issn') ? params.get('issn')
+                : params.get('member') ? 'member:' + params.get('member')
+                : params.get('ror') ? 'ror:' + params.get('ror')
+                : params.get('client');   // crossref.all
+    if (token){
+      $('repo-input').value = token;
+      const rt = params.get('type');
+      if (rt && [...$('resource-type').options].some(o => o.value === rt)) $('resource-type').value = rt;
+      const q = params.get('query'); if (q) $('query-input').value = q;
+      const max = parseInt(params.get('max'), 10); if (max > 0) $('cap').value = Math.min(1000, max);
+      const rand = params.get('random'); if (rand != null) $('random').checked = !/^(0|false|no)$/i.test(rand);
+      $('date-field').value = /^published$/i.test(params.get('by') || '') ? 'published' : 'created';
+      const from = parseInt(params.get('from'), 10); $('year-min').value = Number.isNaN(from) ? '' : from;   // no param -> clear (browsers can restore stale form values on reload/handoff)
+      const to = parseInt(params.get('to'), 10); $('year-max').value = Number.isNaN(to) ? '' : to;
+      run();
+    }
+    setTopbarLinks();                                              // carry the selection (if any) to the sibling links
+    ['repo-input','query-input'].forEach(id => $(id).addEventListener('input', () => setTopbarLinks()));   // keep in sync as the box/filter change
+    $('resource-type').addEventListener('change', () => setTopbarLinks());
+  } catch (e){
+    console.error(e); hideProgress(); setStatus(e.message || String(e), true);
+  }
+})();
+</script>
+
+<footer style="border-top:1px solid var(--line);background:#fff;padding:1rem 2rem;margin-top:2rem;">
+  <div style="max-width:1040px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+    <div style="display:flex;align-items:center;gap:0.75rem;">
+      <a href="https://metadatagamechangers.com" target="_blank" rel="noopener">
+        <img src="https://images.squarespace-cdn.com/content/v1/52ffa419e4b05b374032e6d9/1577498408185-9LMHCVUJMNL2UBCIUOB9/Metadata+Game+Changers+Logo-Light.png?format=300w" alt="Metadata Game Changers" style="height:22px;width:auto;display:block;" onerror="this.style.display='none'" />
+      </a>
+      <span style="font-size:0.72rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Crossref History</a> · Created by <a href="https://metadatagamechangers.com" target="_blank" rel="noopener" style="color:var(--accent-dk);text-decoration:none;font-weight:500;">Metadata Game Changers</a> · Better Documentation | Better Data | Better Science</span>
+    </div>
+    <span style="font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:0.65rem;color:var(--muted);"><a href="https://github.com/Metadata-Game-Changers/recuration-watch/issues/new/choose" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">Report an issue ↗</a> &nbsp;·&nbsp; <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:none;">CC BY-NC 4.0</a> &nbsp;·&nbsp; Live data from <a href="https://api.crossref.org" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">api.crossref.org</a></span>
+  </div>
+</footer>
+<!-- Google Analytics (shared consent with the rest of the suite via localStorage 'rcw-ga') -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-9JQRWY72HW"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  try{ if(localStorage.getItem('rcw-ga')==='declined') window['ga-disable-G-9JQRWY72HW']=true; }catch(e){}
+  gtag('js', new Date());
+  gtag('config', 'G-9JQRWY72HW');
+</script>
+<!-- Analytics consent banner -->
+<div id="analytics-banner">
+  <span>This site uses Google Analytics for anonymous usage statistics. <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Google Privacy Policy ↗</a></span>
+  <div id="analytics-banner-btns">
+    <button class="ab-btn ab-btn-ok" type="button" onclick="hideBanner('accepted')">OK</button>
+    <button class="ab-btn ab-btn-no" type="button" onclick="hideBanner('declined')">Decline</button>
+  </div>
+</div>
+<script>
+  function hideBanner(choice){
+    try{ localStorage.setItem('rcw-ga', choice); }catch(e){}
+    document.getElementById('analytics-banner').style.display='none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  }
+  (function(){
+    var choice=null; try{ choice=localStorage.getItem('rcw-ga'); }catch(e){}
+    if (choice) document.getElementById('analytics-banner').style.display='none';
+    if (choice === 'declined') window['ga-disable-G-9JQRWY72HW'] = true;
+  })();
+</script>
+</body>
+</html>

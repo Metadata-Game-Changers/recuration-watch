@@ -233,6 +233,7 @@
       <a href="crossrefTools.html" target="_blank" rel="noopener">Crossref Tools ↗</a>
       <a href="crossrefGuide.html" target="_blank" rel="noopener">Crossref Guide ↗</a>
       <a id="connectivity-link" href="crossrefConnectivity.html" target="_blank" rel="noopener">Crossref Connectivity ↗</a>
+      <a id="history-link" href="crossrefHistory.html" target="_blank" rel="noopener">Crossref History ↗</a>
       <a href="crossrefUseCases.html" target="_blank" rel="noopener">Crossref Use Cases ↗</a>
       <a href="DataCite-Crossref-Crosswalk.html" target="_blank" rel="noopener">DataCite - Crossref Crosswalk ↗</a>
       </div>
@@ -1882,6 +1883,11 @@ function setConnectivityLink(target, typeId, query, cap, era){
     + (query ? '&query=' + encodeURIComponent(query) : '')
     + (cap ? '&max=' + cap : '');
   el.title = 'Measure identifier connectivity for this selection — after a run it hands over the exact same sample';
+  // Crossref History takes the same target + type/query (it samples per year, so no era or max)
+  const h = $('history-link');
+  if (h) h.href = 'crossrefHistory.html?' + p
+    + (typeId ? '&type=' + encodeURIComponent(typeId) : '')
+    + (query ? '&query=' + encodeURIComponent(query) : '');
 }
 /* ---------- shared-sample mailbox: hand the EXACT sampled works to Crossref Connectivity ----------
    so both tools measure the same records (a re-drawn random sample would differ). Small samples ride
@@ -1910,6 +1916,43 @@ function cxShareOpen(page, key, payload, fallbackUrl){
   cxMailboxPutIdb(key, payload).then(ok => { if (!ok && w){ try { w.location = fallbackUrl; } catch (e){} } })
     .catch(() => { if (w){ try { w.location = fallbackUrl; } catch (e){} } });
 }
+// receiver side: Crossref History hands a year's exact sample here (key crossref-completeness-input,
+// same payload shape this page sends to Connectivity). Consumed once via ?input=stored.
+const CX_RECEIVE_KEY = 'crossref-completeness-input';
+async function cxMailboxTake(key){
+  try { const raw = localStorage.getItem(key); if (raw){ localStorage.removeItem(key); return JSON.parse(raw); } } catch (e){ /* fall through to IndexedDB */ }
+  for (let i = 0; i < 10; i++){
+    let v = null, failed = false;
+    try { const db = await cxMailboxIdb(); v = await new Promise((res, rej) => { const tx = db.transaction(CX_MAILBOX_STORE, 'readonly'); const r = tx.objectStore(CX_MAILBOX_STORE).get(key); r.onsuccess = () => res(r.result ?? null); r.onerror = () => rej(r.error); }); }
+    catch (e){ failed = true; }
+    if (failed) return null;
+    if (v){
+      try { const db = await cxMailboxIdb(); await new Promise(res => { const tx = db.transaction(CX_MAILBOX_STORE, 'readwrite'); tx.objectStore(CX_MAILBOX_STORE).delete(key); tx.oncomplete = res; tx.onerror = res; }); } catch (e){}
+      return v;
+    }
+    await new Promise(r => setTimeout(r, 150));   // the sender may still be writing a large sample
+  }
+  return null;
+}
+async function loadSharedSample(){
+  let payload = null;
+  try { payload = await cxMailboxTake(CX_RECEIVE_KEY); } catch (e){ payload = null; }
+  if (!payload || !Array.isArray(payload.works) || !payload.works.length || !payload.target) return false;
+  const t = payload.target;
+  if (t.token) $('repo-input').value = t.token;
+  if (payload.typeId && [...$('resource-type').options].some(o => o.value === payload.typeId)) $('resource-type').value = payload.typeId;
+  if (payload.query) $('query-input').value = payload.query;
+  if (payload.era && [...$('era').options].some(o => o.value === payload.era)) $('era').value = payload.era;
+  $('cap').value = Math.min(10000, payload.works.length);
+  $('random').checked = payload.random !== false;
+  const records = payload.works.map(crToRecord);   // this page's own transform, like any fetched sample
+  setConnectivityLink(t, payload.typeId || '', payload.query || '', records.length, payload.era || '');
+  $('repo-go').disabled = true; startTips();
+  try { await analyze(t, records, payload.repoTotal ?? null, payload.random !== false, payload.typeId || '', payload.query || '', payload.era || '', payload.singleDoi || null, payload.works, payload.sharedFrom || 'Crossref History'); }
+  catch (e){ console.error(e); hideProgress(); setStatus(e.message || String(e), true); }
+  finally { stopTips(); $('repo-go').disabled = false; }
+  return true;
+}
 $('connectivity-link').addEventListener('click', ev => {
   if (!lastRun || !lastRun.rawWorks || !lastRun.rawWorks.length) return;   // no sample yet — let the plain link navigate
   ev.preventDefault();
@@ -1921,9 +1964,9 @@ $('connectivity-link').addEventListener('click', ev => {
     $('connectivity-link').getAttribute('href'));   // fallback: the selection deep link setConnectivityLink built
 });
 // score a set of (transformed) records — shared by run() and the single-DOI path
-async function analyze(target, records, repoTotal, usedRandom, typeId, query, era, singleDoi, rawWorks){
+async function analyze(target, records, repoTotal, usedRandom, typeId, query, era, singleDoi, rawWorks, sharedFrom){
   const meta = await fetchTargetMeta(target);
-  renderSelection(target.token, meta, records.length, usedRandom, repoTotal, typeId, query, null, singleDoi, era);
+  renderSelection(target.token, meta, records.length, usedRandom, repoTotal, typeId, query, sharedFrom || null, singleDoi, era);
   const sampleNote = singleDoi ? `DOI ${singleDoi}` : (usedRandom ? `random sample of ${records.length}` : `${records.length} sequential`);
 
   setStatus(`Scoring ${SPIRALS.length} use cases over ${records.length} works…`);
@@ -1936,7 +1979,7 @@ async function analyze(target, records, repoTotal, usedRandom, typeId, query, er
   showDetail();
   hideProgress();
   { const cl = $('connectivity-link'); if (cl) cl.textContent = 'Share with Crossref Connectivity ↗'; }   // now hands over this exact sample
-  setStatus(`Done — ${sampleNote}${singleDoi ? '' : ` work${records.length===1?'':'s'}`}, FAIR Total (Crossref) ${fmtPct(total)}.`);
+  setStatus(`Done — ${sampleNote}${singleDoi ? '' : ` work${records.length===1?'':'s'}`}${sharedFrom ? `, shared from ${sharedFrom}` : ''}, FAIR Total (Crossref) ${fmtPct(total)}.`);
 }
 // A single DOI can be scored on its own (like Re-Curation Watch) — fetch just that record and
 // analyse it as a one-record sample of its repository.
@@ -2133,6 +2176,11 @@ whenJqReady().then(async ()=>{
     //   ?issn=1932-6203 | ?member=340 | ?ror=04qw24q55 | ?client=crossref.all | ?doi=10.…
     //   plus &type=…&query=…&max=…&random=0 to override the form defaults.
     const params = new URLSearchParams(location.search);
+    if (params.get('input') === 'stored'){                      // a shared sample from Crossref History
+      if (await loadSharedSample()) return;
+      setStatus('No shared sample was found — it may already have been opened. Search for a journal or publisher and click Explore.', true);
+      return;
+    }
     const doiParam = params.get('doi');
     const token = params.get('issn') ? params.get('issn')
                 : params.get('member') ? 'member:' + params.get('member')
