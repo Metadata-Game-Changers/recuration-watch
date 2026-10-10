@@ -113,7 +113,7 @@
 
   <div class="note"><b>These are prototypes.</b> The Crossref tools are newer than the DataCite suite and are still being refined. They read Crossref's live data; the scores they produce are honest but the catalog is deliberately smaller than the DataCite one (see below). Use the Feedback link in the top bar to report issues or suggest improvements.</div>
 
-  <div class="note key"><b>You only need one thing to start:</b> a journal name or <b>ISSN</b> (e.g. <code>1932-6203</code>), a Crossref member (publisher) entered as <b>member:ID</b> (e.g. <code>member:340</code>), or an organization's <b>ROR</b> (e.g. <code>ror:04qw24q55</code>). Paste a single <b>DOI</b> to look at one record. Both tools take the same input, and they hand your selection to each other as you go.</div>
+  <div class="note key"><b>You only need one thing to start:</b> a journal name or <b>ISSN</b> (e.g. <code>1932-6203</code>), a Crossref member (publisher) entered as <b>member:ID</b> (e.g. <code>member:340</code>), or an organization's <b>ROR</b> (e.g. <code>ror:04qw24q55</code>). Paste a single <b>DOI</b> to look at one record. All three tools take the same input, and they hand your selection — and your samples — to each other as you go.</div>
 
   <h2 class="sec">Your first session, step by step</h2>
   <p>Work through these in order the first time. It takes about twenty minutes and ends with a concrete list of records to improve.</p>
@@ -188,15 +188,26 @@
       <div class="look"><b>What you'll see:</b> a radar plot comparing <b>backfile</b> records against <b>current</b> ones (last three calendar years) across fourteen checks — where the current line reaches past the backfile line, recent metadata is richer than older records. Pick a content type, open the <b>All types</b> strip for every type at a glance, and <b>Copy plot</b> / <b>Copy strip</b> to drop the figure into a slide.</div>
       <div class="look">Crossref's public report at <code>crossref.org/members/prep</code> shows ten of these checks; the radar plots all fourteen from the API, adding <b>Affil RORs</b>, <b>Funder RORs</b>, <b>Update policies</b> (Crossmark), and <b>Descriptions</b>.</div>
       <p>This answers the question a single completeness score can't: <em>have these metadata been improving?</em></p>
-      <p>For a finer view, open <a href="crossrefHistory.html" target="_blank" rel="noopener"><b>Crossref History</b></a>: it samples your works for every <b>deposit year</b>, scores each year with the same FAIR use cases, and plots the trend lines — with a radar grid and a year-by-year movie. Any year's exact sample can be opened in Completeness or Connectivity with one click.</p>
     </div>
   </div>
 
   <div class="step">
     <div class="step-n">8</div>
     <div class="step-b">
+      <div class="step-t"><a href="crossrefHistory.html" target="_blank" rel="noopener">Watch completeness change year by year</a> — <b>Crossref History</b></div>
+      <p>The evolution radar compares two eras. <b>Crossref History</b> goes finer: it samples your works for <em>every</em> <b>deposit year</b> (when Crossref first received each record), scores each year with the same FAIR use cases as Completeness, and plots the trend. Enter the same journal, <code>member:ID</code>, or ROR and press <b>Explore</b>; years fill in one by one.</p>
+      <div class="look"><b>What you'll see:</b> a <b>Lines</b> plot — the FAIR Total plus Text, Identifiers, and Connections, one point per year — with the year-by-year numbers in a table below. Switch <b>View</b> to <b>Grid</b> for a radar plot per use case per year, or <b>Movie</b> to step through the years. A jump in a line marks the year a production change landed — ORCIDs collected at submission, RORs added to affiliations, references deposited.</div>
+      <div class="look">Every row has <b>Open this year → Completeness / Connectivity</b>: it hands that year's <em>exact</em> sample to the other tool, so you can see which concepts or which names changed between two years. <b>Group by</b> switches to <b>publication year</b>; for backfiles deposited long after publication the two views can differ by decades.</div>
+      <p>Thin years (fewer than ten works) are drawn hollow — read trends from the solid points. Set <b>Type</b> to <b>Journal Article</b> if your member also registers components (figures, tables), which can outnumber the articles.</p>
+      <a class="try" href="crossrefHistory.html?member=4374&type=journal-article" target="_blank" rel="noopener">Try it on an example publisher (eLife, journal articles) →</a>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">9</div>
+    <div class="step-b">
       <div class="step-t">Take it with you</div>
-      <p>Both tools export. Reports as <b>JSON</b>, <b>HTML</b>, or <b>PDF</b>; the numbers as <b>CSV</b>; charts and the evolution radar as <b>PNG</b> (save or copy straight to the clipboard). Every view is also a plain URL — bookmark it or paste it to a colleague and they'll see exactly what you saw.</p>
+      <p>All three tools export. Reports as <b>JSON</b>, <b>HTML</b>, or <b>PDF</b>; the numbers as <b>CSV</b>; charts, the evolution radar, and the history plots as <b>PNG</b> (save or copy straight to the clipboard). Every view is also a plain URL — bookmark it or paste it to a colleague and they'll see exactly what you saw.</p>
       <p>For bulk work across many members, the repository also ships companion Python scripts (<code>crossrefParticipation.py</code>, <code>comparePrepConnectivity.py</code>, <code>prepBoxes.py</code>) that harvest Participation Reports and compare them to sampled connectivity.</p>
     </div>
   </div>
@@ -227,6 +238,8 @@
   <div class="note"><b>Connectivity percentages are occurrence-based.</b> The bar's % is identified occurrences ÷ all occurrences. The colored segments count <b>distinct entities</b> — one author in 40 works is one entity. One view tells you how much of the metadata is connected, the other how many people or organizations you'd have to look up.</div>
 
   <div class="note"><b>Metadata Evolution is Crossref's own numbers.</b> The Participation Report radar is computed by Crossref over <em>all</em> of a member's records — not the sample the bars above use — so it and the sampled bars can differ. <b>Current</b> means published in the current calendar year or the two previous ones; everything older is <b>backfile</b>. The radar is only shown for a <code>member:ID</code> target (Crossref publishes these reports per member).</div>
+
+  <div class="note"><b>Crossref History is a cohort view.</b> Each year is scored using the records as they are <em>today</em>. A strong early year can mean the metadata was good when deposited — or that it was updated since. The deposit year is Crossref's <code>created</code> date, set by the system when the record first arrived, so it follows depositing practice rather than the publication date.</div>
 
   <h2 class="sec">Focusing on subsets for a specific project</h2>
   <p>Four controls, on both Completeness and Connectivity:</p>
