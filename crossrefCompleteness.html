@@ -362,7 +362,7 @@
         <h2>Use case</h2>
         <button class="copy-btn" id="copy-radar" type="button" title="Copy this plot as an image" style="display:none">⧉ Copy chart</button>
       </div>
-      <div class="spiral-host" id="spiral-host"><svg id="radar" viewBox="0 0 460 460" width="460" height="460"></svg></div>
+      <div class="spiral-host" id="spiral-host"><svg id="radar" viewBox="0 0 600 460" width="600" height="460"></svg></div>
       <div class="legend" id="legend"></div>
     </div>
     <div class="card">
@@ -1045,7 +1045,9 @@ async function copyValues(){
 
 function renderRadar(items, color, title){
   const svg = $('radar');
-  const W = 460, cx = W/2, cy = W/2, R = 165;
+  // wider than tall: the perimeter labels sit at 1.12·R and run up to ~75px outward, so the
+  // canvas needs that much room beyond the ring on each side (460 wide clipped them; Project Items needs ~570)
+  const W = 600, H = 460, cx = W/2, cy = H/2, R = 165;
   const N = items.length;
   const ns = 'http://www.w3.org/2000/svg';
   svg.innerHTML = '';
@@ -1392,7 +1394,9 @@ function downloadSummary(){
 /* ---------- shareable HTML report (plots + tables) ---------- */
 // Standalone SVG radial plot as a string (mirrors renderRadar), so the report is fully self-contained.
 function radarSvgMarkup(items, color, labels = true){
-  const W = 520, cx = W/2, cy = W/2, R = 185, N = items.length || 1;
+  // labeled radars are wider than tall so the perimeter labels are not clipped; unlabeled
+  // (strip / grid) cells stay square
+  const W = labels ? 600 : 520, H = 520, cx = W/2, cy = H/2, R = 185, N = items.length || 1;
   const ang = i => (i/N) * 2 * Math.PI - Math.PI/2;
   const pt  = (i,r) => [ +(cx + Math.cos(ang(i))*R*r).toFixed(1), +(cy + Math.sin(ang(i))*R*r).toFixed(1) ];
   let g = '';
@@ -1409,7 +1413,7 @@ function radarSvgMarkup(items, color, labels = true){
       `<tspan x="${x}" dy="${k===0 ? (-(lines.length-1)/2*LH).toFixed(1) : LH}">${escHtml(ln)}</tspan>`).join('');
     g += `<text x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle" font-size="8" fill="#6b7280">${tspans}</text>`;
   });
-  return `<svg viewBox="0 0 ${W} ${W}" width="${W}" height="${W}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
+  return `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">${g}</svg>`;
 }
 
 function reportTableMarkup(res, color){
@@ -1474,8 +1478,8 @@ function buildReportHtml(){
     .uc-score{font-size:.72rem;font-weight:500;color:#6b7280}
     .uc-desc{font-size:.78rem;color:#4b4f5e;margin:.2rem 0 .8rem}
     .uc-body{display:flex;gap:1.2rem;flex-wrap:wrap;align-items:flex-start}
-    .uc-plot{flex:0 0 460px;max-width:100%;text-align:center}
-    .uc-plot svg{width:100%;height:auto;max-width:520px}
+    .uc-plot{flex:0 0 520px;max-width:100%;text-align:center}
+    .uc-plot svg{width:100%;height:auto;max-width:600px}
     .uc-cap{font-size:.72rem;color:#6b7280;margin-top:.2rem}
     .uc-table{flex:1;min-width:280px}
     table{border-collapse:collapse;width:100%;font-size:.78rem}
@@ -1614,7 +1618,7 @@ async function downloadPdfReport(){
   const radars = {};
   for (const code of order){
     const e = lastRun.byCode[code]; if (!e) continue;
-    try { radars[code] = await svgToPngDataUrl(radarSvgMarkup(e.res.items, SPIRAL_COLORS[code] || '#9167b0'), 520, 520, 2); }
+    try { radars[code] = await svgToPngDataUrl(radarSvgMarkup(e.res.items, SPIRAL_COLORS[code] || '#9167b0'), 600, 520, 2); }
     catch { radars[code] = null; }
   }
   const C = { ink:[31,35,48], muted:[107,114,128], accentDk:[103,50,137], accent:[145,103,176], line:[230,227,236], track:[238,240,244] };
@@ -1679,7 +1683,7 @@ async function downloadPdfReport(){
       const rgb = hexToRgb(SPIRAL_COLORS[code] || '#9167b0');
       // Radial plot on the left, concept table on the right (like the HTML report), kept together as
       // one atomic block so the table is never separated from its plot by a page break.
-      const radarSize = 250, rowH = 12, tableH = 14 + res.items.length * rowH;
+      const radarSize = 250, radarW = Math.round(radarSize * 600 / 520), rowH = 12, tableH = 14 + res.items.length * rowH;
       const blockH = Math.max(radarSize, tableH);
       ensure(16 + 14 + blockH + 14);
       // title + score
@@ -1692,9 +1696,9 @@ async function downloadPdfReport(){
       y += 14;
       const blockTop = y;
       // radial plot (left)
-      if (radars[code]) doc.addImage(radars[code], 'PNG', x0, blockTop, radarSize, radarSize);
+      if (radars[code]) doc.addImage(radars[code], 'PNG', x0, blockTop, radarW, radarSize);
       // concept table (right)
-      const tableX = x0 + radarSize + 24, tableW = contentW - radarSize - 24;
+      const tableX = x0 + radarW + 24, tableW = contentW - radarW - 24;
       const barW = 90, barX = tableX + tableW - barW - 46, pctX = tableX + tableW;
       let ty = blockTop + 7;
       doc.setFont('helvetica','bold'); doc.setFontSize(7); ink(C.muted);
@@ -1750,7 +1754,7 @@ function downloadMetadata(){
 function radarToPngBlob(scale){
   scale = scale || 2;
   return new Promise((resolve, reject) => {
-    const W = 460, radarH = 460, NAME_LH = 18;
+    const W = 600, radarH = 460, NAME_LH = 18;   // the on-screen radar's 600×460 canvas
     const idx = selectedSpiralIdx;
     const sp = SPIRALS[idx];
     const res = (sp && lastRun.byCode[sp.code]) ? lastRun.byCode[sp.code].res : null;
