@@ -136,10 +136,10 @@
       "notMeasured": "Keyword Value URI, Keyword Vocabulary URI, Resource Author Type, Publisher Identifier, Publisher Identifier Type, Publisher Identifier Scheme URI, Resource Author Affiliation Identifier Scheme URI, Award URI" },
     "FAIR_Connections": { "title": "FAIR Connections", "color": "#3a9d6e",
       "purpose": "Connections that support interoperability, understanding, and trust — related works, rights, formats, references.",
-      "expressible": "8 of the 18 DataCite FAIR Connections concepts, plus References (from the DataCite Relations catalog)",
-      "notMeasured": "CitedBy, DescribedBy, Distribution Contact, Resource Contact, HasMetadata, Resource Size, RightsHolder, Methods, Technical Information, ReferencedBy" }
+      "expressible": "7 of the 18 DataCite FAIR Connections concepts, plus References (from the DataCite Relations catalog) and Rights URL (from the DataCite Contacts catalog)",
+      "notMeasured": "Rights (Crossref carries no rights statement, only the license URL), CitedBy, DescribedBy, Distribution Contact, Resource Contact, HasMetadata, Resource Size, RightsHolder, Methods, Technical Information, ReferencedBy" }
   },
-  "approximations": ["Date Submitted", "Date Available", "Rights", "Resource Format"],
+  "approximations": ["Date Submitted", "Date Available", "Resource Format"],
   "paths": {
     "FAIR_Text": [
       {"concept": "Abstract", "path": "abstract (JATS markup, tags stripped)"},
@@ -166,7 +166,7 @@
     ],
     "FAIR_Connections": [
       {"concept": "Resource URL", "path": "resource URL (the DOI resolution target)"},
-      {"concept": "Rights", "path": "license[].URL (license URLs stand in for rights statements)"},
+      {"concept": "Rights URL", "path": "license[].URL (the DataCite Rights URI concept, scored in Connections)"},
       {"concept": "SupplementTo", "path": "relation.is-supplement-to"},
       {"concept": "ReviewedBy", "path": "relation.has-review"},
       {"concept": "DocumentedBy", "path": "relation.is-documented-by (in the schema, rarely deposited)"},

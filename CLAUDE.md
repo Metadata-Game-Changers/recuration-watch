@@ -46,10 +46,11 @@ self-contained HTML file with inline CSS + vanilla JS — no framework, no bundl
   (unadvertised sentinel); a work→DataCite-record transform (`crToRecord`) lets the engines
   and jq queries run verbatim; all API calls go through `crFetch` (polite pool `mailto=` +
   retries — Crossref's anonymous pool intermittently drops CORS headers). Completeness embeds
-  a **reduced catalog** (3 FAIR use cases, 27 Crossref-expressible concepts, filtered from
-  `FAIR_spirals.json` with a per-use-case exclusions note) — regenerate that embed when the
-  catalog changes; its About tab documents every concept's Crossref field and the four
-  approximations. Crossref scores are **not comparable** to DataCite scores.
+  a **reduced catalog** (3 FAIR use cases, 28 Crossref-expressible concepts, filtered from
+  `FAIR_spirals.json` with a per-use-case exclusions note; Connections also carries References
+  from the Relations catalog and Rights URL = the DataCite Rights URI concept from Contacts,
+  scored via `rightsUri` ← `license[].URL`) — regenerate that embed when the catalog changes;
+  its About tab documents every concept's Crossref field and the three approximations. Crossref scores are **not comparable** to DataCite scores.
 - `crossrefHistory.html` — **Crossref History** (prototype): the Crossref port of
   `repositoryHistory.html`. Samples each **deposit year** (Crossref `created`, the analog of
   DataCite registered; `?by=published` groups by publication year instead — for backfiles the
