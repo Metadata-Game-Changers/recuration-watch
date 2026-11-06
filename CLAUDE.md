@@ -45,7 +45,11 @@ self-contained HTML file with inline CSS + vanilla JS — no framework, no bundl
   unadvertised): targets are journal ISSN / `member:ID` / `ror:…` / DOI / `crossref.all`
   (unadvertised sentinel); a work→DataCite-record transform (`crToRecord`) lets the engines
   and jq queries run verbatim; all API calls go through `crFetch` (polite pool `mailto=` +
-  retries — Crossref's anonymous pool intermittently drops CORS headers). Completeness embeds
+  retries — Crossref's anonymous pool intermittently drops CORS headers). **Grant records**
+  (type `grant`, registered by funders) keep everything under `project[]` (title, description,
+  lead-/co-lead-/investigator, `funding[].funder`) plus a top-level `award`; `crToRecord` folds
+  them in. `project`/`award` are not `select`-able on `/works`, so every fetch peeks with
+  `facet=type-name:*` and drops `select=` when the selection contains grants (`crHasGrants`). Completeness embeds
   a **reduced catalog** (3 FAIR use cases, 28 Crossref-expressible concepts, filtered from
   `FAIR_spirals.json` with a per-use-case exclusions note; Connections also carries References
   from the Relations catalog and Rights URL = the DataCite Rights URI concept from Contacts,

@@ -493,6 +493,25 @@ async function crFetch(url, retries = 3){
    chair → contributors with contributorType, funder DOI/id[] → funderIdentifier (ROR preferred),
    license URL → rightsUri. */
 const CR_SELECT = 'DOI,title,author,editor,translator,chair,funder,license,publisher,container-title,issued,type,member';
+// does a rows=0 peek (with facet=type-name:*) report any grant records in the selection?
+const crHasGrants = pj => ((((pj || {}).message || {}).facets || {})['type-name'] || {}).values?.Grant > 0;
+// Crossref GRANT records (type "grant", registered by funders) keep their people and funders
+// under project[] — lead-/co-lead-/investigator and funding[].funder — with the award number
+// at the top level; author/funder are absent. (project/award are not `select`-able, so a
+// selection containing grants is fetched whole.)
+function crGrantParts(w){
+  const projects = Array.isArray(w.project) ? w.project.filter(p => p && typeof p === 'object') : [];
+  const people = [], funders = [];
+  for (const p of projects){
+    for (const role of ['lead-investigator', 'co-lead-investigator', 'investigator'])
+      for (const i of (Array.isArray(p[role]) ? p[role] : []))
+        if (i && typeof i === 'object')
+          people.push((i.family || i.name) ? i : { ...i, name: Array.isArray(i['alternate-name']) ? i['alternate-name'][0] : undefined });
+    for (const f of (Array.isArray(p.funding) ? p.funding : []))
+      if (f && f.funder && typeof f.funder === 'object') funders.push(f.funder);
+  }
+  return { people, funders };
+}
 function crPerson(p){
   const name = p.name || [p.given, p.family].filter(Boolean).join(' ');
   const aff = (Array.isArray(p.affiliation) ? p.affiliation : []).filter(a => a && a.name).map(a => {
@@ -513,12 +532,16 @@ function crToRecord(w){
   for (const [key, type] of [['editor','Editor'], ['translator','Translator'], ['chair','Chair']])
     for (const p of (Array.isArray(w[key]) ? w[key] : []))
       if (p && (p.family || p.name)) contributors.push({ ...crPerson(p), contributorType: type });
-  const funding = (Array.isArray(w.funder) ? w.funder : []).filter(f => f && f.name).map(f => {
+  const grant = crGrantParts(w);
+  // works: funder[]; grants: project[].funding[].funder. Named funders only — the connectivity
+  // model groups by name (an id-only funder has nothing to look up)
+  const funding = [...(Array.isArray(w.funder) ? w.funder : []), ...grant.funders].filter(f => f && f.name).map(f => {
     const ids = Array.isArray(f.id) ? f.id.filter(x => x && x.id) : [];
     const ror = ids.find(x => String(x['id-type']).toUpperCase() === 'ROR');
-    const idv = (ror && ror.id) || (f.DOI ? 'https://doi.org/' + f.DOI : (ids[0] && ids[0].id));
+    const doiId = f.DOI || (ids.find(x => String(x['id-type']).toUpperCase() === 'DOI') || {}).id;   // grants carry the Registry DOI in id[]
+    const idv = (ror && ror.id) || (doiId ? (/^https?:\/\//i.test(doiId) ? doiId : 'https://doi.org/' + doiId) : (ids[0] && ids[0].id));
     return { funderName: f.name, funderIdentifier: idv || undefined,
-             funderIdentifierType: ror ? 'ROR' : (f.DOI ? 'Crossref Funder ID' : (ids[0] ? ids[0]['id-type'] : undefined)) };
+             funderIdentifierType: ror ? 'ROR' : (doiId ? 'Crossref Funder ID' : (ids[0] ? ids[0]['id-type'] : undefined)) };
   });
   const year = w.issued && Array.isArray(w.issued['date-parts']) && Array.isArray(w.issued['date-parts'][0])
     ? w.issued['date-parts'][0][0] : undefined;
@@ -529,7 +552,7 @@ function crToRecord(w){
       titles: (Array.isArray(w.title) && w.title.length ? w.title : ['(untitled)']).map(t => ({ title: t })),
       publicationYear: typeof year === 'number' ? year : undefined,
       publisher: w.publisher,
-      creators: (Array.isArray(w.author) ? w.author : []).filter(p => p && (p.family || p.name)).map(crPerson),
+      creators: [...(Array.isArray(w.author) ? w.author : []), ...grant.people].filter(p => p && (p.family || p.name)).map(crPerson),   // grants: the investigators
       contributors,
       fundingReferences: funding,
       rightsList: (Array.isArray(w.license) ? w.license : []).filter(l => l && l.URL)
@@ -560,17 +583,20 @@ async function fetchWorks(target, cap, random, typeId, query, era){
   setStatus('Fetching works…');
   setProgressIndeterminate();
   const filters = [targetFilter(target), typeId ? 'type:' + typeId : '', eraFilter(era)].filter(Boolean).join(',');
-  const common = (filters ? `filter=${encodeURIComponent(filters)}&` : '')
-               + (query ? `query=${encodeURIComponent(query)}&` : '')
-               + `select=${encodeURIComponent(CR_SELECT)}`;
+  const base = (filters ? `filter=${encodeURIComponent(filters)}&` : '')
+             + (query ? `query=${encodeURIComponent(query)}&` : '');
+  // `select=` trims each work to the fields the transform reads — but a grant record's fields
+  // (project, award) are not selectable, so a selection that contains grants is fetched whole
+  let common = base + `select=${encodeURIComponent(CR_SELECT)}`;
   // peek at the matching total: random draws only help when the set is larger than the cap
   let effectiveRandom = random;
   try {
-    const peek = await crFetch(`${API_BASE}/works?${common}&rows=0`);
+    const peek = await crFetch(`${API_BASE}/works?${base}rows=0&facet=type-name:*`);
     if (peek.ok){
       const pj = await peek.json();
       const t = pj.message && typeof pj.message['total-results'] === 'number' ? pj.message['total-results'] : null;
       if (t != null){ repoTotal = t; if (t <= cap) effectiveRandom = false; }
+      if (crHasGrants(pj)) common = base.replace(/&$/, '');
     }
   } catch { /* best-effort */ }
   if (!effectiveRandom) setProgress(0);

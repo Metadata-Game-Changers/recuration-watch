@@ -209,14 +209,34 @@ def _cr_person(p):
     return {'name': name, 'orcid': bool(p.get('ORCID')), 'affiliations': affs}
 
 
+def _cr_grant_parts(w):
+    """Crossref GRANT records (type grant, registered by funders) keep people and funders under
+    project[] — lead-/co-lead-/investigator and funding[].funder; author/funder are absent."""
+    people, funders = [], []
+    for p in (w.get('project') or []):
+        if not isinstance(p, dict):
+            continue
+        for role in ('lead-investigator', 'co-lead-investigator', 'investigator'):
+            for i in (p.get(role) or []):
+                if isinstance(i, dict):
+                    if not (i.get('family') or i.get('name')) and i.get('alternate-name'):
+                        i = dict(i, name=i['alternate-name'][0])
+                    people.append(i)
+        for f in (p.get('funding') or []):
+            if isinstance(f, dict) and isinstance(f.get('funder'), dict):
+                funders.append(f['funder'])
+    return people, funders
+
+
 def normalize_crossref(w):
-    creators = [x for x in (_cr_person(p) for p in (w.get('author') or [])) if x]
+    g_people, g_funders = _cr_grant_parts(w)
+    creators = [x for x in (_cr_person(p) for p in list(w.get('author') or []) + g_people) if x]
     contributors = []
     for key in ('editor', 'translator', 'chair'):
         contributors += [x for x in (_cr_person(p) for p in (w.get(key) or [])) if x]
     funders = [{'name': f.get('name'),
                 'id': bool(f.get('DOI') or (f.get('id') or []))}
-               for f in (w.get('funder') or []) if isinstance(f, dict) and f.get('name')]
+               for f in list(w.get('funder') or []) + g_funders if isinstance(f, dict) and f.get('name')]
     return {'creators': creators, 'contributors': contributors,
             'funders': funders, 'publisher': None, 'rights': []}
 
@@ -236,12 +256,16 @@ CR_SELECT = 'DOI,author,editor,translator,chair,funder'
 def fetch_crossref(token, cap, type_id, era, query):
     """token is issn:… / member:… / ror-id:… — a Crossref /works filter clause."""
     filters = ','.join(f for f in [token, f'type:{type_id}' if type_id else '', era_filter(era)] if f)
-    common = (f'{CROSSREF_API}/works?filter={urllib.parse.quote(filters)}'
-              f'&select={urllib.parse.quote(CR_SELECT)}&mailto={urllib.parse.quote(MAILTO)}')
+    base = f'{CROSSREF_API}/works?filter={urllib.parse.quote(filters)}&mailto={urllib.parse.quote(MAILTO)}'
     if query:
-        common += f'&query={urllib.parse.quote(query)}'
-    peek = api_get(f'{common}&rows=0')
+        base += f'&query={urllib.parse.quote(query)}'
+    peek = api_get(f'{base}&rows=0&facet=type-name:*')
     total = (peek.get('message') or {}).get('total-results') or 0
+    # select= trims each work to the fields read — but a grant record's project/award are not
+    # selectable, so a selection that contains grants is fetched whole
+    facets = ((peek.get('message') or {}).get('facets') or {}).get('type-name') or {}
+    has_grants = (facets.get('values') or {}).get('Grant', 0) > 0
+    common = base if has_grants else f'{base}&select={urllib.parse.quote(CR_SELECT)}'
     if not total:
         return [], 0
     works, seen, requests = [], set(), 0

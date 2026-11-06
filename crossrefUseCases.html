@@ -142,24 +142,24 @@
   "approximations": ["Date Submitted", "Date Available", "Resource Format"],
   "paths": {
     "FAIR_Text": [
-      {"concept": "Abstract", "path": "abstract (JATS markup, tags stripped)"},
-      {"concept": "Resource Author", "path": "author[].family / .given / .name"},
-      {"concept": "Resource Author Affiliation", "path": "author[].affiliation[].name"},
+      {"concept": "Abstract", "path": "abstract (JATS markup, tags stripped); grants: project[].project-description[]"},
+      {"concept": "Resource Author", "path": "author[].family / .given / .name; grants: project[].lead-investigator[] / co-lead-investigator[] / investigator[]"},
+      {"concept": "Resource Author Affiliation", "path": "author[].affiliation[].name (grants: the investigators' affiliation[])"},
       {"concept": "Resource Identifier", "path": "DOI"},
       {"concept": "Resource Publication Date", "path": "issued.date-parts (year)"},
       {"concept": "Resource Publisher", "path": "publisher"},
-      {"concept": "Resource Title", "path": "title[]"},
+      {"concept": "Resource Title", "path": "title[]; grants: project[].project-title[]"},
       {"concept": "Resource Type General", "path": "type (mapped to the DataCite vocabulary)"},
-      {"concept": "Project Funder", "path": "funder[].name"}
+      {"concept": "Project Funder", "path": "funder[].name; grants: project[].funding[].funder.name"}
     ],
     "FAIR_Identifiers": [
-      {"concept": "Resource Author Identifier", "path": "author[].ORCID"},
+      {"concept": "Resource Author Identifier", "path": "author[].ORCID (grants: the investigators' ORCID)"},
       {"concept": "Resource Author Identifier Type", "path": "author[].ORCID (scheme is ORCID by definition)"},
       {"concept": "Resource Author Affiliation Identifier", "path": "author[].affiliation[].id[].id (ROR)"},
       {"concept": "Resource Author Affiliation Identifier Type", "path": "author[].affiliation[].id[].id-type"},
-      {"concept": "Funder Identifier", "path": "funder[].id[].id (ROR preferred) or funder[].DOI (Funder Registry)"},
-      {"concept": "Funder Identifier Type", "path": "funder[].id[].id-type / \"Crossref Funder ID\""},
-      {"concept": "Award Number", "path": "funder[].award[]"},
+      {"concept": "Funder Identifier", "path": "funder[].id[].id (ROR preferred) or funder[].DOI (Funder Registry); grants: project[].funding[].funder.id[] (ROR or Funder Registry DOI)"},
+      {"concept": "Funder Identifier Type", "path": "funder[].id[].id-type / \"Crossref Funder ID\" (grants: funding[].funder.id[].id-type)"},
+      {"concept": "Award Number", "path": "funder[].award[]; grants: the record's award"},
       {"concept": "Resource Identifier Type", "path": "DOI (type is DOI by definition)"},
       {"concept": "Resource Type", "path": "type (the Crossref work type, verbatim)"},
       {"concept": "Date Submitted", "path": "accepted or posted date"}
