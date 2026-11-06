@@ -75,7 +75,8 @@ self-contained HTML file with inline CSS + vanilla JS — no framework, no bundl
   Participation Report coverage (`PReP_*`), the sampled record-level/completeness counting
   (`Record_*`), and the occurrence-level/connectivity counting (`Occurrence_*`). Eras use
   the PReP definition (current = published in the current or two previous calendar years) —
-  keep its `era_filter` in sync with the pages' `eraFilter`.
+  keep its `era_filter` in sync with the pages' `eraFilter`. Grant-aware like the pages
+  (`grant_parts`, facet peek drops `select=`) — PReP counts `project[].funding`, so the sample must too.
 - `batchConnectivity.py` — batch companion to BOTH web Connectivity tools (stdlib only, no
   jq — connectivity is counted in Python, not scored). For a list of DataCite client ids or
   Crossref members/ISSNs/RORs it samples records, normalizes both registries to one record

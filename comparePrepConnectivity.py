@@ -85,11 +85,16 @@ def sample_works(member_id, type_id, era, cap):
     """Random sample via repeated sample= draws, deduplicated by DOI (the same
     pattern the web tools use). Returns (works, matching_total)."""
     filters = ','.join(f for f in [f'member:{member_id}', f'type:{type_id}', era_filter(era)] if f)
-    common = f'/works?filter={urllib.parse.quote(filters)}&select={urllib.parse.quote(SELECT)}'
-    peek = api_get(f'{common}&rows=0')
+    base = f'/works?filter={urllib.parse.quote(filters)}'
+    peek = api_get(f'{base}&rows=0&facet=type-name:*')
     total = (peek.get('message') or {}).get('total-results')
     if not total:
         return [], total or 0
+    # select= trims each work to author/funder — but a grant record's project/award are not
+    # selectable, so a selection that contains grants is fetched whole (as the web tools do)
+    facets = ((peek.get('message') or {}).get('facets') or {}).get('type-name') or {}
+    has_grants = (facets.get('values') or {}).get('Grant', 0) > 0
+    common = base if has_grants else f'{base}&select={urllib.parse.quote(SELECT)}'
     works, seen, requests = [], set(), 0
     if total <= cap:   # everything fits — fetch deterministically with cursor paging
         cursor = '*'
@@ -120,6 +125,22 @@ def is_ror(idobj):
     return str(idobj.get('id-type', '')).upper() == 'ROR'
 
 
+def grant_parts(w):
+    """Crossref GRANT records (type grant, registered by funders) keep people and funders under
+    project[] — lead-/co-lead-/investigator and funding[].funder; author/funder are absent.
+    Crossref's own Participation Report counts these, so the sample must too."""
+    people, funders = [], []
+    for p in (w.get('project') or []):
+        if not isinstance(p, dict):
+            continue
+        for role in ('lead-investigator', 'co-lead-investigator', 'investigator'):
+            people += [i for i in (p.get(role) or []) if isinstance(i, dict)]
+        for f in (p.get('funding') or []):
+            if isinstance(f, dict) and isinstance(f.get('funder'), dict):
+                funders.append(f['funder'])
+    return people, funders
+
+
 def measure(works):
     """Record-level (>=1 per work) and occurrence-level shares for the five checks."""
     n = len(works)
@@ -128,9 +149,10 @@ def measure(works):
     aff_occ = aff_ror_occ = 0                      # affiliation slots
     fun_occ = fun_id_occ = fun_ror_occ = 0         # funder slots
     for w in works:
-        authors = [a for a in (w.get('author') or []) if isinstance(a, dict)]
+        g_people, g_funders = grant_parts(w)
+        authors = [a for a in list(w.get('author') or []) + g_people if isinstance(a, dict)]
         affs = [f for a in authors for f in (a.get('affiliation') or []) if isinstance(f, dict) and f.get('name')]
-        funders = [f for f in (w.get('funder') or []) if isinstance(f, dict) and f.get('name')]
+        funders = [f for f in list(w.get('funder') or []) + g_funders if isinstance(f, dict) and f.get('name')]
         if any(a.get('ORCID') for a in authors):
             rec['orcids'] += 1
         if affs:
