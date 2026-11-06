@@ -403,6 +403,8 @@ async function crFetch(url, retries = 3){
    Format ← link MIME types) and direct mappings (Rights URL ← license URL as rightsUri,
    References ← reference[].DOI) are documented on the Crossref Completeness About tab. */
 const CR_SELECT = 'DOI,title,author,editor,translator,chair,funder,license,publisher,container-title,issued,accepted,posted,type,member,abstract,URL,link,relation,reference';
+// does a rows=0 peek (with facet=type-name:*) report any grant records in the selection?
+const crHasGrants = pj => ((((pj || {}).message || {}).facets || {})['type-name'] || {}).values?.Grant > 0;
 const CR_TYPE_MAP = {
   'journal-article':'JournalArticle', 'proceedings-article':'ConferencePaper', 'posted-content':'Preprint',
   'book':'Book', 'edited-book':'Book', 'monograph':'Book', 'reference-book':'Book', 'book-series':'Book', 'book-set':'Book',
@@ -449,7 +451,41 @@ function crPerson(p){
            nameIdentifiers: p.ORCID ? [{ nameIdentifier: p.ORCID, nameIdentifierScheme: 'ORCID', schemeUri: 'https://orcid.org' }] : [],
            affiliation: aff };
 }
+// Crossref GRANT records (type "grant", registered by funders) keep their metadata under
+// project[] — title, description, investigators, funding[].funder — with the award number at
+// the top level; title/author/funder are absent. Fold those into the same DataCite shape.
+// (project/award are not `select`-able on /works, so grant samples are fetched unselected.)
+function crGrantParts(w){
+  const projects = Array.isArray(w.project) ? w.project.filter(p => p && typeof p === 'object') : [];
+  const people = [], funders = [], titles = [], descriptions = [];
+  for (const p of projects){
+    for (const role of ['lead-investigator', 'co-lead-investigator', 'investigator'])
+      for (const i of (Array.isArray(p[role]) ? p[role] : []))
+        if (i && typeof i === 'object')
+          people.push((i.family || i.name) ? i : { ...i, name: Array.isArray(i['alternate-name']) ? i['alternate-name'][0] : undefined });
+    for (const f of (Array.isArray(p.funding) ? p.funding : []))
+      if (f && f.funder && typeof f.funder === 'object') funders.push({ ...f.funder, award: w.award ? [String(w.award)] : undefined });
+    for (const t of (Array.isArray(p['project-title']) ? p['project-title'] : [])) if (t && t.title) titles.push(t.title);
+    for (const d of (Array.isArray(p['project-description']) ? p['project-description'] : [])) if (d && d.description) descriptions.push(d.description);
+  }
+  return { people, funders, titles, descriptions };
+}
+// one funder (a work's funder[] entry or a grant's funding[].funder) → DataCite fundingReference.
+// Identifier preference: ROR, then the Funder Registry DOI (funder.DOI on works; an id[] entry
+// with id-type DOI on grants), then any other id.
+function crFunder(f){
+  const ids = Array.isArray(f.id) ? f.id.filter(x => x && x.id) : [];
+  const ror = ids.find(x => String(x['id-type']).toUpperCase() === 'ROR');
+  const doiId = f.DOI || (ids.find(x => String(x['id-type']).toUpperCase() === 'DOI') || {}).id;
+  const doi = doiId ? (/^https?:\/\//i.test(doiId) ? doiId : 'https://doi.org/' + doiId) : undefined;
+  const other = ids.find(x => x !== ror && String(x['id-type']).toUpperCase() !== 'DOI');
+  const idv = (ror && ror.id) || doi || (other && other.id);
+  return { funderName: f.name || undefined, funderIdentifier: idv || undefined,
+           funderIdentifierType: idv ? (ror ? 'ROR' : (doi ? 'Crossref Funder ID' : other['id-type'])) : undefined,
+           awardNumber: (Array.isArray(f.award) && f.award[0]) || undefined };
+}
 function crToRecord(w){
+  const grant = crGrantParts(w);
   const dates = [];
   const sub = crDateStr(w.accepted || w.posted);
   if (sub) dates.push({ date: sub, dateType: 'Submitted' });                       // ≈ acceptance/posting
@@ -469,14 +505,10 @@ function crToRecord(w){
   // DOI is exactly a DataCite relatedIdentifier with relationType References.
   for (const ref of (Array.isArray(w.reference) ? w.reference : []))
     if (ref && ref.DOI) related.push({ relatedIdentifier: ref.DOI, relatedIdentifierType: 'DOI', relationType: 'References' });
-  const funding = (Array.isArray(w.funder) ? w.funder : []).filter(f => f && f.name).map(f => {
-    const ids = Array.isArray(f.id) ? f.id.filter(x => x && x.id) : [];
-    const ror = ids.find(x => String(x['id-type']).toUpperCase() === 'ROR');
-    const idv = (ror && ror.id) || (f.DOI ? 'https://doi.org/' + f.DOI : (ids[0] && ids[0].id));
-    return { funderName: f.name, funderIdentifier: idv || undefined,
-             funderIdentifierType: idv ? (ror ? 'ROR' : (f.DOI ? 'Crossref Funder ID' : ids[0] && ids[0]['id-type'])) : undefined,
-             awardNumber: (Array.isArray(f.award) && f.award[0]) || undefined };
-  });
+  // works: funder[] (name + DOI/id[] + award[]); grants: project[].funding[].funder (name and/or
+  // id[]) with the top-level award — a funder known only by its identifier still counts for it
+  const funding = [...(Array.isArray(w.funder) ? w.funder : []), ...grant.funders]
+    .filter(f => f && typeof f === 'object' && (f.name || f.DOI || (Array.isArray(f.id) && f.id.length))).map(crFunder);
   // editor/translator/chair → contributors (the only roles the Crossref /works API exposes as
   // separate arrays); scored by the Extras "Contributor Types" use case.
   const contributors = [];
@@ -487,19 +519,19 @@ function crToRecord(w){
     .map(l => l && l['content-type']).filter(x => x && x !== 'unspecified'))];
   const year = Array.isArray(w.issued && w.issued['date-parts']) && Array.isArray(w.issued['date-parts'][0])
     ? w.issued['date-parts'][0][0] : null;
-  const abs = w.abstract ? stripJats(w.abstract) : '';
+  const abs = w.abstract ? stripJats(w.abstract) : (grant.descriptions[0] ? stripJats(grant.descriptions[0]) : '');   // a grant's project description is its abstract
   return {
     id: w.DOI,
     attributes: {
       doi: w.DOI,
       identifiers: [{ identifier: 'https://doi.org/' + w.DOI, identifierType: 'DOI' }],
-      titles: (Array.isArray(w.title) ? w.title : []).filter(t => t).map(t => ({ title: t })),
+      titles: [...(Array.isArray(w.title) ? w.title : []), ...grant.titles].filter(t => t).map(t => ({ title: t })),
       publisher: w.publisher ? { name: w.publisher } : undefined,
       publicationYear: typeof year === 'number' ? year : undefined,
       types: { resourceTypeGeneral: CR_TYPE_MAP[w.type] || (w.type ? 'Other' : undefined), resourceType: w.type },
       url: w.URL || undefined,
       descriptions: abs ? [{ description: abs, descriptionType: 'Abstract' }] : [],
-      creators: (Array.isArray(w.author) ? w.author : []).filter(p => p && (p.family || p.name)).map(crPerson),
+      creators: [...(Array.isArray(w.author) ? w.author : []), ...grant.people].filter(p => p && (p.family || p.name)).map(crPerson),   // grants: the investigators
       contributors,
       fundingReferences: funding,
       rightsList: lic.map(l => ({ rightsUri: l.URL })),   // a license URL is a Rights URI; Crossref has no rights statement
@@ -658,9 +690,11 @@ function selectionFilter(target, typeId, period, dateField){
    period's exact sample can be handed to the other Crossref tools. ---------- */
 async function fetchPeriod(target, period, cap, random, typeId, userQuery, dateField){
   const filters = selectionFilter(target, typeId, period, dateField);
-  const common = (filters ? `filter=${encodeURIComponent(filters)}&` : '')
-               + (userQuery ? `query=${encodeURIComponent(userQuery)}&` : '')
-               + `select=${encodeURIComponent(CR_SELECT)}`;
+  const base = (filters ? `filter=${encodeURIComponent(filters)}&` : '')
+             + (userQuery ? `query=${encodeURIComponent(userQuery)}&` : '');
+  // `select=` trims each work to the fields the transform reads — but a grant record's fields
+  // (project, award) are not selectable, so a period that contains grants is fetched whole
+  let common = base + `select=${encodeURIComponent(CR_SELECT)}`;
   const records = [], works = [];
   const seen = new Set();
   let requests = 0, firstUrl = '', matching = null, cursor = '*';
@@ -668,12 +702,13 @@ async function fetchPeriod(target, period, cap, random, typeId, userQuery, dateF
   // peek at the matching total: skip empty periods fast, and fall back to a deterministic
   // fetch when the whole period fits within the cap
   try {
-    const peek = await crFetch(`${API_BASE}/works?${common}&rows=0`);
+    const peek = await crFetch(`${API_BASE}/works?${base}rows=0&facet=type-name:*`);
     if (peek.ok){
       const pj = await peek.json();
       const t = pj.message && typeof pj.message['total-results'] === 'number' ? pj.message['total-results'] : null;
       if (t != null){ matching = t; if (t <= cap) effectiveRandom = false; }
       if (t === 0) return { records: [], works: [], matching: 0, random: false, firstUrl: '' };
+      if (crHasGrants(pj)) common = base.replace(/&$/, '');
     }
   } catch { /* best-effort */ }
   while (records.length < cap) {
