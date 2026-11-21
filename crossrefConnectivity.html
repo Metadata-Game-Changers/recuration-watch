@@ -564,6 +564,7 @@ function crToRecord(w){
 const $ = id => document.getElementById(id);
 const statusEl = $('status');
 function setStatus(msg, isErr){ statusEl.textContent = msg; statusEl.className = isErr ? 'err' : ''; }
+function setStatusHtml(html, isErr){ statusEl.innerHTML = html; statusEl.className = isErr ? 'err' : ''; }   // trusted markup only (built from escHtml'd API values)
 function setProgress(frac){ const p=$('progress'); p.classList.add('on'); p.classList.remove('indet'); p.firstElementChild.style.width = Math.max(0,Math.min(1,frac))*100 + '%'; }
 function setProgressIndeterminate(){ const p=$('progress'); p.classList.add('on','indet'); p.firstElementChild.style.width=''; }
 function hideProgress(){ const p=$('progress'); p.classList.remove('on','indet'); p.firstElementChild.style.width='0'; }
@@ -2265,6 +2266,50 @@ async function runSingleDoi(doi){
   } catch (e){ console.error(e); hideProgress(); setStatus(e.message || String(e), true); }
   finally { stopTips(); $('repo-go').disabled = false; }
 }
+/* Empty result for an ISSN: a journal's Crossref record (and its Participation Report) covers every
+   DOI of the journal, but each work carries only the ISSNs its publisher deposited — often just the
+   electronic one — so a works query on the journal's other ISSN can come back empty. Rather than
+   silently switching ISSNs, explain and offer the sibling ISSN(s), with their counts for this
+   selection, as links that rerun the search. */
+async function reportNoWorks(target, typeId, era, query){
+  const plain = 'No works returned for that selection.';
+  if (target.kind !== 'journal'){ setStatus(plain, true); return; }
+  let title = '', given = null, siblings = [];
+  try {
+    const res = await crFetch(`${API_BASE}/journals/${encodeURIComponent(target.id)}`);
+    if (res.ok){
+      const m = (await res.json()).message || {};
+      title = m.title || '';
+      const types = (m['issn-type'] || []).map(t => ({ issn: String(t.value || '').toUpperCase(), type: t.type }));
+      (m.ISSN || []).forEach(v => { if (!types.some(t => t.issn === String(v).toUpperCase())) types.push({ issn: String(v).toUpperCase(), type: '' }); });
+      given = types.find(t => t.issn === target.id) || null;
+      siblings = types.filter(t => t.issn !== target.id);
+    }
+  } catch { /* fall through to the plain message */ }
+  if (!siblings.length){ setStatus(plain, true); return; }
+  const scope = [typeId ? 'type:' + typeId : '', eraFilter(era)].filter(Boolean);
+  const counts = await Promise.all(siblings.map(async t => {
+    try {
+      const res = await crFetch(`${API_BASE}/works?filter=${encodeURIComponent(['issn:' + t.issn, ...scope].join(','))}${query ? '&query=' + encodeURIComponent(query) : ''}&rows=0`);
+      return res.ok ? ((await res.json()).message?.['total-results'] ?? null) : null;
+    } catch { return null; }
+  }));
+  const what = (typeId ? typeId.replace(/-/g, ' ') + 's' : 'works') + (era ? ` in the ${era} era` : '') + (query ? ' matching the query' : '');
+  const kindOf = t => t.type ? ` (${escHtml(t.type)})` : '';
+  const listed = siblings.map((t, i) => {
+    const n = counts[i];
+    return `<b>${t.issn}</b>${kindOf(t)}` + (n == null ? '' : n ? `, which has ${n.toLocaleString()} ${what}` : ', which also has none for this selection');
+  });
+  const links = siblings.map((t, i) => counts[i] ? ` <a href="#" class="issn-alt" data-issn="${t.issn}">Explore ${t.issn} instead →</a>` : '').join('');
+  const givenKind = given && given.type ? `the ${escHtml(given.type)} ISSN of ` : 'an ISSN of ';
+  setStatusHtml(`No works returned for <b>${escHtml(target.id)}</b>${title ? `, ${givenKind}${escHtml(title)}` : ''}. ` +
+    `Crossref's journal record also lists ${listed.join('; ')}.${links} ` +
+    `<span style="color:var(--muted)">Works carry only the ISSNs the publisher deposited — often just the electronic one — so the journal's ` +
+    `Participation Report counts every DOI while a query on one ISSN can come back empty.</span>`, true);
+  statusEl.querySelectorAll('a.issn-alt').forEach(a => a.addEventListener('click', e => {
+    e.preventDefault(); $('repo-input').value = a.dataset.issn; run();
+  }));
+}
 async function run(){
   const input = $('repo-input').value.trim();
   if (!input) return;
@@ -2285,7 +2330,7 @@ async function run(){
   startTips();
   try {
     const { records, repoTotal, random: usedRandom, memberCounts } = await fetchWorks(target, cap, random, typeId, query, era);
-    if (!records.length){ hideProgress(); setStatus('No works returned for that selection.', true); return; }
+    if (!records.length){ hideProgress(); await reportNoWorks(target, typeId, era, query); return; }
     await analyze(target, records, repoTotal, usedRandom, typeId, query, era, null, memberCounts);
   } catch (e){
     console.error(e); hideProgress(); setStatus(e.message || String(e), true);
